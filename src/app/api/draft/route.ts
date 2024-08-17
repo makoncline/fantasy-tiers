@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { fetchDraftedPlayers } from "@/lib/draft";
 import { fetchRankings } from "@/lib/rankings"; // Correct import
 import { getErrorMessage } from "@/lib/util";
-import Fuse from "fuse.js";
 
 export async function GET(req: NextRequest) {
   const draftId = req.nextUrl.searchParams.get("draft_id");
@@ -26,38 +25,6 @@ export async function GET(req: NextRequest) {
     const tiers = await fetchRankings(scoring);
     const tierPlayerNames = Object.keys(tiers);
 
-    // Initialize Fuse.js for fuzzy searching
-    const fuse = new Fuse(tierPlayerNames, {
-      includeScore: true,
-      threshold: 0.1, // Adjust this based on how strict the match should be
-    });
-
-    // Find players in the draft but not in the tiers
-    const missingInTiers = draftedPlayerNames
-      .map((name) => {
-        if (!tierPlayerNames.includes(name)) {
-          const result = fuse.search(name);
-          if (result.length > 0) {
-            return { name, suggestion: `Did you mean ${result[0].item}?` };
-          } else {
-            return { name, suggestion: "No close matches found" };
-          }
-        }
-        return null;
-      })
-      .filter(Boolean);
-
-    // Generate the errors array with suggestions
-    const errors = [];
-    if (missingInTiers.length > 0) {
-      errors.push({
-        type: "MISSING_IN_TIERS",
-        message:
-          "The following players are in the draft but missing in the tiers (after name normalization)",
-        players: missingInTiers,
-      });
-    }
-
     // Filter out drafted players by their normalized name
     const availablePlayers = tierPlayerNames.reduce(
       (result: any, playerName: string) => {
@@ -69,9 +36,26 @@ export async function GET(req: NextRequest) {
       {}
     );
 
+    // Calculate number of players left in each position for each tier
+    const positionTierCounts: Record<string, Record<string, number>> = {};
+
+    Object.values(availablePlayers).forEach((player: any) => {
+      const { tier, position } = player;
+
+      if (!positionTierCounts[position]) {
+        positionTierCounts[position] = {};
+      }
+
+      if (!positionTierCounts[position][tier]) {
+        positionTierCounts[position][tier] = 0;
+      }
+
+      positionTierCounts[position][tier]++;
+    });
+
     return NextResponse.json({
       availablePlayers,
-      errors,
+      positionTierCounts, // Grouped by position first, then by tier
     });
   } catch (error) {
     return NextResponse.json(
