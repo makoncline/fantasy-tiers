@@ -1,3 +1,6 @@
+import { DraftedPlayer } from "./draft";
+import { DraftDetails } from "./draftDetails";
+
 // Function to calculate number of players left in each position for each tier
 export function calculatePositionTierCounts(availablePlayers: any) {
   const positionTierCounts: Record<string, Record<string, number>> = {};
@@ -61,4 +64,33 @@ export function getLimitedAvailablePlayers(
     }, {} as Record<string, { tier: string; position: string }>); // Ensure correct typing
 
   return sortedPlayers;
+}
+
+export function getDraftedTeams(
+  draftId: string,
+  draftedPlayers: DraftedPlayer[],
+  draftDetails: DraftDetails
+) {
+  const { slot_to_roster_id } = draftDetails;
+
+  const teams: Record<
+    string,
+    { pick_no: number; round: number; position: string; player_name: string }[]
+  > = {};
+
+  draftedPlayers.forEach((player) => {
+    const rosterId = slot_to_roster_id[player.draft_slot];
+    if (!teams[rosterId]) {
+      teams[rosterId] = [];
+    }
+
+    teams[rosterId].push({
+      pick_no: player.pick_no,
+      round: player.round,
+      position: player.metadata.position, // Accessing position from metadata
+      player_name: `${player.metadata.first_name} ${player.metadata.last_name}`,
+    });
+  });
+
+  return teams;
 }

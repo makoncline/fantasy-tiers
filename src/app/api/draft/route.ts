@@ -6,11 +6,13 @@ import {
   calculatePositionTierCounts,
   getTopPlayersByPosition,
   getLimitedAvailablePlayers,
+  getDraftedTeams,
 } from "@/lib/draftHelpers";
+import { fetchDraftDetails } from "@/lib/draftDetails";
 
 // Set the limits as constants
-const AVAILABLE_PLAYERS_LIMIT = 10; // Limit for available players
-const TOP_PLAYERS_BY_POSITION_LIMIT = 3; // Limit for top players by position
+const AVAILABLE_PLAYERS_LIMIT = 10;
+const TOP_PLAYERS_BY_POSITION_LIMIT = 3;
 
 export async function GET(req: NextRequest) {
   const draftId = req.nextUrl.searchParams.get("draft_id");
@@ -24,11 +26,17 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    // Fetch draft details to get the mappings
+    const draftDetails = await fetchDraftDetails(draftId);
+
     // Fetch the drafted players
     const draftedPlayers = await fetchDraftedPlayers(draftId);
     const draftedPlayerNames = draftedPlayers.map(
       (pick) => pick.normalized_name
     );
+
+    // Get the list of players each team has drafted using the utility function
+    const draftedTeams = getDraftedTeams(draftId, draftedPlayers, draftDetails);
 
     // Fetch the tier rankings
     const tiers = await fetchRankings(scoring);
@@ -61,9 +69,10 @@ export async function GET(req: NextRequest) {
     );
 
     return NextResponse.json({
-      remainingAvailablePlayers: limitedAvailablePlayers, // Clearer naming to indicate these are remaining available players
-      positionTierCountsForRemainingAvailablePlayers: positionTierCounts, // More descriptive name
-      topRemainingPlayersByPosition: topPlayersByPosition, // Clearer naming for top players by position
+      remainingAvailablePlayers: limitedAvailablePlayers,
+      positionTierCountsForRemainingAvailablePlayers: positionTierCounts,
+      topRemainingPlayersByPosition: topPlayersByPosition,
+      draftedTeams,
     });
   } catch (error) {
     return NextResponse.json(
