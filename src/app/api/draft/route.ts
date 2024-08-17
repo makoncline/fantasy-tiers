@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchDraftedPlayers } from "@/lib/draft";
-import { fetchRankings } from "@/lib/rankings"; // Correct import
+import { fetchRankings } from "@/lib/rankings";
 import { getErrorMessage } from "@/lib/util";
+import {
+  calculatePositionTierCounts,
+  getTopPlayersByPosition,
+  getLimitedAvailablePlayers,
+} from "@/lib/draftHelpers";
+
+// Set the limits as constants
+const AVAILABLE_PLAYERS_LIMIT = 10; // Limit for available players
+const TOP_PLAYERS_BY_POSITION_LIMIT = 3; // Limit for top players by position
 
 export async function GET(req: NextRequest) {
   const draftId = req.nextUrl.searchParams.get("draft_id");
@@ -36,26 +45,25 @@ export async function GET(req: NextRequest) {
       {}
     );
 
+    // Get limited available players using the constant limit
+    const limitedAvailablePlayers = getLimitedAvailablePlayers(
+      availablePlayers,
+      AVAILABLE_PLAYERS_LIMIT
+    );
+
     // Calculate number of players left in each position for each tier
-    const positionTierCounts: Record<string, Record<string, number>> = {};
+    const positionTierCounts = calculatePositionTierCounts(availablePlayers);
 
-    Object.values(availablePlayers).forEach((player: any) => {
-      const { tier, position } = player;
-
-      if (!positionTierCounts[position]) {
-        positionTierCounts[position] = {};
-      }
-
-      if (!positionTierCounts[position][tier]) {
-        positionTierCounts[position][tier] = 0;
-      }
-
-      positionTierCounts[position][tier]++;
-    });
+    // Get top players remaining for each position with tier data, using the constant limit
+    const topPlayersByPosition = getTopPlayersByPosition(
+      availablePlayers,
+      TOP_PLAYERS_BY_POSITION_LIMIT
+    );
 
     return NextResponse.json({
-      availablePlayers,
-      positionTierCounts, // Grouped by position first, then by tier
+      remainingAvailablePlayers: limitedAvailablePlayers, // Clearer naming to indicate these are remaining available players
+      positionTierCountsForRemainingAvailablePlayers: positionTierCounts, // More descriptive name
+      topRemainingPlayersByPosition: topPlayersByPosition, // Clearer naming for top players by position
     });
   } catch (error) {
     return NextResponse.json(
