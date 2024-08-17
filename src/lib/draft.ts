@@ -2,14 +2,17 @@ import { z } from "zod";
 import fetch from "node-fetch";
 import { normalizePlayerName } from "@/lib/util"; // Updated import
 
+export const PositionEnum = z.enum(["QB", "RB", "WR", "TE", "K", "DEF"]);
+export type Position = z.infer<typeof PositionEnum>;
+
 export const DraftedPlayerSchema = z.object({
   draft_id: z.string(),
   draft_slot: z.number(),
   round: z.number(),
   metadata: z.object({
-    first_name: z.string().optional(), // Mark as optional since it may be missing
-    last_name: z.string().optional(), // Mark as optional since it may be missing
-    position: z.string().optional(), // Mark as optional since it may be missing
+    first_name: z.string(),
+    last_name: z.string(),
+    position: PositionEnum,
   }),
   pick_no: z.number(),
   player_id: z.string(),
@@ -19,6 +22,7 @@ export const DraftedPlayerSchema = z.object({
 export type DraftedPlayer = z.infer<typeof DraftedPlayerSchema>;
 
 export const DraftedPlayersSchema = z.array(DraftedPlayerSchema);
+
 export async function fetchDraftedPlayers(
   draftId: string
 ): Promise<DraftedPlayer[]> {

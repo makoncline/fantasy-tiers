@@ -1,4 +1,4 @@
-import { DraftedPlayer } from "./draft";
+import { DraftedPlayer, Position } from "./draft";
 import { DraftDetails } from "./draftDetails";
 
 // Function to calculate number of players left in each position for each tier
@@ -65,7 +65,6 @@ export function getLimitedAvailablePlayers(
 
   return sortedPlayers;
 }
-
 export function getDraftedTeams(
   draftId: string,
   draftedPlayers: DraftedPlayer[],
@@ -73,10 +72,7 @@ export function getDraftedTeams(
 ) {
   const { slot_to_roster_id } = draftDetails;
 
-  const teams: Record<
-    string,
-    { pick_no: number; round: number; position: string; player_name: string }[]
-  > = {};
+  const teams: Record<string, DraftedPlayer[]> = {};
 
   draftedPlayers.forEach((player) => {
     const rosterId = slot_to_roster_id[player.draft_slot];
@@ -85,12 +81,75 @@ export function getDraftedTeams(
     }
 
     teams[rosterId].push({
-      pick_no: player.pick_no,
+      draft_id: player.draft_id,
+      draft_slot: player.draft_slot,
       round: player.round,
-      position: player.metadata.position, // Accessing position from metadata
-      player_name: `${player.metadata.first_name} ${player.metadata.last_name}`,
+      pick_no: player.pick_no,
+      player_id: player.player_id,
+      normalized_name: player.normalized_name,
+      metadata: {
+        first_name: player.metadata.first_name,
+        last_name: player.metadata.last_name,
+        position: player.metadata.position,
+      },
     });
   });
 
   return teams;
+}
+
+export function calculateRemainingPositionNeeds(
+  draftedTeams: Record<string, DraftedPlayer[]>,
+  draftDetails: DraftDetails
+) {
+  // Define the main position requirements
+  const rosterRequirements: Record<Position, number> = {
+    QB: draftDetails.settings.slots_qb,
+    RB: draftDetails.settings.slots_rb,
+    WR: draftDetails.settings.slots_wr,
+    TE: draftDetails.settings.slots_te,
+    K: draftDetails.settings.slots_k,
+    DEF: draftDetails.settings.slots_def,
+  };
+
+  // Handle FLEX separately
+  const flexSlots = draftDetails.settings.slots_flex;
+
+  const remainingPositionNeeds: Record<string, Record<string, number>> = {};
+  const totalRemainingNeeds: Record<string, number> = {
+    QB: 0,
+    RB: 0,
+    WR: 0,
+    TE: 0,
+    FLEX: 0,
+    K: 0,
+    DEF: 0,
+  };
+
+  // Loop through each team
+  for (const team in draftedTeams) {
+    const teamNeeds = { ...rosterRequirements, FLEX: flexSlots }; // Add FLEX to teamNeeds dynamically
+    remainingPositionNeeds[team] = { ...teamNeeds };
+
+    // Track how many players of each position have been drafted
+    draftedTeams[team].forEach((player) => {
+      const position = player.metadata.position;
+      if (position in teamNeeds && teamNeeds[position] > 0) {
+        teamNeeds[position] -= 1;
+      } else if (["RB", "WR", "TE"].includes(position) && teamNeeds.FLEX > 0) {
+        // Deduct from FLEX if position is RB, WR, or TE
+        teamNeeds.FLEX -= 1;
+      }
+    });
+
+    // Update the remaining needs for the team
+    for (const position in teamNeeds) {
+      const pos = position as Position | "FLEX"; // Type assertion
+
+      remainingPositionNeeds[team][pos] = Math.max(0, teamNeeds[pos]);
+      totalRemainingNeeds[pos] += remainingPositionNeeds[team][pos];
+    }
+  }
+
+  return { remainingPositionNeeds, totalRemainingNeeds };
 }
