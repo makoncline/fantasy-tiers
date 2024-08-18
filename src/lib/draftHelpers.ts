@@ -1,11 +1,12 @@
-import { DraftedPlayer, Position } from "./draft";
+import { DraftedPlayer, Position } from "./draftPicks";
 import { DraftDetails } from "./draftDetails";
 
-// Function to calculate number of players left in each position for each tier
-export function calculatePositionTierCounts(availablePlayers: any) {
-  const positionTierCounts: Record<string, Record<string, number>> = {};
+export function calculatePositionTierCounts(
+  availablePlayers: Record<string, { tier: number; position: Position }>
+) {
+  const positionTierCounts: Record<string, Record<number, number>> = {};
 
-  Object.values(availablePlayers).forEach((player: any) => {
+  Object.values(availablePlayers).forEach((player) => {
     const { tier, position } = player;
 
     if (!positionTierCounts[position]) {
@@ -22,84 +23,93 @@ export function calculatePositionTierCounts(availablePlayers: any) {
   return positionTierCounts;
 }
 
-// Function to get top players remaining for each position with tier data
-export function getTopPlayersByPosition(availablePlayers: any, limit = 3) {
-  const topPlayersByPosition: Record<string, any[]> = {};
+export function getTopPlayersByPosition(
+  availablePlayers: Record<
+    string,
+    { rank: number; position: Position; name: string }
+  >,
+  limit = 3
+) {
+  const topPlayersByPosition: Record<string, { name: string; rank: number }[]> =
+    {};
 
   // Group players by position
-  Object.values(availablePlayers).forEach((player: any) => {
-    const { position, tier, name } = player;
+  Object.values(availablePlayers).forEach((player) => {
+    const { position, rank, name } = player;
 
     if (!topPlayersByPosition[position]) {
       topPlayersByPosition[position] = [];
     }
 
-    topPlayersByPosition[position].push({ name, tier });
+    topPlayersByPosition[position].push({ name, rank });
   });
 
-  // Sort players within each position by tier and limit to the top X players
+  // Sort players within each position by rank and limit to the top X players
   Object.keys(topPlayersByPosition).forEach((position) => {
     topPlayersByPosition[position] = topPlayersByPosition[position]
-      .sort((a, b) => a.tier.localeCompare(b.tier)) // Assuming tiers are sorted alphabetically
+      .sort((a, b) => a.rank - b.rank) // Sort directly by rank
       .slice(0, limit); // Get the top players based on the limit
   });
 
   return topPlayersByPosition;
 }
 
-// Function to get the top available players, with a configurable limit
 export function getLimitedAvailablePlayers(
-  availablePlayers: Record<string, { tier: string; position: string }>, // Adjusted typing
+  availablePlayers: Record<string, { rank: number; position: Position }>, // Simplified typing
   limit: number | "all"
 ) {
   const sortedPlayers = Object.entries(availablePlayers)
-    .sort(([, playerA], [, playerB]) => {
-      if (!playerA.tier || !playerB.tier) return 0; // Handle missing or undefined tiers
-      return playerA.tier.localeCompare(playerB.tier);
-    }) // Sort by tier
+    .sort(([, playerA], [, playerB]) => playerA.rank - playerB.rank) // Sort directly by rank
     .slice(0, limit === "all" ? undefined : limit) // Limit to top X or return all
     .reduce((result, [name, player]) => {
       result[name] = player;
       return result;
-    }, {} as Record<string, { tier: string; position: string }>); // Ensure correct typing
+    }, {} as Record<string, { rank: number; position: string }>);
 
   return sortedPlayers;
 }
 export function getDraftedTeams(
   draftId: string,
-  draftedPlayers: DraftedPlayer[],
-  draftDetails: DraftDetails
+  draftedPlayers: DraftedPlayer[], // Assuming you have a DraftedPlayer type defined
+  draftDetails: any
 ) {
-  const { slot_to_roster_id } = draftDetails;
-
-  const teams: Record<string, DraftedPlayer[]> = {};
+  const draftedTeams: Record<
+    string,
+    {
+      round: number;
+      pick_no: number;
+      player_name: string;
+      position: Position;
+    }[]
+  > = {};
 
   draftedPlayers.forEach((player) => {
-    const rosterId = slot_to_roster_id[player.draft_slot];
-    if (!teams[rosterId]) {
-      teams[rosterId] = [];
+    const teamId = draftDetails.slot_to_roster_id[player.draft_slot];
+    if (!draftedTeams[teamId]) {
+      draftedTeams[teamId] = [];
     }
 
-    teams[rosterId].push({
-      draft_id: player.draft_id,
-      draft_slot: player.draft_slot,
+    draftedTeams[teamId].push({
       round: player.round,
       pick_no: player.pick_no,
-      player_id: player.player_id,
-      normalized_name: player.normalized_name,
-      metadata: {
-        first_name: player.metadata.first_name,
-        last_name: player.metadata.last_name,
-        position: player.metadata.position,
-      },
+      player_name: player.normalized_name!,
+      position: player.metadata.position,
     });
   });
 
-  return teams;
+  return draftedTeams;
 }
 
 export function calculateRemainingPositionNeeds(
-  draftedTeams: Record<string, DraftedPlayer[]>,
+  draftedTeams: Record<
+    string,
+    {
+      round: number;
+      pick_no: number;
+      player_name: string;
+      position: Position;
+    }[]
+  >,
   draftDetails: DraftDetails
 ) {
   // Define the main position requirements
@@ -126,14 +136,21 @@ export function calculateRemainingPositionNeeds(
     DEF: 0,
   };
 
-  // Loop through each team
-  for (const team in draftedTeams) {
+  // Initialize all teams, even if they haven't picked yet
+  for (const [slot, rosterId] of Object.entries(
+    draftDetails.slot_to_roster_id
+  )) {
     const teamNeeds = { ...rosterRequirements, FLEX: flexSlots }; // Add FLEX to teamNeeds dynamically
-    remainingPositionNeeds[team] = { ...teamNeeds };
+    remainingPositionNeeds[rosterId] = { ...teamNeeds };
+  }
+
+  // Loop through each team and adjust based on drafted players
+  for (const team in draftedTeams) {
+    const teamNeeds = remainingPositionNeeds[team];
 
     // Track how many players of each position have been drafted
     draftedTeams[team].forEach((player) => {
-      const position = player.metadata.position;
+      const position = player.position;
       if (position in teamNeeds && teamNeeds[position] > 0) {
         teamNeeds[position] -= 1;
       } else if (["RB", "WR", "TE"].includes(position) && teamNeeds.FLEX > 0) {
@@ -141,13 +158,13 @@ export function calculateRemainingPositionNeeds(
         teamNeeds.FLEX -= 1;
       }
     });
+  }
 
-    // Update the remaining needs for the team
+  // Calculate totalRemainingNeeds by summing the remaining needs for each position across all teams
+  for (const teamNeeds of Object.values(remainingPositionNeeds)) {
     for (const position in teamNeeds) {
       const pos = position as Position | "FLEX"; // Type assertion
-
-      remainingPositionNeeds[team][pos] = Math.max(0, teamNeeds[pos]);
-      totalRemainingNeeds[pos] += remainingPositionNeeds[team][pos];
+      totalRemainingNeeds[pos] += teamNeeds[pos];
     }
   }
 

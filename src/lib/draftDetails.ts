@@ -11,7 +11,7 @@ const DraftDetailsSchema = z.object({
   season: z.string(),
   season_type: z.string(),
   sport: z.string(),
-  start_time: z.number(),
+  start_time: z.number().nullable(),
   settings: z.object({
     teams: z.number(),
     rounds: z.number(),
@@ -25,14 +25,14 @@ const DraftDetailsSchema = z.object({
     pick_timer: z.number(),
   }),
   metadata: z.object({
-    description: z.string().optional(),
-    name: z.string().optional(),
-    scoring_type: z.string().optional(),
+    description: z.string().nullable(),
+    name: z.string().nullable(),
+    scoring_type: z.string().nullable(),
   }),
   created: z.number(),
-  last_message_id: z.string().optional(),
-  last_message_time: z.number().optional(),
-  last_picked: z.number().optional(),
+  last_message_id: z.string().nullable(),
+  last_message_time: z.number().nullable(),
+  last_picked: z.number().nullable(),
   league_id: z.string().nullable(),
 });
 

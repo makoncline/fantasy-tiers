@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchDraftedPlayers } from "@/lib/draft";
 import { fetchDraftDetails } from "@/lib/draftDetails";
 import {
   calculatePositionTierCounts,
@@ -9,30 +8,95 @@ import {
   getTopPlayersByPosition,
 } from "@/lib/draftHelpers";
 import { fetchRankings } from "@/lib/rankings";
+import { fetchDraftedPlayers } from "@/lib/draftPicks";
 import { getErrorMessage } from "@/lib/util";
+
+// Configurable limits
+const AVAILABLE_PLAYERS_LIMIT = 10; // Limit for remaining available players
+const TOP_PLAYERS_BY_POSITION_LIMIT = 3; // Limit for top players by position
 
 export async function GET(req: NextRequest) {
   const draftId = req.nextUrl.searchParams.get("draft_id");
   const scoring = req.nextUrl.searchParams.get("scoring");
+  const userId = req.nextUrl.searchParams.get("user_id");
 
-  if (!draftId || !scoring) {
+  if (!draftId || !scoring || !userId) {
     return NextResponse.json(
-      { error: "draft_id and scoring parameters are required" },
+      { error: "draft_id, scoring, and user_id parameters are required" },
       { status: 400 }
     );
   }
 
   try {
-    // Fetch draft details and drafted players
+    // Fetch draft details
     const draftDetails = await fetchDraftDetails(draftId);
+
+    // Determine your draft slot and roster ID
+    const draftSlot = draftDetails.draft_order[userId];
+    const yourRosterId = draftDetails.slot_to_roster_id[draftSlot];
+
+    // Handle pre-draft status gracefully
+    if (draftDetails.status === "pre_draft") {
+      const teamRequirements = {
+        QB: draftDetails.settings.slots_qb,
+        RB: draftDetails.settings.slots_rb,
+        WR: draftDetails.settings.slots_wr,
+        TE: draftDetails.settings.slots_te,
+        FLEX: draftDetails.settings.slots_flex,
+        K: draftDetails.settings.slots_k,
+        DEF: draftDetails.settings.slots_def,
+      };
+
+      const availableRankings = await fetchRankings(scoring); // Pre-fetch rankings
+
+      return NextResponse.json({
+        status: "pre_draft",
+        message: "The draft has not started yet.",
+        draft_start_time: draftDetails.start_time, // Include start time if available
+        user_team_info: {
+          draft_slot: draftSlot,
+          roster_id: yourRosterId,
+        },
+        team_roster_requirements: teamRequirements,
+        draft_settings: {
+          rounds: draftDetails.settings.rounds,
+          pick_timer: draftDetails.settings.pick_timer,
+          teams: draftDetails.settings.teams,
+        },
+        available_rankings: availableRankings, // Pre-fetched tier and rankings data
+        draft_order_preview: draftDetails.draft_order,
+        league_metadata: {
+          name: draftDetails.metadata.name,
+          description: draftDetails.metadata.description,
+          scoring_type: draftDetails.metadata.scoring_type,
+        },
+      });
+    }
+    // Fetch drafted players
     const draftedPlayers = await fetchDraftedPlayers(draftId);
+
+    // If no picks have been made yet
+    if (draftedPlayers.length === 0) {
+      return NextResponse.json({
+        message: "No picks have been made yet.",
+        status: "pre_draft",
+        draft_id: draftDetails.draft_id,
+        remainingPositionNeeds: {},
+        totalRemainingNeeds: {},
+      });
+    }
 
     // Group drafted players by team
     const draftedTeams = getDraftedTeams(draftId, draftedPlayers, draftDetails);
 
+    const myTeam = draftedTeams[yourRosterId] || [];
+
     // Calculate remaining position needs
     const { remainingPositionNeeds, totalRemainingNeeds } =
       calculateRemainingPositionNeeds(draftedTeams, draftDetails);
+
+    const myTeamRemainingPositionNeeds =
+      remainingPositionNeeds[yourRosterId] || {};
 
     // Fetch and filter available players based on scoring
     const tiers = await fetchRankings(scoring);
@@ -46,17 +110,20 @@ export async function GET(req: NextRequest) {
       return result;
     }, {} as Record<string, any>);
 
-    // Limit available players to the top 10 (this can be configured)
+    // Limit available players to the top configured number
     const limitedAvailablePlayers = getLimitedAvailablePlayers(
       availablePlayers,
-      10
+      AVAILABLE_PLAYERS_LIMIT
     );
 
     // Calculate position tier counts for remaining available players
     const positionTierCounts = calculatePositionTierCounts(availablePlayers);
 
-    // Get top players by position
-    const topPlayersByPosition = getTopPlayersByPosition(availablePlayers, 3); // 3 is the configurable limit
+    // Get top players by position with the configured limit
+    const topPlayersByPosition = getTopPlayersByPosition(
+      availablePlayers,
+      TOP_PLAYERS_BY_POSITION_LIMIT
+    );
 
     // Build and return the response
     return NextResponse.json({
@@ -64,8 +131,12 @@ export async function GET(req: NextRequest) {
       positionTierCountsForRemainingAvailablePlayers: positionTierCounts,
       topRemainingPlayersByPosition: topPlayersByPosition,
       draftedTeams,
-      remainingPositionNeeds, // Newly added
-      totalRemainingNeeds, // Newly added
+      myTeam: {
+        players: draftedTeams[yourRosterId] || [],
+        positionNeeds: myTeamRemainingPositionNeeds,
+      },
+      remainingPositionNeedsByTeam: remainingPositionNeeds,
+      totalRemainingNeeds,
     });
   } catch (error) {
     return NextResponse.json(

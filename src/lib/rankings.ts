@@ -33,14 +33,31 @@ export async function fetchRankings(scoring: string) {
 
     const map: Record<
       string,
-      { rank: number; tier: string; position: string; name: string }
+      { rank: number; tier: number; position: string; name: string }
     > = {};
-    parsedData.forEach((row, index) => {
+
+    parsedData.forEach((row) => {
       const sanitizedName = normalizePlayerName(row["Player.Name"]);
       if (sanitizedName) {
+        // Parse and validate the tier
+        const tier = parseInt(row["Tier"], 10);
+        if (isNaN(tier)) {
+          console.error(
+            `Invalid tier for player ${sanitizedName}: ${row["Tier"]}`
+          );
+        }
+
+        // Parse and validate the rank
+        const rank = parseInt(row["Rank"], 10);
+        if (isNaN(rank)) {
+          console.error(
+            `Invalid rank for player ${sanitizedName}: ${row["Rank"]}`
+          );
+        }
+
         map[sanitizedName] = {
-          rank: index + 1, // Assuming the index can be used as rank
-          tier: row["Tier"] || "Unknown", // Assuming "Tier" is a column in the CSV
+          rank: isNaN(rank) ? 0 : rank, // Default to 0 if rank is not a valid number
+          tier: isNaN(tier) ? 0 : tier, // Default to 0 if tier is not a valid number
           position: row["Position"] || "Unknown", // Assuming "Position" is a column in the CSV
           name: sanitizedName,
         };
