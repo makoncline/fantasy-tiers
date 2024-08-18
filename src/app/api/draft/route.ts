@@ -17,12 +17,17 @@ import { getErrorMessage } from "@/lib/util";
 const AVAILABLE_PLAYERS_LIMIT = 10; // Limit for remaining available players
 const TOP_PLAYERS_BY_POSITION_LIMIT = 3; // Limit for top players by position
 
+const scoringMap: Record<string, string> = {
+  std: "standard",
+  ppr: "ppr",
+  half_ppr: "half",
+};
+
 export async function GET(req: NextRequest) {
   const draftId = req.nextUrl.searchParams.get("draft_id");
-  const scoring = req.nextUrl.searchParams.get("scoring");
   const userId = req.nextUrl.searchParams.get("user_id");
 
-  if (!draftId || !scoring || !userId) {
+  if (!draftId || !userId) {
     return NextResponse.json(
       { error: "draft_id, scoring, and user_id parameters are required" },
       { status: 400 }
@@ -32,6 +37,8 @@ export async function GET(req: NextRequest) {
   try {
     // Fetch draft details
     const draftDetails = await fetchDraftDetails(draftId);
+    const scoringType = draftDetails.metadata.scoring_type || "std";
+    const scoring = scoringMap[scoringType];
 
     const rosterRequirements: Record<Position | "FLEX", number> = {
       QB: draftDetails.settings.slots_qb,
@@ -44,52 +51,18 @@ export async function GET(req: NextRequest) {
     };
 
     // Determine your draft slot and roster ID
-    const draftSlot = draftDetails.draft_order[userId];
-    const yourRosterId = draftDetails.slot_to_roster_id[draftSlot];
+    const draftSlot = draftDetails.draft_order?.[userId];
+    const userRosterId = draftSlot
+      ? draftDetails.slot_to_roster_id[draftSlot]
+      : null;
 
-    // Handle pre-draft status gracefully
-    if (draftDetails.status === "pre_draft") {
-      const availableRankings = await fetchRankings(scoring); // Pre-fetch rankings
+    // Fetch drafted players (empty if pre-draft)
+    const draftedPlayers =
+      draftDetails.status === "pre_draft"
+        ? []
+        : await fetchDraftedPlayers(draftId);
 
-      return NextResponse.json({
-        status: "pre_draft",
-        message: "The draft has not started yet.",
-        draft_start_time: draftDetails.start_time,
-        user_team_info: {
-          draft_slot: draftSlot,
-          roster_id: yourRosterId,
-        },
-        team_roster_requirements: rosterRequirements,
-        draft_settings: {
-          rounds: draftDetails.settings.rounds,
-          pick_timer: draftDetails.settings.pick_timer,
-          teams: draftDetails.settings.teams,
-        },
-        available_rankings: availableRankings,
-        draft_order_preview: draftDetails.draft_order,
-        league_metadata: {
-          name: draftDetails.metadata.name,
-          description: draftDetails.metadata.description,
-          scoring_type: draftDetails.metadata.scoring_type,
-        },
-      });
-    }
-
-    // Fetch drafted players
-    const draftedPlayers = await fetchDraftedPlayers(draftId);
-
-    // If no picks have been made yet
-    if (draftedPlayers.length === 0) {
-      return NextResponse.json({
-        message: "No picks have been made yet.",
-        status: "pre_draft",
-        draft_id: draftDetails.draft_id,
-        remainingPositionNeeds: {},
-        totalRemainingNeeds: {},
-      });
-    }
-
-    // Initialize currentRosters with all teams, even if they haven’t picked yet
+    // Initialize current rosters with all teams, even if they haven’t picked yet
     const currentRosters = initializeRosters(
       draftDetails,
       getDraftedTeams(draftId, draftedPlayers, draftDetails),
@@ -124,16 +97,36 @@ export async function GET(req: NextRequest) {
       TOP_PLAYERS_BY_POSITION_LIMIT
     );
 
-    // Calculate total remaining needs across all teams
     const totalRemainingNeeds = calculateTotalRemainingNeeds(currentRosters);
 
     // Build and return the response
     return NextResponse.json({
+      draftInfo: {
+        status: draftDetails.status,
+        draft_id: draftDetails.draft_id,
+        draft_start_time: draftDetails.start_time,
+        user_team_info: {
+          draft_slot: draftSlot,
+          roster_id: userRosterId,
+        },
+        team_roster_requirements: rosterRequirements,
+        draft_settings: {
+          rounds: draftDetails.settings.rounds,
+          pick_timer: draftDetails.settings.pick_timer,
+          teams: draftDetails.settings.teams,
+        },
+        draft_order_preview: draftDetails.draft_order,
+        league_metadata: {
+          name: draftDetails.metadata.name,
+          description: draftDetails.metadata.description,
+          scoring_type: draftDetails.metadata.scoring_type,
+        },
+      },
       topAvailablePlayers,
       availablePlayersPerPositionPerTier,
       topAvailablePlayersByPosition,
       currentRosters,
-      userRoster: currentRosters[yourRosterId],
+      userRoster: userRosterId ? currentRosters[userRosterId] : null,
       rosterNeeds: totalRemainingNeeds,
     });
   } catch (error) {

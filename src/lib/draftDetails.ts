@@ -4,7 +4,7 @@ import fetch from "node-fetch";
 // Zod schema to validate the draft details
 const DraftDetailsSchema = z.object({
   draft_id: z.string(),
-  draft_order: z.record(z.string(), z.number()), // Mapping of user_id to draft slot
+  draft_order: z.record(z.string(), z.number()).nullable(), // Updated to allow null
   slot_to_roster_id: z.record(z.string(), z.number()), // Mapping of draft slot to roster_id
   status: z.string(),
   type: z.string(),
@@ -45,13 +45,21 @@ export async function fetchDraftDetails(draftId: string) {
     throw new Error("Failed to fetch draft details");
   }
 
-  const jsonData = await response.json();
+  // Explicitly type jsonData as 'any' to allow dynamic adjustments
+  const jsonData: any = await response.json();
+
+  // Handle the case where draft_order is null
+  if (!jsonData.draft_order) {
+    jsonData.draft_order = {};
+  }
 
   // Validate the response using Zod
   const parsedData = DraftDetailsSchema.safeParse(jsonData);
   if (!parsedData.success) {
     console.error(parsedData.error); // Log the error details for debugging
-    throw new Error("Invalid data structure from Sleeper API");
+    throw new Error(
+      "fetchDraftDetails: Invalid data structure from Sleeper API"
+    );
   }
 
   return parsedData.data;
