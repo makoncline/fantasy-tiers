@@ -83,8 +83,6 @@ export async function GET(req: NextRequest) {
       return result;
     }, {} as Record<string, any>);
 
-    console.log("Available Players", availablePlayers);
-
     // Limit available players to the top configured number
     const topAvailablePlayers = getLimitedAvailablePlayers(
       availablePlayers,
@@ -107,7 +105,7 @@ export async function GET(req: NextRequest) {
       ? getDraftRecommendations(
           availablePlayers,
           currentRosters[userRosterId].rosterPositionCounts,
-          rosterRequirements
+          currentRosters[userRosterId].remainingPositionRequirements // Pass in the calculated team needs
         )
       : null;
 
@@ -125,9 +123,9 @@ export async function GET(req: NextRequest) {
       },
       nextPickRecommendations,
       userRoster: userRosterId ? currentRosters[userRosterId] : null,
-      remainingPositionRequirements: totalRemainingNeeds,
-      topAvailablePlayersByPosition,
-      currentRosters,
+      //   remainingPositionRequirements: totalRemainingNeeds,
+      //   topAvailablePlayersByPosition,
+      //   currentRosters,
     });
   } catch (error) {
     return NextResponse.json(

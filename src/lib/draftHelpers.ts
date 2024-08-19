@@ -3,7 +3,8 @@ import { DraftDetails } from "./draftDetails";
 
 const RECCOMENDATION_LIMIT = 5;
 export const KEY_ROSTER_SLOTS = ["RB", "WR", "TE", "QB", "FLEX"] as const;
-export const BACKUP_LIMITS = {
+export const FLEX_POSITIONS = ["RB", "WR", "TE"] as const;
+export const POSITION_LIMITS = {
   RB: Infinity,
   WR: Infinity,
   QB: 2,
@@ -206,9 +207,23 @@ export function calculateTeamNeedsAndCountsForSingleTeam(
     if (position in teamNeeds && teamNeeds[position] > 0) {
       teamNeeds[position] -= 1;
     } else if (["RB", "WR", "TE"].includes(position) && teamNeeds.FLEX > 0) {
+      // Deduct from FLEX if the primary slot is already filled
       teamNeeds.FLEX -= 1;
     }
   });
+
+  // Adjust the logic to reflect the FLEX slot as available for any RB, WR, or TE
+  const totalFlexNeeded = rosterRequirements.FLEX;
+  const flexEligiblePositionsFilled = Math.max(
+    0,
+    positionCounts.RB +
+      positionCounts.WR +
+      positionCounts.TE -
+      (rosterRequirements.RB + rosterRequirements.WR + rosterRequirements.TE)
+  );
+
+  // Recalculate the team’s remaining FLEX needs based on eligible positions
+  teamNeeds.FLEX = Math.max(0, totalFlexNeeded - flexEligiblePositionsFilled);
 
   return {
     positionNeeds: teamNeeds,
@@ -251,43 +266,42 @@ export function calculateTotalRemainingNeeds(
 function isSlotFilled(slot: RosterSlot, roster: Record<Position, number>) {
   if (slot === "FLEX") {
     return (
-      roster.RB >= BACKUP_LIMITS.RB &&
-      roster.WR >= BACKUP_LIMITS.WR &&
-      roster.TE >= BACKUP_LIMITS.TE
+      roster.RB >= POSITION_LIMITS.RB &&
+      roster.WR >= POSITION_LIMITS.WR &&
+      roster.TE >= POSITION_LIMITS.TE
     );
   }
-  return roster[slot] >= BACKUP_LIMITS[slot];
+  return roster[slot] >= POSITION_LIMITS[slot];
 }
 
-function getKeyPositionRecommendations(
+export function getKeyPositionRecommendations(
   availablePlayers: Record<
     string,
-    { rank: number; tier: number; position: Position; name: string }
+    { rank: number; tier: number; position: Position }
   >,
-  roster: Record<Position, number>,
-  rosterRequirements: Record<RosterSlot, number>
+  teamNeeds: Record<RosterSlot, number>
 ) {
-  // Filter out positions that have already filled the primary starting slots
-  const positionsToRecommend = KEY_ROSTER_SLOTS.filter((slot) => {
-    // For FLEX, it’s filled when all RB, WR, and TE slots (including FLEX) are filled
-    if (slot === "FLEX") {
-      return (
-        roster.RB < BACKUP_LIMITS.RB ||
-        roster.WR < BACKUP_LIMITS.WR ||
-        roster.TE < BACKUP_LIMITS.TE
-      );
+  const positionsToTarget = new Set<Position>();
+
+  // Loop through each key roster slot to determine positions we need to fill
+  KEY_ROSTER_SLOTS.forEach((slot) => {
+    if (teamNeeds[slot] > 0) {
+      positionsToTarget.add(slot as Position);
     }
-    // For all other slots, check if the starting slot is filled
-    return roster[slot as Position] < rosterRequirements[slot as Position];
   });
 
-  // Get top players for key positions that are still unfilled
-  const keyPositionPlayers = Object.values(availablePlayers).filter((player) =>
-    positionsToRecommend.includes(player.position as any)
-  );
+  // If FLEX is still needed, add all FLEX-eligible positions (RB, WR, TE)
+  if (teamNeeds.FLEX > 0) {
+    FLEX_POSITIONS.forEach((position) => positionsToTarget.add(position));
+  }
 
-  // Sort by tier and rank, since tier 1 is better than tier 2, and within the same tier, lower rank is better
-  return keyPositionPlayers.sort((a, b) => a.tier - b.tier || a.rank - b.rank);
+  // Filter and sort available players based on the positionsToTarget set
+  const keyPositionPlayers = Object.values(availablePlayers)
+    .filter((player) => positionsToTarget.has(player.position))
+    .sort((a, b) => a.tier - b.tier || a.rank - b.rank); // Sort by tier first, then rank
+
+  // Return the top recommended players
+  return keyPositionPlayers;
 }
 
 // Function to get recommendations for filling backup slots
@@ -299,21 +313,31 @@ function getBackupRecommendations(
   roster: Record<Position, number>
 ) {
   return Object.values(availablePlayers)
-    .filter((player) => !isSlotFilled(player.position, roster))
+    .filter((player) => {
+      // Check if the position is already filled considering FLEX
+      return (
+        !isSlotFilled(player.position, roster) ||
+        player.position in FLEX_POSITIONS
+      );
+    })
     .sort((a, b) => a.tier - b.tier || a.rank - b.rank);
 }
 
-// Function to get best available players overall
+// Function to get best available players overall, considering position limits
 function getBestAvailablePlayer(
   availablePlayers: Record<
     string,
     { name: string; rank: number; tier: number; position: Position }
   >,
-  roster: Record<Position, number>
+  rosterPositionCounts: Record<Position, number>
 ) {
-  return Object.values(availablePlayers).sort(
-    (a, b) => a.tier - b.tier || a.rank - b.rank
-  );
+  return Object.values(availablePlayers)
+    .filter((player) => {
+      // Only include players if their position hasn't reached the roster limit
+      const currentCount = rosterPositionCounts[player.position] || 0;
+      return currentCount < POSITION_LIMITS[player.position];
+    })
+    .sort((a, b) => a.tier - b.tier || a.rank - b.rank);
 }
 
 function getFillRestOfRosterRecommendations(
@@ -324,10 +348,10 @@ function getFillRestOfRosterRecommendations(
   roster: Record<Position, number>
 ) {
   // Get all positions that are not in the key positions and are not fully filled
-  const nonKeyPositions = (Object.keys(BACKUP_LIMITS) as Position[]).filter(
+  const nonKeyPositions = (Object.keys(POSITION_LIMITS) as Position[]).filter(
     (position) =>
       !KEY_ROSTER_SLOTS.includes(position as any) &&
-      roster[position] < BACKUP_LIMITS[position] // Only include positions that haven't reached their limit
+      roster[position] < POSITION_LIMITS[position] // Only include positions that haven't reached their limit
   );
 
   // Filter for available players in non-key positions
@@ -346,19 +370,22 @@ export function getDraftRecommendations(
     string,
     { rank: number; tier: number; position: Position; name: string }
   >,
-  roster: Record<RosterSlot, number>,
-  rosterRequirements: Record<RosterSlot, number>
+  rosterPositionCounts: Record<RosterSlot, number>, // Updated type to match rosterPositionCounts
+  teamNeeds: Record<RosterSlot, number> // Updated to use the calculated team needs
 ) {
   const recommendations = {
     keyPositions: getKeyPositionRecommendations(
       availablePlayers,
-      roster,
-      rosterRequirements
+      teamNeeds // Pass in the calculated team needs directly
     ),
-    backups: getBackupRecommendations(availablePlayers, roster),
+    bestAvailable: getBestAvailablePlayer(
+      availablePlayers,
+      rosterPositionCounts
+    ),
+    backups: getBackupRecommendations(availablePlayers, rosterPositionCounts), // No change needed
     nonKeyPositions: getFillRestOfRosterRecommendations(
       availablePlayers,
-      roster
+      rosterPositionCounts // No change needed
     ),
   };
 
