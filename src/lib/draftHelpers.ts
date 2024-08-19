@@ -12,6 +12,19 @@ export const POSITION_LIMITS = {
   K: 1,
   DEF: 1,
 } as const;
+export const POSITION_RECOMMENDATION_LIMIT = 2;
+const ZERO_POSITION_COUNTS: Record<Position, number> = {
+  QB: 0,
+  RB: 0,
+  WR: 0,
+  TE: 0,
+  K: 0,
+  DEF: 0,
+};
+const ZERO_ROSTER_SLOT_COUNTS: Record<RosterSlot, number> = {
+  ...ZERO_POSITION_COUNTS,
+  FLEX: 0,
+};
 
 export function initializeRosters(
   draftDetails: DraftDetails,
@@ -26,16 +39,6 @@ export function initializeRosters(
   >,
   rosterRequirements: Record<RosterSlot, number>
 ) {
-  const defaultPositionCounts = {
-    QB: 0,
-    RB: 0,
-    WR: 0,
-    TE: 0,
-    FLEX: 0,
-    K: 0,
-    DEF: 0,
-  };
-
   // Initialize rosters for all teams with default values
   const currentRosters: Record<
     string,
@@ -46,8 +49,8 @@ export function initializeRosters(
         player_name: string;
         position: string;
       }[];
-      remainingPositionRequirements: Record<string, number>;
-      rosterPositionCounts: Record<string, number>;
+      remainingPositionRequirements: Record<RosterSlot, number>;
+      rosterPositionCounts: Record<Position, number>;
     }
   > = {};
 
@@ -56,7 +59,7 @@ export function initializeRosters(
     currentRosters[rosterId] = {
       players: [],
       remainingPositionRequirements: { ...rosterRequirements },
-      rosterPositionCounts: { ...defaultPositionCounts },
+      rosterPositionCounts: { ...ZERO_ROSTER_SLOT_COUNTS },
     };
   });
 
@@ -190,14 +193,7 @@ export function calculateTeamNeedsAndCountsForSingleTeam(
   const teamNeeds = { ...rosterRequirements };
 
   // Initialize position counts without FLEX
-  const positionCounts: Record<Position, number> = {
-    QB: 0,
-    RB: 0,
-    WR: 0,
-    TE: 0,
-    K: 0,
-    DEF: 0,
-  };
+  const positionCounts = { ...ZERO_POSITION_COUNTS };
 
   // Iterate over drafted players and adjust position counts and needs
   teamDraftedPlayers.forEach((player) => {
@@ -211,7 +207,7 @@ export function calculateTeamNeedsAndCountsForSingleTeam(
       teamNeeds[position] -= 1;
     }
     // Otherwise, deduct from FLEX if applicable
-    else if (["RB", "WR", "TE"].includes(position) && teamNeeds.FLEX > 0) {
+    else if (FLEX_POSITIONS.includes(position as any) && teamNeeds.FLEX > 0) {
       teamNeeds.FLEX -= 1;
     }
   });
@@ -226,25 +222,18 @@ export function calculateTotalRemainingNeeds(
   currentRosters: Record<
     string,
     {
-      remainingPositionRequirements: Record<string, number>;
+      remainingPositionRequirements: Record<Position, number>;
     }
   >
 ) {
-  const totalRemainingNeeds: Record<string, number> = {
-    QB: 0,
-    RB: 0,
-    WR: 0,
-    TE: 0,
-    FLEX: 0,
-    K: 0,
-    DEF: 0,
-  };
+  const totalRemainingNeeds = { ...ZERO_ROSTER_SLOT_COUNTS };
 
   Object.values(currentRosters).forEach(({ remainingPositionRequirements }) => {
     Object.entries(remainingPositionRequirements).forEach(
       ([position, remaining]) => {
         if (position in totalRemainingNeeds) {
-          totalRemainingNeeds[position] += remaining;
+          totalRemainingNeeds[position as keyof typeof totalRemainingNeeds] +=
+            remaining;
         }
       }
     );
@@ -361,7 +350,7 @@ export function getDraftRecommendations(
     string,
     { name: string; rank: number; tier: number; position: Position }
   >,
-  rosterPositionCounts: Record<RosterSlot, number>, // Updated type to match rosterPositionCounts
+  rosterPositionCounts: Record<Position, number>, // Updated type to match rosterPositionCounts
   teamNeeds: Record<RosterSlot, number> // Updated to use the calculated team needs
 ) {
   const recommendations = {
