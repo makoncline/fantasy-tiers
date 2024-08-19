@@ -349,7 +349,7 @@ export function getDraftRecommendations(
     string,
     { name: string; rank: number; tier: number; position: Position }
   >,
-  rosterPositionCounts: Record<RosterSlot, number>,
+  rosterPositionCounts: Record<Position, number>,
   teamNeeds: Record<RosterSlot, number>
 ) {
   const recommendations = {
