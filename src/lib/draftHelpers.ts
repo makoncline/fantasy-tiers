@@ -1,7 +1,7 @@
 import { DraftedPlayer, Position, RosterSlot } from "./draftPicks";
 import { DraftDetails } from "./draftDetails";
 
-const RECCOMENDATION_LIMIT = 5;
+const RECCOMENDATION_LIMIT = 6;
 export const KEY_ROSTER_SLOTS = ["RB", "WR", "TE", "QB", "FLEX"] as const;
 export const FLEX_POSITIONS = ["RB", "WR", "TE"] as const;
 export const POSITION_LIMITS = {
@@ -25,6 +25,7 @@ const ZERO_ROSTER_SLOT_COUNTS: Record<RosterSlot, number> = {
   ...ZERO_POSITION_COUNTS,
   FLEX: 0,
 };
+export const MAX_RECOMMENDATIONS_PER_POSITION = 2;
 
 export function initializeRosters(
   draftDetails: DraftDetails,
@@ -343,29 +344,26 @@ function getFillRestOfRosterRecommendations(
   return fillRosterPlayers.sort((a, b) => a.tier - b.tier || a.rank - b.rank);
 }
 
-// Main function to get draft recommendations
-// Ensure all recommendations include the required fields
 export function getDraftRecommendations(
   availablePlayers: Record<
     string,
     { name: string; rank: number; tier: number; position: Position }
   >,
-  rosterPositionCounts: Record<Position, number>, // Updated type to match rosterPositionCounts
-  teamNeeds: Record<RosterSlot, number> // Updated to use the calculated team needs
+  rosterPositionCounts: Record<RosterSlot, number>,
+  teamNeeds: Record<RosterSlot, number>
 ) {
   const recommendations = {
-    keyPositions: getKeyPositionRecommendations(
-      availablePlayers,
-      teamNeeds // Pass in the calculated team needs directly
+    keyPositions: limitPositionRecommendations(
+      getKeyPositionRecommendations(availablePlayers, teamNeeds)
     ),
-    bestAvailable: getBestAvailablePlayer(
-      availablePlayers,
-      rosterPositionCounts
+    bestAvailable: limitPositionRecommendations(
+      getBestAvailablePlayer(availablePlayers, rosterPositionCounts)
     ),
-    backups: getBackupRecommendations(availablePlayers, rosterPositionCounts), // No change needed
-    nonKeyPositions: getFillRestOfRosterRecommendations(
-      availablePlayers,
-      rosterPositionCounts // No change needed
+    backups: limitPositionRecommendations(
+      getBackupRecommendations(availablePlayers, rosterPositionCounts)
+    ),
+    nonKeyPositions: limitPositionRecommendations(
+      getFillRestOfRosterRecommendations(availablePlayers, rosterPositionCounts)
     ),
   };
 
@@ -380,4 +378,32 @@ export function getDraftRecommendations(
   );
 
   return recommendations;
+}
+
+function limitPositionRecommendations(
+  recommendations: {
+    name: string;
+    rank: number;
+    tier: number;
+    position: Position;
+  }[]
+) {
+  const limitedRecommendations: {
+    name: string;
+    rank: number;
+    tier: number;
+    position: Position;
+  }[] = [];
+  const positionCount = { ...ZERO_POSITION_COUNTS };
+
+  for (const recommendation of recommendations) {
+    if (
+      positionCount[recommendation.position] < MAX_RECOMMENDATIONS_PER_POSITION
+    ) {
+      limitedRecommendations.push(recommendation);
+      positionCount[recommendation.position]++;
+    }
+  }
+
+  return limitedRecommendations;
 }
