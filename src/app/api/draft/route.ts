@@ -123,9 +123,9 @@ export async function GET(req: NextRequest) {
       },
       nextPickRecommendations,
       userRoster: userRosterId ? currentRosters[userRosterId] : null,
-      //   remainingPositionRequirements: totalRemainingNeeds,
-      //   topAvailablePlayersByPosition,
-      //   currentRosters,
+      remainingPositionRequirements: totalRemainingNeeds,
+      topAvailablePlayersByPosition,
+      currentRosters,
     });
   } catch (error) {
     return NextResponse.json(
