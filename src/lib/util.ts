@@ -24,3 +24,7 @@ export const normalizePlayerName = (str: string) => {
     .replace(" jr", "")
     .replace(" sr", "");
 };
+
+export const normalizePosition = (position: string) => {
+  return position === "DST" ? "DEF" : position;
+};

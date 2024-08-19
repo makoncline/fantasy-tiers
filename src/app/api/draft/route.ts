@@ -5,12 +5,13 @@ import {
   calculateTeamNeedsAndCountsForSingleTeam,
   calculateTotalRemainingNeeds,
   getDraftedTeams,
+  getDraftRecommendations,
   getLimitedAvailablePlayers,
   getTopPlayersByPosition,
   initializeRosters,
 } from "@/lib/draftHelpers";
 import { fetchRankings } from "@/lib/rankings";
-import { fetchDraftedPlayers, Position } from "@/lib/draftPicks";
+import { fetchDraftedPlayers, Position, RosterSlot } from "@/lib/draftPicks";
 import { getErrorMessage } from "@/lib/util";
 
 // Configurable limits
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
     const scoringType = draftDetails.metadata.scoring_type || "std";
     const scoring = scoringMap[scoringType];
 
-    const rosterRequirements: Record<Position | "FLEX", number> = {
+    const rosterRequirements: Record<RosterSlot, number> = {
       QB: draftDetails.settings.slots_qb,
       RB: draftDetails.settings.slots_rb,
       WR: draftDetails.settings.slots_wr,
@@ -74,12 +75,15 @@ export async function GET(req: NextRequest) {
     const draftedPlayerNames = draftedPlayers.map(
       (pick) => pick.normalized_name
     );
+
     const availablePlayers = Object.keys(tiers).reduce((result, playerName) => {
       if (!draftedPlayerNames.includes(playerName)) {
         result[playerName] = tiers[playerName];
       }
       return result;
     }, {} as Record<string, any>);
+
+    console.log("Available Players", availablePlayers);
 
     // Limit available players to the top configured number
     const topAvailablePlayers = getLimitedAvailablePlayers(
@@ -99,35 +103,31 @@ export async function GET(req: NextRequest) {
 
     const totalRemainingNeeds = calculateTotalRemainingNeeds(currentRosters);
 
+    const nextPickRecommendations = userRosterId
+      ? getDraftRecommendations(
+          availablePlayers,
+          currentRosters[userRosterId].rosterPositionCounts,
+          rosterRequirements
+        )
+      : null;
+
     // Build and return the response
     return NextResponse.json({
       draftInfo: {
         status: draftDetails.status,
-        draft_id: draftDetails.draft_id,
-        draft_start_time: draftDetails.start_time,
-        user_team_info: {
-          draft_slot: draftSlot,
-          roster_id: userRosterId,
-        },
-        team_roster_requirements: rosterRequirements,
         draft_settings: {
           rounds: draftDetails.settings.rounds,
-          pick_timer: draftDetails.settings.pick_timer,
           teams: draftDetails.settings.teams,
         },
-        draft_order_preview: draftDetails.draft_order,
         league_metadata: {
-          name: draftDetails.metadata.name,
-          description: draftDetails.metadata.description,
           scoring_type: draftDetails.metadata.scoring_type,
         },
       },
-      topAvailablePlayers,
-      availablePlayersPerPositionPerTier,
+      nextPickRecommendations,
+      userRoster: userRosterId ? currentRosters[userRosterId] : null,
+      remainingPositionRequirements: totalRemainingNeeds,
       topAvailablePlayersByPosition,
       currentRosters,
-      userRoster: userRosterId ? currentRosters[userRosterId] : null,
-      rosterNeeds: totalRemainingNeeds,
     });
   } catch (error) {
     return NextResponse.json(

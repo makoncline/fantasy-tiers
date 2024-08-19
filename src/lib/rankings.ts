@@ -1,6 +1,10 @@
 import { parse } from "csv-parse";
 import fetch from "node-fetch";
-import { getErrorMessage, normalizePlayerName } from "@/lib/util";
+import {
+  getErrorMessage,
+  normalizePlayerName,
+  normalizePosition,
+} from "@/lib/util";
 
 export const suffixForScoring: Record<string, string> = {
   PPR: "-PPR",
@@ -55,10 +59,12 @@ export async function fetchRankings(scoring: string) {
           );
         }
 
+        const position = normalizePosition(row["Position"]);
+
         map[sanitizedName] = {
           rank: isNaN(rank) ? 0 : rank, // Default to 0 if rank is not a valid number
           tier: isNaN(tier) ? 0 : tier, // Default to 0 if tier is not a valid number
-          position: row["Position"] || "Unknown", // Assuming "Position" is a column in the CSV
+          position: position,
           name: sanitizedName,
         };
       }
