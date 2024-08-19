@@ -100,7 +100,7 @@ export function calculatePositionTierCounts(
 export function getTopPlayersByPosition(
   availablePlayers: Record<
     string,
-    { tier: number; position: string; rank: number; name: string }
+    { name: string; rank: number; tier: number; position: Position }
   >,
   limit = 3
 ) {
@@ -277,7 +277,7 @@ function isSlotFilled(slot: RosterSlot, roster: Record<Position, number>) {
 export function getKeyPositionRecommendations(
   availablePlayers: Record<
     string,
-    { rank: number; tier: number; position: Position }
+    { name: string; rank: number; tier: number; position: Position }
   >,
   teamNeeds: Record<RosterSlot, number>
 ) {
@@ -343,7 +343,7 @@ function getBestAvailablePlayer(
 function getFillRestOfRosterRecommendations(
   availablePlayers: Record<
     string,
-    { rank: number; tier: number; position: Position; name: string }
+    { name: string; rank: number; tier: number; position: Position }
   >,
   roster: Record<Position, number>
 ) {
@@ -368,7 +368,7 @@ function getFillRestOfRosterRecommendations(
 export function getDraftRecommendations(
   availablePlayers: Record<
     string,
-    { rank: number; tier: number; position: Position; name: string }
+    { name: string; rank: number; tier: number; position: Position }
   >,
   rosterPositionCounts: Record<RosterSlot, number>, // Updated type to match rosterPositionCounts
   teamNeeds: Record<RosterSlot, number> // Updated to use the calculated team needs
