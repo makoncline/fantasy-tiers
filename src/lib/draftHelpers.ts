@@ -186,44 +186,35 @@ export function calculateTeamNeedsAndCountsForSingleTeam(
   }[],
   rosterRequirements: Record<RosterSlot, number>
 ) {
+  // Copy of the roster requirements to track needs
   const teamNeeds = { ...rosterRequirements };
-  const defaultPositionCounts: Record<string, number> = {
+
+  // Initialize position counts without FLEX
+  const positionCounts: Record<Position, number> = {
     QB: 0,
     RB: 0,
     WR: 0,
     TE: 0,
-    FLEX: 0,
     K: 0,
     DEF: 0,
   };
 
-  const positionCounts = { ...defaultPositionCounts };
-
+  // Iterate over drafted players and adjust position counts and needs
   teamDraftedPlayers.forEach((player) => {
     const position = player.position;
 
+    // Increment position count
     positionCounts[position]++;
 
-    if (position in teamNeeds && teamNeeds[position] > 0) {
+    // Deduct from the primary position if there's a need
+    if (teamNeeds[position] > 0) {
       teamNeeds[position] -= 1;
-    } else if (["RB", "WR", "TE"].includes(position) && teamNeeds.FLEX > 0) {
-      // Deduct from FLEX if the primary slot is already filled
+    }
+    // Otherwise, deduct from FLEX if applicable
+    else if (["RB", "WR", "TE"].includes(position) && teamNeeds.FLEX > 0) {
       teamNeeds.FLEX -= 1;
     }
   });
-
-  // Adjust the logic to reflect the FLEX slot as available for any RB, WR, or TE
-  const totalFlexNeeded = rosterRequirements.FLEX;
-  const flexEligiblePositionsFilled = Math.max(
-    0,
-    positionCounts.RB +
-      positionCounts.WR +
-      positionCounts.TE -
-      (rosterRequirements.RB + rosterRequirements.WR + rosterRequirements.TE)
-  );
-
-  // Recalculate the team’s remaining FLEX needs based on eligible positions
-  teamNeeds.FLEX = Math.max(0, totalFlexNeeded - flexEligiblePositionsFilled);
 
   return {
     positionNeeds: teamNeeds,
