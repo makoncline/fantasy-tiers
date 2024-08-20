@@ -1,0 +1,38 @@
+name: Update Rankings
+
+# Run this job at midnight (00:00) every day
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+  # Allows you to manually trigger the workflow if needed
+  workflow_dispatch:
+
+jobs:
+  update-rankings:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22" # Make sure this matches your Node.js version
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run fetch-rankings script
+        run: npm run fetch-rankings
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Automated rankings update"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
