@@ -11,6 +11,13 @@ function ensureDirectoryExistence(filePath: string) {
   }
 }
 
+// Suffix for each scoring type in the URL
+const suffixForScoring: Record<ScoringType, string> = {
+  std: "",
+  half: "-HALF-PPR",
+  ppr: "-PPR",
+};
+
 // Function to fetch the raw CSV for a specific scoring type
 async function fetchAndSaveRankings(scoringType: ScoringType) {
   const folderPath = path.join(__dirname, "..", "..", "public", "rankings");
