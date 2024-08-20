@@ -1,5 +1,6 @@
 import { z } from "zod";
 import fetch from "node-fetch";
+import { ScoringType, scoringTypeSchema } from "./rankings";
 
 // Zod schema to validate the draft details
 const DraftDetailsSchema = z.object({
@@ -27,7 +28,7 @@ const DraftDetailsSchema = z.object({
   metadata: z.object({
     description: z.string().nullable(),
     name: z.string().nullable(),
-    scoring_type: z.string().nullable(),
+    scoring_type: scoringTypeSchema,
   }),
   created: z.number(),
   last_message_id: z.string().nullable(),

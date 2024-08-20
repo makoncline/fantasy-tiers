@@ -1,18 +1,22 @@
 import { parse } from "csv-parse";
-import fetch from "node-fetch";
-import {
-  getErrorMessage,
-  normalizePlayerName,
-  normalizePosition,
-} from "@/lib/util";
+import { getErrorMessage, normalizePlayerName } from "@/lib/util";
+import { z } from "zod";
+import fs from "fs";
+import path from "path";
 
-export const suffixForScoring: Record<string, string> = {
-  PPR: "-PPR",
-  HALF: "-HALF-PPR",
-  STANDARD: "",
+const scoringType = ["std", "ppr", "half"] as const;
+export const scoringTypeSchema = z.enum(scoringType);
+export type ScoringType = z.infer<typeof scoringTypeSchema>;
+
+export const suffixForScoring: Record<ScoringType, string> = {
+  std: "std-rankings.csv",
+  ppr: "ppr-rankings.csv",
+  half: "half_ppr-rankings.csv",
 };
 
 const parseCSV = async (rawStr: string) => {
+  // Assuming you have the CSV parsing logic here
+  // You can use your existing CSV parsing logic
   return new Promise<any[]>((resolve, reject) => {
     parse(rawStr, { columns: true, skip_empty_lines: true }, (err, records) => {
       if (err) reject(err);
@@ -21,18 +25,20 @@ const parseCSV = async (rawStr: string) => {
   });
 };
 
-export async function fetchRankings(scoring: string) {
-  if (!(scoring.toUpperCase() in suffixForScoring)) {
-    throw new Error("Invalid scoring type");
+export async function fetchRankings(scoring: ScoringType) {
+  const fileName = `${suffixForScoring[scoring]}`;
+  const filePath = path.resolve("./public/rankings", fileName);
+
+  console.log("~", filePath);
+
+  if (!fs.existsSync(filePath)) {
+    throw new Error(
+      `Rankings file for ${scoring} does not exist. Please run the fetch-rankings script first.`
+    );
   }
 
-  const url = `https://s3-us-west-1.amazonaws.com/fftiers/out/weekly-ALL${
-    suffixForScoring[scoring.toUpperCase()]
-  }.csv`;
-
   try {
-    const response = await fetch(url);
-    const csvText = await response.text();
+    const csvText = fs.readFileSync(filePath, "utf-8");
     const parsedData: any[] = await parseCSV(csvText);
 
     const map: Record<
@@ -59,12 +65,10 @@ export async function fetchRankings(scoring: string) {
           );
         }
 
-        const position = normalizePosition(row["Position"]);
-
         map[sanitizedName] = {
           rank: isNaN(rank) ? 0 : rank, // Default to 0 if rank is not a valid number
           tier: isNaN(tier) ? 0 : tier, // Default to 0 if tier is not a valid number
-          position: position,
+          position: row["Position"] || "Unknown", // Assuming "Position" is a column in the CSV
           name: sanitizedName,
         };
       }

@@ -10,19 +10,13 @@ import {
   getTopPlayersByPosition,
   initializeRosters,
 } from "@/lib/draftHelpers";
-import { fetchRankings } from "@/lib/rankings";
+import { fetchRankings, ScoringType } from "@/lib/rankings";
 import { fetchDraftedPlayers, Position, RosterSlot } from "@/lib/draftPicks";
 import { getErrorMessage } from "@/lib/util";
 
 // Configurable limits
 const AVAILABLE_PLAYERS_LIMIT = 10; // Limit for remaining available players
 const TOP_PLAYERS_BY_POSITION_LIMIT = 3; // Limit for top players by position
-
-const scoringMap: Record<string, string> = {
-  std: "standard",
-  ppr: "ppr",
-  half_ppr: "half",
-};
 
 export async function GET(req: NextRequest) {
   const draftId = req.nextUrl.searchParams.get("draft_id");
@@ -38,8 +32,7 @@ export async function GET(req: NextRequest) {
   try {
     // Fetch draft details
     const draftDetails = await fetchDraftDetails(draftId);
-    const scoringType = draftDetails.metadata.scoring_type || "std";
-    const scoring = scoringMap[scoringType];
+    const scoring = draftDetails.metadata.scoring_type;
 
     const rosterRequirements: Record<RosterSlot, number> = {
       QB: draftDetails.settings.slots_qb,

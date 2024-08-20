@@ -352,19 +352,30 @@ export function getDraftRecommendations(
   rosterPositionCounts: Record<Position, number>,
   teamNeeds: Record<RosterSlot, number>
 ) {
+  const keyPositions = limitPositionRecommendations(
+    getKeyPositionRecommendations(availablePlayers, teamNeeds)
+  );
+
   const recommendations = {
-    keyPositions: limitPositionRecommendations(
-      getKeyPositionRecommendations(availablePlayers, teamNeeds)
-    ),
+    keyPositions,
     bestAvailable: limitPositionRecommendations(
       getBestAvailablePlayer(availablePlayers, rosterPositionCounts)
     ),
-    backups: limitPositionRecommendations(
-      getBackupRecommendations(availablePlayers, rosterPositionCounts)
-    ),
-    nonKeyPositions: limitPositionRecommendations(
-      getFillRestOfRosterRecommendations(availablePlayers, rosterPositionCounts)
-    ),
+    backups:
+      keyPositions.length > 0
+        ? []
+        : limitPositionRecommendations(
+            getBackupRecommendations(availablePlayers, rosterPositionCounts)
+          ),
+    nonKeyPositions:
+      keyPositions.length > 0
+        ? []
+        : limitPositionRecommendations(
+            getFillRestOfRosterRecommendations(
+              availablePlayers,
+              rosterPositionCounts
+            )
+          ),
   };
 
   // Limit to the top 3 recommendations per category
