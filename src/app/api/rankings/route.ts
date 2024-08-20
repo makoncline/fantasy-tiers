@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchRankings, suffixForScoring } from "@/lib/rankings";
 import { getErrorMessage } from "@/lib/util";
+import { fetchRankings, scoringTypeSchema } from "@/lib/rankings";
 
 export async function GET(req: NextRequest) {
-  const scoring = req.nextUrl.searchParams.get("scoring")?.toUpperCase();
+  const scoringParam = req.nextUrl.searchParams.get("scoring");
+  const scoring = scoringTypeSchema.safeParse(scoringParam);
 
-  if (scoring === undefined || !(scoring in suffixForScoring)) {
+  if (!scoring.success) {
     return NextResponse.json(
       { error: "Invalid scoring type" },
       { status: 400 }
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest) {
 
   try {
     // Use the shared fetchRankings function
-    const rankings = await fetchRankings(scoring);
+    const rankings = await fetchRankings(scoring.data);
     return NextResponse.json(rankings);
   } catch (error) {
     return NextResponse.json(

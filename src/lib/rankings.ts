@@ -4,15 +4,9 @@ import { z } from "zod";
 import fs from "fs";
 import path from "path";
 
-const scoringType = ["std", "ppr", "half"] as const;
-export const scoringTypeSchema = z.enum(scoringType);
+export const SCORING_TYPES = ["std", "ppr", "half"] as const;
+export const scoringTypeSchema = z.enum(SCORING_TYPES);
 export type ScoringType = z.infer<typeof scoringTypeSchema>;
-
-export const suffixForScoring: Record<ScoringType, string> = {
-  std: "std-rankings.csv",
-  ppr: "ppr-rankings.csv",
-  half: "half_ppr-rankings.csv",
-};
 
 const parseCSV = async (rawStr: string) => {
   // Assuming you have the CSV parsing logic here
@@ -26,14 +20,20 @@ const parseCSV = async (rawStr: string) => {
 };
 
 export async function fetchRankings(scoring: ScoringType) {
-  const fileName = `${suffixForScoring[scoring]}`;
-  const filePath = path.resolve("./public/rankings", fileName);
-
-  console.log("~", filePath);
+  const fileName = `${scoring}-rankings.csv`;
+  const metadataFileName = `${scoring}-metadata.json`;
+  const rankingsDir = path.resolve("./public/rankings");
+  const filePath = path.resolve(rankingsDir, fileName);
+  const metadataPath = path.resolve(rankingsDir, metadataFileName);
 
   if (!fs.existsSync(filePath)) {
     throw new Error(
       `Rankings file for ${scoring} does not exist. Please run the fetch-rankings script first.`
+    );
+  }
+  if (!fs.existsSync(metadataPath)) {
+    throw new Error(
+      `Metadata file for ${scoring} does not exist. Please run the fetch-rankings script first.`
     );
   }
 
@@ -41,7 +41,10 @@ export async function fetchRankings(scoring: ScoringType) {
     const csvText = fs.readFileSync(filePath, "utf-8");
     const parsedData: any[] = await parseCSV(csvText);
 
-    const map: Record<
+    const metadata = JSON.parse(fs.readFileSync(metadataPath, "utf-8"));
+    const lastModified = metadata.lastModified;
+
+    const players: Record<
       string,
       { rank: number; tier: number; position: string; name: string }
     > = {};
@@ -65,7 +68,7 @@ export async function fetchRankings(scoring: ScoringType) {
           );
         }
 
-        map[sanitizedName] = {
+        players[sanitizedName] = {
           rank: isNaN(rank) ? 0 : rank, // Default to 0 if rank is not a valid number
           tier: isNaN(tier) ? 0 : tier, // Default to 0 if tier is not a valid number
           position: row["Position"] || "Unknown", // Assuming "Position" is a column in the CSV
@@ -74,7 +77,7 @@ export async function fetchRankings(scoring: ScoringType) {
       }
     });
 
-    return map;
+    return { lastModified, players };
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { fetchDraftDetails } from "@/lib/draftDetails";
 import {
   calculatePositionTierCounts,
-  calculateTeamNeedsAndCountsForSingleTeam,
   calculateTotalRemainingNeeds,
   getDraftedTeams,
   getDraftRecommendations,
@@ -10,8 +9,8 @@ import {
   getTopPlayersByPosition,
   initializeRosters,
 } from "@/lib/draftHelpers";
-import { fetchRankings, ScoringType } from "@/lib/rankings";
-import { fetchDraftedPlayers, Position, RosterSlot } from "@/lib/draftPicks";
+import { fetchRankings } from "@/lib/rankings";
+import { fetchDraftedPlayers, RosterSlot } from "@/lib/draftPicks";
 import { getErrorMessage } from "@/lib/util";
 
 // Configurable limits
@@ -69,12 +68,15 @@ export async function GET(req: NextRequest) {
       (pick) => pick.normalized_name
     );
 
-    const availablePlayers = Object.keys(tiers).reduce((result, playerName) => {
-      if (!draftedPlayerNames.includes(playerName)) {
-        result[playerName] = tiers[playerName];
-      }
-      return result;
-    }, {} as Record<string, any>);
+    const availablePlayers = Object.keys(tiers.players).reduce(
+      (result, playerName) => {
+        if (!draftedPlayerNames.includes(playerName)) {
+          result[playerName] = tiers.players[playerName];
+        }
+        return result;
+      },
+      {} as Record<string, any>
+    );
 
     // Limit available players to the top configured number
     const topAvailablePlayers = getLimitedAvailablePlayers(
@@ -114,6 +116,7 @@ export async function GET(req: NextRequest) {
           scoring_type: draftDetails.metadata.scoring_type,
         },
       },
+      tiersLastModified: tiers.lastModified,
       nextPickRecommendations,
       userRoster: userRosterId ? currentRosters[userRosterId] : null,
       remainingPositionRequirements: totalRemainingNeeds,
