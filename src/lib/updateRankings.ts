@@ -20,7 +20,7 @@ function ensureDirectoryExistence(filePath: string) {
 }
 
 // Function to fetch the raw CSV for a specific scoring type
-async function fetchAndSaveRankings(scoringType: string) {
+async function fetchAndSaveRankings(scoringType: ScoringType) {
   const folderPath = path.join(__dirname, "..", "..", "public", "rankings");
   const filePath = path.join(folderPath, `${scoringType}-rankings.csv`);
 
