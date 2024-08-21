@@ -4,7 +4,7 @@ import fetch from "node-fetch";
 import { SCORING_TYPES, ScoringType } from "./rankings";
 
 // Constants for file paths
-const RANKINGS_DIR = path.resolve("./public/data/rankings");
+export const RANKINGS_DIR = path.resolve("./public/data/rankings");
 export const RAW_RANKINGS_FILE_PATHS: Record<ScoringType, string> = {
   std: path.resolve(RANKINGS_DIR, "std-rankings-raw.csv"),
   ppr: path.resolve(RANKINGS_DIR, "ppr-rankings-raw.csv"),

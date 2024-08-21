@@ -1,5 +1,6 @@
-import { DraftedPlayer, Position, RosterSlot } from "./draftPicks";
+import { DraftPick, Position, POSITIONS, RosterSlot } from "./draftPicks";
 import { DraftDetails } from "./draftDetails";
+import { RankedPlayer } from "./getPlayers";
 
 const RECCOMENDATION_LIMIT = 6;
 export const KEY_ROSTER_SLOTS = ["RB", "WR", "TE", "QB", "FLEX"] as const;
@@ -13,7 +14,7 @@ export const POSITION_LIMITS = {
   DEF: 1,
 } as const;
 export const POSITION_RECOMMENDATION_LIMIT = 2;
-const ZERO_POSITION_COUNTS: Record<Position, number> = {
+export const ZERO_POSITION_COUNTS: Record<Position, number> = {
   QB: 0,
   RB: 0,
   WR: 0,
@@ -21,7 +22,7 @@ const ZERO_POSITION_COUNTS: Record<Position, number> = {
   K: 0,
   DEF: 0,
 };
-const ZERO_ROSTER_SLOT_COUNTS: Record<RosterSlot, number> = {
+export const ZERO_ROSTER_SLOT_COUNTS: Record<RosterSlot, number> = {
   ...ZERO_POSITION_COUNTS,
   FLEX: 0,
 };
@@ -102,30 +103,21 @@ export function calculatePositionTierCounts(
 }
 
 export function getTopPlayersByPosition(
-  availablePlayers: Record<
-    string,
-    { name: string; rank: number; tier: number; position: Position }
-  >,
+  availablePlayers: RankedPlayer[],
   limit = 3
 ) {
-  const topPlayersByPosition: Record<
-    string,
-    { name: string; rank: number; tier: number }[]
-  > = {};
-
   // Group players by position
-  Object.values(availablePlayers).forEach((player) => {
-    const { position, tier, name, rank } = player;
-
-    if (!topPlayersByPosition[position]) {
-      topPlayersByPosition[position] = [];
-    }
-
-    topPlayersByPosition[position].push({ name, rank, tier });
-  });
+  const topPlayersByPosition: Record<Position, RankedPlayer[]> =
+    availablePlayers.reduce((acc, player) => {
+      if (!acc[player.position]) {
+        acc[player.position] = [];
+      }
+      acc[player.position].push(player);
+      return acc;
+    }, {} as Record<Position, RankedPlayer[]>);
 
   // Sort players within each position by rank and limit to the top X players
-  Object.keys(topPlayersByPosition).forEach((position) => {
+  POSITIONS.forEach((position) => {
     topPlayersByPosition[position] = topPlayersByPosition[position]
       .sort((a, b) => a.rank - b.rank) // Sort by rank
       .slice(0, limit); // Get the top players based on the limit
@@ -149,45 +141,17 @@ export function getLimitedAvailablePlayers(
   return sortedPlayers;
 }
 
-export function getDraftedTeams(
-  draftId: string,
-  draftedPlayers: DraftedPlayer[],
-  draftDetails: any
-) {
-  const draftedTeams: Record<
-    string,
-    {
-      round: number;
-      pick_no: number;
-      player_name: string;
-      position: Position;
-      bye_week: string | null;
-    }[]
-  > = {};
-
-  draftedPlayers.forEach((player) => {
-    const teamId = draftDetails.slot_to_roster_id[player.draft_slot];
-    if (!draftedTeams[teamId]) {
-      draftedTeams[teamId] = [];
-    }
-
-    draftedTeams[teamId].push({
-      round: player.round,
-      pick_no: player.pick_no,
-      player_name: player.normalized_name!,
-      position: player.metadata.position,
-      bye_week: player.bye_week ?? null,
-    });
-  });
-
-  return draftedTeams;
+export function groupDraftPicksByRoster(draftPicks: DraftPick[]) {
+  return draftPicks.reduce<Record<string, DraftPick[]>>((teams, player) => {
+    const draft_slot = player.draft_slot;
+    teams[draft_slot] = teams[draft_slot] || [];
+    teams[draft_slot].push(player);
+    return teams;
+  }, {});
 }
 
 export function calculateTeamNeedsAndCountsForSingleTeam(
   teamDraftedPlayers: {
-    round: number;
-    pick_no: number;
-    player_name: string;
     position: Position;
   }[],
   rosterRequirements: Record<RosterSlot, number>
@@ -219,6 +183,39 @@ export function calculateTeamNeedsAndCountsForSingleTeam(
     positionNeeds: teamNeeds,
     positionCounts,
   };
+}
+
+// Function to calculate position needs based on drafted players
+export function calculatePositionNeeds(
+  rosterRequirements: Record<RosterSlot, number>,
+  teamDraftedPlayers: { position: Position | null }[]
+): Record<RosterSlot, number> {
+  const teamNeeds = { ...rosterRequirements };
+
+  teamDraftedPlayers.forEach((player) => {
+    const position = player.position;
+    if (position) {
+      if (teamNeeds[position] > 0) {
+        teamNeeds[position] -= 1;
+      } else if (["RB", "WR", "TE"].includes(position) && teamNeeds.FLEX > 0) {
+        teamNeeds.FLEX -= 1;
+      }
+    }
+  });
+
+  return teamNeeds;
+}
+
+export function calculatePositionCounts(
+  teamDraftedPlayers: { position: Position | null }[]
+) {
+  const positionCounts = { ...ZERO_POSITION_COUNTS };
+  teamDraftedPlayers.forEach((player) => {
+    const position = player.position;
+    position && positionCounts[position]++;
+  });
+
+  return positionCounts;
 }
 
 export function calculateTotalRemainingNeeds(
@@ -258,10 +255,7 @@ function isSlotFilled(slot: RosterSlot, roster: Record<Position, number>) {
 }
 
 export function getKeyPositionRecommendations(
-  availablePlayers: Record<
-    string,
-    { name: string; rank: number; tier: number; position: Position }
-  >,
+  availablePlayers: RankedPlayer[],
   teamNeeds: Record<RosterSlot, number>
 ) {
   const positionsToTarget = new Set<Position>();
@@ -279,7 +273,7 @@ export function getKeyPositionRecommendations(
   }
 
   // Filter and sort available players based on the positionsToTarget set
-  const keyPositionPlayers = Object.values(availablePlayers)
+  const keyPositionPlayers = availablePlayers
     .filter((player) => positionsToTarget.has(player.position))
     .sort((a, b) => a.tier - b.tier || a.rank - b.rank); // Sort by tier first, then rank
 
@@ -289,13 +283,10 @@ export function getKeyPositionRecommendations(
 
 // Function to get recommendations for filling backup slots
 function getBackupRecommendations(
-  availablePlayers: Record<
-    string,
-    { name: string; rank: number; tier: number; position: Position }
-  >,
+  availablePlayers: RankedPlayer[],
   roster: Record<Position, number>
 ) {
-  return Object.values(availablePlayers)
+  return availablePlayers
     .filter((player) => {
       // Check if the position is already filled considering FLEX
       return (
@@ -308,13 +299,10 @@ function getBackupRecommendations(
 
 // Function to get best available players overall, considering position limits
 function getBestAvailablePlayer(
-  availablePlayers: Record<
-    string,
-    { name: string; rank: number; tier: number; position: Position }
-  >,
+  availablePlayers: RankedPlayer[],
   rosterPositionCounts: Record<Position, number>
 ) {
-  return Object.values(availablePlayers)
+  return availablePlayers
     .filter((player) => {
       // Only include players if their position hasn't reached the roster limit
       const currentCount = rosterPositionCounts[player.position] || 0;
@@ -324,10 +312,7 @@ function getBestAvailablePlayer(
 }
 
 function getFillRestOfRosterRecommendations(
-  availablePlayers: Record<
-    string,
-    { name: string; rank: number; tier: number; position: Position }
-  >,
+  availablePlayers: RankedPlayer[],
   roster: Record<Position, number>
 ) {
   // Get all positions that are not in the key positions and are not fully filled
@@ -347,10 +332,7 @@ function getFillRestOfRosterRecommendations(
 }
 
 export function getDraftRecommendations(
-  availablePlayers: Record<
-    string,
-    { name: string; rank: number; tier: number; position: Position }
-  >,
+  availablePlayers: RankedPlayer[],
   rosterPositionCounts: Record<Position, number>,
   teamNeeds: Record<RosterSlot, number>
 ) {

@@ -6,6 +6,7 @@ import { PLAYER_DATA_FILE_PATH, SleeperPlayerSchema } from "./parsePlayerData";
 import { TEAM_DATA_FILE_PATH, TeamSchema } from "./parseTeamData";
 import { RankingSchema } from "./parseRankingData";
 import { normalizePlayerName } from "./util";
+import { PositionEnum } from "./draftPicks";
 
 // Schema for rank and tier data only
 export const RankTierSchema = z.object({
@@ -24,7 +25,7 @@ const RankingsByScoringTypeSchema = z.object({
 export const PlayerSchema = z.object({
   player_id: z.string(),
   name: z.string(),
-  position: z.string().nullable(),
+  position: PositionEnum,
   team: z.string().nullable(),
   bye_week: z.string().nullable(),
 });

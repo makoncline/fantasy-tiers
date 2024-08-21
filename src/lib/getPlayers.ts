@@ -6,6 +6,7 @@ import {
   PlayerSchema,
   PlayerWithRankingsSchema,
 } from "./aggregatePlayerData";
+import { PositionEnum } from "./draftPicks";
 
 export const DraftedPlayerSchema = PlayerSchema.extend({
   rank: z.number().nullable(),
@@ -18,8 +19,8 @@ export const RankedPlayerSchema = PlayerSchema.extend({
   tier: z.number(),
 });
 
-type DraftedPlayer = z.infer<typeof DraftedPlayerSchema>;
-type RankedPlayer = z.infer<typeof RankedPlayerSchema>;
+export type DraftedPlayer = z.infer<typeof DraftedPlayerSchema>;
+export type RankedPlayer = z.infer<typeof RankedPlayerSchema>;
 
 // Load the aggregated player data as an object
 function loadAggregatePlayerData() {
@@ -28,7 +29,7 @@ function loadAggregatePlayerData() {
 }
 
 // Function to get players by scoring type with nullable rank/tier
-export function getDraftedPlayersByScoringType(
+export function getPlayersByScoringType(
   scoringType: ScoringType
 ): Record<string, DraftedPlayer> {
   const aggregatePlayerData = loadAggregatePlayerData();
@@ -48,13 +49,5 @@ export function getDraftedPlayersByScoringType(
   return draftedPlayers;
 }
 
-// Function to get only players with a valid rank and tier
-export function getRankedPlayersByScoringType(
-  scoringType: ScoringType
-): RankedPlayer[] {
-  const draftedPlayers = getDraftedPlayersByScoringType(scoringType);
-  return Object.values(draftedPlayers).filter(
-    (player): player is RankedPlayer =>
-      player.rank !== null && player.tier !== null
-  );
-}
+export const isRankedPlayer = (player: DraftedPlayer): player is RankedPlayer =>
+  player.rank !== null && player.tier !== null;

@@ -1,20 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchDraftDetails } from "@/lib/draftDetails";
 import {
-  calculatePositionTierCounts,
   calculateTotalRemainingNeeds,
-  getDraftedTeams,
   getDraftRecommendations,
-  getLimitedAvailablePlayers,
   getTopPlayersByPosition,
-  initializeRosters,
+  calculatePositionNeeds,
+  calculatePositionCounts,
+  ZERO_POSITION_COUNTS,
 } from "@/lib/draftHelpers";
-import { fetchRankings } from "@/lib/rankings";
-import { fetchDraftedPlayers, RosterSlot } from "@/lib/draftPicks";
+import { fetchDraftPicks, RosterSlot } from "@/lib/draftPicks";
 import { getErrorMessage } from "@/lib/util";
+import {
+  DraftedPlayer,
+  getPlayersByScoringType,
+  isRankedPlayer,
+} from "@/lib/getPlayers";
+import { getRankingLastUpdatedDate } from "@/lib/parseRankingData";
 
 // Configurable limits
-const AVAILABLE_PLAYERS_LIMIT = 10; // Limit for remaining available players
 const TOP_PLAYERS_BY_POSITION_LIMIT = 3; // Limit for top players by position
 
 export async function GET(req: NextRequest) {
@@ -31,7 +34,6 @@ export async function GET(req: NextRequest) {
   try {
     // Fetch draft details
     const draftDetails = await fetchDraftDetails(draftId);
-    const scoring = draftDetails.metadata.scoring_type;
 
     const rosterRequirements: Record<RosterSlot, number> = {
       QB: draftDetails.settings.slots_qb,
@@ -43,68 +45,70 @@ export async function GET(req: NextRequest) {
       FLEX: draftDetails.settings.slots_flex,
     };
 
-    // Determine your draft slot and roster ID
+    const scoring = draftDetails.metadata.scoring_type;
+    const playersMap = getPlayersByScoringType(scoring);
+    const draftPicks = await fetchDraftPicks(draftId);
+    const draftedPlayers = draftPicks.map((pick) => ({
+      ...pick,
+      ...playersMap[pick.player_id],
+    }));
+    const draftedPlayerIds = draftedPlayers.map((player) => player.player_id);
+
+    const rankedPlayers = Object.values(playersMap).filter(isRankedPlayer);
+    const availableRankedPlayers = rankedPlayers.filter(
+      (player) => !draftedPlayerIds.includes(player.player_id)
+    );
+
+    const draftSlots = Array.from(
+      { length: draftDetails.settings.teams },
+      (_, i) => i + 1
+    );
+    const emptyRoster = {
+      players: [] as DraftedPlayer[],
+      remainingPositionRequirements: { ...rosterRequirements },
+      rosterPositionCounts: { ...ZERO_POSITION_COUNTS },
+    };
+    const currentRosters: Record<string, typeof emptyRoster> = {};
+    draftSlots.forEach((draftSlot) => {
+      const rosteredPlayers = draftedPlayers.filter(
+        (player) => player.draft_slot === draftSlot
+      );
+      const remainingPositionRequirements = calculatePositionNeeds(
+        rosterRequirements,
+        rosteredPlayers
+      );
+      const rosterPositionCounts = calculatePositionCounts(rosteredPlayers);
+      currentRosters[draftSlot] = {
+        players: rosteredPlayers,
+        remainingPositionRequirements,
+        rosterPositionCounts,
+      };
+    });
+
     const draftSlot = draftDetails.draft_order?.[userId];
     const userRosterId = draftSlot
       ? draftDetails.slot_to_roster_id[draftSlot]
       : null;
+    const userRoster = userRosterId ? currentRosters[userRosterId] : null;
+    const nextPickRecommendations = userRoster
+      ? getDraftRecommendations(
+          availableRankedPlayers,
+          userRoster.rosterPositionCounts,
+          userRoster.remainingPositionRequirements
+        )
+      : null;
 
-    // Fetch drafted players (empty if pre-draft)
-    const draftedPlayers =
-      draftDetails.status === "pre_draft"
-        ? []
-        : await fetchDraftedPlayers(draftId);
-
-    // Initialize current rosters with all teams, even if they haven’t picked yet
-    const currentRosters = initializeRosters(
-      draftDetails,
-      getDraftedTeams(draftId, draftedPlayers, draftDetails),
-      rosterRequirements
-    );
-
-    // Fetch and filter available players based on scoring
-    const tiers = await fetchRankings(scoring);
-    const draftedPlayerNames = draftedPlayers.map(
-      (pick) => pick.normalized_name
-    );
-
-    const availablePlayers = Object.keys(tiers.players).reduce(
-      (result, playerName) => {
-        if (!draftedPlayerNames.includes(playerName)) {
-          result[playerName] = tiers.players[playerName];
-        }
-        return result;
-      },
-      {} as Record<string, any>
-    );
-
-    // Limit available players to the top configured number
-    const topAvailablePlayers = getLimitedAvailablePlayers(
-      availablePlayers,
-      AVAILABLE_PLAYERS_LIMIT
-    );
-
-    // Calculate position tier counts for remaining available players
-    const availablePlayersPerPositionPerTier =
-      calculatePositionTierCounts(availablePlayers);
-
-    // Get top players by position with the configured limit
+    // // Get top players by position with the configured limit
     const topAvailablePlayersByPosition = getTopPlayersByPosition(
-      availablePlayers,
+      availableRankedPlayers,
       TOP_PLAYERS_BY_POSITION_LIMIT
     );
 
     const totalRemainingNeeds = calculateTotalRemainingNeeds(currentRosters);
 
-    const nextPickRecommendations = userRosterId
-      ? getDraftRecommendations(
-          availablePlayers,
-          currentRosters[userRosterId].rosterPositionCounts,
-          currentRosters[userRosterId].remainingPositionRequirements // Pass in the calculated team needs
-        )
-      : null;
+    const rankingsLastUpdated = getRankingLastUpdatedDate(scoring);
 
-    // Build and return the response
+    // // Build and return the response
     return NextResponse.json({
       draftInfo: {
         status: draftDetails.status,
@@ -116,7 +120,7 @@ export async function GET(req: NextRequest) {
           scoring_type: draftDetails.metadata.scoring_type,
         },
       },
-      tiersLastModified: tiers.lastModified,
+      tiersLastModified: rankingsLastUpdated,
       nextPickRecommendations,
       userRoster: userRosterId ? currentRosters[userRosterId] : null,
       remainingPositionRequirements: totalRemainingNeeds,
