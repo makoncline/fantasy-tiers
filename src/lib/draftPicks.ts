@@ -1,6 +1,8 @@
 import { z } from "zod";
 import fetch from "node-fetch";
 import { normalizePlayerName } from "@/lib/util";
+import fs from "fs";
+import path from "path";
 
 const POSITIONS = ["QB", "RB", "WR", "TE", "K", "DEF"] as const;
 export const PositionEnum = z.enum(POSITIONS);
@@ -18,15 +20,31 @@ export const DraftedPlayerSchema = z.object({
     first_name: z.string(),
     last_name: z.string(),
     position: PositionEnum,
+    team: z.string().nullable(),
   }),
   pick_no: z.number(),
   player_id: z.string(),
   normalized_name: z.string().optional(), // We add this manually later, so it’s optional
+  bye_week: z.string().optional(),
 });
 
 export type DraftedPlayer = z.infer<typeof DraftedPlayerSchema>;
 
 export const DraftedPlayersSchema = z.array(DraftedPlayerSchema);
+
+function loadTeamData() {
+  const filePath = path.resolve(
+    process.cwd(),
+    "public",
+    "data",
+    "nfl-teams.json"
+  );
+  const rawData = fs.readFileSync(filePath, "utf-8");
+  return JSON.parse(rawData) as Record<
+    string,
+    { metadata: { bye_week: string } }
+  >;
+}
 
 export async function fetchDraftedPlayers(
   draftId: string
@@ -54,13 +72,23 @@ export async function fetchDraftedPlayers(
     );
   }
 
+  const teamData = loadTeamData();
   // Add normalized name and handle cases where first_name or last_name are missing
-  return parsedData.data.map((player) => ({
-    ...player,
-    normalized_name: normalizePlayerName(
+  return parsedData.data.map((player) => {
+    const normalizedName = normalizePlayerName(
       `${player.metadata.first_name ?? ""} ${
         player.metadata.last_name ?? ""
-      }`.trim() // Handle missing names
-    ),
-  }));
+      }`.trim()
+    );
+
+    const byeWeek = player.metadata.team
+      ? parseInt(teamData[player.metadata.team]?.metadata.bye_week ?? "0", 10)
+      : undefined; // Get the bye week if available
+
+    return {
+      ...player,
+      normalized_name: normalizedName,
+      bye_week: byeWeek?.toString(),
+    };
+  });
 }

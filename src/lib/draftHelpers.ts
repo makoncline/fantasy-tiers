@@ -161,6 +161,7 @@ export function getDraftedTeams(
       pick_no: number;
       player_name: string;
       position: Position;
+      bye_week: string | null;
     }[]
   > = {};
 
@@ -175,6 +176,7 @@ export function getDraftedTeams(
       pick_no: player.pick_no,
       player_name: player.normalized_name!,
       position: player.metadata.position,
+      bye_week: player.bye_week ?? null,
     });
   });
 

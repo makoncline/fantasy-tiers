@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "fetch-rankings": "npx tsx src/lib/updateRankings.ts"
+    "fetch-rankings": "npx tsx src/lib/updateRankings.ts",
+    "fetch-teams": "npx tsx src/lib/updateTeams.ts",
+    "fetch-players": "npx tsx src/lib/updatePlayers.ts"
   },
   "dependencies": {
     "csv-parse": "^5.5.6",
