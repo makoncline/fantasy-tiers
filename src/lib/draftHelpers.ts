@@ -118,9 +118,11 @@ export function getTopPlayersByPosition(
 
   // Sort players within each position by rank and limit to the top X players
   POSITIONS.forEach((position) => {
-    topPlayersByPosition[position] = topPlayersByPosition[position]
-      .sort((a, b) => a.rank - b.rank) // Sort by rank
-      .slice(0, limit); // Get the top players based on the limit
+    if (topPlayersByPosition[position]) {
+      topPlayersByPosition[position] = topPlayersByPosition[position]
+        .sort((a, b) => a.rank - b.rank) // Sort by rank
+        .slice(0, limit); // Get the top players based on the limit
+    }
   });
 
   return topPlayersByPosition;

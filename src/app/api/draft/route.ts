@@ -103,6 +103,7 @@ export async function GET(req: NextRequest) {
       availableRankedPlayers,
       TOP_PLAYERS_BY_POSITION_LIMIT
     );
+    console.log(topAvailablePlayersByPosition);
 
     const totalRemainingNeeds = calculateTotalRemainingNeeds(currentRosters);
 

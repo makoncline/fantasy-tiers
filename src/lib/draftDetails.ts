@@ -54,6 +54,10 @@ export async function fetchDraftDetails(draftId: string) {
     jsonData.draft_order = {};
   }
 
+  if (jsonData.metadata && jsonData.metadata.scoring_type === "half_ppr") {
+    jsonData.metadata.scoring_type = "half";
+  }
+
   // Validate the response using Zod
   const parsedData = DraftDetailsSchema.safeParse(jsonData);
   if (!parsedData.success) {
