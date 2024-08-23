@@ -2,9 +2,8 @@ import fs from "fs";
 import path from "path";
 import { parse } from "csv-parse";
 import { z } from "zod";
-import { SCORING_TYPES, ScoringType } from "./rankings";
 import { normalizePlayerName } from "./util";
-import { PositionEnum } from "./draftPicks";
+import { ScoringType, PositionEnum, SCORING_TYPES } from "./schemas";
 
 // Constants for file paths
 const RANKINGS_DIR = path.resolve("./public/data/rankings");

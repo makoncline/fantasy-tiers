@@ -27,8 +27,6 @@ const PlayerSchema = z.object({
   team: z.string().nullable(),
 });
 
-// Define types for both schemas
-type RawPlayer = z.infer<typeof RawPlayerSchema>;
 type Player = z.infer<typeof PlayerSchema>;
 
 // Function to fetch player data from Sleeper API

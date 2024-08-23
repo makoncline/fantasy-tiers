@@ -3,7 +3,6 @@ import {
   DraftedPlayer,
   PlayerWithRankingsSchema,
   RankedPlayer,
-  RankedPlayerSchema,
   ScoringType,
 } from "./schemas";
 

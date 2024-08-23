@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getErrorMessage } from "@/lib/util";
-import { fetchRankings, scoringTypeSchema } from "@/lib/rankings";
+import { fetchRankings } from "@/lib/rankings";
+import { scoringTypeSchema } from "@/lib/schemas";
 
 export async function GET(req: NextRequest) {
   const scoringParam = req.nextUrl.searchParams.get("scoring");

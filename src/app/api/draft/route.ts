@@ -12,7 +12,7 @@ import { fetchDraftPicks } from "@/lib/draftPicks";
 import { getErrorMessage } from "@/lib/util";
 import { getRankingLastUpdatedDate } from "@/lib/parseRankingData";
 import { DraftedPlayer, RosterSlot } from "@/lib/schemas";
-import { getPlayersByScoringType, isRankedPlayer } from "@/lib/getPlayerss";
+import { isRankedPlayer } from "@/lib/getPlayerss";
 import { getPlayersByScoringTypeServer } from "@/lib/getPlayersServer";
 
 // Configurable limits

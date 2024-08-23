@@ -1,7 +1,4 @@
 import { z } from "zod";
-import { normalizePlayerName } from "@/lib/util";
-import fs from "fs";
-import path from "path";
 import { DraftPick, DraftPickSchema } from "./schemas";
 
 export async function fetchDraftPicks(draftId: string): Promise<DraftPick[]> {

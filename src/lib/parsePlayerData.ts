@@ -23,7 +23,6 @@ export const SleeperPlayerSchema = z.object({
 });
 
 // Define types for both schemas
-type RawPlayer = z.infer<typeof RawPlayerSchema>;
 export type SleeperPlayer = z.infer<typeof SleeperPlayerSchema>;
 
 // Constants
