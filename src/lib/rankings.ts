@@ -1,12 +1,8 @@
 import { parse } from "csv-parse";
 import { getErrorMessage, normalizePlayerName } from "@/lib/util";
-import { z } from "zod";
 import fs from "fs";
 import path from "path";
-
-export const SCORING_TYPES = ["std", "ppr", "half"] as const;
-export const scoringTypeSchema = z.enum(SCORING_TYPES);
-export type ScoringType = z.infer<typeof scoringTypeSchema>;
+import { ScoringType } from "./schemas";
 
 const parseCSV = async (rawStr: string) => {
   // Assuming you have the CSV parsing logic here

@@ -1,43 +1,16 @@
 import fs from "fs";
 import path from "path";
 import { z } from "zod";
-import { SCORING_TYPES, ScoringType } from "./rankings";
 import { PLAYER_DATA_FILE_PATH, SleeperPlayerSchema } from "./parsePlayerData";
 import { TEAM_DATA_FILE_PATH, TeamSchema } from "./parseTeamData";
-import { RankingSchema } from "./parseRankingData";
 import { normalizePlayerName } from "./util";
-import { PositionEnum } from "./draftPicks";
-
-// Schema for rank and tier data only
-export const RankTierSchema = z.object({
-  rank: z.number(),
-  tier: z.number(),
-});
-
-// Schema for the rankings by scoring type
-const RankingsByScoringTypeSchema = z.object({
-  std: RankTierSchema.nullable(),
-  ppr: RankTierSchema.nullable(),
-  half: RankTierSchema.nullable(),
-});
-
-// Schema for the final player data
-export const PlayerSchema = z.object({
-  player_id: z.string(),
-  name: z.string(),
-  position: PositionEnum,
-  team: z.string().nullable(),
-  bye_week: z.string().nullable(),
-});
-
-export const PlayerWithRankingsSchema = PlayerSchema.extend({
-  rankingsByScoringType: RankingsByScoringTypeSchema,
-});
-
-// Path to the final aggregated player data file
-export const AGGREGATE_PLAYER_DATA_FILE_PATH = path.resolve(
-  "./public/data/aggregate-player-data.json"
-);
+import {
+  PlayerWithRankingsSchema,
+  RankTierSchema,
+  SCORING_TYPES,
+  ScoringType,
+} from "./schemas";
+import { AGGREGATE_PLAYER_DATA_FILE_PATH } from "./getPlayersServer";
 
 // Function to aggregate all parsed data into the final player data
 function aggregatePlayerData() {

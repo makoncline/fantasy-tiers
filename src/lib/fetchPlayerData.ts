@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import fetch from "node-fetch";
 
 // Constants
 const PLAYER_API_URL = "https://api.sleeper.app/v1/players/nfl";

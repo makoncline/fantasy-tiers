@@ -1,6 +1,11 @@
-import { DraftPick, Position, POSITIONS, RosterSlot } from "./draftPicks";
 import { DraftDetails } from "./draftDetails";
-import { RankedPlayer } from "./getPlayers";
+import {
+  RosterSlot,
+  POSITIONS,
+  DraftPick,
+  Position,
+  RankedPlayer,
+} from "./schemas";
 
 const RECCOMENDATION_LIMIT = 6;
 export const KEY_ROSTER_SLOTS = ["RB", "WR", "TE", "QB", "FLEX"] as const;
@@ -377,20 +382,10 @@ export function getDraftRecommendations(
   return recommendations;
 }
 
-function limitPositionRecommendations(
-  recommendations: {
-    name: string;
-    rank: number;
-    tier: number;
-    position: Position;
-  }[]
-) {
-  const limitedRecommendations: {
-    name: string;
-    rank: number;
-    tier: number;
-    position: Position;
-  }[] = [];
+export type Recommendations = ReturnType<typeof getDraftRecommendations>;
+
+function limitPositionRecommendations(recommendations: RankedPlayer[]) {
+  const limitedRecommendations: RankedPlayer[] = [];
   const positionCount = { ...ZERO_POSITION_COUNTS };
 
   for (const recommendation of recommendations) {

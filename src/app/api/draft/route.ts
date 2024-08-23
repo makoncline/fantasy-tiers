@@ -8,14 +8,12 @@ import {
   calculatePositionCounts,
   ZERO_POSITION_COUNTS,
 } from "@/lib/draftHelpers";
-import { fetchDraftPicks, RosterSlot } from "@/lib/draftPicks";
+import { fetchDraftPicks } from "@/lib/draftPicks";
 import { getErrorMessage } from "@/lib/util";
-import {
-  DraftedPlayer,
-  getPlayersByScoringType,
-  isRankedPlayer,
-} from "@/lib/getPlayers";
 import { getRankingLastUpdatedDate } from "@/lib/parseRankingData";
+import { DraftedPlayer, RosterSlot } from "@/lib/schemas";
+import { getPlayersByScoringType, isRankedPlayer } from "@/lib/getPlayerss";
+import { getPlayersByScoringTypeServer } from "@/lib/getPlayersServer";
 
 // Configurable limits
 const TOP_PLAYERS_BY_POSITION_LIMIT = 3; // Limit for top players by position
@@ -46,7 +44,7 @@ export async function GET(req: NextRequest) {
     };
 
     const scoring = draftDetails.metadata.scoring_type;
-    const playersMap = getPlayersByScoringType(scoring);
+    const playersMap = getPlayersByScoringTypeServer(scoring);
     const draftPicks = await fetchDraftPicks(draftId);
     const draftedPlayers = draftPicks.map((pick) => ({
       ...pick,
@@ -103,7 +101,6 @@ export async function GET(req: NextRequest) {
       availableRankedPlayers,
       TOP_PLAYERS_BY_POSITION_LIMIT
     );
-    console.log(topAvailablePlayersByPosition);
 
     const totalRemainingNeeds = calculateTotalRemainingNeeds(currentRosters);
 

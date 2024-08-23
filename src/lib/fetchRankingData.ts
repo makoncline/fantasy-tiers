@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
-import fetch from "node-fetch";
-import { SCORING_TYPES, ScoringType } from "./rankings";
+import { ScoringType, SCORING_TYPES } from "./schemas";
 
 // Constants for file paths
 export const RANKINGS_DIR = path.resolve("./public/data/rankings");

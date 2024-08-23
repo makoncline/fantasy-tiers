@@ -1,34 +1,8 @@
 import { z } from "zod";
-import fetch from "node-fetch";
 import { normalizePlayerName } from "@/lib/util";
 import fs from "fs";
 import path from "path";
-
-export const POSITIONS = ["QB", "RB", "WR", "TE", "K", "DEF"] as const;
-export const PositionEnum = z.enum(POSITIONS);
-export type Position = z.infer<typeof PositionEnum>;
-
-const ROSTER_SLOTS = [...POSITIONS, "FLEX"] as const;
-export const RosterSlotEnum = z.enum(ROSTER_SLOTS);
-export type RosterSlot = z.infer<typeof RosterSlotEnum>;
-
-export const DraftPickSchema = z.object({
-  draft_slot: z.number(),
-  round: z.number(),
-  pick_no: z.number(),
-  player_id: z.string(),
-  // draft_id: z.string(),
-  // metadata: z.object({
-  //   first_name: z.string(),
-  //   last_name: z.string(),
-  //   position: PositionEnum,
-  //   team: z.string().nullable(),
-  // }),
-  // normalized_name: z.string().optional(), // We add this manually later, so it’s optional
-  // bye_week: z.string().optional(),
-});
-
-export type DraftPick = z.infer<typeof DraftPickSchema>;
+import { DraftPick, DraftPickSchema } from "./schemas";
 
 export async function fetchDraftPicks(draftId: string): Promise<DraftPick[]> {
   const response = await fetch(

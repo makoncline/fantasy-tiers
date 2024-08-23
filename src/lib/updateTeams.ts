@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import fetch from "node-fetch";
 
 async function fetchAndSaveTeams() {
   const url = "https://api.sleeper.app/teams/nfl";

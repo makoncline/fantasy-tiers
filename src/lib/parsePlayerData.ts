@@ -3,7 +3,7 @@ import path from "path";
 import { z } from "zod";
 import { normalizePlayerName } from "./util";
 import { RAW_PLAYER_DATA_FILE_PATH } from "./fetchPlayerData";
-import { PositionEnum } from "./draftPicks";
+import { PositionEnum } from "./schemas";
 
 // Schema for the raw player data from Sleeper
 const RawPlayerSchema = z.object({

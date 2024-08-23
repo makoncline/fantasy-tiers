@@ -1,6 +1,5 @@
 import { z } from "zod";
-import fetch from "node-fetch";
-import { ScoringType, scoringTypeSchema } from "./rankings";
+import { scoringTypeSchema } from "./schemas";
 
 // Zod schema to validate the draft details
 const DraftDetailsSchema = z.object({
