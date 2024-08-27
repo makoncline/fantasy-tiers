@@ -20,8 +20,8 @@ import PositionNeeds from "@/components/positionNeeds";
 import UserRoster from "@/components/userRoster";
 
 export default function DraftAssistantPage() {
-  const [userId, setUserId] = useState<string>("861000413091057664");
-  const [draftId, setDraftId] = useState<string>("1103093053620916225");
+  const [userId, setUserId] = useState<string>("");
+  const [draftId, setDraftId] = useState<string>("");
   const [recommendations, setRecommendations] =
     useState<Recommendations | null>(null);
   const [availablePlayers, setAvailablePlayers] = useState<DraftedPlayer[]>([]);
