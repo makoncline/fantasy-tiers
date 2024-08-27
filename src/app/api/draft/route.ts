@@ -84,10 +84,7 @@ export async function GET(req: NextRequest) {
     });
 
     const draftSlot = draftDetails.draft_order?.[userId];
-    const userRosterId = draftSlot
-      ? draftDetails.slot_to_roster_id[draftSlot]
-      : null;
-    const userRoster = userRosterId ? currentRosters[userRosterId] : null;
+    const userRoster = draftSlot ? currentRosters[draftSlot] : null;
     const nextPickRecommendations = userRoster
       ? getDraftRecommendations(
           availableRankedPlayers,
@@ -120,7 +117,7 @@ export async function GET(req: NextRequest) {
       },
       tiersLastModified: rankingsLastUpdated,
       nextPickRecommendations,
-      userRoster: userRosterId ? currentRosters[userRosterId] : null,
+      userRoster: userRoster,
       remainingPositionRequirements: totalRemainingNeeds,
       topAvailablePlayersByPosition,
       currentRosters,

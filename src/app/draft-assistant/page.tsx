@@ -20,8 +20,8 @@ import PositionNeeds from "@/components/positionNeeds";
 import UserRoster from "@/components/userRoster";
 
 export default function DraftAssistantPage() {
-  const [userId, setUserId] = useState<string>("");
-  const [draftId, setDraftId] = useState<string>("");
+  const [userId, setUserId] = useState<string>("861000413091057664");
+  const [draftId, setDraftId] = useState<string>("1103093053620916225");
   const [recommendations, setRecommendations] =
     useState<Recommendations | null>(null);
   const [availablePlayers, setAvailablePlayers] = useState<DraftedPlayer[]>([]);
@@ -114,10 +114,7 @@ export default function DraftAssistantPage() {
       });
 
       const draftSlot = draftDetails.draft_order?.[userId];
-      const userRosterId = draftSlot
-        ? draftDetails.slot_to_roster_id[draftSlot]
-        : null;
-      const userRoster = userRosterId ? currentRosters[userRosterId] : null;
+      const userRoster = draftSlot ? currentRosters[draftSlot] : null;
       setUserRoster(userRoster?.players);
       const nextPickRecommendations = userRoster
         ? getDraftRecommendations(
