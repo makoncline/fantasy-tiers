@@ -141,6 +141,17 @@ export default function DraftAssistantPage() {
     }
   };
 
+  const RefreshButton = () => {
+    return (
+      <button
+        onClick={fetchDraftData}
+        className="bg-blue-500 text-white px-4 py-2 rounded"
+        disabled={loading}
+      >
+        {loading ? "Loading..." : "Fetch Draft Data"}
+      </button>
+    );
+  };
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Fantasy Draft Assistant</h1>
@@ -162,17 +173,18 @@ export default function DraftAssistantPage() {
           onChange={(e) => setDraftId(e.target.value)}
         />
       </div>
-      <button
-        onClick={fetchDraftData}
-        className="bg-blue-500 text-white px-4 py-2 rounded"
-        disabled={loading}
-      >
-        {loading ? "Loading..." : "Fetch Draft Data"}
-      </button>
+      <RefreshButton />
 
       {error && <p className="text-red-500 mt-4">{error}</p>}
 
-      <details open className="mt-6">
+      <details open className="my-6">
+        <summary className="cursor-pointer text-xl font-bold mb-4">
+          Your Roster
+        </summary>
+        <UserRoster players={userRoster || []} />
+      </details>
+      <RefreshButton />
+      <details open className="my-6">
         <summary className="cursor-pointer text-xl font-bold mb-4">
           Position Needs
         </summary>
@@ -182,13 +194,8 @@ export default function DraftAssistantPage() {
           draftWideNeeds={draftWideNeeds}
         />
       </details>
-      <details open className="mt-6">
-        <summary className="cursor-pointer text-xl font-bold mb-4">
-          Your Roster
-        </summary>
-        <UserRoster players={userRoster || []} />
-      </details>
-      <details open className="mt-6">
+      <RefreshButton />
+      <details open className="my-6">
         <summary className="cursor-pointer text-xl font-bold mb-4">
           Recommendations
         </summary>
@@ -197,7 +204,8 @@ export default function DraftAssistantPage() {
           loading={loading}
         />
       </details>
-      <details className="mt-6">
+      <RefreshButton />
+      <details className="my-6">
         <summary className="cursor-pointer text-xl font-bold mb-4">
           Available Ranked Players
         </summary>
