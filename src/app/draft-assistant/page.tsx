@@ -10,17 +10,33 @@ import {
   calculatePositionCounts,
   ZERO_POSITION_COUNTS,
   Recommendations,
+  calculateTotalRemainingNeeds,
 } from "@/lib/draftHelpers";
 import { DraftedPlayer } from "@/lib/schemas";
 import { isRankedPlayer } from "@/lib/getPlayerss";
+import RecommendationsSection from "@/components/reccomendations";
+import AvailablePlayers from "@/components/availablePlayers";
+import PositionNeeds from "@/components/positionNeeds";
+import UserRoster from "@/components/userRoster";
 
 export default function DraftAssistantPage() {
   const [userId, setUserId] = useState<string>("");
   const [draftId, setDraftId] = useState<string>("");
   const [recommendations, setRecommendations] =
     useState<Recommendations | null>(null);
+  const [availablePlayers, setAvailablePlayers] = useState<DraftedPlayer[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [userPositionNeeds, setUserPositionNeeds] = useState<
+    Record<string, number>
+  >({});
+  const [userPositionCounts, setUserPositionCounts] = useState<
+    Record<string, number>
+  >({});
+  const [draftWideNeeds, setDraftWideNeeds] = useState<Record<string, number>>(
+    {}
+  );
+  const [userRoster, setUserRoster] = useState<DraftedPlayer[] | null>();
 
   const fetchDraftData = async () => {
     if (!userId || !draftId) {
@@ -52,10 +68,13 @@ export default function DraftAssistantPage() {
       }));
       const draftedPlayerIds = draftedPlayers.map((player) => player.player_id);
 
-      const rankedPlayers = Object.values(playersMap).filter(isRankedPlayer);
+      const rankedPlayers = Object.values(playersMap)
+        .filter(isRankedPlayer)
+        .sort((a, b) => a.rank - b.rank);
       const availableRankedPlayers = rankedPlayers.filter(
         (player) => !draftedPlayerIds.includes(player.player_id)
       );
+      setAvailablePlayers(availableRankedPlayers);
 
       // Generate rosters and recommendations
       const rosterRequirements = {
@@ -99,6 +118,7 @@ export default function DraftAssistantPage() {
         ? draftDetails.slot_to_roster_id[draftSlot]
         : null;
       const userRoster = userRosterId ? currentRosters[userRosterId] : null;
+      setUserRoster(userRoster?.players);
       const nextPickRecommendations = userRoster
         ? getDraftRecommendations(
             availableRankedPlayers,
@@ -108,6 +128,14 @@ export default function DraftAssistantPage() {
         : null;
 
       setRecommendations(nextPickRecommendations);
+
+      if (userRoster) {
+        setUserPositionNeeds(userRoster.remainingPositionRequirements);
+        setUserPositionCounts(userRoster.rosterPositionCounts);
+      }
+
+      const totalRemainingNeeds = calculateTotalRemainingNeeds(currentRosters);
+      setDraftWideNeeds(totalRemainingNeeds);
     } catch (error) {
       console.error("Error fetching draft data:", error);
       setError("Failed to load draft data.");
@@ -147,46 +175,40 @@ export default function DraftAssistantPage() {
 
       {error && <p className="text-red-500 mt-4">{error}</p>}
 
-      <div className="mt-6">
-        <h2 className="text-xl font-bold mb-4">Next Pick Recommendations</h2>
-        {loading ? (
-          <p>Loading recommendations...</p>
-        ) : recommendations ? (
-          Object.entries(recommendations).map(([category, players]) => (
-            <div key={category} className="mb-6">
-              <h3 className="text-lg font-semibold mb-2 capitalize">
-                {category}
-              </h3>
-              <table className="min-w-full bg-white text-black">
-                <thead>
-                  <tr>
-                    <th className="py-2 px-4 border">Player</th>
-                    <th className="py-2 px-4 border">Position</th>
-                    <th className="py-2 px-4 border">Rank</th>
-                    <th className="py-2 px-4 border">Tier</th>
-                    <th className="py-2 px-4 border">Team</th>
-                    <th className="py-2 px-4 border">Bye Week</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {players.map((player) => (
-                    <tr key={player.name} className="border">
-                      <td className="py-2 px-4 border">{player.name}</td>
-                      <td className="py-2 px-4 border">{player.position}</td>
-                      <td className="py-2 px-4 border">{player.rank}</td>
-                      <td className="py-2 px-4 border">{player.tier}</td>
-                      <td className="py-2 px-4 border">{player.team}</td>
-                      <td className="py-2 px-4 border">{player.bye_week}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ))
-        ) : (
-          <p>No recommendations available.</p>
-        )}
-      </div>
+      <details open className="mt-6">
+        <summary className="cursor-pointer text-xl font-bold mb-4">
+          Position Needs
+        </summary>
+        <PositionNeeds
+          userPositionNeeds={userPositionNeeds}
+          userPositionCounts={userPositionCounts}
+          draftWideNeeds={draftWideNeeds}
+        />
+      </details>
+      <details open className="mt-6">
+        <summary className="cursor-pointer text-xl font-bold mb-4">
+          Your Roster
+        </summary>
+        <UserRoster players={userRoster || []} />
+      </details>
+      <details open className="mt-6">
+        <summary className="cursor-pointer text-xl font-bold mb-4">
+          Recommendations
+        </summary>
+        <RecommendationsSection
+          recommendations={recommendations}
+          loading={loading}
+        />
+      </details>
+      <details className="mt-6">
+        <summary className="cursor-pointer text-xl font-bold mb-4">
+          Available Ranked Players
+        </summary>
+        <AvailablePlayers
+          availablePlayers={availablePlayers}
+          loading={loading}
+        />
+      </details>
     </div>
   );
 }
