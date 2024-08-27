@@ -163,6 +163,48 @@ export default function DraftAssistantPage() {
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
         />
+        <details className="mb-4">
+          <summary className="text-lg font-semibold cursor-pointer">
+            How to Find Your Sleeper User ID
+          </summary>
+          <div className="mt-2 p-4 bg-gray-800 border rounded text-white">
+            <p className="mb-2">
+              To manually find your Sleeper User ID, follow these steps:
+            </p>
+            <ol className="list-decimal list-inside mb-2">
+              <li className="mb-2">
+                Go to your web browser and visit the following URL:
+                <br />
+                <code className="block bg-gray-900 p-2 rounded mt-1 text-green-400">
+                  https://api.sleeper.app/v1/user/{"<your_username>"}
+                </code>
+              </li>
+              <li className="mt-2">
+                Replace <code>{"<your_username>"}</code> with your actual
+                Sleeper username. (e.g.,{" "}
+                <code>https://api.sleeper.app/v1/user/example</code>)
+              </li>
+              <li className="mt-2">
+                Press Enter, and you should see a JSON response.
+              </li>
+              <li className="mt-2">
+                Look for the <code>&quot;user_id&quot;</code> field in the JSON
+                response. It will look something like this:
+                <pre className="bg-gray-900 p-3 rounded mt-2 text-green-400">
+                  {'{\n  "user_id": "861000413091057664",\n  ...\n}'}
+                </pre>
+              </li>
+              <li className="mt-2">
+                Copy the value of <code>&quot;user_id&quot;</code>—this is your
+                Sleeper User ID.
+              </li>
+            </ol>
+            <p className="mt-2">
+              Use this User ID when prompted in the app to proceed with the
+              draft assistant features.
+            </p>
+          </div>
+        </details>
       </div>
       <div className="mb-4">
         <label className="block mb-2">Draft ID</label>
