@@ -12,6 +12,7 @@ const RawPlayerSchema = z.object({
   last_name: z.string(),
   position: z.string().nullable(),
   team: z.string().nullable(),
+  active: z.boolean(),
 });
 
 // Schema for the parsed player data with normalized name
@@ -37,6 +38,9 @@ export function parseAndSavePlayerData(rawData: any) {
   for (const key in rawData) {
     try {
       const rawPlayer = RawPlayerSchema.parse(rawData[key]);
+      if (!rawPlayer.active) {
+        continue;
+      }
       const normalized_name = normalizePlayerName(
         `${rawPlayer.first_name ?? ""} ${rawPlayer.last_name ?? ""}`.trim()
       );
