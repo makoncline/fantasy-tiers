@@ -19,8 +19,8 @@ const DraftDetailsSchema = z.object({
     slots_rb: z.number(),
     slots_qb: z.number(),
     slots_te: z.number(),
-    slots_k: z.number(),
-    slots_def: z.number(),
+    slots_k: z.number().optional().default(0),
+    slots_def: z.number().optional().default(0),
     slots_flex: z.number(),
     pick_timer: z.number(),
   }),
@@ -53,14 +53,18 @@ export async function fetchDraftDetails(draftId: string) {
     jsonData.draft_order = {};
   }
 
-  if (jsonData.metadata && jsonData.metadata.scoring_type === "half_ppr") {
+  if (
+    jsonData.metadata &&
+    (jsonData.metadata.scoring_type === "half_ppr" ||
+      jsonData.metadata.scoring_type === "dynasty_half_ppr")
+  ) {
     jsonData.metadata.scoring_type = "half";
   }
 
   // Validate the response using Zod
   const parsedData = DraftDetailsSchema.safeParse(jsonData);
   if (!parsedData.success) {
-    console.error(parsedData.error); // Log the error details for debugging
+    console.error(parsedData.error.errors);
     throw new Error(
       "fetchDraftDetails: Invalid data structure from Sleeper API"
     );
