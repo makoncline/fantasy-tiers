@@ -1,21 +1,30 @@
 import { z } from "zod";
-import { getPlayersByScoringType } from "./getPlayerss";
 import { PlayerWithRankingsSchema, ScoringType } from "./schemas";
+import { getPlayersByScoringType } from "./getPlayers";
 
-const AGGREGATE_PLAYER_DATA_URL = "/data/aggregate-player-data.json";
+// New function to get the URL path for client-side access
+export function getAggregateDataUrlPath(position: string): string {
+  return `/data/${position}-aggregate-players.json`;
+}
 
-// Client-side version of loadAggregatePlayerData
-export async function loadAggregatePlayerDataClient() {
-  const response = await fetch(AGGREGATE_PLAYER_DATA_URL);
+// Client-side function to load aggregate player data
+export async function loadAggregatePlayerDataClient(
+  position: string = "ALL"
+): Promise<Record<string, z.infer<typeof PlayerWithRankingsSchema>>> {
+  const url = getAggregateDataUrlPath(position);
+  const response = await fetch(url);
   if (!response.ok) {
-    throw new Error("Failed to load aggregate player data");
+    throw new Error(`Failed to load aggregate player data for ${position}`);
   }
   const data = await response.json();
   return z.record(PlayerWithRankingsSchema).parse(data);
 }
 
 // Client-side function to get players by scoring type
-export async function getPlayersByScoringTypeClient(scoringType: ScoringType) {
-  const aggregatePlayerData = await loadAggregatePlayerDataClient();
+export async function getPlayersByScoringTypeClient(
+  scoringType: ScoringType,
+  position: string = "ALL"
+) {
+  const aggregatePlayerData = await loadAggregatePlayerDataClient(position);
   return getPlayersByScoringType(scoringType, aggregatePlayerData);
 }

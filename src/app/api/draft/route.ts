@@ -12,7 +12,7 @@ import { fetchDraftPicks } from "@/lib/draftPicks";
 import { getErrorMessage } from "@/lib/util";
 import { getRankingLastUpdatedDate } from "@/lib/parseRankingData";
 import { DraftedPlayer, RosterSlot } from "@/lib/schemas";
-import { isRankedPlayer } from "@/lib/getPlayerss";
+import { isRankedPlayer } from "@/lib/getPlayers";
 import { getPlayersByScoringTypeServer } from "@/lib/getPlayersServer";
 
 // Configurable limits
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 
   if (!draftId || !userId) {
     return NextResponse.json(
-      { error: "draft_id, scoring, and user_id parameters are required" },
+      { error: "draft_id, and user_id parameters are required" },
       { status: 400 }
     );
   }
