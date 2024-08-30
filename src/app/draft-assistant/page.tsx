@@ -13,7 +13,7 @@ import {
   calculateTotalRemainingNeeds,
 } from "@/lib/draftHelpers";
 import { DraftedPlayer } from "@/lib/schemas";
-import { isRankedPlayer } from "@/lib/getPlayerss";
+import { isRankedPlayer } from "@/lib/getPlayers";
 import RecommendationsSection from "@/components/reccomendations";
 import AvailablePlayers from "@/components/availablePlayers";
 import PositionNeeds from "@/components/positionNeeds";

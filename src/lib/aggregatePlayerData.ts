@@ -7,10 +7,22 @@ import { normalizePlayerName } from "./util";
 import {
   PlayerWithRankingsSchema,
   RankTierSchema,
-  SCORING_TYPES,
   ScoringType,
 } from "./schemas";
-import { AGGREGATE_PLAYER_DATA_FILE_PATH } from "./getPlayersServer";
+import { POSITIONS_TO_SCORING_TYPES, RANKINGS_DIR } from "./fetchRankingData";
+
+export const AGGREGATE_DATA_DIR = path.resolve(process.cwd(), "public/data");
+
+// Add this function to get the aggregate data file path based on position
+export function getAggregateDataFilePath(position: string): string {
+  return path.join(AGGREGATE_DATA_DIR, `${position}-aggregate-players.json`);
+}
+
+function ensureDirectoryExists(dirPath: string) {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+}
 
 // Function to aggregate all parsed data into the final player data
 function aggregatePlayerData() {
@@ -24,77 +36,121 @@ function aggregatePlayerData() {
     .record(TeamSchema)
     .parse(JSON.parse(fs.readFileSync(TEAM_DATA_FILE_PATH, "utf-8")));
 
-  // Load and parse rankings for each scoring type and transform to an object keyed by player name
-  const rankingsData: Record<
-    ScoringType,
-    Record<string, z.infer<typeof RankTierSchema>>
-  > = SCORING_TYPES.reduce((acc, scoringType) => {
-    const filePath = path.resolve(
-      `./public/data/rankings/${scoringType}-rankings.json`
-    );
-    const parsedRankings = z
-      .array(
-        z.object({
-          rank: z.number(),
-          tier: z.number(),
-          name: z.string(),
-        })
-      )
-      .parse(JSON.parse(fs.readFileSync(filePath, "utf-8")));
+  const positionsToScoringTypes = Object.keys(POSITIONS_TO_SCORING_TYPES);
 
-    // Convert array to an object keyed by normalized player name
-    const rankingsByPlayerName = parsedRankings.reduce(
-      (nameAcc, playerRanking) => {
-        const normalizedName = normalizePlayerName(playerRanking.name);
-        nameAcc[normalizedName] = {
-          rank: playerRanking.rank,
-          tier: playerRanking.tier,
+  Object.entries(POSITIONS_TO_SCORING_TYPES).forEach(
+    ([position, scoringTypes]) => {
+      // Load and parse rankings for each scoring type and transform to an object keyed by player name
+      const rankingsData: Record<
+        ScoringType,
+        Record<string, z.infer<typeof RankTierSchema>>
+      > = scoringTypes.reduce((acc, scoringType) => {
+        const filePath = path.resolve(
+          RANKINGS_DIR,
+          `${position}-${scoringType}-rankings.json`
+        );
+        if (!fs.existsSync(filePath)) {
+          console.error(
+            `Rankings file for ${position} ${scoringType} does not exist.`
+          );
+          return acc;
+        }
+        const parsedRankings = z
+          .array(
+            z.object({
+              rank: z.number(),
+              tier: z.number(),
+              name: z.string(),
+            })
+          )
+          .parse(JSON.parse(fs.readFileSync(filePath, "utf-8")));
+
+        // Convert array to an object keyed by normalized player name
+        const rankingsByPlayerName = parsedRankings.reduce(
+          (nameAcc, playerRanking) => {
+            const normalizedName = normalizePlayerName(playerRanking.name);
+            nameAcc[normalizedName] = {
+              rank: playerRanking.rank,
+              tier: playerRanking.tier,
+            };
+            return nameAcc;
+          },
+          {} as Record<string, z.infer<typeof RankTierSchema>>
+        );
+
+        acc[scoringType] = rankingsByPlayerName;
+        return acc;
+      }, {} as Record<ScoringType, Record<string, z.infer<typeof RankTierSchema>>>);
+
+      // Combine all scoring types into a single set of player names
+      const rankedPlayerNames = new Set<string>();
+      Object.values(rankingsData).forEach((rankingsByScoringType) => {
+        Object.keys(rankingsByScoringType).forEach((name) =>
+          rankedPlayerNames.add(name)
+        );
+      });
+
+      console.log(`Processing ${position}`);
+
+      const finalPlayerData: Record<
+        string,
+        z.infer<typeof PlayerWithRankingsSchema>
+      > = {};
+
+      Array.from(rankedPlayerNames).forEach((playerName) => {
+        const player = Object.values(playerData).find(
+          (p) => normalizePlayerName(p.name) === playerName
+        );
+
+        if (!player) {
+          console.log(`Player not found in Sleeper data: ${playerName}`);
+          return;
+        }
+
+        // Build the rankings by scoring type
+        const rankingsByScoringType = {
+          std: scoringTypes.includes("std")
+            ? rankingsData.std?.[playerName] || null
+            : null,
+          ppr: scoringTypes.includes("ppr")
+            ? rankingsData.ppr?.[playerName] || null
+            : null,
+          half: scoringTypes.includes("half")
+            ? rankingsData.half?.[playerName] || null
+            : null,
         };
-        return nameAcc;
-      },
-      {} as Record<string, z.infer<typeof RankTierSchema>>
-    );
 
-    acc[scoringType] = rankingsByPlayerName;
-    return acc;
-  }, {} as Record<ScoringType, Record<string, z.infer<typeof RankTierSchema>>>);
+        // Assemble the final player object
+        const finalPlayer: z.infer<typeof PlayerWithRankingsSchema> = {
+          player_id: player.player_id,
+          name: player.name,
+          position: player.position,
+          team: player.team,
+          bye_week: player.team
+            ? teamData[player.team]?.bye_week || null
+            : null,
+          rankingsByScoringType,
+        };
 
-  // Combine all the parsed data into the final player data
-  const finalPlayerData: Record<
-    string,
-    z.infer<typeof PlayerWithRankingsSchema>
-  > = {};
+        finalPlayerData[finalPlayer.player_id] =
+          PlayerWithRankingsSchema.parse(finalPlayer);
+      });
 
-  for (const [playerId, player] of Object.entries(playerData)) {
-    // Handle the case where the team is not found in the teamData
-    const teamByeWeek = player.team
-      ? teamData[player.team]?.bye_week || null
-      : null;
+      // Ensure the directory exists before writing the file
+      ensureDirectoryExists(AGGREGATE_DATA_DIR);
 
-    // Build the rankings by scoring type based on the normalized player name
-    const rankingsByScoringType = {
-      std: rankingsData.std[player.name] || null,
-      ppr: rankingsData.ppr[player.name] || null,
-      half: rankingsData.half[player.name] || null,
-    };
+      // Update this part to use the new function
+      const outputFilePath = getAggregateDataFilePath(position);
 
-    // Assemble the final player object
-    finalPlayerData[playerId] = PlayerWithRankingsSchema.parse({
-      player_id: player.player_id,
-      name: player.name,
-      position: player.position,
-      team: player.team,
-      bye_week: teamByeWeek, // Ensured to be either a string or null
-      rankingsByScoringType,
-    });
-  }
-
-  // Save the final player data
-  fs.writeFileSync(
-    AGGREGATE_PLAYER_DATA_FILE_PATH,
-    JSON.stringify(finalPlayerData, null, 2)
+      fs.writeFileSync(
+        outputFilePath,
+        JSON.stringify(finalPlayerData, null, 2)
+      );
+      console.log(
+        `aggregated ${position} player data saved to ${outputFilePath}\n`
+      );
+    }
   );
-  console.log(`Final player data saved to ${AGGREGATE_PLAYER_DATA_FILE_PATH}`);
 }
 
 // Run the aggregation if this file is executed directly

@@ -3,15 +3,27 @@ import path from "path";
 import { parse } from "csv-parse";
 import { z } from "zod";
 import { normalizePlayerName } from "./util";
-import { ScoringType, PositionEnum, SCORING_TYPES } from "./schemas";
+import { ScoringType, PositionEnum } from "./schemas";
+import { POSITIONS_TO_SCORING_TYPES } from "./fetchRankingData";
 
 // Constants for file paths
 const RANKINGS_DIR = path.resolve("./public/data/rankings");
-export const RAW_RANKINGS_FILE_PATHS: Record<ScoringType, string> = {
-  std: path.resolve(RANKINGS_DIR, "std-rankings-raw.csv"),
-  ppr: path.resolve(RANKINGS_DIR, "ppr-rankings-raw.csv"),
-  half: path.resolve(RANKINGS_DIR, "half-rankings-raw.csv"),
-};
+export const RAW_RANKINGS_FILE_PATHS: Record<
+  string,
+  Record<ScoringType, string>
+> = {};
+
+for (const [position, scoringTypes] of Object.entries(
+  POSITIONS_TO_SCORING_TYPES
+)) {
+  RAW_RANKINGS_FILE_PATHS[position] = {} as Record<ScoringType, string>;
+  for (const scoringType of scoringTypes) {
+    RAW_RANKINGS_FILE_PATHS[position][scoringType] = path.resolve(
+      RANKINGS_DIR,
+      `${position}-${scoringType}-rankings-raw.csv`
+    );
+  }
+}
 
 // Define the Zod schema for the ranking row
 const RankingRowSchema = z.object({
@@ -42,11 +54,14 @@ async function parseCSV(filePath: string) {
   });
 }
 
-async function parseAndSaveRankings(scoringType: ScoringType) {
-  const filePath = RAW_RANKINGS_FILE_PATHS[scoringType];
+async function parseAndSaveRankings(
+  position: string,
+  scoringType: ScoringType
+) {
+  const filePath = RAW_RANKINGS_FILE_PATHS[position][scoringType];
   if (!fs.existsSync(filePath)) {
     throw new Error(
-      `Raw rankings file for ${scoringType} does not exist. Please fetch the rankings first.`
+      `Raw rankings file for ${position} ${scoringType} does not exist. Please fetch the rankings first.`
     );
   }
 
@@ -87,19 +102,26 @@ async function parseAndSaveRankings(scoringType: ScoringType) {
     // Save the parsed data to a JSON file
     const outputFilePath = path.resolve(
       RANKINGS_DIR,
-      `${scoringType}-rankings.json`
+      `${position}-${scoringType}-rankings.json`
     );
     fs.writeFileSync(outputFilePath, JSON.stringify(parsedData, null, 2));
 
-    console.log(`Parsed and saved rankings for ${scoringType}`);
+    console.log(`Parsed and saved rankings for ${position} ${scoringType}`);
   } catch (error) {
-    console.error(`Failed to parse rankings for ${scoringType}:`, error);
+    console.error(
+      `Failed to parse rankings for ${position} ${scoringType}:`,
+      error
+    );
   }
 }
 
 async function parseAllRankings() {
-  for (const scoringType of SCORING_TYPES) {
-    await parseAndSaveRankings(scoringType);
+  for (const [position, scoringTypes] of Object.entries(
+    POSITIONS_TO_SCORING_TYPES
+  )) {
+    for (const scoringType of scoringTypes) {
+      await parseAndSaveRankings(position, scoringType);
+    }
   }
 }
 
@@ -109,15 +131,18 @@ if (require.main === module) {
 }
 
 export function getRankingLastUpdatedDate(
+  position: string,
   scoringType: ScoringType
 ): string | null {
   const metadataFilePath = path.join(
     RANKINGS_DIR,
-    `${scoringType}-metadata.json`
+    `${position}-${scoringType}-metadata.json`
   );
 
   if (!fs.existsSync(metadataFilePath)) {
-    console.error(`Metadata file for ${scoringType} does not exist.`);
+    console.error(
+      `Metadata file for ${position} ${scoringType} does not exist.`
+    );
     return null;
   }
 

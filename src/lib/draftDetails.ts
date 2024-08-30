@@ -47,7 +47,6 @@ export async function fetchDraftDetails(draftId: string) {
 
   // Explicitly type jsonData as 'any' to allow dynamic adjustments
   const jsonData: any = await response.json();
-  console.log(jsonData);
 
   // Handle the case where draft_order is null
   if (!jsonData.draft_order) {

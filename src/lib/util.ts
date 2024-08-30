@@ -10,6 +10,7 @@ export const normalizePlayerName = (str: string) => {
   const transformations: Record<string, string> = {
     "elijah mitchell": "eli mitchell",
     "ken walker iii": "kenneth walker",
+    "hollywood brown": "marquise brown",
   };
 
   // Apply specific name transformations if a match is found

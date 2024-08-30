@@ -1,16 +1,20 @@
 import fs from "fs";
 import path from "path";
 import { z } from "zod";
-import { getPlayersByScoringType } from "./getPlayerss";
 import { PlayerWithRankingsSchema, ScoringType } from "./schemas";
+import { getPlayersByScoringType } from "./getPlayers";
+import { getAggregateDataFilePath } from "./aggregatePlayerData";
 
-export const AGGREGATE_PLAYER_DATA_FILE_PATH = path.resolve(
-  "./public/data/aggregate-player-data.json"
-);
+// Update this line
+export const ALL_AGGREGATE_PLAYER_DATA_FILE_PATH =
+  getAggregateDataFilePath("ALL");
 
 // Server-side function to load aggregate player data
-export function loadAggregatePlayerDataServer() {
-  const data = fs.readFileSync(AGGREGATE_PLAYER_DATA_FILE_PATH, "utf-8");
+export function loadAggregatePlayerDataServer(
+  position: string = "ALL"
+): Record<string, z.infer<typeof PlayerWithRankingsSchema>> {
+  const filePath = getAggregateDataFilePath(position);
+  const data = fs.readFileSync(filePath, "utf-8");
   return z.record(PlayerWithRankingsSchema).parse(JSON.parse(data));
 }
 
