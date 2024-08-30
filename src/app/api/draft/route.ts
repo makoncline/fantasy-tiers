@@ -101,7 +101,7 @@ export async function GET(req: NextRequest) {
 
     const totalRemainingNeeds = calculateTotalRemainingNeeds(currentRosters);
 
-    const rankingsLastUpdated = getRankingLastUpdatedDate(scoring);
+    const rankingsLastUpdated = getRankingLastUpdatedDate("ALL", scoring);
 
     // // Build and return the response
     return NextResponse.json({
