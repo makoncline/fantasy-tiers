@@ -15,13 +15,13 @@ const DraftDetailsSchema = z.object({
   settings: z.object({
     teams: z.number(),
     rounds: z.number(),
-    slots_wr: z.number(),
-    slots_rb: z.number(),
-    slots_qb: z.number(),
-    slots_te: z.number(),
+    slots_wr: z.number().optional().default(0),
+    slots_rb: z.number().optional().default(0),
+    slots_qb: z.number().optional().default(0),
+    slots_te: z.number().optional().default(0),
     slots_k: z.number().optional().default(0),
     slots_def: z.number().optional().default(0),
-    slots_flex: z.number(),
+    slots_flex: z.number().optional().default(0),
     pick_timer: z.number(),
   }),
   metadata: z.object({
@@ -47,17 +47,14 @@ export async function fetchDraftDetails(draftId: string) {
 
   // Explicitly type jsonData as 'any' to allow dynamic adjustments
   const jsonData: any = await response.json();
+  console.log(jsonData);
 
   // Handle the case where draft_order is null
   if (!jsonData.draft_order) {
     jsonData.draft_order = {};
   }
 
-  if (
-    jsonData.metadata &&
-    (jsonData.metadata.scoring_type === "half_ppr" ||
-      jsonData.metadata.scoring_type === "dynasty_half_ppr")
-  ) {
+  if (jsonData.metadata && jsonData.metadata.scoring_type === "half_ppr") {
     jsonData.metadata.scoring_type = "half";
   }
 
