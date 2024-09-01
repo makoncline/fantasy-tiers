@@ -29,6 +29,7 @@ export const POSITIONS_TO_SCORING_TYPES: Record<string, ScoringType[]> = {
   RB: ["std", "ppr", "half"],
   WR: ["std", "ppr", "half"],
   TE: ["std", "ppr", "half"],
+  FLX: ["std", "ppr", "half"],
   ALL: ["std", "ppr", "half"],
 };
 
@@ -37,30 +38,45 @@ if (!fs.existsSync(RANKINGS_DIR)) {
   fs.mkdirSync(RANKINGS_DIR, { recursive: true });
 }
 
+export const FETCH_TO_ROSTER_SLOT_MAP: Record<string, string> = {
+  QB: "QB",
+  RB: "RB",
+  WR: "WR",
+  TE: "TE",
+  K: "K",
+  DST: "DEF",
+  FLX: "FLEX",
+  ALL: "ALL",
+};
+
 async function fetchAndSaveRankings(
-  position: string,
+  fetchPosition: string,
   scoringType: ScoringType
 ) {
   const suffix =
-    position === "ALL"
+    fetchPosition === "ALL"
       ? ALL_SUFFIX_FOR_SCORING[scoringType]
       : SUFFIX_FOR_SCORING[scoringType];
-  const url = `https://s3-us-west-1.amazonaws.com/fftiers/out/weekly-${position}${suffix}.csv`;
-  console.log(`Fetching rankings for ${position} ${scoringType} from ${url}`);
+  const url = `https://s3-us-west-1.amazonaws.com/fftiers/out/weekly-${fetchPosition}${suffix}.csv`;
+  console.log(
+    `Fetching rankings for ${fetchPosition} ${scoringType} from ${url}`
+  );
+
+  const rosterSlotPosition = FETCH_TO_ROSTER_SLOT_MAP[fetchPosition];
   const filePath = path.resolve(
     RANKINGS_DIR,
-    `${position}-${scoringType}-rankings-raw.csv`
+    `${rosterSlotPosition}-${scoringType}-rankings-raw.csv`
   );
   const metadataFilePath = path.resolve(
     RANKINGS_DIR,
-    `${position}-${scoringType}-metadata.json`
+    `${rosterSlotPosition}-${scoringType}-metadata.json`
   );
 
   try {
     const response = await fetch(url);
     if (!response.ok)
       throw new Error(
-        `Failed to fetch rankings for ${position} ${scoringType}`
+        `Failed to fetch rankings for ${fetchPosition} ${scoringType}`
       );
 
     const csvText = await response.text();
@@ -75,11 +91,11 @@ async function fetchAndSaveRankings(
     fs.writeFileSync(metadataFilePath, JSON.stringify(metadata, null, 2));
 
     console.log(
-      `Saved raw CSV and metadata for ${position} ${scoringType} rankings.`
+      `Saved raw CSV and metadata for ${fetchPosition} ${scoringType} rankings.`
     );
   } catch (error) {
     console.error(
-      `Failed to fetch and save rankings for ${position} ${scoringType}:`,
+      `Failed to fetch and save rankings for ${fetchPosition} ${scoringType}:`,
       error
     );
   }

@@ -9,7 +9,11 @@ import {
   RankTierSchema,
   ScoringType,
 } from "./schemas";
-import { POSITIONS_TO_SCORING_TYPES, RANKINGS_DIR } from "./fetchRankingData";
+import {
+  FETCH_TO_ROSTER_SLOT_MAP,
+  POSITIONS_TO_SCORING_TYPES,
+  RANKINGS_DIR,
+} from "./fetchRankingData";
 
 export const AGGREGATE_DATA_DIR = path.resolve(process.cwd(), "public/data");
 
@@ -43,9 +47,10 @@ function aggregatePlayerData() {
         ScoringType,
         Record<string, z.infer<typeof RankTierSchema>>
       > = scoringTypes.reduce((acc, scoringType) => {
+        const rosterSlotPosition = FETCH_TO_ROSTER_SLOT_MAP[position];
         const filePath = path.resolve(
           RANKINGS_DIR,
-          `${position}-${scoringType}-rankings.json`
+          `${rosterSlotPosition}-${scoringType}-rankings.json`
         );
         if (!fs.existsSync(filePath)) {
           console.error(
@@ -137,8 +142,9 @@ function aggregatePlayerData() {
       // Ensure the directory exists before writing the file
       ensureDirectoryExists(AGGREGATE_DATA_DIR);
 
+      const rosterSlotPosition = FETCH_TO_ROSTER_SLOT_MAP[position];
       // Update this part to use the new function
-      const outputFilePath = getAggregateDataFilePath(position);
+      const outputFilePath = getAggregateDataFilePath(rosterSlotPosition);
 
       fs.writeFileSync(
         outputFilePath,
