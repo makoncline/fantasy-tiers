@@ -1,5 +1,4 @@
 import fs from "fs";
-import path from "path";
 import { z } from "zod";
 import { PlayerWithRankingsSchema, ScoringType } from "./schemas";
 import { getPlayersByScoringType } from "./getPlayers";

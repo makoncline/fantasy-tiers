@@ -1,6 +1,6 @@
 import { z } from "zod";
+import { getPlayersByScoringType } from "./getPlayers"; // Fix the typo here
 import { PlayerWithRankingsSchema, ScoringType } from "./schemas";
-import { getPlayersByScoringType } from "./getPlayers";
 
 // New function to get the URL path for client-side access
 export function getAggregateDataUrlPath(position: string): string {

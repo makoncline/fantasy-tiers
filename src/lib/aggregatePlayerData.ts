@@ -36,8 +36,6 @@ function aggregatePlayerData() {
     .record(TeamSchema)
     .parse(JSON.parse(fs.readFileSync(TEAM_DATA_FILE_PATH, "utf-8")));
 
-  const positionsToScoringTypes = Object.keys(POSITIONS_TO_SCORING_TYPES);
-
   Object.entries(POSITIONS_TO_SCORING_TYPES).forEach(
     ([position, scoringTypes]) => {
       // Load and parse rankings for each scoring type and transform to an object keyed by player name

@@ -10,14 +10,8 @@ import {
 export function getPlayersByScoringType(
   scoringType: ScoringType,
   aggregatePlayerData: Record<string, z.infer<typeof PlayerWithRankingsSchema>>
-): Record<string, DraftedPlayer> {
-  const draftedPlayers: Record<
-    string,
-    z.infer<typeof PlayerWithRankingsSchema> & {
-      rank: number | null;
-      tier: number | null;
-    }
-  > = {};
+) {
+  const draftedPlayers: Record<string, DraftedPlayer> = {};
 
   Object.entries(aggregatePlayerData).forEach(([playerId, player]) => {
     const ranking = player.rankingsByScoringType[scoringType];
