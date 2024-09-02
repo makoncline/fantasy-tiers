@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { RosterPlayer, useLeagueData } from "@/hooks/useLeagueData";
-import { DraftedPlayer } from "@/lib/schemas";
+import { DraftedPlayer, ROSTER_SLOTS, RosterSlotEnum } from "@/lib/schemas";
 
 const formSchema = z.object({
   leagueId: z.string().min(1, "League ID is required"),
@@ -71,8 +71,6 @@ const LeagueManagerContent: React.FC = () => {
       recommendedSlot: recommendedPlayer ? recommendedPlayer.slot : "BN",
     };
   });
-
-  const positions = ["QB", "RB", "WR", "TE", "K", "DEF", "FLEX"];
 
   return (
     <div className="p-6">
@@ -166,7 +164,7 @@ const LeagueManagerContent: React.FC = () => {
         <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0 mb-4">
           Who Should You Pick Up?
         </h2>
-        {positions.map((position) => (
+        {ROSTER_SLOTS.map((position) => (
           <div key={position} className="mb-8">
             <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight mb-4">
               {position === "FLEX" ? "FLEX (RB/WR/TE)" : position}
