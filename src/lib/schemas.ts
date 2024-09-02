@@ -4,7 +4,7 @@ export const POSITIONS = ["QB", "RB", "WR", "TE", "K", "DEF"] as const;
 export const PositionEnum = z.enum(POSITIONS);
 export type Position = z.infer<typeof PositionEnum>;
 
-const ROSTER_SLOTS = [...POSITIONS, "FLEX"] as const;
+export const ROSTER_SLOTS = [...POSITIONS, "FLEX"] as const;
 export const RosterSlotEnum = z.enum(ROSTER_SLOTS);
 export type RosterSlot = z.infer<typeof RosterSlotEnum>;
 

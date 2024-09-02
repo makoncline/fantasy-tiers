@@ -1,7 +1,6 @@
-import { z } from "zod";
 import {
   DraftedPlayer,
-  PlayerWithRankingsSchema,
+  PlayerWithRankings,
   RankedPlayer,
   ScoringType,
 } from "./schemas";
@@ -9,20 +8,19 @@ import {
 // Utility function to process data regardless of where it is loaded
 export function getPlayersByScoringType(
   scoringType: ScoringType,
-  aggregatePlayerData: Record<string, z.infer<typeof PlayerWithRankingsSchema>>
-) {
-  const draftedPlayers: Record<string, DraftedPlayer> = {};
+  players: Record<string, PlayerWithRankings>
+): Record<string, DraftedPlayer> {
+  return Object.entries(players).reduce((acc, [playerId, player]) => {
+    const rankings = player.rankingsByScoringType[scoringType] ||
+      player.rankingsByScoringType["std"] || { rank: null, tier: null };
 
-  Object.entries(aggregatePlayerData).forEach(([playerId, player]) => {
-    const ranking = player.rankingsByScoringType[scoringType];
-    draftedPlayers[playerId] = {
+    acc[playerId] = {
       ...player,
-      rank: ranking?.rank ?? null,
-      tier: ranking?.tier ?? null,
+      rank: rankings.rank,
+      tier: rankings.tier,
     };
-  });
-
-  return draftedPlayers;
+    return acc;
+  }, {} as Record<string, DraftedPlayer>);
 }
 
 export const isRankedPlayer = (player: DraftedPlayer): player is RankedPlayer =>

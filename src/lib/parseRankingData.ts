@@ -4,7 +4,10 @@ import { parse } from "csv-parse";
 import { z } from "zod";
 import { normalizePlayerName } from "./util";
 import { ScoringType, PositionEnum } from "./schemas";
-import { POSITIONS_TO_SCORING_TYPES } from "./fetchRankingData";
+import {
+  POSITIONS_TO_SCORING_TYPES,
+  FETCH_TO_ROSTER_SLOT_MAP,
+} from "./fetchRankingData";
 
 // Constants for file paths
 const RANKINGS_DIR = path.resolve("./public/data/rankings");
@@ -30,14 +33,14 @@ const RankingRowSchema = z.object({
   "Player.Name": z.string(),
   Rank: z.coerce.number(), // Coerce the string into a number automatically
   Tier: z.coerce.number(), // Coerce the string into a number automatically
-  Position: z.string(),
+  // Position: z.string(),
 });
 
 // Schema for the processed player data
 export const RankingSchema = z.object({
   rank: z.number(),
   tier: z.number(),
-  position: PositionEnum,
+  // position: PositionEnum,
   name: z.string(),
 });
 export type Ranking = z.infer<typeof RankingSchema>;
@@ -55,13 +58,17 @@ async function parseCSV(filePath: string) {
 }
 
 async function parseAndSaveRankings(
-  position: string,
+  fetchPosition: string,
   scoringType: ScoringType
 ) {
-  const filePath = RAW_RANKINGS_FILE_PATHS[position][scoringType];
+  const rosterSlotPosition = FETCH_TO_ROSTER_SLOT_MAP[fetchPosition];
+  const filePath = path.resolve(
+    RANKINGS_DIR,
+    `${rosterSlotPosition}-${scoringType}-rankings-raw.csv`
+  );
   if (!fs.existsSync(filePath)) {
     throw new Error(
-      `Raw rankings file for ${position} ${scoringType} does not exist. Please fetch the rankings first.`
+      `Raw rankings file for ${rosterSlotPosition} ${scoringType} does not exist. Please fetch the rankings first.`
     );
   }
 
@@ -84,16 +91,16 @@ async function parseAndSaveRankings(
         );
         if (!sanitizedName) return null;
 
-        const normalizedPosition =
-          validatedRow.data.Position == "DST"
-            ? "DEF"
-            : validatedRow.data.Position;
+        // const normalizedPosition =
+        //   validatedRow.data.Position == "DST"
+        //     ? "DEF"
+        //     : validatedRow.data.Position;
 
         // Create the processed player object
         return RankingSchema.parse({
           rank: validatedRow.data.Rank,
           tier: validatedRow.data.Tier,
-          position: normalizedPosition,
+          // position: normalizedPosition,
           name: sanitizedName,
         });
       })
@@ -102,14 +109,16 @@ async function parseAndSaveRankings(
     // Save the parsed data to a JSON file
     const outputFilePath = path.resolve(
       RANKINGS_DIR,
-      `${position}-${scoringType}-rankings.json`
+      `${rosterSlotPosition}-${scoringType}-rankings.json`
     );
     fs.writeFileSync(outputFilePath, JSON.stringify(parsedData, null, 2));
 
-    console.log(`Parsed and saved rankings for ${position} ${scoringType}`);
+    console.log(
+      `Parsed and saved rankings for ${rosterSlotPosition} ${scoringType}`
+    );
   } catch (error) {
     console.error(
-      `Failed to parse rankings for ${position} ${scoringType}:`,
+      `Failed to parse rankings for ${rosterSlotPosition} ${scoringType}:`,
       error
     );
   }
