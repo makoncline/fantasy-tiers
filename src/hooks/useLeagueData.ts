@@ -36,6 +36,16 @@ interface RosterPlayer extends DraftedPlayer {
   slot: string;
 }
 
+interface UpgradeOption {
+  currentPlayer: DraftedPlayer;
+  availablePlayer: DraftedPlayer;
+  positionImprovement: number;
+}
+
+interface UpgradesByPosition {
+  [key: string]: UpgradeOption[];
+}
+
 async function fetchLeagueData(leagueId: string) {
   if (!leagueId) throw new Error("League ID is required");
 
@@ -79,6 +89,7 @@ export function useLeagueData(leagueId: string, userId: string) {
     data: leagueData,
     isLoading: isLoadingLeagueData,
     error: leagueError,
+    refetch: refetchData,
   } = useQuery<{ rosters: Roster[]; leagueDetails: LeagueDetails }, Error>({
     queryKey: ["leagueData", leagueId],
     queryFn: () => fetchLeagueData(leagueId),
@@ -111,8 +122,12 @@ export function useLeagueData(leagueId: string, userId: string) {
     queryFn: () =>
       getPlayersByScoringTypeClient(leagueScoringType as ScoringType, "FLEX"),
     enabled: !!leagueScoringType,
-    // Keep default caching behavior for FLEX player data
   });
+
+  // Add logging for FLEX query
+  console.log("FLEX Query Status:", flexQuery.status);
+  console.log("FLEX Query Data:", flexQuery.data);
+  console.log("FLEX Query Error:", flexQuery.error);
 
   const isLoadingPlayerData =
     playerQueries.some((query) => query.isLoading) || flexQuery.isLoading;
@@ -131,6 +146,7 @@ export function useLeagueData(leagueId: string, userId: string) {
   }, {} as Record<Position, Record<string, DraftedPlayer>>);
 
   const flexPlayers = flexQuery.data || {};
+  console.log("Processed FLEX Players:", flexPlayers);
 
   const rosters = leagueData?.rosters || [];
   const userRoster =
@@ -210,12 +226,16 @@ export function useLeagueData(leagueId: string, userId: string) {
       (a, b) => (a.rank || Infinity) - (b.rank || Infinity)
     );
 
-    const starterIds: string[] = [];
-    const starterPlayers: RosterPlayer[] = [];
+    console.log(
+      "Sorted players:",
+      availablePlayers.map((p) => `${p.name} (${p.position}): Rank ${p.rank}`)
+    );
 
     // Fill non-bench positions first
     rosterPositions.forEach((slot) => {
       if (slot === "BN") return;
+
+      console.log(`Filling slot: ${slot}`);
 
       let eligiblePlayers: DraftedPlayer[];
       if (slot === "FLEX") {
@@ -226,13 +246,20 @@ export function useLeagueData(leagueId: string, userId: string) {
         eligiblePlayers = availablePlayers.filter((p) => p.position === slot);
       }
 
-      const player = eligiblePlayers.shift();
-      if (player) {
-        const rosterPlayer = { ...player, slot };
-        rosterPlayers.push(rosterPlayer);
-        starterIds.push(player.player_id);
-        starterPlayers.push(rosterPlayer);
-        availablePlayers.splice(availablePlayers.indexOf(player), 1);
+      console.log(
+        `Eligible players for ${slot}:`,
+        eligiblePlayers.map((p) => `${p.name}: Rank ${p.rank}`)
+      );
+
+      const bestPlayer = eligiblePlayers[0]; // Get the best ranked eligible player
+      if (bestPlayer) {
+        console.log(
+          `Selected player for ${slot}: ${bestPlayer.name} (Rank ${bestPlayer.rank})`
+        );
+        rosterPlayers.push({ ...bestPlayer, slot });
+        availablePlayers.splice(availablePlayers.indexOf(bestPlayer), 1);
+      } else {
+        console.log(`No eligible player found for ${slot}`);
       }
     });
 
@@ -240,6 +267,11 @@ export function useLeagueData(leagueId: string, userId: string) {
     availablePlayers.forEach((player) => {
       rosterPlayers.push({ ...player, slot: "BN" });
     });
+
+    console.log(
+      "Final recommended roster:",
+      rosterPlayers.map((p) => `${p.name} (${p.position}): ${p.slot}`)
+    );
 
     return rosterPlayers;
   };
@@ -273,20 +305,79 @@ export function useLeagueData(leagueId: string, userId: string) {
     }
 
     return RosterSlotEnum.options.reduce((acc, position) => {
-      const positionPlayers = Object.values(
-        aggregatedPlayerData[position as Position] || {}
-      );
+      const positionPlayers =
+        position === "FLEX"
+          ? Object.values(flexPlayers)
+          : Object.values(aggregatedPlayerData[position as Position] || {});
+
+      console.log(`Available players for ${position}:`, positionPlayers.length);
+
       const availablePlayers = positionPlayers.filter(
         (player) => !rosteredPlayerIds.includes(player.player_id)
+      );
+
+      console.log(
+        `Filtered available players for ${position}:`,
+        availablePlayers.length
       );
 
       acc[position] = availablePlayers
         .sort((a, b) => (a.rank || Infinity) - (b.rank || Infinity))
         .slice(0, 5);
 
+      console.log(
+        `Top 5 available players for ${position}:`,
+        acc[position].map((p) => p.name)
+      );
+
       return acc;
     }, {} as Record<string, DraftedPlayer[]>);
-  }, [aggregatedPlayerData, rosteredPlayerIds]);
+  }, [aggregatedPlayerData, flexPlayers, rosteredPlayerIds]);
+
+  const findUpgradeOptions = (
+    currentRoster: RosterPlayer[],
+    availablePlayers: Record<string, DraftedPlayer[]>
+  ): UpgradesByPosition => {
+    const upgradeOptions: UpgradesByPosition = {};
+
+    currentRoster.forEach((rosterPlayer) => {
+      if (rosterPlayer.slot === "BN") return; // Skip bench players
+
+      const positionToCheck =
+        rosterPlayer.slot === "FLEX" ? "FLEX" : rosterPlayer.position;
+      const betterPlayers =
+        availablePlayers[positionToCheck]?.filter(
+          (availablePlayer) =>
+            (availablePlayer.rank || Infinity) < (rosterPlayer.rank || Infinity)
+        ) || [];
+
+      betterPlayers.forEach((betterPlayer) => {
+        if (!upgradeOptions[positionToCheck]) {
+          upgradeOptions[positionToCheck] = [];
+        }
+        upgradeOptions[positionToCheck].push({
+          currentPlayer: rosterPlayer,
+          availablePlayer: betterPlayer,
+          positionImprovement:
+            (rosterPlayer.rank || Infinity) - (betterPlayer.rank || Infinity),
+        });
+      });
+    });
+
+    // Sort upgrades within each position
+    Object.keys(upgradeOptions).forEach((position) => {
+      upgradeOptions[position].sort(
+        (a, b) => b.positionImprovement - a.positionImprovement
+      );
+    });
+
+    return upgradeOptions;
+  };
+
+  const upgradeOptions = useMemo(() => {
+    if (!currentRoster || !topAvailablePlayersByPosition) return {};
+    return findUpgradeOptions(currentRoster, topAvailablePlayersByPosition);
+  }, [currentRoster, topAvailablePlayersByPosition]);
 
   const isLoading = isLoadingLeagueData || isLoadingPlayerData;
   const error = leagueError || playerDataError;
@@ -302,5 +393,7 @@ export function useLeagueData(leagueId: string, userId: string) {
     isLoading,
     error: error as Error | null,
     topAvailablePlayersByPosition,
+    upgradeOptions,
+    refetchData,
   };
 }
