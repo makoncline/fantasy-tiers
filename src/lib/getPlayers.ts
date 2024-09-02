@@ -1,7 +1,6 @@
-import { z } from "zod";
 import {
   DraftedPlayer,
-  PlayerWithRankingsSchema,
+  PlayerWithRankings,
   RankedPlayer,
   ScoringType,
 } from "./schemas";

@@ -19,25 +19,23 @@ interface Roster {
 interface LeagueDetails {
   scoring_settings: {
     rec: number;
-    // Add other scoring settings as needed
   };
-  // Add other league details as needed
+  roster_positions: string[];
 }
 
-interface UserPlayerWithDetails extends PlayerWithRankings {
-  rosterId: number;
-}
-
-interface StartingPlayer extends DraftedPlayer {
-  startingPosition: string;
-}
-
-interface RosterPlayer extends DraftedPlayer {
+export interface RosterPlayer extends Omit<Partial<DraftedPlayer>, "position"> {
+  player_id: string;
+  name: string;
+  position: string;
   slot: string;
+  team: string | null;
+  rank: number | null;
+  tier: number | null;
+  recommendedSlot: string;
 }
 
 interface UpgradeOption {
-  currentPlayer: DraftedPlayer;
+  currentPlayer: RosterPlayer;
   availablePlayer: DraftedPlayer;
   positionImprovement: number;
 }
@@ -94,7 +92,6 @@ export function useLeagueData(leagueId: string, userId: string) {
     queryKey: ["leagueData", leagueId],
     queryFn: () => fetchLeagueData(leagueId),
     enabled: !!leagueId,
-    cacheTime: 0, // Disable caching for league data
     staleTime: 0, // Consider league data stale immediately
   });
 
@@ -124,11 +121,6 @@ export function useLeagueData(leagueId: string, userId: string) {
     enabled: !!leagueScoringType,
   });
 
-  // Add logging for FLEX query
-  console.log("FLEX Query Status:", flexQuery.status);
-  console.log("FLEX Query Data:", flexQuery.data);
-  console.log("FLEX Query Error:", flexQuery.error);
-
   const isLoadingPlayerData =
     playerQueries.some((query) => query.isLoading) || flexQuery.isLoading;
   const playerDataError =
@@ -145,25 +137,24 @@ export function useLeagueData(leagueId: string, userId: string) {
     return acc;
   }, {} as Record<Position, Record<string, DraftedPlayer>>);
 
-  const flexPlayers = flexQuery.data || {};
-  console.log("Processed FLEX Players:", flexPlayers);
+  const flexPlayers = useMemo(() => flexQuery.data || {}, [flexQuery.data]);
 
   const rosters = leagueData?.rosters || [];
   const userRoster =
     rosters.find((roster) => roster.owner_id === userId) || null;
-  console.log(JSON.stringify(userRoster, null, 2));
   const rosteredPlayerIds = rosters.flatMap((roster) => roster.players);
 
-  const userPlayersWithDetails: DraftedPlayer[] = userRoster
-    ? userRoster.players
-        .map((playerId) => {
-          for (const positionPlayers of Object.values(aggregatedPlayerData)) {
-            if (playerId in positionPlayers) return positionPlayers[playerId];
-          }
-          return flexPlayers[playerId];
-        })
-        .filter((player): player is DraftedPlayer => player !== undefined)
-    : [];
+  const userPlayersWithDetails = useMemo(() => {
+    if (!userRoster) return [];
+    return userRoster.players
+      .map((playerId) => {
+        for (const positionPlayers of Object.values(aggregatedPlayerData)) {
+          if (playerId in positionPlayers) return positionPlayers[playerId];
+        }
+        return flexPlayers[playerId];
+      })
+      .filter((player): player is DraftedPlayer => player !== undefined);
+  }, [userRoster, aggregatedPlayerData, flexPlayers]);
 
   const determineCurrentRoster = (
     roster: any,
@@ -189,6 +180,7 @@ export function useLeagueData(leagueId: string, userId: string) {
           rank: null,
           tier: null,
           slot: rosterPositions[index] || "BN",
+          recommendedSlot: "",
         });
       } else {
         const player = playerMap[starterId];
@@ -196,6 +188,7 @@ export function useLeagueData(leagueId: string, userId: string) {
           rosterPlayers.push({
             ...player,
             slot: rosterPositions[index] || "BN",
+            recommendedSlot: "",
           });
         }
       }
@@ -209,6 +202,7 @@ export function useLeagueData(leagueId: string, userId: string) {
           rosterPlayers.push({
             ...player,
             slot: "BN",
+            recommendedSlot: "",
           });
         }
       }
@@ -226,16 +220,9 @@ export function useLeagueData(leagueId: string, userId: string) {
       (a, b) => (a.rank || Infinity) - (b.rank || Infinity)
     );
 
-    console.log(
-      "Sorted players:",
-      availablePlayers.map((p) => `${p.name} (${p.position}): Rank ${p.rank}`)
-    );
-
     // Fill non-bench positions first
     rosterPositions.forEach((slot) => {
       if (slot === "BN") return;
-
-      console.log(`Filling slot: ${slot}`);
 
       let eligiblePlayers: DraftedPlayer[];
       if (slot === "FLEX") {
@@ -245,47 +232,39 @@ export function useLeagueData(leagueId: string, userId: string) {
       } else {
         eligiblePlayers = availablePlayers.filter((p) => p.position === slot);
       }
-
-      console.log(
-        `Eligible players for ${slot}:`,
-        eligiblePlayers.map((p) => `${p.name}: Rank ${p.rank}`)
-      );
-
       const bestPlayer = eligiblePlayers[0]; // Get the best ranked eligible player
       if (bestPlayer) {
-        console.log(
-          `Selected player for ${slot}: ${bestPlayer.name} (Rank ${bestPlayer.rank})`
-        );
-        rosterPlayers.push({ ...bestPlayer, slot });
+        rosterPlayers.push({ ...bestPlayer, slot, recommendedSlot: "" });
         availablePlayers.splice(availablePlayers.indexOf(bestPlayer), 1);
-      } else {
-        console.log(`No eligible player found for ${slot}`);
       }
     });
 
     // Fill bench positions with remaining players
     availablePlayers.forEach((player) => {
-      rosterPlayers.push({ ...player, slot: "BN" });
+      rosterPlayers.push({ ...player, slot: "BN", recommendedSlot: "" });
     });
-
-    console.log(
-      "Final recommended roster:",
-      rosterPlayers.map((p) => `${p.name} (${p.position}): ${p.slot}`)
-    );
 
     return rosterPlayers;
   };
 
-  const currentRoster =
-    userRoster &&
-    userPlayersWithDetails.length > 0 &&
-    leagueData?.leagueDetails?.roster_positions
-      ? determineCurrentRoster(
-          userRoster,
-          userPlayersWithDetails,
-          leagueData.leagueDetails.roster_positions
-        )
-      : [];
+  const currentRoster = useMemo(() => {
+    if (
+      userRoster &&
+      userPlayersWithDetails.length > 0 &&
+      leagueData?.leagueDetails?.roster_positions
+    ) {
+      return determineCurrentRoster(
+        userRoster,
+        userPlayersWithDetails,
+        leagueData.leagueDetails.roster_positions
+      );
+    }
+    return [];
+  }, [
+    userRoster,
+    userPlayersWithDetails,
+    leagueData?.leagueDetails?.roster_positions,
+  ]);
 
   const recommendedRoster =
     userPlayersWithDetails.length > 0 &&
@@ -310,25 +289,13 @@ export function useLeagueData(leagueId: string, userId: string) {
           ? Object.values(flexPlayers)
           : Object.values(aggregatedPlayerData[position as Position] || {});
 
-      console.log(`Available players for ${position}:`, positionPlayers.length);
-
       const availablePlayers = positionPlayers.filter(
         (player) => !rosteredPlayerIds.includes(player.player_id)
-      );
-
-      console.log(
-        `Filtered available players for ${position}:`,
-        availablePlayers.length
       );
 
       acc[position] = availablePlayers
         .sort((a, b) => (a.rank || Infinity) - (b.rank || Infinity))
         .slice(0, 5);
-
-      console.log(
-        `Top 5 available players for ${position}:`,
-        acc[position].map((p) => p.name)
-      );
 
       return acc;
     }, {} as Record<string, DraftedPlayer[]>);
