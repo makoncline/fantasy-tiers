@@ -30,6 +30,7 @@ export const ZERO_POSITION_COUNTS: Record<Position, number> = {
 export const ZERO_ROSTER_SLOT_COUNTS: Record<RosterSlot, number> = {
   ...ZERO_POSITION_COUNTS,
   FLEX: 0,
+  BN: 0,
 };
 export const MAX_RECOMMENDATIONS_PER_POSITION = 2;
 
@@ -250,7 +251,10 @@ export function calculateTotalRemainingNeeds(
 }
 
 // Helper function to check if a slot is filled based on roster needs
-function isSlotFilled(slot: RosterSlot, roster: Record<Position, number>) {
+function isSlotFilled(
+  slot: Position | "FLEX",
+  roster: Record<Position, number>
+) {
   if (slot === "FLEX") {
     return (
       roster.RB >= POSITION_LIMITS.RB &&

@@ -44,12 +44,10 @@ const LeagueManagerContent: React.FC = () => {
     rankedAvailablePlayersByPosition,
     worstRankedUserPlayersByPosition,
     currentRoster,
-    recommendedRoster,
     leagueDetails,
     upgradeOptions,
     isLoading,
     error,
-    flexPlayerMap,
   } = useLeagueData(leagueId, userId);
 
   const onSubmit = (data: FormData) => {
@@ -192,7 +190,7 @@ const LeagueManagerContent: React.FC = () => {
 const RosterTable: React.FC<{
   currentRoster: RosteredPlayer[];
   rosterPositions?: RosterSlot[];
-}> = ({ currentRoster, rosterPositions }) => {
+}> = ({ currentRoster }) => {
   const getSlotLabel = (slot: string) => slot;
 
   return (

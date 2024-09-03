@@ -75,7 +75,7 @@ function determineScoringType(
 
 // Update the RosteredPlayer type
 export type RosteredPlayer = DraftedPlayer & {
-  slot: RosterSlot;
+  slot: string;
   recommendedSlot: string;
 };
 
@@ -200,9 +200,7 @@ const determineRecommendedRoster = (
     if (bestPlayer) {
       positionCounts[slot] = (positionCounts[slot] || 0) + 1;
       const recommendedSlot =
-        slot === "FLEX" || slot === "BN"
-          ? slot
-          : `${slot} ${positionCounts[slot]}`;
+        slot === "FLEX" ? slot : `${slot} ${positionCounts[slot]}`;
       rosterPlayers.push({
         ...bestPlayer,
         slot,
