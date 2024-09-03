@@ -2,7 +2,6 @@
 
 import React, { Suspense } from "react";
 import dynamic from "next/dynamic";
-import { DraftDataProvider } from "@/contexts/DraftDataContext";
 
 const DraftAssistantPageContent = dynamic(
   () => import("./DraftAssistantContent"),
