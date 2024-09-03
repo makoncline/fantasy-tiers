@@ -5,8 +5,12 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { RosterPlayer, useLeagueData } from "@/hooks/useLeagueData";
-import { DraftedPlayer, ROSTER_SLOTS, RosterSlotEnum } from "@/lib/schemas";
+import {
+  RosteredPlayer,
+  UpgradeOption,
+  useLeagueData,
+} from "@/hooks/useLeagueData";
+import { DraftedPlayer, ROSTER_SLOTS, RosterSlot } from "@/lib/schemas";
 
 const formSchema = z.object({
   leagueId: z.string().min(1, "League ID is required"),
@@ -37,9 +41,9 @@ const LeagueManagerContent: React.FC = () => {
     rosters,
     rosteredPlayerIds,
     scoringType,
-    topAvailablePlayersByPosition,
+    rankedAvailablePlayersByPosition,
+    worstRankedUserPlayersByPosition,
     currentRoster,
-    recommendedRoster,
     leagueDetails,
     upgradeOptions,
     isLoading,
@@ -47,36 +51,17 @@ const LeagueManagerContent: React.FC = () => {
   } = useLeagueData(leagueId, userId);
 
   const onSubmit = (data: FormData) => {
-    console.log("Form submitted with data:", data);
     router.push(
       `/league-manager?leagueId=${data.leagueId}&userId=${data.userId}`
     );
   };
 
-  const getSlotLabel = (
-    slot: string,
-    index: number,
-    slotCounts: Record<string, number>
-  ) => {
-    if (slot === "BN" || slotCounts[slot] === 1) return slot;
-    return `${slot} ${index}`;
-  };
-
-  const combinedRoster = currentRoster.map((player) => {
-    const recommendedPlayer = recommendedRoster.find(
-      (rp) => rp.player_id === player.player_id
-    );
-    return {
-      ...player,
-      recommendedSlot: recommendedPlayer ? recommendedPlayer.slot : "BN",
-    };
-  });
+  if (isLoading) return <p>Loading league data...</p>;
+  if (error) return <p className="text-red-500">Error: {error.message}</p>;
 
   return (
     <div className="p-6">
-      <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl mb-6">
-        League Manager
-      </h1>
+      <h1 className="text-4xl font-bold mb-6">League Manager</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mb-8">
         <div className="mb-4">
@@ -113,13 +98,8 @@ const LeagueManagerContent: React.FC = () => {
         </button>
       </form>
 
-      {isLoading && <p>Loading league data...</p>}
-      {error && <p className="text-red-500">Error: {error.message}</p>}
-
       <section className="mb-12">
-        <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0 mb-4">
-          League Information
-        </h2>
+        <h2 className="text-2xl font-semibold mb-4">League Information</h2>
         <p>Total rosters: {rosters.length}</p>
         <p>Total rostered players: {rosteredPlayerIds.length}</p>
         {scoringType && <p>Scoring Type: {scoringType.toUpperCase()}</p>}
@@ -127,253 +107,95 @@ const LeagueManagerContent: React.FC = () => {
           <div>
             <p>Roster Positions:</p>
             <ul className="list-disc pl-5">
-              {leagueDetails.roster_positions
-                .filter((pos) => pos !== "BN")
-                .reduce((acc, pos) => {
-                  const existingPos = acc.find((p) => p.position === pos);
-                  if (existingPos) {
-                    existingPos.count++;
-                  } else {
-                    acc.push({ position: pos, count: 1 });
-                  }
-                  return acc;
-                }, [] as { position: string; count: number }[])
-                .map(({ position, count }) => (
-                  <li key={position}>
-                    {position}: {count}
-                  </li>
-                ))}
+              {Object.entries(
+                leagueDetails.roster_positions.reduce((acc, pos) => {
+                  acc[pos] = (acc[pos] || 0) + 1;
+                  return acc as Record<RosterSlot, number>;
+                }, {} as Record<RosterSlot, number>)
+              ).map(([position, count]) => (
+                <li key={position}>
+                  {position}: {count}
+                </li>
+              ))}
             </ul>
           </div>
         )}
       </section>
 
-      {combinedRoster.length > 0 && (
+      {currentRoster.length > 0 && (
         <section className="mb-12">
-          <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0 mb-4">
-            Who Should You Start?
-          </h2>
+          <h2 className="text-2xl font-semibold mb-4">Who should I start?</h2>
           <RosterTable
-            players={combinedRoster}
+            currentRoster={currentRoster}
             rosterPositions={leagueDetails?.roster_positions}
           />
         </section>
       )}
 
       <section className="mb-12">
-        <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0 mb-4">
-          Who Should You Pick Up?
-        </h2>
-        {ROSTER_SLOTS.map((position) => (
-          <div key={position} className="mb-8">
-            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight mb-4">
-              {position === "FLEX" ? "FLEX (RB/WR/TE)" : position}
-            </h3>
-
-            <div className="mb-6">
-              <h4 className="scroll-m-20 text-xl font-semibold tracking-tight mb-2">
-                Potential Upgrades
-              </h4>
-              {upgradeOptions[position] &&
-              upgradeOptions[position].length > 0 ? (
-                Object.values(
-                  upgradeOptions[position].reduce((acc, option) => {
-                    if (!acc[option.currentPlayer.player_id]) {
-                      acc[option.currentPlayer.player_id] = {
-                        currentPlayer: option.currentPlayer,
-                        replacements: [],
-                      };
-                    }
-                    acc[option.currentPlayer.player_id].replacements.push(
-                      option.availablePlayer
-                    );
-                    return acc;
-                  }, {} as Record<string, { currentPlayer: RosterPlayer; replacements: DraftedPlayer[] }>)
-                ).map((group, index) => (
-                  <div key={index} className="mb-4">
-                    <h5 className="scroll-m-20 text-lg font-semibold tracking-tight mb-2">
-                      Current Player
-                    </h5>
-                    <table className="min-w-full bg-gray-800 text-white mb-2">
-                      <thead className="bg-gray-700">
-                        <tr>
-                          <th className="px-4 py-2 text-left">Name</th>
-                          <th className="px-4 py-2 text-left">Position</th>
-                          <th className="px-4 py-2 text-left">Team</th>
-                          <th className="px-4 py-2 text-left">Rank</th>
-                          <th className="px-4 py-2 text-left">Tier</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td className="px-4 py-2">
-                            {group.currentPlayer.name}
-                          </td>
-                          <td className="px-4 py-2">
-                            {group.currentPlayer.position}
-                          </td>
-                          <td className="px-4 py-2">
-                            {group.currentPlayer.team || "FA"}
-                          </td>
-                          <td className="px-4 py-2">
-                            {group.currentPlayer.rank || "N/A"}
-                          </td>
-                          <td className="px-4 py-2">
-                            {group.currentPlayer.tier || "N/A"}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-
-                    <h5 className="scroll-m-20 text-lg font-semibold tracking-tight mb-2">
-                      Replacement Options
-                    </h5>
-                    <table className="min-w-full bg-gray-800 text-white">
-                      <thead className="bg-gray-700">
-                        <tr>
-                          <th className="px-4 py-2 text-left">Name</th>
-                          <th className="px-4 py-2 text-left">Position</th>
-                          <th className="px-4 py-2 text-left">Team</th>
-                          <th className="px-4 py-2 text-left">Rank</th>
-                          <th className="px-4 py-2 text-left">Tier</th>
-                          <th className="px-4 py-2 text-left">
-                            Rank Improvement
-                          </th>
-                          <th className="px-4 py-2 text-left">
-                            Tier Improvement
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {group.replacements.map((replacement, repIndex) => (
-                          <tr key={repIndex}>
-                            <td className="px-4 py-2">{replacement.name}</td>
-                            <td className="px-4 py-2">
-                              {replacement.position}
-                            </td>
-                            <td className="px-4 py-2">
-                              {replacement.team || "FA"}
-                            </td>
-                            <td className="px-4 py-2">
-                              {replacement.rank || "N/A"}
-                            </td>
-                            <td className="px-4 py-2">
-                              {replacement.tier || "N/A"}
-                            </td>
-                            <td className="px-4 py-2">
-                              {(group.currentPlayer.rank || 0) -
-                                (replacement.rank || 0)}
-                            </td>
-                            <td className="px-4 py-2">
-                              {(group.currentPlayer.tier || 0) -
-                                (replacement.tier || 0)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+        <h2 className="text-2xl font-semibold mb-4">Who should I pick up?</h2>
+        {upgradeOptions ? (
+          Object.entries(upgradeOptions).map(([position, upgrades]) => (
+            <div key={position} className="mb-8">
+              <h3 className="text-xl font-semibold mb-2">{position}</h3>
+              {upgrades.length > 0 ? (
+                upgrades.map((upgrade, index) => (
+                  <UpgradeOptionDisplay key={index} upgrade={upgrade} />
                 ))
               ) : (
-                <p>No potential upgrades available for this position.</p>
+                <p>No upgrades available for this position.</p>
               )}
             </div>
+          ))
+        ) : (
+          <p>No upgrade opportunities available.</p>
+        )}
+      </section>
 
-            <h4 className="scroll-m-20 text-xl font-semibold tracking-tight mb-2">
-              Best Available Players
-            </h4>
-            {topAvailablePlayersByPosition[position] &&
-            topAvailablePlayersByPosition[position].length > 0 ? (
-              <table className="min-w-full bg-gray-800 text-white">
-                <thead className="bg-gray-700">
-                  <tr>
-                    <th className="px-4 py-2 text-left">Name</th>
-                    <th className="px-4 py-2 text-left">Position</th>
-                    <th className="px-4 py-2 text-left">Team</th>
-                    <th className="px-4 py-2 text-left">Tier</th>
-                    <th className="px-4 py-2 text-left">Rank</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topAvailablePlayersByPosition[position].map((player) => (
-                    <tr
-                      key={player.player_id}
-                      className="border-b border-gray-700"
-                    >
-                      <td className="px-4 py-2">{player.name}</td>
-                      <td className="px-4 py-2">{player.position}</td>
-                      <td className="px-4 py-2">{player.team || "FA"}</td>
-                      <td className="px-4 py-2">{player.tier || "N/A"}</td>
-                      <td className="px-4 py-2">{player.rank || "N/A"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <p>No available ranked players for this position.</p>
-            )}
-          </div>
-        ))}
+      <section className="mb-12">
+        <h2 className="text-2xl font-semibold mb-4">
+          Ranked Available Players
+        </h2>
+        {ROSTER_SLOTS.filter((position) => position !== "BN").map(
+          (position) => (
+            <div key={position} className="mb-8">
+              <h3 className="text-xl font-semibold mb-2">
+                {position === "FLEX" ? "FLEX (RB/WR/TE)" : position}
+              </h3>
+              {["RB", "WR", "TE", "QB", "K", "DEF"].includes(position) &&
+                worstRankedUserPlayersByPosition[position] && (
+                  <div className="mb-4">
+                    <p className="font-semibold mb-2">
+                      Your worst ranked {position}:
+                    </p>
+                    <PlayerTable
+                      player={worstRankedUserPlayersByPosition[position]}
+                    />
+                  </div>
+                )}
+              <p className="font-semibold mb-2">
+                Available {position} Players:
+              </p>
+              <AvailablePlayersTable
+                players={rankedAvailablePlayersByPosition[position] || []}
+              />
+            </div>
+          )
+        )}
       </section>
     </div>
   );
 };
 
-export default LeagueManagerContent;
-
-interface RosterTableProps {
-  players: RosterPlayer[];
-  rosterPositions?: string[];
-}
-
-function RosterTable({ players, rosterPositions }: RosterTableProps) {
-  const getSlotLabel = (
-    slot: string,
-    index: number,
-    slotCounts: Record<string, number>
-  ) => {
-    if (slot === "BN" || slotCounts[slot] === 1) return slot;
-    return `${slot} ${index}`;
-  };
-
-  const slotCounts =
-    rosterPositions?.reduce((acc, slot) => {
-      acc[slot] = (acc[slot] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>) || {};
-
-  const sortedPlayers = players.sort((a, b) => {
-    const aIndex = rosterPositions?.indexOf(a.slot) ?? -1;
-    const bIndex = rosterPositions?.indexOf(b.slot) ?? -1;
-    if (aIndex !== bIndex) {
-      if (a.slot === "BN") return 1;
-      if (b.slot === "BN") return -1;
-      return aIndex - bIndex;
-    }
-
-    return (a.rank || Infinity) - (b.rank || Infinity);
-  });
-
-  const currentSlotCounts: Record<string, number> = {};
-  const recommendedSlotCounts: Record<string, number> = {};
-
-  const playersByRecommendedSlot = sortedPlayers.reduce((acc, player) => {
-    if (!acc[player.recommendedSlot]) {
-      acc[player.recommendedSlot] = [];
-    }
-    acc[player.recommendedSlot].push(player);
-    return acc;
-  }, {} as Record<string, RosterPlayer[]>);
-
-  Object.values(playersByRecommendedSlot).forEach((players) => {
-    players.sort((a, b) => (a.rank || Infinity) - (b.rank || Infinity));
-  });
-
-  const getSlotBase = (slot: string) => slot.split(" ")[0];
+const RosterTable: React.FC<{
+  currentRoster: RosteredPlayer[];
+  rosterPositions?: RosterSlot[];
+}> = ({ currentRoster }) => {
+  const getSlotLabel = (slot: string) => slot;
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full bg-gray-800 text-white">
+      <table className="w-full bg-gray-800 text-white">
         <thead className="bg-gray-700">
           <tr>
             <th className="px-4 py-2 text-left">Current Slot</th>
@@ -386,31 +208,8 @@ function RosterTable({ players, rosterPositions }: RosterTableProps) {
           </tr>
         </thead>
         <tbody>
-          {sortedPlayers.map((player) => {
-            currentSlotCounts[player.slot] =
-              (currentSlotCounts[player.slot] || 0) + 1;
-
-            const recommendedSlotIndex = playersByRecommendedSlot[
-              player.recommendedSlot
-            ].findIndex((p) => p.player_id === player.player_id);
-            recommendedSlotCounts[player.recommendedSlot] =
-              recommendedSlotIndex + 1;
-
-            const currentSlotLabel = getSlotLabel(
-              player.slot,
-              currentSlotCounts[player.slot],
-              slotCounts
-            );
-            const recommendedSlotLabel = getSlotLabel(
-              player.recommendedSlot,
-              recommendedSlotCounts[player.recommendedSlot],
-              slotCounts
-            );
-
-            const shouldHighlight =
-              getSlotBase(currentSlotLabel) !==
-                getSlotBase(recommendedSlotLabel) ||
-              currentSlotLabel !== recommendedSlotLabel;
+          {currentRoster.map((player) => {
+            const shouldHighlight = player.slot !== player.recommendedSlot;
             const rowColor = shouldHighlight ? "bg-yellow-600" : "";
 
             return (
@@ -418,8 +217,10 @@ function RosterTable({ players, rosterPositions }: RosterTableProps) {
                 key={player.player_id}
                 className={`border-b border-gray-700 ${rowColor}`}
               >
-                <td className="px-4 py-2">{currentSlotLabel}</td>
-                <td className="px-4 py-2">{recommendedSlotLabel}</td>
+                <td className="px-4 py-2">{getSlotLabel(player.slot)}</td>
+                <td className="px-4 py-2">
+                  {getSlotLabel(player.recommendedSlot)}
+                </td>
                 <td className="px-4 py-2 font-medium">{player.name}</td>
                 <td className="px-4 py-2">{player.position}</td>
                 <td className="px-4 py-2">{player.team || "FA"}</td>
@@ -432,4 +233,88 @@ function RosterTable({ players, rosterPositions }: RosterTableProps) {
       </table>
     </div>
   );
-}
+};
+
+const UpgradeOptionDisplay: React.FC<{
+  upgrade: UpgradeOption;
+}> = ({ upgrade }) => (
+  <div className="mb-4">
+    <h4 className="text-lg font-semibold mb-2">Current Player:</h4>
+    <table className="w-full bg-gray-800 text-white mb-2">
+      <thead className="bg-gray-700">
+        <tr>
+          <th className="px-4 py-2 text-left">Name</th>
+          <th className="px-4 py-2 text-left">Position</th>
+          <th className="px-4 py-2 text-left">Team</th>
+          <th className="px-4 py-2 text-left">Tier</th>
+          <th className="px-4 py-2 text-left">Rank</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td className="px-4 py-2">{upgrade.currentPlayer.name}</td>
+          <td className="px-4 py-2">{upgrade.currentPlayer.position}</td>
+          <td className="px-4 py-2">{upgrade.currentPlayer.team || "FA"}</td>
+          <td className="px-4 py-2">{upgrade.currentPlayer.tier || "N/A"}</td>
+          <td className="px-4 py-2">{upgrade.currentPlayer.rank || "N/A"}</td>
+        </tr>
+      </tbody>
+    </table>
+    <h4 className="text-lg font-semibold mb-2">Better Players Available:</h4>
+    <AvailablePlayersTable players={upgrade.betterPlayers} />
+  </div>
+);
+
+const PlayerTable: React.FC<{ player: RosteredPlayer | DraftedPlayer }> = ({
+  player,
+}) => (
+  <table className="w-full bg-gray-800 text-white mb-4">
+    <thead className="bg-gray-700">
+      <tr>
+        <th className="px-4 py-2 text-left">Name</th>
+        <th className="px-4 py-2 text-left">Position</th>
+        <th className="px-4 py-2 text-left">Team</th>
+        <th className="px-4 py-2 text-left">Tier</th>
+        <th className="px-4 py-2 text-left">Rank</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="px-4 py-2">{player.name}</td>
+        <td className="px-4 py-2">{player.position}</td>
+        <td className="px-4 py-2">{player.team || "FA"}</td>
+        <td className="px-4 py-2">{player.tier || "N/A"}</td>
+        <td className="px-4 py-2">{player.rank || "N/A"}</td>
+      </tr>
+    </tbody>
+  </table>
+);
+
+const AvailablePlayersTable: React.FC<{ players: DraftedPlayer[] }> = ({
+  players,
+}) => (
+  <table className="w-full bg-gray-800 text-white">
+    <thead className="bg-gray-700">
+      <tr>
+        <th className="px-4 py-2 text-left">Name</th>
+        <th className="px-4 py-2 text-left">Position</th>
+        <th className="px-4 py-2 text-left">Team</th>
+        <th className="px-4 py-2 text-left">Tier</th>
+        <th className="px-4 py-2 text-left">Rank</th>
+      </tr>
+    </thead>
+    <tbody>
+      {players.map((player) => (
+        <tr key={player.player_id} className="border-b border-gray-700">
+          <td className="px-4 py-2">{player.name}</td>
+          <td className="px-4 py-2">{player.position}</td>
+          <td className="px-4 py-2">{player.team || "FA"}</td>
+          <td className="px-4 py-2">{player.tier || "N/A"}</td>
+          <td className="px-4 py-2">{player.rank || "N/A"}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+);
+
+export default LeagueManagerContent;

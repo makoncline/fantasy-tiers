@@ -161,6 +161,7 @@ export function DraftDataProvider({
       K: draftDetails.settings.slots_k,
       DEF: draftDetails.settings.slots_def,
       FLEX: draftDetails.settings.slots_flex,
+      BN: 0,
     };
 
     const draftSlots = Array.from(

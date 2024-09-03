@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
       K: draftDetails.settings.slots_k,
       DEF: draftDetails.settings.slots_def,
       FLEX: draftDetails.settings.slots_flex,
+      BN: 0,
     };
 
     const scoring = draftDetails.metadata.scoring_type;
