@@ -119,8 +119,8 @@ const determineCurrentRoster = (
           ...player,
           slot: slotName,
           recommendedSlot: "",
-          flexTier: flexInfo?.flexTier,
-          flexRank: flexInfo?.flexRank,
+          flexTier: flexInfo?.flexTier ?? undefined,
+          flexRank: flexInfo?.flexRank ?? undefined,
           rosterOrder: index,
         });
       }
@@ -153,8 +153,8 @@ const determineCurrentRoster = (
           ...player,
           slot: "BN",
           recommendedSlot: "BN",
-          flexTier: flexInfo?.flexTier,
-          flexRank: flexInfo?.flexRank,
+          flexTier: flexInfo?.flexTier ?? undefined,
+          flexRank: flexInfo?.flexRank ?? undefined,
           rosterOrder: benchIndex + index,
         });
       }
@@ -223,8 +223,8 @@ const determineRecommendedRoster = (
         ...bestPlayer,
         slot: recommendedSlot,
         recommendedSlot,
-        flexTier: flexInfo?.flexTier,
-        flexRank: flexInfo?.flexRank,
+        flexTier: flexInfo?.flexTier ?? undefined,
+        flexRank: flexInfo?.flexRank ?? undefined,
         rosterOrder: index,
       });
       usedPlayers.add(bestPlayer.player_id);
@@ -248,8 +248,8 @@ const determineRecommendedRoster = (
         ...player,
         slot: "BN",
         recommendedSlot: "BN",
-        flexTier: flexInfo?.flexTier,
-        flexRank: flexInfo?.flexRank,
+        flexTier: flexInfo?.flexTier ?? undefined,
+        flexRank: flexInfo?.flexRank ?? undefined,
         rosterOrder: rosterPositions.length + index,
       });
       console.log("Added player to bench:", player.name);
@@ -431,6 +431,10 @@ export function useLeagueData(leagueId: string, userId: string) {
         ...recommendedPlayer,
         slot: "BN", // Assume these players are currently on the bench
         recommendedSlot: recommendedPlayer.recommendedSlot,
+        flexTier: recommendedPlayer.flexTier ?? undefined,
+        flexRank: recommendedPlayer.flexRank ?? undefined,
+        rosterOrder: mergedRoster.length, // Assign a roster order
+        isEmpty: false, // It's not an empty slot
       });
     }
   });
