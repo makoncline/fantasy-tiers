@@ -29,12 +29,12 @@
       "half": null
     }
   },
-  "SF": {
-    "player_id": "SF",
-    "name": "san francisco 49ers",
+  "CHI": {
+    "player_id": "CHI",
+    "name": "chicago bears",
     "position": "DEF",
-    "team": "SF",
-    "bye_week": "9",
+    "team": "CHI",
+    "bye_week": "7",
     "rankingsByScoringType": {
       "std": {
         "rank": 3,
@@ -44,12 +44,12 @@
       "half": null
     }
   },
-  "CHI": {
-    "player_id": "CHI",
-    "name": "chicago bears",
+  "SF": {
+    "player_id": "SF",
+    "name": "san francisco 49ers",
     "position": "DEF",
-    "team": "CHI",
-    "bye_week": "7",
+    "team": "SF",
+    "bye_week": "9",
     "rankingsByScoringType": {
       "std": {
         "rank": 4,
@@ -89,12 +89,12 @@
       "half": null
     }
   },
-  "CLE": {
-    "player_id": "CLE",
-    "name": "cleveland browns",
+  "MIN": {
+    "player_id": "MIN",
+    "name": "minnesota vikings",
     "position": "DEF",
-    "team": "CLE",
-    "bye_week": "10",
+    "team": "MIN",
+    "bye_week": "6",
     "rankingsByScoringType": {
       "std": {
         "rank": 7,
@@ -104,12 +104,12 @@
       "half": null
     }
   },
-  "MIN": {
-    "player_id": "MIN",
-    "name": "minnesota vikings",
+  "CLE": {
+    "player_id": "CLE",
+    "name": "cleveland browns",
     "position": "DEF",
-    "team": "MIN",
-    "bye_week": "6",
+    "team": "CLE",
+    "bye_week": "10",
     "rankingsByScoringType": {
       "std": {
         "rank": 8,
@@ -134,6 +134,21 @@
       "half": null
     }
   },
+  "LAC": {
+    "player_id": "LAC",
+    "name": "los angeles chargers",
+    "position": "DEF",
+    "team": "LAC",
+    "bye_week": "5",
+    "rankingsByScoringType": {
+      "std": {
+        "rank": 10,
+        "tier": 4
+      },
+      "ppr": null,
+      "half": null
+    }
+  },
   "PIT": {
     "player_id": "PIT",
     "name": "pittsburgh steelers",
@@ -142,8 +157,8 @@
     "bye_week": "9",
     "rankingsByScoringType": {
       "std": {
-        "rank": 10,
-        "tier": 3
+        "rank": 11,
+        "tier": 4
       },
       "ppr": null,
       "half": null
@@ -157,23 +172,8 @@
     "bye_week": "12",
     "rankingsByScoringType": {
       "std": {
-        "rank": 11,
-        "tier": 3
-      },
-      "ppr": null,
-      "half": null
-    }
-  },
-  "LAC": {
-    "player_id": "LAC",
-    "name": "los angeles chargers",
-    "position": "DEF",
-    "team": "LAC",
-    "bye_week": "5",
-    "rankingsByScoringType": {
-      "std": {
         "rank": 12,
-        "tier": 3
+        "tier": 4
       },
       "ppr": null,
       "half": null
@@ -254,26 +254,26 @@
       "half": null
     }
   },
-  "PHI": {
-    "player_id": "PHI",
-    "name": "philadelphia eagles",
-    "position": "DEF",
-    "team": "PHI",
-    "bye_week": "5",
-    "rankingsByScoringType": {
-      "std": {
-        "rank": 18,
-        "tier": 5
-      },
-      "ppr": null,
-      "half": null
-    }
-  },
   "DET": {
     "player_id": "DET",
     "name": "detroit lions",
     "position": "DEF",
     "team": "DET",
+    "bye_week": "5",
+    "rankingsByScoringType": {
+      "std": {
+        "rank": 18,
+        "tier": 6
+      },
+      "ppr": null,
+      "half": null
+    }
+  },
+  "PHI": {
+    "player_id": "PHI",
+    "name": "philadelphia eagles",
+    "position": "DEF",
+    "team": "PHI",
     "bye_week": "5",
     "rankingsByScoringType": {
       "std": {
@@ -284,12 +284,12 @@
       "half": null
     }
   },
-  "BAL": {
-    "player_id": "BAL",
-    "name": "baltimore ravens",
+  "MIA": {
+    "player_id": "MIA",
+    "name": "miami dolphins",
     "position": "DEF",
-    "team": "BAL",
-    "bye_week": "14",
+    "team": "MIA",
+    "bye_week": "6",
     "rankingsByScoringType": {
       "std": {
         "rank": 20,
