@@ -176,9 +176,15 @@ const LeagueManagerContent: React.FC = () => {
               <p className="font-semibold mb-2">
                 Available {position} Players:
               </p>
-              <AvailablePlayersTable
-                players={rankedAvailablePlayersByPosition[position] || []}
-              />
+              {rankedAvailablePlayersByPosition[position]?.length > 0 ? (
+                <AvailablePlayersTable
+                  players={rankedAvailablePlayersByPosition[position] || []}
+                />
+              ) : (
+                <p className="italic text-gray-500">
+                  No available players for this position.
+                </p>
+              )}
             </div>
           )
         )}
@@ -205,11 +211,14 @@ const RosterTable: React.FC<{
             <th className="px-4 py-2 text-left">Team</th>
             <th className="px-4 py-2 text-left">Tier</th>
             <th className="px-4 py-2 text-left">Rank</th>
+            <th className="px-4 py-2 text-left">FLEX Tier</th>
+            <th className="px-4 py-2 text-left">FLEX Rank</th>
           </tr>
         </thead>
         <tbody>
           {currentRoster.map((player) => {
-            const shouldHighlight = player.slot !== player.recommendedSlot;
+            const shouldHighlight =
+              player.slot !== player.recommendedSlot || player.isEmpty;
             const rowColor = shouldHighlight ? "bg-yellow-600" : "";
 
             return (
@@ -219,13 +228,31 @@ const RosterTable: React.FC<{
               >
                 <td className="px-4 py-2">{getSlotLabel(player.slot)}</td>
                 <td className="px-4 py-2">
-                  {getSlotLabel(player.recommendedSlot)}
+                  {player.isEmpty
+                    ? "-"
+                    : getSlotLabel(player.recommendedSlot || player.slot)}
                 </td>
-                <td className="px-4 py-2 font-medium">{player.name}</td>
-                <td className="px-4 py-2">{player.position}</td>
-                <td className="px-4 py-2">{player.team || "FA"}</td>
-                <td className="px-4 py-2">{player.tier || "N/A"}</td>
-                <td className="px-4 py-2">{player.rank || "N/A"}</td>
+                <td className="px-4 py-2 font-medium">
+                  {player.isEmpty ? "Empty Slot" : player.name}
+                </td>
+                <td className="px-4 py-2">
+                  {player.isEmpty ? "-" : player.position}
+                </td>
+                <td className="px-4 py-2">
+                  {player.isEmpty ? "-" : player.team || "-"}
+                </td>
+                <td className="px-4 py-2">
+                  {player.isEmpty ? "-" : player.tier || "N/A"}
+                </td>
+                <td className="px-4 py-2">
+                  {player.isEmpty ? "-" : player.rank || "N/A"}
+                </td>
+                <td className="px-4 py-2">
+                  {player.isEmpty ? "-" : player.flexTier || "N/A"}
+                </td>
+                <td className="px-4 py-2">
+                  {player.isEmpty ? "-" : player.flexRank || "N/A"}
+                </td>
               </tr>
             );
           })}
@@ -304,15 +331,23 @@ const AvailablePlayersTable: React.FC<{ players: DraftedPlayer[] }> = ({
       </tr>
     </thead>
     <tbody>
-      {players.map((player) => (
-        <tr key={player.player_id} className="border-b border-gray-700">
-          <td className="px-4 py-2">{player.name}</td>
-          <td className="px-4 py-2">{player.position}</td>
-          <td className="px-4 py-2">{player.team || "FA"}</td>
-          <td className="px-4 py-2">{player.tier || "N/A"}</td>
-          <td className="px-4 py-2">{player.rank || "N/A"}</td>
+      {players.length > 0 ? (
+        players.map((player) => (
+          <tr key={player.player_id} className="border-b border-gray-700">
+            <td className="px-4 py-2">{player.name}</td>
+            <td className="px-4 py-2">{player.position}</td>
+            <td className="px-4 py-2">{player.team || "FA"}</td>
+            <td className="px-4 py-2">{player.tier || "N/A"}</td>
+            <td className="px-4 py-2">{player.rank || "N/A"}</td>
+          </tr>
+        ))
+      ) : (
+        <tr>
+          <td colSpan={5} className="px-4 py-2 text-center">
+            No available players for this position.
+          </td>
         </tr>
-      ))}
+      )}
     </tbody>
   </table>
 );
