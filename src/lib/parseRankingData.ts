@@ -3,11 +3,8 @@ import path from "path";
 import { parse } from "csv-parse";
 import { z } from "zod";
 import { normalizePlayerName } from "./util";
-import { ScoringType, PositionEnum } from "./schemas";
-import {
-  POSITIONS_TO_SCORING_TYPES,
-  FETCH_TO_ROSTER_SLOT_MAP,
-} from "./fetchRankingData";
+import { ScoringType } from "./schemas";
+import { POSITIONS_TO_SCORING_TYPES } from "./fetchRankingData";
 
 // Constants for file paths
 const RANKINGS_DIR = path.resolve("./public/data/rankings");
@@ -61,14 +58,13 @@ async function parseAndSaveRankings(
   fetchPosition: string,
   scoringType: ScoringType
 ) {
-  const rosterSlotPosition = FETCH_TO_ROSTER_SLOT_MAP[fetchPosition];
   const filePath = path.resolve(
     RANKINGS_DIR,
-    `${rosterSlotPosition}-${scoringType}-rankings-raw.csv`
+    `${fetchPosition}-${scoringType}-rankings-raw.csv`
   );
   if (!fs.existsSync(filePath)) {
     throw new Error(
-      `Raw rankings file for ${rosterSlotPosition} ${scoringType} does not exist. Please fetch the rankings first.`
+      `Raw rankings file for ${fetchPosition} ${scoringType} does not exist. Please fetch the rankings first.`
     );
   }
 
@@ -109,16 +105,16 @@ async function parseAndSaveRankings(
     // Save the parsed data to a JSON file
     const outputFilePath = path.resolve(
       RANKINGS_DIR,
-      `${rosterSlotPosition}-${scoringType}-rankings.json`
+      `${fetchPosition}-${scoringType}-rankings.json`
     );
     fs.writeFileSync(outputFilePath, JSON.stringify(parsedData, null, 2));
 
     console.log(
-      `Parsed and saved rankings for ${rosterSlotPosition} ${scoringType}`
+      `Parsed and saved rankings for ${fetchPosition} ${scoringType}`
     );
   } catch (error) {
     console.error(
-      `Failed to parse rankings for ${rosterSlotPosition} ${scoringType}:`,
+      `Failed to parse rankings for ${fetchPosition} ${scoringType}:`,
       error
     );
   }
