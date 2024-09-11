@@ -6,6 +6,7 @@ import {
   RosterSlotEnum,
   Position,
   RosterSlot,
+  ROSTER_SLOTS,
 } from "@/lib/schemas";
 import { z } from "zod";
 
@@ -172,11 +173,6 @@ const determineRecommendedRoster = (
   rosterPositions: RosterSlot[],
   flexPlayers: DraftedPlayer[]
 ): RosteredPlayer[] => {
-  console.log("Starting determineRecommendedRoster");
-  console.log("Players:", players);
-  console.log("Roster Positions:", rosterPositions);
-  console.log("Flex Players:", flexPlayers);
-
   const rosterPlayers: RosteredPlayer[] = [];
   const availablePlayers = [...players];
 
@@ -192,7 +188,6 @@ const determineRecommendedRoster = (
 
   // Fill non-bench positions first
   rosterPositions.forEach((slot, index) => {
-    console.log("Processing slot:", slot);
     if (slot === "BN") return;
 
     let eligiblePlayers: DraftedPlayer[];
@@ -213,7 +208,6 @@ const determineRecommendedRoster = (
         .filter((p) => p.position === slot && !usedPlayers.has(p.player_id))
         .sort((a, b) => (a.rank || Infinity) - (b.rank || Infinity));
     }
-    console.log("Eligible players for slot:", slot, eligiblePlayers);
     const bestPlayer = eligiblePlayers[0]; // Get the best ranked eligible player
     if (bestPlayer) {
       positionCounts[slot] = (positionCounts[slot] || 0) + 1;
@@ -228,12 +222,6 @@ const determineRecommendedRoster = (
         rosterOrder: index,
       });
       usedPlayers.add(bestPlayer.player_id);
-      console.log(
-        "Added player to roster:",
-        bestPlayer.name,
-        "in slot:",
-        recommendedSlot
-      );
     } else {
       console.log("No eligible player found for slot:", slot);
     }
@@ -252,10 +240,8 @@ const determineRecommendedRoster = (
         flexRank: flexInfo?.flexRank ?? undefined,
         rosterOrder: rosterPositions.length + index,
       });
-      console.log("Added player to bench:", player.name);
     });
 
-  console.log("Final recommended roster:", rosterPlayers);
   return rosterPlayers;
 };
 
@@ -353,33 +339,41 @@ export function useLeagueData(leagueId: string, userId: string) {
     (playerQueries.find((query) => query.error)?.error as Error | null) ||
     flexQuery.error;
 
-  const allPlayers = [
-    ...playerQueries.flatMap((query) =>
-      query.data ? Object.values(query.data) : []
-    ),
-    ...(flexQuery.data ? Object.values(flexQuery.data) : []),
-  ];
+  const positionPlayers = playerQueries.flatMap((query) =>
+    query.data ? Object.values(query.data) : []
+  );
+  const flexPlayers = flexQuery.data ? Object.values(flexQuery.data) : [];
 
   const rosters = leagueData?.rosters || [];
   const userRoster =
     rosters.find((roster) => roster.owner_id === userId) || null;
   const rosteredPlayerIds = rosters.flatMap((roster) => roster.players);
 
-  const availablePlayers = allPlayers.filter(
+  const availablePositionPlayers = positionPlayers.filter(
+    (player) => !rosteredPlayerIds.includes(player.player_id)
+  );
+  const availableFlexPlayers = flexPlayers.filter(
     (player) => !rosteredPlayerIds.includes(player.player_id)
   );
 
-  const availablePlayersByPosition = availablePlayers.reduce((acc, player) => {
-    if (!acc[player.position]) {
-      acc[player.position] = [];
+  const availablePlayersByPosition = ROSTER_SLOTS.filter(
+    (slot) => slot !== "BN"
+  ).reduce((acc, slot) => {
+    if (slot === "FLEX") {
+      acc[slot] = availableFlexPlayers;
+    } else {
+      acc[slot] = availablePositionPlayers.filter(
+        (player) => player.position === slot
+      );
     }
-    acc[player.position].push(player);
     return acc;
-  }, {} as Record<Position, DraftedPlayer[]>);
+  }, {} as Record<Exclude<RosterSlot, "BN">, DraftedPlayer[]>);
 
   const userPlayersWithDetails = userRoster
     ? userRoster.players
-        .map((playerId) => allPlayers.find((p) => p.player_id === playerId))
+        .map((playerId) =>
+          positionPlayers.find((p) => p.player_id === playerId)
+        )
         .filter((player): player is DraftedPlayer => player !== undefined)
     : [];
 
@@ -446,22 +440,12 @@ export function useLeagueData(leagueId: string, userId: string) {
     availablePlayersByPosition
   ).reduce((acc, [position, players]) => {
     if (position !== "BN") {
-      acc[position as RosterSlot] = players.sort(
-        (a, b) => (a.rank || Infinity) - (b.rank || Infinity)
-      );
+      acc[position as RosterSlot] = players
+        .filter((player) => player.rank !== null && player.rank !== undefined)
+        .sort((a, b) => (a.rank || Infinity) - (b.rank || Infinity));
     }
     return acc;
   }, {} as Record<RosterSlot, DraftedPlayer[]>);
-
-  // Handle FLEX separately
-  if (flexQuery.data) {
-    rankedAvailablePlayersByPosition["FLEX"] = Object.values(flexQuery.data)
-      .filter((player) => !rosteredPlayerIds.includes(player.player_id))
-      .sort((a, b) => (a.rank || Infinity) - (b.rank || Infinity));
-  }
-
-  // Create a mapping of player IDs to their FLEX rankings
-  const flexPlayerMap = flexQuery.data;
 
   const worstRankedUserPlayersByPosition = Object.entries(
     availablePlayersByPosition
@@ -479,9 +463,24 @@ export function useLeagueData(leagueId: string, userId: string) {
     return acc;
   }, {} as Record<RosterSlot, RosteredPlayer>);
 
+  // Add worst ranked FLEX player
+  const flexEligiblePlayers = currentRoster.filter(
+    (p) => p.flexRank !== undefined && ["RB", "WR", "TE"].includes(p.position)
+  );
+  if (flexEligiblePlayers.length > 0) {
+    const worstFlexPlayer = flexEligiblePlayers
+      .filter((player) => player.rank !== null && player.rank !== undefined)
+      .reduce((worst, player) =>
+        (player.flexRank || Infinity) > (worst.flexRank || Infinity)
+          ? player
+          : worst
+      );
+    worstRankedUserPlayersByPosition["FLEX"] = worstFlexPlayer;
+  }
+
   const upgradeOptions: Record<Position, UpgradeOption[]> | null =
-    currentRoster && availablePlayers.length > 0
-      ? findUpgradeOptions(currentRoster, availablePlayers)
+    currentRoster && availablePositionPlayers.length > 0
+      ? findUpgradeOptions(currentRoster, availablePositionPlayers)
       : null;
 
   const isLoading = isLoadingLeagueData || isLoadingPlayerData;
@@ -501,7 +500,6 @@ export function useLeagueData(leagueId: string, userId: string) {
     worstRankedUserPlayersByPosition,
     upgradeOptions,
     refetchData,
-    flexPlayerMap,
   };
 }
 

@@ -162,7 +162,9 @@ const LeagueManagerContent: React.FC = () => {
               <h3 className="text-xl font-semibold mb-2">
                 {position === "FLEX" ? "FLEX (RB/WR/TE)" : position}
               </h3>
-              {["RB", "WR", "TE", "QB", "K", "DEF"].includes(position) &&
+              {["RB", "WR", "TE", "QB", "K", "DEF", "FLEX"].includes(
+                position
+              ) &&
                 worstRankedUserPlayersByPosition[position] && (
                   <div className="mb-4">
                     <p className="font-semibold mb-2">
@@ -170,6 +172,7 @@ const LeagueManagerContent: React.FC = () => {
                     </p>
                     <PlayerTable
                       player={worstRankedUserPlayersByPosition[position]}
+                      isFlex={position === "FLEX"}
                     />
                   </div>
                 )}
@@ -179,6 +182,7 @@ const LeagueManagerContent: React.FC = () => {
               {rankedAvailablePlayersByPosition[position]?.length > 0 ? (
                 <AvailablePlayersTable
                   players={rankedAvailablePlayersByPosition[position] || []}
+                  isFlex={position === "FLEX"}
                 />
               ) : (
                 <p className="italic text-gray-500">
@@ -292,9 +296,10 @@ const UpgradeOptionDisplay: React.FC<{
   </div>
 );
 
-const PlayerTable: React.FC<{ player: RosteredPlayer | DraftedPlayer }> = ({
-  player,
-}) => (
+const PlayerTable: React.FC<{
+  player: RosteredPlayer | DraftedPlayer;
+  isFlex?: boolean;
+}> = ({ player, isFlex = false }) => (
   <table className="w-full bg-gray-800 text-white mb-4">
     <thead className="bg-gray-700">
       <tr>
@@ -303,6 +308,12 @@ const PlayerTable: React.FC<{ player: RosteredPlayer | DraftedPlayer }> = ({
         <th className="px-4 py-2 text-left">Team</th>
         <th className="px-4 py-2 text-left">Tier</th>
         <th className="px-4 py-2 text-left">Rank</th>
+        {isFlex && (
+          <>
+            <th className="px-4 py-2 text-left">FLEX Tier</th>
+            <th className="px-4 py-2 text-left">FLEX Rank</th>
+          </>
+        )}
       </tr>
     </thead>
     <tbody>
@@ -312,14 +323,25 @@ const PlayerTable: React.FC<{ player: RosteredPlayer | DraftedPlayer }> = ({
         <td className="px-4 py-2">{player.team || "FA"}</td>
         <td className="px-4 py-2">{player.tier || "N/A"}</td>
         <td className="px-4 py-2">{player.rank || "N/A"}</td>
+        {isFlex && (
+          <>
+            <td className="px-4 py-2">
+              {(player as RosteredPlayer).flexTier || "N/A"}
+            </td>
+            <td className="px-4 py-2">
+              {(player as RosteredPlayer).flexRank || "N/A"}
+            </td>
+          </>
+        )}
       </tr>
     </tbody>
   </table>
 );
 
-const AvailablePlayersTable: React.FC<{ players: DraftedPlayer[] }> = ({
-  players,
-}) => (
+const AvailablePlayersTable: React.FC<{
+  players: DraftedPlayer[];
+  isFlex?: boolean;
+}> = ({ players, isFlex = false }) => (
   <table className="w-full bg-gray-800 text-white">
     <thead className="bg-gray-700">
       <tr>
@@ -343,7 +365,7 @@ const AvailablePlayersTable: React.FC<{ players: DraftedPlayer[] }> = ({
         ))
       ) : (
         <tr>
-          <td colSpan={5} className="px-4 py-2 text-center">
+          <td colSpan={isFlex ? 7 : 5} className="px-4 py-2 text-center">
             No available players for this position.
           </td>
         </tr>

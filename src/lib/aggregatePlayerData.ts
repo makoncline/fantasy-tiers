@@ -9,11 +9,8 @@ import {
   RankTierSchema,
   ScoringType,
 } from "./schemas";
-import {
-  FETCH_TO_ROSTER_SLOT_MAP,
-  POSITIONS_TO_SCORING_TYPES,
-  RANKINGS_DIR,
-} from "./fetchRankingData";
+import { POSITIONS_TO_SCORING_TYPES, RANKINGS_DIR } from "./fetchRankingData";
+import { FLEX_POSITIONS } from "./draftHelpers";
 
 export const AGGREGATE_DATA_DIR = path.resolve(process.cwd(), "public/data");
 
@@ -30,6 +27,8 @@ function ensureDirectoryExists(dirPath: string) {
 
 // Function to aggregate all parsed data into the final player data
 function aggregatePlayerData() {
+  console.log("All positions:", Object.keys(POSITIONS_TO_SCORING_TYPES));
+
   // Load and parse the parsed player data
   const playerData = z
     .record(SleeperPlayerSchema)
@@ -42,15 +41,21 @@ function aggregatePlayerData() {
 
   Object.entries(POSITIONS_TO_SCORING_TYPES).forEach(
     ([position, scoringTypes]) => {
+      console.log(`Starting to process position: ${position}`);
+
+      if (position === "undefined" || !position) {
+        console.error("Invalid position encountered:", position);
+        return; // Skip this iteration
+      }
+
       // Load and parse rankings for each scoring type and transform to an object keyed by player name
       const rankingsData: Record<
         ScoringType,
         Record<string, z.infer<typeof RankTierSchema>>
       > = scoringTypes.reduce((acc, scoringType) => {
-        const rosterSlotPosition = FETCH_TO_ROSTER_SLOT_MAP[position];
         const filePath = path.resolve(
           RANKINGS_DIR,
-          `${rosterSlotPosition}-${scoringType}-rankings.json`
+          `${position}-${scoringType}-rankings.json`
         );
         if (!fs.existsSync(filePath)) {
           console.error(
@@ -85,14 +90,6 @@ function aggregatePlayerData() {
         return acc;
       }, {} as Record<ScoringType, Record<string, z.infer<typeof RankTierSchema>>>);
 
-      // Combine all scoring types into a single set of player names
-      const rankedPlayerNames = new Set<string>();
-      Object.values(rankingsData).forEach((rankingsByScoringType) => {
-        Object.keys(rankingsByScoringType).forEach((name) =>
-          rankedPlayerNames.add(name)
-        );
-      });
-
       console.log(`Processing ${position}`);
 
       const finalPlayerData: Record<
@@ -100,15 +97,25 @@ function aggregatePlayerData() {
         z.infer<typeof PlayerWithRankingsSchema>
       > = {};
 
-      Array.from(rankedPlayerNames).forEach((playerName) => {
-        const player = Object.values(playerData).find(
-          (p) => normalizePlayerName(p.name) === playerName
-        );
+      let playerCount = 0;
 
-        if (!player) {
-          console.log(`Player not found in Sleeper data: ${playerName}`);
-          return;
+      // Process all players in playerData instead of only ranked players
+      Object.values(playerData).forEach((player) => {
+        if (position === "ALL") {
+          // No filtering for ALL
+        } else if (position === "FLEX") {
+          if (!FLEX_POSITIONS.includes(player.position as any)) {
+            return;
+          }
+        } else {
+          if (player.position !== position) {
+            return;
+          }
         }
+
+        playerCount++;
+
+        const playerName = normalizePlayerName(player.name);
 
         // Build the rankings by scoring type
         const rankingsByScoringType = {
@@ -139,12 +146,16 @@ function aggregatePlayerData() {
           PlayerWithRankingsSchema.parse(finalPlayer);
       });
 
+      console.log(`Processed ${playerCount} players for ${position}`);
+
       // Ensure the directory exists before writing the file
       ensureDirectoryExists(AGGREGATE_DATA_DIR);
 
-      const rosterSlotPosition = FETCH_TO_ROSTER_SLOT_MAP[position];
       // Update this part to use the new function
-      const outputFilePath = getAggregateDataFilePath(rosterSlotPosition);
+      const outputFilePath = getAggregateDataFilePath(position);
+      console.log(
+        `Writing aggregate data for position: ${position} to ${outputFilePath}`
+      );
 
       fs.writeFileSync(
         outputFilePath,
