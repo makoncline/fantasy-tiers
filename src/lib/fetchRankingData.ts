@@ -25,11 +25,11 @@ const ALL_SUFFIX_FOR_SCORING: Record<ScoringType, string> = {
 export const POSITIONS_TO_SCORING_TYPES: Record<string, ScoringType[]> = {
   QB: ["std"],
   K: ["std"],
-  DST: ["std"],
+  DEF: ["std"],
   RB: ["std", "ppr", "half"],
   WR: ["std", "ppr", "half"],
   TE: ["std", "ppr", "half"],
-  FLX: ["std", "ppr", "half"],
+  FLEX: ["std", "ppr", "half"],
   ALL: ["std", "ppr", "half"],
 };
 
@@ -38,16 +38,16 @@ if (!fs.existsSync(RANKINGS_DIR)) {
   fs.mkdirSync(RANKINGS_DIR, { recursive: true });
 }
 
-export const FETCH_TO_ROSTER_SLOT_MAP: Record<string, string> = {
-  QB: "QB",
-  RB: "RB",
-  WR: "WR",
-  TE: "TE",
-  K: "K",
-  DST: "DEF",
-  FLX: "FLEX",
-  ALL: "ALL",
-};
+// export const FETCH_TO_ROSTER_SLOT_MAP: Record<string, string> = {
+//   QB: "QB",
+//   RB: "RB",
+//   WR: "WR",
+//   TE: "TE",
+//   K: "K",
+//   DST: "DEF",
+//   FLX: "FLEX",
+//   ALL: "ALL",
+// };
 
 async function fetchAndSaveRankings(
   fetchPosition: string,
@@ -62,14 +62,13 @@ async function fetchAndSaveRankings(
     `Fetching rankings for ${fetchPosition} ${scoringType} from ${url}`
   );
 
-  const rosterSlotPosition = FETCH_TO_ROSTER_SLOT_MAP[fetchPosition];
   const filePath = path.resolve(
     RANKINGS_DIR,
-    `${rosterSlotPosition}-${scoringType}-rankings-raw.csv`
+    `${fetchPosition}-${scoringType}-rankings-raw.csv`
   );
   const metadataFilePath = path.resolve(
     RANKINGS_DIR,
-    `${rosterSlotPosition}-${scoringType}-metadata.json`
+    `${fetchPosition}-${scoringType}-metadata.json`
   );
 
   try {
