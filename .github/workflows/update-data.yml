@@ -1,9 +1,9 @@
 name: Update Rankings
 
-# Run this job every 6 hours
+# Run this job at midnight (00:00) every day
 on:
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "0 0 * * *"
 
   # Allows you to manually trigger the workflow if needed
   workflow_dispatch:
@@ -24,8 +24,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run fetch-ranking-data script
-        run: npm run fetch-ranking-data
+      - name: Run fetch-data script
+        run: npm run fetch-data
 
       - name: Run parse-data script
         run: npm run parse-data

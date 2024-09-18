@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "fetch-data": "npx tsx src/lib/fetchTeamData.ts && npx tsx src/lib/fetchPlayerData.ts && npx tsx src/lib/fetchRankingData.ts",
+    "fetch-ranking-data": "npx tsx src/lib/fetchRankingData.ts",
     "parse-data": "npx tsx src/lib/parseTeamData.ts && npx tsx src/lib/parsePlayerData.ts && npx tsx src/lib/parseRankingData.ts && npx tsx src/lib/aggregatePlayerData.ts"
   },
   "dependencies": {

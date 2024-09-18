@@ -38,26 +38,27 @@ if (!fs.existsSync(RANKINGS_DIR)) {
   fs.mkdirSync(RANKINGS_DIR, { recursive: true });
 }
 
-// export const FETCH_TO_ROSTER_SLOT_MAP: Record<string, string> = {
-//   QB: "QB",
-//   RB: "RB",
-//   WR: "WR",
-//   TE: "TE",
-//   K: "K",
-//   DST: "DEF",
-//   FLX: "FLEX",
-//   ALL: "ALL",
-// };
+export const ROSTER_SLOT_TO_RANKING_DATA_ABBV: Record<string, string> = {
+  QB: "QB",
+  RB: "RB",
+  WR: "WR",
+  TE: "TE",
+  K: "K",
+  DEF: "DST",
+  FLEX: "FLX",
+  ALL: "ALL",
+};
 
 async function fetchAndSaveRankings(
   fetchPosition: string,
   scoringType: ScoringType
 ) {
+  const rankingDataAbbv = ROSTER_SLOT_TO_RANKING_DATA_ABBV[fetchPosition];
   const suffix =
     fetchPosition === "ALL"
       ? ALL_SUFFIX_FOR_SCORING[scoringType]
       : SUFFIX_FOR_SCORING[scoringType];
-  const url = `https://s3-us-west-1.amazonaws.com/fftiers/out/weekly-${fetchPosition}${suffix}.csv`;
+  const url = `https://s3-us-west-1.amazonaws.com/fftiers/out/weekly-${rankingDataAbbv}${suffix}.csv`;
   console.log(
     `Fetching rankings for ${fetchPosition} ${scoringType} from ${url}`
   );
