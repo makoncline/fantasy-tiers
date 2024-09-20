@@ -631,15 +631,15 @@
     "bye_week": "7",
     "rankingsByScoringType": {
       "std": {
-        "rank": 33,
-        "tier": 7
-      },
-      "ppr": {
-        "rank": 33,
+        "rank": 32,
         "tier": 8
       },
+      "ppr": {
+        "rank": 35,
+        "tier": 9
+      },
       "half": {
-        "rank": 33,
+        "rank": 35,
         "tier": 8
       }
     }
@@ -652,12 +652,12 @@
     "bye_week": "14",
     "rankingsByScoringType": {
       "std": {
-        "rank": 7,
+        "rank": 8,
         "tier": 2
       },
       "ppr": {
-        "rank": 12,
-        "tier": 3
+        "rank": 15,
+        "tier": 4
       },
       "half": {
         "rank": 10,
@@ -1020,18 +1020,9 @@
     "team": "HOU",
     "bye_week": "14",
     "rankingsByScoringType": {
-      "std": {
-        "rank": 27,
-        "tier": 6
-      },
-      "ppr": {
-        "rank": 26,
-        "tier": 6
-      },
-      "half": {
-        "rank": 24,
-        "tier": 6
-      }
+      "std": null,
+      "ppr": null,
+      "half": null
     }
   },
   "4029": {
@@ -1066,16 +1057,16 @@
     "bye_week": "12",
     "rankingsByScoringType": {
       "std": {
-        "rank": 12,
-        "tier": 3
+        "rank": 5,
+        "tier": 2
       },
       "ppr": {
-        "rank": 6,
-        "tier": 2
+        "rank": 3,
+        "tier": 1
       },
       "half": {
-        "rank": 7,
-        "tier": 2
+        "rank": 4,
+        "tier": 1
       }
     }
   },
@@ -1110,9 +1101,18 @@
     "team": "CLE",
     "bye_week": "10",
     "rankingsByScoringType": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 36,
+        "tier": 9
+      },
+      "ppr": {
+        "rank": 38,
+        "tier": 10
+      },
+      "half": {
+        "rank": 38,
+        "tier": 9
+      }
     }
   },
   "4137": {
@@ -1123,16 +1123,16 @@
     "bye_week": "11",
     "rankingsByScoringType": {
       "std": {
-        "rank": 11,
+        "rank": 12,
         "tier": 3
       },
       "ppr": {
-        "rank": 13,
-        "tier": 3
+        "rank": 12,
+        "tier": 4
       },
       "half": {
         "rank": 12,
-        "tier": 3
+        "tier": 4
       }
     }
   },
@@ -1143,14 +1143,17 @@
     "team": "KC",
     "bye_week": "6",
     "rankingsByScoringType": {
-      "std": null,
-      "ppr": {
-        "rank": 36,
+      "std": {
+        "rank": 39,
         "tier": 9
       },
+      "ppr": {
+        "rank": 31,
+        "tier": 8
+      },
       "half": {
-        "rank": 37,
-        "tier": 9
+        "rank": 33,
+        "tier": 8
       }
     }
   },
@@ -1238,11 +1241,11 @@
         "tier": 5
       },
       "ppr": {
-        "rank": 19,
+        "rank": 20,
         "tier": 5
       },
       "half": {
-        "rank": 22,
+        "rank": 21,
         "tier": 5
       }
     }
@@ -1519,15 +1522,15 @@
     "bye_week": "14",
     "rankingsByScoringType": {
       "std": {
-        "rank": 34,
-        "tier": 7
+        "rank": 33,
+        "tier": 8
       },
       "ppr": {
-        "rank": 31,
-        "tier": 7
+        "rank": 32,
+        "tier": 8
       },
       "half": {
-        "rank": 32,
+        "rank": 31,
         "tier": 8
       }
     }
@@ -1648,15 +1651,15 @@
     "bye_week": "5",
     "rankingsByScoringType": {
       "std": {
-        "rank": 3,
+        "rank": 4,
         "tier": 1
       },
       "ppr": {
-        "rank": 3,
+        "rank": 5,
         "tier": 1
       },
       "half": {
-        "rank": 3,
+        "rank": 5,
         "tier": 1
       }
     }
@@ -2053,15 +2056,12 @@
     "bye_week": "5",
     "rankingsByScoringType": {
       "std": {
-        "rank": 32,
-        "tier": 7
-      },
-      "ppr": {
-        "rank": 38,
+        "rank": 35,
         "tier": 9
       },
+      "ppr": null,
       "half": {
-        "rank": 35,
+        "rank": 39,
         "tier": 9
       }
     }
@@ -2410,8 +2410,8 @@
     "bye_week": "10",
     "rankingsByScoringType": {
       "std": {
-        "rank": 9,
-        "tier": 2
+        "rank": 11,
+        "tier": 3
       },
       "ppr": {
         "rank": 10,
@@ -2455,16 +2455,16 @@
     "bye_week": "5",
     "rankingsByScoringType": {
       "std": {
-        "rank": 16,
+        "rank": 18,
         "tier": 4
       },
       "ppr": {
-        "rank": 20,
-        "tier": 5
+        "rank": 21,
+        "tier": 6
       },
       "half": {
-        "rank": 18,
-        "tier": 4
+        "rank": 20,
+        "tier": 5
       }
     }
   },
@@ -2524,16 +2524,16 @@
     "bye_week": "5",
     "rankingsByScoringType": {
       "std": {
-        "rank": 19,
-        "tier": 5
+        "rank": 17,
+        "tier": 4
       },
       "ppr": {
-        "rank": 21,
+        "rank": 17,
         "tier": 5
       },
       "half": {
-        "rank": 19,
-        "tier": 5
+        "rank": 17,
+        "tier": 4
       }
     }
   },
@@ -2568,15 +2568,9 @@
     "team": "LV",
     "bye_week": "10",
     "rankingsByScoringType": {
-      "std": {
-        "rank": 37,
-        "tier": 8
-      },
+      "std": null,
       "ppr": null,
-      "half": {
-        "rank": 40,
-        "tier": 9
-      }
+      "half": null
     }
   },
   "5995": {
@@ -2719,16 +2713,16 @@
     "bye_week": "11",
     "rankingsByScoringType": {
       "std": {
-        "rank": 29,
-        "tier": 6
-      },
-      "ppr": {
         "rank": 28,
         "tier": 6
       },
+      "ppr": {
+        "rank": 27,
+        "tier": 8
+      },
       "half": {
-        "rank": 29,
-        "tier": 6
+        "rank": 27,
+        "tier": 7
       }
     }
   },
@@ -3232,15 +3226,15 @@
     "bye_week": "7",
     "rankingsByScoringType": {
       "std": {
-        "rank": 28,
-        "tier": 6
-      },
-      "ppr": {
         "rank": 25,
         "tier": 6
       },
+      "ppr": {
+        "rank": 24,
+        "tier": 7
+      },
       "half": {
-        "rank": 26,
+        "rank": 24,
         "tier": 6
       }
     }
@@ -3253,16 +3247,16 @@
     "bye_week": "5",
     "rankingsByScoringType": {
       "std": {
-        "rank": 20,
+        "rank": 23,
         "tier": 5
       },
       "ppr": {
-        "rank": 22,
-        "tier": 5
+        "rank": 23,
+        "tier": 6
       },
       "half": {
-        "rank": 21,
-        "tier": 5
+        "rank": 23,
+        "tier": 6
       }
     }
   },
@@ -3274,15 +3268,15 @@
     "bye_week": "14",
     "rankingsByScoringType": {
       "std": {
-        "rank": 5,
-        "tier": 1
+        "rank": 6,
+        "tier": 2
       },
       "ppr": {
-        "rank": 4,
+        "rank": 8,
         "tier": 2
       },
       "half": {
-        "rank": 5,
+        "rank": 7,
         "tier": 2
       }
     }
@@ -3319,16 +3313,16 @@
     "bye_week": "12",
     "rankingsByScoringType": {
       "std": {
-        "rank": 24,
+        "rank": 20,
         "tier": 5
       },
       "ppr": {
-        "rank": 24,
+        "rank": 22,
         "tier": 6
       },
       "half": {
-        "rank": 23,
-        "tier": 6
+        "rank": 22,
+        "tier": 5
       }
     }
   },
@@ -3567,9 +3561,18 @@
     "team": "DAL",
     "bye_week": "7",
     "rankingsByScoringType": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 37,
+        "tier": 9
+      },
+      "ppr": {
+        "rank": 37,
+        "tier": 10
+      },
+      "half": {
+        "rank": 37,
+        "tier": 9
+      }
     }
   },
   "7038": {
@@ -3904,16 +3907,16 @@
     "bye_week": "9",
     "rankingsByScoringType": {
       "std": {
-        "rank": 23,
-        "tier": 5
+        "rank": 26,
+        "tier": 6
       },
       "ppr": {
-        "rank": 27,
-        "tier": 6
+        "rank": 28,
+        "tier": 8
       },
       "half": {
-        "rank": 27,
-        "tier": 6
+        "rank": 28,
+        "tier": 7
       }
     }
   },
@@ -3974,15 +3977,15 @@
     "rankingsByScoringType": {
       "std": {
         "rank": 14,
-        "tier": 3
+        "tier": 4
       },
       "ppr": {
         "rank": 11,
-        "tier": 3
+        "tier": 4
       },
       "half": {
         "rank": 13,
-        "tier": 3
+        "tier": 4
       }
     }
   },
@@ -4095,7 +4098,7 @@
       },
       "ppr": {
         "rank": 30,
-        "tier": 7
+        "tier": 8
       },
       "half": {
         "rank": 30,
@@ -4123,15 +4126,15 @@
     "bye_week": "11",
     "rankingsByScoringType": {
       "std": {
-        "rank": 31,
+        "rank": 29,
         "tier": 7
       },
       "ppr": {
-        "rank": 32,
-        "tier": 7
+        "rank": 29,
+        "tier": 8
       },
       "half": {
-        "rank": 31,
+        "rank": 29,
         "tier": 7
       }
     }
@@ -4192,7 +4195,7 @@
     "bye_week": "14",
     "rankingsByScoringType": {
       "std": {
-        "rank": 17,
+        "rank": 15,
         "tier": 4
       },
       "ppr": {
@@ -4200,7 +4203,7 @@
         "tier": 4
       },
       "half": {
-        "rank": 16,
+        "rank": 15,
         "tier": 4
       }
     }
@@ -4549,16 +4552,16 @@
     "bye_week": "11",
     "rankingsByScoringType": {
       "std": {
-        "rank": 18,
-        "tier": 4
+        "rank": 21,
+        "tier": 5
       },
       "ppr": {
-        "rank": 16,
-        "tier": 4
+        "rank": 19,
+        "tier": 5
       },
       "half": {
-        "rank": 17,
-        "tier": 4
+        "rank": 19,
+        "tier": 5
       }
     }
   },
@@ -4571,11 +4574,11 @@
     "rankingsByScoringType": {
       "std": {
         "rank": 10,
-        "tier": 2
+        "tier": 3
       },
       "ppr": {
         "rank": 9,
-        "tier": 3
+        "tier": 2
       },
       "half": {
         "rank": 9,
@@ -4591,15 +4594,15 @@
     "bye_week": "10",
     "rankingsByScoringType": {
       "std": {
-        "rank": 26,
+        "rank": 24,
         "tier": 6
       },
       "ppr": {
-        "rank": 29,
-        "tier": 6
+        "rank": 26,
+        "tier": 7
       },
       "half": {
-        "rank": 28,
+        "rank": 25,
         "tier": 6
       }
     }
@@ -4612,15 +4615,15 @@
     "bye_week": "10",
     "rankingsByScoringType": {
       "std": {
-        "rank": 25,
+        "rank": 27,
         "tier": 6
       },
       "ppr": {
-        "rank": 23,
-        "tier": 6
+        "rank": 25,
+        "tier": 7
       },
       "half": {
-        "rank": 25,
+        "rank": 26,
         "tier": 6
       }
     }
@@ -4649,12 +4652,12 @@
         "tier": 3
       },
       "ppr": {
-        "rank": 15,
+        "rank": 16,
         "tier": 4
       },
       "half": {
         "rank": 14,
-        "tier": 3
+        "tier": 4
       }
     }
   },
@@ -4702,16 +4705,16 @@
     "bye_week": "14",
     "rankingsByScoringType": {
       "std": {
-        "rank": 15,
+        "rank": 16,
         "tier": 4
       },
       "ppr": {
-        "rank": 17,
-        "tier": 4
+        "rank": 18,
+        "tier": 5
       },
       "half": {
-        "rank": 15,
-        "tier": 4
+        "rank": 18,
+        "tier": 5
       }
     }
   },
@@ -4723,7 +4726,7 @@
     "bye_week": "12",
     "rankingsByScoringType": {
       "std": {
-        "rank": 2,
+        "rank": 3,
         "tier": 1
       },
       "ppr": {
@@ -4731,7 +4734,7 @@
         "tier": 1
       },
       "half": {
-        "rank": 1,
+        "rank": 2,
         "tier": 1
       }
     }
@@ -4960,16 +4963,16 @@
     "bye_week": "9",
     "rankingsByScoringType": {
       "std": {
-        "rank": 36,
-        "tier": 8
+        "rank": 34,
+        "tier": 9
       },
       "ppr": {
-        "rank": 34,
-        "tier": 8
+        "rank": 33,
+        "tier": 9
       },
       "half": {
         "rank": 34,
-        "tier": 9
+        "tier": 8
       }
     }
   },
@@ -4981,12 +4984,15 @@
     "bye_week": "6",
     "rankingsByScoringType": {
       "std": {
-        "rank": 38,
-        "tier": 8
+        "rank": 40,
+        "tier": 9
       },
-      "ppr": null,
+      "ppr": {
+        "rank": 39,
+        "tier": 10
+      },
       "half": {
-        "rank": 38,
+        "rank": 40,
         "tier": 9
       }
     }
@@ -5107,15 +5113,15 @@
     "bye_week": "9",
     "rankingsByScoringType": {
       "std": {
-        "rank": 4,
+        "rank": 2,
         "tier": 1
       },
       "ppr": {
-        "rank": 5,
-        "tier": 2
+        "rank": 4,
+        "tier": 1
       },
       "half": {
-        "rank": 4,
+        "rank": 3,
         "tier": 1
       }
     }
@@ -5260,11 +5266,11 @@
     "bye_week": "5",
     "rankingsByScoringType": {
       "std": {
-        "rank": 8,
-        "tier": 2
+        "rank": 9,
+        "tier": 3
       },
       "ppr": {
-        "rank": 8,
+        "rank": 7,
         "tier": 2
       },
       "half": {
@@ -5304,14 +5310,8 @@
     "team": "CIN",
     "bye_week": "12",
     "rankingsByScoringType": {
-      "std": {
-        "rank": 40,
-        "tier": 8
-      },
-      "ppr": {
-        "rank": 39,
-        "tier": 9
-      },
+      "std": null,
+      "ppr": null,
       "half": null
     }
   },
@@ -5335,11 +5335,11 @@
     "bye_week": "6",
     "rankingsByScoringType": {
       "std": {
-        "rank": 6,
+        "rank": 7,
         "tier": 2
       },
       "ppr": {
-        "rank": 7,
+        "rank": 6,
         "tier": 2
       },
       "half": {
@@ -5403,18 +5403,12 @@
     "team": "TEN",
     "bye_week": "5",
     "rankingsByScoringType": {
-      "std": {
-        "rank": 39,
-        "tier": 8
-      },
+      "std": null,
       "ppr": {
-        "rank": 35,
-        "tier": 9
+        "rank": 40,
+        "tier": 10
       },
-      "half": {
-        "rank": 39,
-        "tier": 9
-      }
+      "half": null
     }
   },
   "9509": {
@@ -5433,7 +5427,7 @@
         "tier": 1
       },
       "half": {
-        "rank": 2,
+        "rank": 1,
         "tier": 1
       }
     }
@@ -5482,16 +5476,16 @@
     "bye_week": "10",
     "rankingsByScoringType": {
       "std": {
-        "rank": 21,
+        "rank": 19,
         "tier": 5
       },
       "ppr": {
-        "rank": 18,
+        "rank": 13,
         "tier": 4
       },
       "half": {
-        "rank": 20,
-        "tier": 5
+        "rank": 16,
+        "tier": 4
       }
     }
   },
@@ -5875,10 +5869,7 @@
     "bye_week": "14",
     "rankingsByScoringType": {
       "std": null,
-      "ppr": {
-        "rank": 40,
-        "tier": 9
-      },
+      "ppr": null,
       "half": null
     }
   },
@@ -6105,9 +6096,18 @@
     "team": "KC",
     "bye_week": "6",
     "rankingsByScoringType": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 31,
+        "tier": 8
+      },
+      "ppr": {
+        "rank": 34,
+        "tier": 9
+      },
+      "half": {
+        "rank": 32,
+        "tier": 8
+      }
     }
   },
   "11583": {
@@ -6130,12 +6130,12 @@
     "bye_week": "11",
     "rankingsByScoringType": {
       "std": {
-        "rank": 35,
-        "tier": 8
+        "rank": 38,
+        "tier": 9
       },
       "ppr": {
-        "rank": 37,
-        "tier": 9
+        "rank": 36,
+        "tier": 10
       },
       "half": {
         "rank": 36,
