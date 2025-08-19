@@ -2217,8 +2217,8 @@
     "player_id": "7143",
     "name": "ben dinucci",
     "position": "QB",
-    "team": null,
-    "bye_week": null,
+    "team": "ATL",
+    "bye_week": "5",
     "rankingsByScoringType": {
       "std": null,
       "ppr": null,
@@ -3402,8 +3402,8 @@
     "player_id": "11961",
     "name": "emory jones",
     "position": "QB",
-    "team": "ATL",
-    "bye_week": "5",
+    "team": null,
+    "bye_week": null,
     "rankingsByScoringType": {
       "std": null,
       "ppr": null,
@@ -3760,12 +3760,15 @@
   },
   "12522": {
     "player_id": "12522",
-    "name": "cameron ward",
+    "name": "cam ward",
     "position": "QB",
     "team": "TEN",
     "bye_week": "10",
     "rankingsByScoringType": {
-      "std": null,
+      "std": {
+        "rank": 26,
+        "tier": 8
+      },
       "ppr": null,
       "half": null
     }
