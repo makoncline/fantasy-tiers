@@ -14,7 +14,7 @@ export function loadAggregatePlayerDataServer(
 ): Record<string, z.infer<typeof PlayerWithRankingsSchema>> {
   const filePath = getAggregateDataFilePath(position);
   const data = fs.readFileSync(filePath, "utf-8");
-  return z.record(PlayerWithRankingsSchema).parse(JSON.parse(data));
+  return z.record(z.string(), PlayerWithRankingsSchema).parse(JSON.parse(data));
 }
 
 // Server-side function to get players by scoring type

@@ -31,12 +31,12 @@ function aggregatePlayerData() {
 
   // Load and parse the parsed player data
   const playerData = z
-    .record(SleeperPlayerSchema)
+    .record(z.string(), SleeperPlayerSchema)
     .parse(JSON.parse(fs.readFileSync(PLAYER_DATA_FILE_PATH, "utf-8")));
 
   // Load and parse the parsed team data to map bye weeks
   const teamData = z
-    .record(TeamSchema)
+    .record(z.string(), TeamSchema)
     .parse(JSON.parse(fs.readFileSync(TEAM_DATA_FILE_PATH, "utf-8")));
 
   Object.entries(POSITIONS_TO_SCORING_TYPES).forEach(

@@ -24,7 +24,7 @@ export async function loadAggregatePlayerDataClient(
     throw new Error(`Failed to load aggregate player data for ${position}`);
   }
   const data = await response.json();
-  return z.record(PlayerWithRankingsSchema).parse(data);
+  return z.record(z.string(), PlayerWithRankingsSchema).parse(data);
 }
 
 // Client-side function to get players by scoring type
