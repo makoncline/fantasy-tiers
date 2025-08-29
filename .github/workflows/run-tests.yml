@@ -2,7 +2,7 @@ name: Run Tests
 
 on:
   pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
   test:
@@ -19,6 +19,13 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: 10.15.0
+      - name: Ensure pnpm available (fallback via Corepack)
+        run: |
+          if ! command -v pnpm >/dev/null 2>&1; then
+            corepack enable
+            corepack prepare pnpm@10.15.0 --activate
+          fi
+          pnpm --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Run tests
