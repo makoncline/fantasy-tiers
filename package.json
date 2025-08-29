@@ -10,6 +10,8 @@
     "fetch-data": "npx tsx src/lib/fetchTeamData.ts && npx tsx src/lib/fetchPlayerData.ts && npx tsx src/lib/fetchRankingData.ts",
     "fetch-ranking-data": "npx tsx src/lib/fetchRankingData.ts",
     "parse-data": "npx tsx src/lib/parseTeamData.ts && npx tsx src/lib/parsePlayerData.ts && npx tsx src/lib/parseRankingData.ts && npx tsx src/lib/aggregatePlayerData.ts",
+    "aggregate:fp": "node --import=tsx scripts/fp/aggregate-fantasypros.ts",
+    "fetch:fp": "node --import=tsx scripts/fp/fetch-fantasypros-all.ts",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run"
@@ -73,6 +75,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitest/ui": "^3.2.4",
+    "cheerio": "^1.1.2",
+    "dayjs": "^1.11.16",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
     "jsdom": "^26.1.0",
