@@ -1,15 +1,9 @@
-import React, {
-  createContext,
-  useContext,
-  useCallback,
-  useMemo,
-  useEffect,
-} from "react";
+import React, { createContext, useContext, useCallback, useMemo } from "react";
 import {
   useDraftDetails,
   useDraftPicks,
   usePlayersByScoringType,
-} from "@/lib/useDraftQueries";
+} from "@/app/draft-assistant/_lib/useDraftQueries";
 import {
   getDraftRecommendations,
   calculatePositionNeeds,
@@ -18,9 +12,9 @@ import {
   calculateTotalRemainingNeeds,
 } from "@/lib/draftHelpers";
 import { isRankedPlayer } from "@/lib/getPlayers";
-import { DraftedPlayer, Player, RankedPlayer } from "@/lib/schemas";
+import { DraftedPlayer, RankedPlayer, scoringTypeSchema } from "@/lib/schemas";
+import type { Position } from "../_lib/types";
 
-// Define a new interface for the recommendation structure
 interface Recommendation {
   keyPositions: RankedPlayer[];
   bestAvailable: RankedPlayer[];
@@ -31,9 +25,9 @@ interface Recommendation {
 interface ProcessedData {
   recommendations: Recommendation | null;
   availablePlayers: RankedPlayer[];
-  userPositionNeeds: Record<string, number>;
-  userPositionCounts: Record<string, number>;
-  draftWideNeeds: Record<string, number>;
+  userPositionNeeds: Partial<Record<Position, number>>;
+  userPositionCounts: Partial<Record<Position, number>>;
+  draftWideNeeds: Partial<Record<Position, number>>;
   userRoster: DraftedPlayer[] | null;
 }
 
@@ -49,6 +43,7 @@ interface DraftDataContextType extends ProcessedData {
     players: Error | null;
   };
   refetchData: () => void;
+  lastUpdatedAt: number | null;
 }
 
 const defaultContextValue: DraftDataContextType = {
@@ -69,6 +64,16 @@ const defaultContextValue: DraftDataContextType = {
     players: null,
   },
   refetchData: () => {},
+  lastUpdatedAt: null,
+};
+
+const EMPTY_PROCESSED: ProcessedData = {
+  recommendations: null,
+  availablePlayers: [],
+  userPositionNeeds: {},
+  userPositionCounts: {},
+  draftWideNeeds: {},
+  userRoster: null,
 };
 
 const DraftDataContext =
@@ -88,6 +93,7 @@ export function DraftDataProvider({
     isLoading: isLoadingDraftDetails,
     error: errorDraftDetails,
     refetch: refetchDraftDetails,
+    dataUpdatedAt: updatedAtDraftDetails,
   } = useDraftDetails(draftId);
 
   const {
@@ -95,14 +101,21 @@ export function DraftDataProvider({
     isLoading: isLoadingDraftPicks,
     error: errorDraftPicks,
     refetch: refetchDraftPicks,
+    dataUpdatedAt: updatedAtDraftPicks,
   } = useDraftPicks(draftId);
+
+  const parsedScoring = scoringTypeSchema.safeParse(
+    draftDetails?.metadata?.scoring_type
+  );
+  const scoringType = parsedScoring.success ? parsedScoring.data : undefined;
 
   const {
     data: playersMap,
     isLoading: isLoadingPlayers,
     error: errorPlayers,
     refetch: refetchPlayersMap,
-  } = usePlayersByScoringType(draftDetails?.metadata?.scoring_type);
+    dataUpdatedAt: updatedAtPlayers,
+  } = usePlayersByScoringType(scoringType);
 
   const loading = useMemo(
     () => ({
@@ -128,16 +141,11 @@ export function DraftDataProvider({
     refetchPlayersMap();
   }, [refetchDraftDetails, refetchDraftPicks, refetchPlayersMap]);
 
-  // Automatically refetch data when userId or draftId changes
-  useEffect(() => {
-    if (userId && draftId) {
-      refetchData();
-    }
-  }, [userId, draftId, refetchData]);
+  // React Query already refetches when keys change; manual refetch is for explicit refresh
 
   const processedData: ProcessedData = useMemo(() => {
     if (!draftDetails || !draftPicks || !playersMap) {
-      return defaultContextValue;
+      return EMPTY_PROCESSED;
     }
 
     const draftedPlayers = draftPicks.map((pick) => ({
@@ -153,21 +161,19 @@ export function DraftDataProvider({
       (player) => !draftedPlayerIds.includes(player.player_id)
     );
 
-    const rosterRequirements = {
-      QB: draftDetails.settings.slots_qb,
-      RB: draftDetails.settings.slots_rb,
-      WR: draftDetails.settings.slots_wr,
-      TE: draftDetails.settings.slots_te,
-      K: draftDetails.settings.slots_k,
-      DEF: draftDetails.settings.slots_def,
-      FLEX: draftDetails.settings.slots_flex,
+    const rosterRequirements: Record<Position | "BN", number> = {
+      QB: draftDetails.settings?.slots_qb ?? 0,
+      RB: draftDetails.settings?.slots_rb ?? 0,
+      WR: draftDetails.settings?.slots_wr ?? 0,
+      TE: draftDetails.settings?.slots_te ?? 0,
+      K: draftDetails.settings?.slots_k ?? 0,
+      DEF: draftDetails.settings?.slots_def ?? 0,
+      FLEX: draftDetails.settings?.slots_flex ?? 0,
       BN: 0,
     };
 
-    const draftSlots = Array.from(
-      { length: draftDetails.settings.teams },
-      (_, i) => i + 1
-    );
+    const teams = draftDetails.settings?.teams ?? 0;
+    const draftSlots = Array.from({ length: teams }, (_, i) => i + 1);
     const emptyRoster = {
       players: [] as DraftedPlayer[],
       remainingPositionRequirements: { ...rosterRequirements },
@@ -193,7 +199,7 @@ export function DraftDataProvider({
     const draftSlot = draftDetails.draft_order?.[userId];
 
     if (!draftSlot) {
-      return defaultContextValue;
+      return EMPTY_PROCESSED;
     }
 
     const userRoster = currentRosters[draftSlot];
@@ -223,8 +229,22 @@ export function DraftDataProvider({
       loading,
       error,
       refetchData,
+      lastUpdatedAt: Math.max(
+        0,
+        updatedAtDraftDetails || 0,
+        updatedAtDraftPicks || 0,
+        updatedAtPlayers || 0
+      ) || null,
     }),
-    [processedData, loading, error, refetchData]
+    [
+      processedData,
+      loading,
+      error,
+      refetchData,
+      updatedAtDraftDetails,
+      updatedAtDraftPicks,
+      updatedAtPlayers,
+    ]
   );
 
   return (

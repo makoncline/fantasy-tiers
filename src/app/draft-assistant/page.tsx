@@ -1,19 +1,11 @@
 "use client";
 
 import React, { Suspense } from "react";
-import dynamic from "next/dynamic";
-
-const DraftAssistantPageContent = dynamic(
-  () => import("./DraftAssistantContent"),
-  {
-    ssr: false,
-    loading: () => <div>Loading...</div>,
-  }
-);
+import DraftAssistantPageContent from "./DraftAssistantContent";
 
 export default function DraftAssistantPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div />}> 
       <DraftAssistantPageContent />
     </Suspense>
   );

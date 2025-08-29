@@ -11,7 +11,12 @@ import {
 import { fetchDraftPicks } from "@/lib/draftPicks";
 import { getErrorMessage } from "@/lib/util";
 import { getRankingLastUpdatedDate } from "@/lib/parseRankingData";
-import { DraftedPlayer, RosterSlot } from "@/lib/schemas";
+import {
+  DraftedPlayer,
+  RosterSlot,
+  scoringTypeSchema,
+  ScoringType,
+} from "@/lib/schemas";
 import { isRankedPlayer } from "@/lib/getPlayers";
 import { getPlayersByScoringTypeServer } from "@/lib/getPlayersServer";
 
@@ -44,7 +49,11 @@ export async function GET(req: NextRequest) {
       BN: 0,
     };
 
-    const scoring = draftDetails.metadata.scoring_type;
+    // Validate and narrow scoring type from external data
+    const scoring: ScoringType =
+      scoringTypeSchema.safeParse(draftDetails.metadata.scoring_type).success
+        ? (draftDetails.metadata.scoring_type as ScoringType)
+        : "ppr";
     const playersMap = getPlayersByScoringTypeServer(scoring);
     const draftPicks = await fetchDraftPicks(draftId);
     const draftedPlayers = draftPicks.map((pick) => ({

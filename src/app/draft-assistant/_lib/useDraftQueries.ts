@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { getPlayersByScoringTypeClient } from "./getPlayersClient";
-import { fetchDraftDetails, DraftDetails } from "./draftDetails";
-import { fetchDraftPicks } from "./draftPicks";
-import { ScoringType, DraftPick, DraftedPlayer } from "./schemas";
+import { getPlayersByScoringTypeClient } from "@/lib/getPlayersClient";
+import { fetchDraftDetails, DraftDetails } from "@/lib/draftDetails";
+import { fetchDraftPicks } from "@/lib/draftPicks";
+import { ScoringType, DraftPick, DraftedPlayer } from "@/lib/schemas";
 
 export function useDraftDetails(draftId: string) {
   return useQuery<DraftDetails, Error>({
-    queryKey: ["draftDetails", draftId],
+    queryKey: ["draft", draftId, "details"],
     queryFn: () => fetchDraftDetails(draftId),
     enabled: !!draftId,
   });
@@ -14,7 +14,7 @@ export function useDraftDetails(draftId: string) {
 
 export function useDraftPicks(draftId: string) {
   return useQuery<DraftPick[], Error>({
-    queryKey: ["draftPicks", draftId],
+    queryKey: ["draft", draftId, "picks"],
     queryFn: () => fetchDraftPicks(draftId),
     enabled: !!draftId,
   });
@@ -22,7 +22,7 @@ export function useDraftPicks(draftId: string) {
 
 export function usePlayersByScoringType(scoringType: ScoringType | undefined) {
   return useQuery<Record<string, DraftedPlayer>, Error>({
-    queryKey: ["playersByScoringType", scoringType],
+    queryKey: ["players", scoringType],
     queryFn: () =>
       scoringType
         ? getPlayersByScoringTypeClient(scoringType)
