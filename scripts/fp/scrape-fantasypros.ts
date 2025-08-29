@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { load } from "cheerio";
+import { load, type CheerioAPI } from "cheerio";
 import dayjs from "dayjs";
 
 type Position = "QB" | "RB" | "WR" | "TE" | "FLEX" | "K" | "DST";
@@ -47,10 +47,7 @@ function normalizeHeader(text: string): string {
 
 type ColumnSpec = { group: string; label: string; key: string };
 
-function parseColumns(
-  $: cheerio.CheerioAPI,
-  table: cheerio.Element
-): ColumnSpec[] {
+function parseColumns($: CheerioAPI, table: any): ColumnSpec[] {
   const thead = $(table).find("thead");
   const headerRows = thead.find("tr").toArray();
   if (!headerRows.length) return [];
