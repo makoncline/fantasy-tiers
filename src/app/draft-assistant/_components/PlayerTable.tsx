@@ -19,7 +19,13 @@ export type PlayerRow = {
   bye_week?: number | string;
 };
 
-export function PlayerTable({ rows }: { rows: PlayerRow[] }) {
+export function PlayerTable({
+  rows,
+  renderActions,
+}: {
+  rows: PlayerRow[];
+  renderActions?: (row: PlayerRow) => React.ReactNode;
+}) {
   return (
     <Table>
       <TableHeader>
@@ -30,6 +36,7 @@ export function PlayerTable({ rows }: { rows: PlayerRow[] }) {
           <TableHead>Tier</TableHead>
           <TableHead>Team</TableHead>
           <TableHead>Bye Week</TableHead>
+          {renderActions ? <TableHead className="w-10" /> : null}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -41,6 +48,7 @@ export function PlayerTable({ rows }: { rows: PlayerRow[] }) {
             <TableCell>{p.tier ?? "—"}</TableCell>
             <TableCell>{p.team ?? "—"}</TableCell>
             <TableCell>{p.bye_week ?? "—"}</TableCell>
+            {renderActions ? <TableCell>{renderActions(p)}</TableCell> : null}
           </TableRow>
         ))}
       </TableBody>

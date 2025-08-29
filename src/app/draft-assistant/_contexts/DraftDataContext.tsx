@@ -12,7 +12,12 @@ import {
   calculateTotalRemainingNeeds,
 } from "@/lib/draftHelpers";
 import { isRankedPlayer } from "@/lib/getPlayers";
-import { DraftedPlayer, RankedPlayer, scoringTypeSchema } from "@/lib/schemas";
+import {
+  DraftedPlayer,
+  RankedPlayer,
+  scoringTypeSchema,
+  RosterSlot,
+} from "@/lib/schemas";
 import type { Position } from "../_lib/types";
 
 interface Recommendation {
@@ -29,6 +34,7 @@ interface ProcessedData {
   userPositionCounts: Partial<Record<Position, number>>;
   draftWideNeeds: Partial<Record<Position, number>>;
   userRoster: DraftedPlayer[] | null;
+  userRosterSlots: { slot: RosterSlot; player: DraftedPlayer | null }[];
 }
 
 interface DraftDataContextType extends ProcessedData {
@@ -53,6 +59,7 @@ const defaultContextValue: DraftDataContextType = {
   userPositionCounts: {},
   draftWideNeeds: {},
   userRoster: null,
+  userRosterSlots: [],
   loading: {
     draftDetails: false,
     draftPicks: false,
@@ -74,6 +81,7 @@ const EMPTY_PROCESSED: ProcessedData = {
   userPositionCounts: {},
   draftWideNeeds: {},
   userRoster: null,
+  userRosterSlots: [],
 };
 
 const DraftDataContext =
@@ -203,6 +211,85 @@ export function DraftDataProvider({
     }
 
     const userRoster = currentRosters[draftSlot];
+
+    // Build roster slots (starters + FLEX + BN)
+    const startersCount =
+      (draftDetails.settings?.slots_qb ?? 0) +
+      (draftDetails.settings?.slots_rb ?? 0) +
+      (draftDetails.settings?.slots_wr ?? 0) +
+      (draftDetails.settings?.slots_te ?? 0) +
+      (draftDetails.settings?.slots_k ?? 0) +
+      (draftDetails.settings?.slots_def ?? 0) +
+      (draftDetails.settings?.slots_flex ?? 0);
+    const rounds = draftDetails.settings?.rounds ?? 0;
+    const benchCount = Math.max(0, rounds - startersCount);
+
+    const slotsTemplate: RosterSlot[] = [
+      ...Array.from(
+        { length: draftDetails.settings?.slots_qb ?? 0 },
+        () => "QB" as RosterSlot
+      ),
+      ...Array.from(
+        { length: draftDetails.settings?.slots_rb ?? 0 },
+        () => "RB" as RosterSlot
+      ),
+      ...Array.from(
+        { length: draftDetails.settings?.slots_wr ?? 0 },
+        () => "WR" as RosterSlot
+      ),
+      ...Array.from(
+        { length: draftDetails.settings?.slots_te ?? 0 },
+        () => "TE" as RosterSlot
+      ),
+      ...Array.from(
+        { length: draftDetails.settings?.slots_flex ?? 0 },
+        () => "FLEX" as RosterSlot
+      ),
+      ...Array.from(
+        { length: draftDetails.settings?.slots_k ?? 0 },
+        () => "K" as RosterSlot
+      ),
+      ...Array.from(
+        { length: draftDetails.settings?.slots_def ?? 0 },
+        () => "DEF" as RosterSlot
+      ),
+      ...Array.from({ length: benchCount }, () => "BN" as RosterSlot),
+    ];
+
+    const userRosterSlots: {
+      slot: RosterSlot;
+      player: DraftedPlayer | null;
+    }[] = slotsTemplate.map((slot) => ({
+      slot,
+      player: null,
+    }));
+
+    if (userRoster) {
+      const findIndex = (s: RosterSlot) =>
+        userRosterSlots.findIndex((x) => x.slot === s && x.player === null);
+
+      userRoster.players.forEach((p) => {
+        // Try primary position slot
+        const posIndex = findIndex(p.position as RosterSlot);
+        if (posIndex !== -1) {
+          userRosterSlots[posIndex].player = p;
+          return;
+        }
+        // Try FLEX if eligible
+        if ((["RB", "WR", "TE"] as RosterSlot[]).includes(p.position as any)) {
+          const flexIndex = findIndex("FLEX");
+          if (flexIndex !== -1) {
+            userRosterSlots[flexIndex].player = p;
+            return;
+          }
+        }
+        // Fallback to bench
+        const bnIndex = findIndex("BN");
+        if (bnIndex !== -1) {
+          userRosterSlots[bnIndex].player = p;
+        }
+      });
+    }
     const nextPickRecommendations = userRoster
       ? getDraftRecommendations(
           availableRankedPlayers,
@@ -220,6 +307,7 @@ export function DraftDataProvider({
       userPositionCounts: userRoster?.rosterPositionCounts || {},
       draftWideNeeds: totalRemainingNeeds,
       userRoster: userRoster?.players || null,
+      userRosterSlots,
     };
   }, [draftDetails, draftPicks, playersMap, userId]);
 
@@ -229,12 +317,13 @@ export function DraftDataProvider({
       loading,
       error,
       refetchData,
-      lastUpdatedAt: Math.max(
-        0,
-        updatedAtDraftDetails || 0,
-        updatedAtDraftPicks || 0,
-        updatedAtPlayers || 0
-      ) || null,
+      lastUpdatedAt:
+        Math.max(
+          0,
+          updatedAtDraftDetails || 0,
+          updatedAtDraftPicks || 0,
+          updatedAtPlayers || 0
+        ) || null,
     }),
     [
       processedData,

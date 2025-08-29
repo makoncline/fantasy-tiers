@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import RosterSlots from "@/app/draft-assistant/_components/RosterSlots";
 
 function useTicker(intervalMs: number = 1000) {
   const [, force] = React.useReducer((x) => x + 1, 0);
@@ -39,6 +40,7 @@ export default function DraftAssistantContent() {
     error,
     refetchData,
     lastUpdatedAt,
+    userRosterSlots,
   } = useDraftData();
 
   const isLoading = Object.values(loading).some(Boolean);
@@ -73,7 +75,7 @@ export default function DraftAssistantContent() {
           <CardTitle>Your Roster</CardTitle>
         </CardHeader>
         <CardContent>
-          <UserRoster players={userRoster || []} />
+          <RosterSlots slots={userRosterSlots || []} />
         </CardContent>
       </Card>
 
@@ -126,7 +128,11 @@ export default function DraftAssistantContent() {
   );
 }
 
-function LastFetchIndicator({ lastUpdatedAt }: { lastUpdatedAt: number | null }) {
+function LastFetchIndicator({
+  lastUpdatedAt,
+}: {
+  lastUpdatedAt: number | null;
+}) {
   // Tick every second so the label stays fresh.
   useTicker(1000);
   if (!lastUpdatedAt) {
