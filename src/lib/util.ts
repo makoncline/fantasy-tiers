@@ -52,3 +52,17 @@ export const normalizePlayerName = (str: string) => {
 export const normalizePosition = (position: string) => {
   return position === "DST" ? "DEF" : position;
 };
+
+// Convert overall ECR (1-based) to round.pick label given team count
+export function ecrToRoundPick(
+  ecrOverall: number | null | undefined,
+  teams: number | null | undefined,
+  pad: boolean = true
+): string | null {
+  if (!ecrOverall || !teams || teams <= 0) return null;
+  const round = Math.ceil(ecrOverall / teams);
+  const pick = ((ecrOverall - 1) % teams) + 1;
+  const width = String(teams).length;
+  const pickStr = pad ? String(pick).padStart(width, "0") : String(pick);
+  return `${round}.${pickStr}`;
+}

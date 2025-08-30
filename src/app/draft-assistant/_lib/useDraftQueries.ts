@@ -64,7 +64,7 @@ export function useSleeperPlayersMetaStatic(enabled: boolean) {
 
 // New: load per-position combined aggregate shard
 export function useCombinedAggregate(
-  position: "ALL" | "QB" | "RB" | "WR" | "TE" | "FLEX",
+  position: "ALL" | "QB" | "RB" | "WR" | "TE" | "FLEX" | "DEF" | "K",
   enabled: boolean
 ) {
   return useQuery<Record<string, any>, Error>({

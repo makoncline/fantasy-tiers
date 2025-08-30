@@ -168,12 +168,18 @@ async function main() {
           string,
           string
         >;
-        // For DST, stats are not aligned with player schemas; blank them but keep ranks
-        if ((primaryPos || "").toUpperCase() === "DST") {
-          stats[s.toLowerCase()] = {};
-        } else {
-          stats[s.toLowerCase()] = rest;
+        const posUp = (primaryPos || "").toUpperCase();
+        const base: Record<string, string> = { ...rest };
+        // Normalize FantasyPros K/DST points keys so downstream can read FPTS_AVG/HIGH/LOW
+        if (posUp === "K" || posUp === "DST") {
+          const avg = (row as any)["FPTS_FPTS_AVG"] ?? (row as any)["FPTS_AVG"];
+          const hi = (row as any)["FPTS_FPTS_HIGH"] ?? (row as any)["FPTS_HIGH"];
+          const lo = (row as any)["FPTS_FPTS_LOW"] ?? (row as any)["FPTS_LOW"];
+          if (avg != null) base["FPTS_AVG"] = String(avg);
+          if (hi != null) base["FPTS_HIGH"] = String(hi);
+          if (lo != null) base["FPTS_LOW"] = String(lo);
         }
+        stats[s.toLowerCase()] = base;
       }
     });
 

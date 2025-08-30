@@ -14,8 +14,8 @@ export interface League {
   };
 }
 
-type Pos = "QB" | "RB" | "WR" | "TE";
-const CORE_POS: Pos[] = ["QB", "RB", "WR", "TE"];
+type Pos = "QB" | "RB" | "WR" | "TE" | "K" | "DEF";
+const CORE_POS: Pos[] = ["QB", "RB", "WR", "TE", "K", "DEF"];
 
 // Map scoring type to the keys used by various sources
 function scoringKeys(scoring: ScoringType) {
@@ -85,9 +85,10 @@ function getFpAdp(_entry: any, _scoring: ScoringType): number | null {
 
 // Group players by position and sort by FP points (desc)
 function groupByPosFpPts(players: any[], scoring: ScoringType): Record<Pos, { p: any; pts: number }[]> {
-  const by: Record<Pos, { p: any; pts: number }[]> = { QB: [], RB: [], WR: [], TE: [] } as const as any;
+  const by: Record<Pos, { p: any; pts: number }[]> = { QB: [], RB: [], WR: [], TE: [], K: [], DEF: [] } as const as any;
   for (const p of players) {
-    const pos = String(p?.position ?? "").toUpperCase() as Pos;
+    const raw = String(p?.position ?? "").toUpperCase();
+    const pos = (raw === "DST" ? "DEF" : raw) as Pos;
     if (!CORE_POS.includes(pos)) continue;
     const pts = getFpPts(p, scoring);
     if (pts == null) continue;
@@ -127,8 +128,10 @@ function computeFpBaselines(players: any[], league: League, scoring: ScoringType
     RB: (league.teams || 0) * (league.roster?.RB || 0) + flexTake.RB,
     WR: (league.teams || 0) * (league.roster?.WR || 0) + flexTake.WR,
     TE: (league.teams || 0) * (league.roster?.TE || 0) + flexTake.TE,
-  };
-  const base: Record<Pos, number> = { QB: 0, RB: 0, WR: 0, TE: 0 };
+    K: (league.teams || 0) * ((league.roster as any)?.K || 1),
+    DEF: (league.teams || 0) * (((league.roster as any)?.DEF || (league.roster as any)?.DST || 1) as number),
+  } as const;
+  const base: Record<Pos, number> = { QB: 0, RB: 0, WR: 0, TE: 0, K: 0, DEF: 0 };
   for (const pos of CORE_POS) {
     const n = starters[pos];
     const lst = by[pos];
@@ -175,8 +178,10 @@ function computeFpReplacementSlope(
     RB: (league.teams || 0) * (league.roster?.RB || 0) + flexTake.RB,
     WR: (league.teams || 0) * (league.roster?.WR || 0) + flexTake.WR,
     TE: (league.teams || 0) * (league.roster?.TE || 0) + flexTake.TE,
-  };
-  const slope: Record<Pos, number> = { QB: 0, RB: 0, WR: 0, TE: 0 };
+    K: (league.teams || 0) * ((league.roster as any)?.K || 1),
+    DEF: (league.teams || 0) * (((league.roster as any)?.DEF || (league.roster as any)?.DST || 1) as number),
+  } as const;
+  const slope: Record<Pos, number> = { QB: 0, RB: 0, WR: 0, TE: 0, K: 0, DEF: 0 };
   for (const pos of CORE_POS) {
     const lst = by[pos].map((x) => x.pts);
     const r = starters[pos];
@@ -206,7 +211,9 @@ function computeRemainingPositiveValuePercent(
     RB: (league.teams || 0) * (league.roster?.RB || 0) + flexTake.RB,
     WR: (league.teams || 0) * (league.roster?.WR || 0) + flexTake.WR,
     TE: (league.teams || 0) * (league.roster?.TE || 0) + flexTake.TE,
-  };
+    K: (league.teams || 0) * ((league.roster as any)?.K || 1),
+    DEF: (league.teams || 0) * (((league.roster as any)?.DEF || (league.roster as any)?.DST || 1) as number),
+  } as const;
 
   const out = new Map<string, number>();
   for (const pos of CORE_POS) {
@@ -268,7 +275,8 @@ export function enrichPlayers(players: any[], league: League): any[] {
   }
 
   return players.map((p) => {
-    const pos = String(p?.position ?? "").toUpperCase() as Pos;
+    const rawPos = String(p?.position ?? "").toUpperCase();
+    const pos = (rawPos === "DST" ? "DEF" : rawPos) as Pos;
 
     // Boris Chen
     const { rank: bc_rank, tier: bc_tier } = getBoris(p, scoring);
@@ -282,7 +290,8 @@ export function enrichPlayers(players: any[], league: League): any[] {
     const fp_adp = getFpAdp(p, scoring);
     const { ecrOverall: fp_rank_overall, tier: fp_tier, posRank: fp_rank_pos } = getFpRanks(p, scoring);
     const fp_baseline_pts = baselines[pos] ?? 0;
-    const fp_value = fp_pts == null ? null : Math.max(0, Math.round(fp_pts - fp_baseline_pts));
+    // Allow negative values below baseline; round to whole number
+    const fp_value = fp_pts == null ? null : Math.round(fp_pts - fp_baseline_pts);
     const local = localScarcity.get(p) ?? 0;
     const repl = replacementSlope[pos] ?? 0;
     const index = repl > 0 ? local / repl : 0; // dimensionless index

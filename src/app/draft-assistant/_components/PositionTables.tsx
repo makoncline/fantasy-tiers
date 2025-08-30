@@ -1,15 +1,30 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import PreviewPickDialog from "./PreviewPickDialog";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { PlayerTable, mapToPlayerRow, type PlayerRow } from "./PlayerTable";
 import { useCombinedAggregate } from "../_lib/useDraftQueries";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
 import enrichPlayers from "@/lib/enrichPlayers";
-import { normalizePlayerName } from "@/lib/util";
+import { normalizePlayerName, ecrToRoundPick } from "@/lib/util";
 import { SEASON_WEEKS } from "@/lib/constants";
 
 export default function PositionTables() {
-  const { league, beerSheetsBoard, availablePlayers } = useDraftData() as any;
+  const { league, beerSheetsBoard, availablePlayers, userRosterSlots } = useDraftData() as any;
+  const DEFAULT_POS_TABLE_LIMIT = 5;
+  const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
+  const toggleExpanded = (key: string) =>
+    setExpanded((s) => ({ ...s, [key]: !s[key] }));
+  const [previewOpen, setPreviewOpen] = React.useState(false);
+  const [previewPlayer, setPreviewPlayer] = React.useState<any | null>(null);
+  const onPreview = (row: PlayerRow) => {
+    const found = (availablePlayers as any[]).find((p: any) => p.player_id === row.player_id);
+    if (found) {
+      setPreviewPlayer(found);
+      setPreviewOpen(true);
+    }
+  };
 
   const { data: shardQB } = useCombinedAggregate("QB", true);
   const { data: shardRB } = useCombinedAggregate("RB", true);
@@ -66,6 +81,10 @@ export default function PositionTables() {
           sleeper_adp: hit.sleeper_adp ?? undefined,
           sleeper_rank_overall: hit.sleeper_rank_overall ?? undefined,
           fp_pts: hit.fp_pts ?? undefined,
+          ecr_round_pick:
+            hit.fp_rank_overall != null && league?.teams
+              ? ecrToRoundPick(Number(hit.fp_rank_overall), Number(league.teams))
+              : undefined,
           fp_rank_overall: hit.fp_rank_overall ?? undefined,
           fp_rank_pos: hit.fp_rank_pos ?? undefined,
           fp_tier: hit.fp_tier ?? undefined,
@@ -76,7 +95,10 @@ export default function PositionTables() {
           market_delta: hit.market_delta ?? undefined,
         } as PlayerRow;
       });
-      return merged.sort((a, b) => (Number(a.bc_rank ?? 1e9) as number) - (Number(b.bc_rank ?? 1e9) as number)).slice(0, 30);
+      return merged
+        .sort(
+          (a, b) => (Number(a.bc_rank ?? 1e9) as number) - (Number(b.bc_rank ?? 1e9) as number)
+        );
     } catch {
       return [] as PlayerRow[];
     }
@@ -109,12 +131,48 @@ export default function PositionTables() {
             </CardHeader>
             <CollapsibleContent>
               <CardContent className="pt-0">
-                <PlayerTable rows={rows as PlayerRow[]} sortable />
+                <PlayerTable
+                  rows={(expanded[String(label)] ? (rows as PlayerRow[]) : (rows as PlayerRow[]).slice(0, DEFAULT_POS_TABLE_LIMIT))}
+                  sortable
+                  colorizeValuePs
+                  renderActions={(r) => (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => onPreview(r)}
+                      aria-label="Preview"
+                      title="Preview"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    </Button>
+                  )}
+                />
+                {(rows as PlayerRow[]).length > DEFAULT_POS_TABLE_LIMIT ? (
+                  <div className="mt-3">
+                    <Button
+                      variant="ghost"
+                      onClick={() => toggleExpanded(String(label))}
+                      className="w-full"
+                    >
+                      {expanded[String(label)] ? "Show Less" : "Show More"}
+                    </Button>
+                  </div>
+                ) : null}
               </CardContent>
             </CollapsibleContent>
           </Collapsible>
         </Card>
       ))}
+      <PreviewPickDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        baseSlots={userRosterSlots || []}
+        player={previewPlayer}
+      />
     </div>
   );
 }

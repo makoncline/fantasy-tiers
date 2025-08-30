@@ -2,9 +2,9 @@ import React from "react";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
 import UserRoster from "@/app/draft-assistant/_components/userRoster";
 import PositionNeeds from "@/app/draft-assistant/_components/positionNeeds";
-import RecommendationsSection from "@/app/draft-assistant/_components/Recommendations";
+// import RecommendationsSection from "@/app/draft-assistant/_components/Recommendations";
 import AvailablePlayers from "@/app/draft-assistant/_components/availablePlayers";
-import PositionTables from "@/app/draft-assistant/_components/PositionTables";
+import PositionCompactTables from "@/app/draft-assistant/_components/PositionCompactTables";
 import { RefreshButton } from "@/app/draft-assistant/_components/RefreshButton";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -100,22 +100,10 @@ export default function DraftAssistantContent() {
 
       <Separator />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recommendations</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <RecommendationsSection
-            recommendations={recommendations}
-            loading={isLoading}
-          />
-        </CardContent>
-      </Card>
+      
 
-      <Separator />
-
-      {/* Position lists above the Available Ranked Players card */}
-      <PositionTables />
+      {/* Compact position lists */}
+      <PositionCompactTables />
 
       <Separator />
 

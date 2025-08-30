@@ -19,6 +19,10 @@ export type PlayerRow = {
   team?: string;
   bye_week?: number | string;
   // Enriched fields (optional)
+  ecr_round_pick?: string | null;
+  // Derived or extra fields for compact tables
+  val?: number | null;
+  ps?: number | null;
   bc_rank?: number | null;
   bc_tier?: number | null;
   sleeper_pts?: number | null;
@@ -40,22 +44,50 @@ export function PlayerTable({
   rows,
   renderActions,
   sortable = false,
+  colorizeValuePs = false,
+  draftedIds,
+  hideDrafted = false,
+  dimDrafted = false,
 }: {
   rows: PlayerRow[];
   renderActions?: (row: PlayerRow) => React.ReactNode;
   sortable?: boolean;
+  colorizeValuePs?: boolean;
+  draftedIds?: Set<string>;
+  hideDrafted?: boolean;
+  dimDrafted?: boolean;
 }) {
   const [sortKey, setSortKey] = React.useState<
     | "rank"
     | "bc_rank"
     | "sleeper_rank_overall"
+    | "sleeper_adp"
+    | "sleeper_pts"
+    | "fp_rank_overall"
+    | "fp_rank_pos"
+    | "fp_pts"
     | "fp_value"
+    | "fp_positional_scarcity_slope"
+    | "fp_player_owned_avg"
+    | "market_delta"
     | null
   >(null);
   const [sortDir, setSortDir] = React.useState<"asc" | "desc">("asc");
 
   const onHeaderClick = (
-    key: "rank" | "bc_rank" | "sleeper_rank_overall" | "fp_value"
+    key:
+      | "rank"
+      | "bc_rank"
+      | "sleeper_rank_overall"
+      | "sleeper_adp"
+      | "sleeper_pts"
+      | "fp_rank_overall"
+      | "fp_rank_pos"
+      | "fp_pts"
+      | "fp_value"
+      | "fp_positional_scarcity_slope"
+      | "fp_player_owned_avg"
+      | "market_delta"
   ) => {
     if (!sortable) return;
     if (sortKey === key) {
@@ -67,8 +99,11 @@ export function PlayerTable({
   };
 
   const sortedRows = React.useMemo(() => {
-    if (!sortable || !sortKey) return rows;
-    const arr = [...rows];
+    const base = hideDrafted && draftedIds
+      ? rows.filter((r) => !draftedIds.has(String(r.player_id)))
+      : rows;
+    if (!sortable || !sortKey) return base;
+    const arr = [...base];
     const cmp = (a: PlayerRow, b: PlayerRow) => {
       const get = (r: PlayerRow): number => {
         switch (sortKey) {
@@ -80,9 +115,29 @@ export function PlayerTable({
             return r.sleeper_rank_overall == null
               ? Number.POSITIVE_INFINITY
               : Number(r.sleeper_rank_overall);
+          case "sleeper_adp":
+            return r.sleeper_adp == null ? Number.POSITIVE_INFINITY : Number(r.sleeper_adp);
+          case "sleeper_pts":
+            return r.sleeper_pts == null ? Number.POSITIVE_INFINITY : Number(r.sleeper_pts);
+          case "fp_rank_overall":
+            return r.fp_rank_overall == null ? Number.POSITIVE_INFINITY : Number(r.fp_rank_overall);
+          case "fp_rank_pos":
+            return r.fp_rank_pos == null ? Number.POSITIVE_INFINITY : Number(r.fp_rank_pos);
+          case "fp_pts":
+            return r.fp_pts == null ? Number.POSITIVE_INFINITY : Number(r.fp_pts);
           case "fp_value":
             // sort descending by default for value (higher is better)
             return r.fp_value == null ? Number.NEGATIVE_INFINITY : Number(r.fp_value);
+          case "fp_positional_scarcity_slope":
+            return r.fp_positional_scarcity_slope == null
+              ? Number.NEGATIVE_INFINITY
+              : Number(r.fp_positional_scarcity_slope);
+          case "fp_player_owned_avg":
+            return r.fp_player_owned_avg == null
+              ? Number.NEGATIVE_INFINITY
+              : Number(r.fp_player_owned_avg);
+          case "market_delta":
+            return r.market_delta == null ? Number.NEGATIVE_INFINITY : Number(r.market_delta);
           default:
             return 0;
         }
@@ -94,7 +149,46 @@ export function PlayerTable({
     arr.sort(cmp);
     if (sortDir === "desc") arr.reverse();
     return arr;
-  }, [rows, sortable, sortKey, sortDir]);
+  }, [rows, sortable, sortKey, sortDir, hideDrafted, draftedIds]);
+
+  // Color ranges for VAL / PS if requested
+  const valRange = React.useMemo(() => {
+    if (!colorizeValuePs) return null;
+    const nums = rows
+      .map((r) => (r.fp_value != null ? r.fp_value : r.val != null ? r.val : null))
+      .filter((n): n is number => n != null);
+    const min = nums.length ? Math.min(...nums) : 0;
+    const max = nums.length ? Math.max(...nums) : 0;
+    return { min, max };
+  }, [rows, colorizeValuePs]);
+  const psRange = React.useMemo(() => {
+    if (!colorizeValuePs) return null;
+    const nums = rows
+      .map((r) =>
+        typeof r.fp_positional_scarcity_slope === "number"
+          ? r.fp_positional_scarcity_slope
+          : typeof r.ps === "number"
+          ? r.ps
+          : null
+      )
+      .filter((n): n is number => n != null && n > 0);
+    const min = nums.length ? Math.min(...nums) : 0;
+    const max = nums.length ? Math.max(...nums) : 0;
+    return { min, max };
+  }, [rows, colorizeValuePs]);
+  const mdRange = React.useMemo(() => {
+    if (!colorizeValuePs) return null;
+    const nums = rows.map((r) => (typeof r.market_delta === "number" ? r.market_delta : null)).filter((n): n is number => n != null);
+    const min = nums.length ? Math.min(...nums) : 0;
+    const max = nums.length ? Math.max(...nums) : 0;
+    return { min, max };
+  }, [rows, colorizeValuePs]);
+  const colorFor = React.useCallback((value: number | null, range: { min: number; max: number } | null) => {
+    if (!range || value == null || range.min === range.max) return undefined;
+    const t = Math.max(0, Math.min(1, (value - range.min) / (range.max - range.min)));
+    const hue = Math.round(120 * t); // 0=red -> 120=green
+    return `hsl(${hue} 60% 30% / 0.35)`;
+  }, []);
 
   return (
     <Table>
@@ -104,14 +198,14 @@ export function PlayerTable({
           <TableHead colSpan={2} className="whitespace-nowrap">Player</TableHead>
           <TableHead colSpan={2} className="whitespace-nowrap">Boris Chen</TableHead>
           <TableHead colSpan={3} className="whitespace-nowrap">Sleeper</TableHead>
-          <TableHead colSpan={8} className="whitespace-nowrap">FantasyPros</TableHead>
+          <TableHead colSpan={5} className="whitespace-nowrap">FantasyPros</TableHead>
+          <TableHead colSpan={3} className="whitespace-nowrap">Calc</TableHead>
           {renderActions ? <TableHead /> : null}
         </TableRow>
         {/* Sub headers */}
         <TableRow>
           <TableHead>Name</TableHead>
           <TableHead>TM/BW</TableHead>
-
           <TableHead
             onClick={() => onHeaderClick("bc_rank")}
             className={(sortable ? "cursor-pointer select-none " : "") + "whitespace-nowrap border-l border-y"}
@@ -131,16 +225,77 @@ export function PlayerTable({
                 : " ▼"
               : ""}
           </TableHead>
-          <TableHead className="whitespace-nowrap">ADP</TableHead>
-          <TableHead className="whitespace-nowrap border-r border-y">PTS</TableHead>
+          <TableHead
+            onClick={() => onHeaderClick("sleeper_adp")}
+            className={(sortable ? "cursor-pointer select-none " : "") + "whitespace-nowrap"}
+          >
+            ADP
+            {sortable && sortKey === "sleeper_adp"
+              ? sortDir === "asc"
+                ? " ▲"
+                : " ▼"
+              : ""}
+          </TableHead>
+          <TableHead
+            onClick={() => onHeaderClick("sleeper_pts")}
+            className={(sortable ? "cursor-pointer select-none " : "") + "whitespace-nowrap border-r border-y"}
+          >
+            PTS
+            {sortable && sortKey === "sleeper_pts"
+              ? sortDir === "asc"
+                ? " ▲"
+                : " ▼"
+              : ""}
+          </TableHead>
 
           <TableHead className="whitespace-nowrap border-l border-y">RT</TableHead>
-          <TableHead className="whitespace-nowrap">ECR</TableHead>
-          <TableHead className="whitespace-nowrap">PRNK</TableHead>
-          <TableHead className="whitespace-nowrap">PTS</TableHead>
+          <TableHead
+            onClick={() => onHeaderClick("fp_rank_overall")}
+            className={(sortable ? "cursor-pointer select-none " : "") + "whitespace-nowrap"}
+          >
+            ECR
+            {sortable && sortKey === "fp_rank_overall"
+              ? sortDir === "asc"
+                ? " ▲"
+                : " ▼"
+              : ""}
+          </TableHead>
+          <TableHead
+            onClick={() => onHeaderClick("fp_rank_pos")}
+            className={(sortable ? "cursor-pointer select-none " : "") + "whitespace-nowrap"}
+          >
+            PRNK
+            {sortable && sortKey === "fp_rank_pos"
+              ? sortDir === "asc"
+                ? " ▲"
+                : " ▼"
+              : ""}
+          </TableHead>
+          <TableHead
+            onClick={() => onHeaderClick("fp_pts")}
+            className={(sortable ? "cursor-pointer select-none " : "") + "whitespace-nowrap"}
+          >
+            PTS
+            {sortable && sortKey === "fp_pts"
+              ? sortDir === "asc"
+                ? " ▲"
+                : " ▼"
+              : ""}
+          </TableHead>
+          <TableHead
+            onClick={() => onHeaderClick("fp_player_owned_avg")}
+            className={(sortable ? "cursor-pointer select-none " : "") + "whitespace-nowrap"}
+          >
+            %OWN
+            {sortable && sortKey === "fp_player_owned_avg"
+              ? sortDir === "asc"
+                ? " ▲"
+                : " ▼"
+              : ""}
+          </TableHead>
           <TableHead
             onClick={() => onHeaderClick("fp_value")}
-            className={(sortable ? "cursor-pointer select-none " : "") + "whitespace-nowrap"}
+            className={(sortable ? "cursor-pointer select-none " : "") + "whitespace-nowrap border-l border-y"}
           >
             VAL
             {sortable && sortKey === "fp_value"
@@ -149,16 +304,42 @@ export function PlayerTable({
                 : " ▼"
               : ""}
           </TableHead>
-          <TableHead className="whitespace-nowrap">PS</TableHead>
-          <TableHead className="whitespace-nowrap">%OWN</TableHead>
-          <TableHead className="whitespace-nowrap border-r">MD</TableHead>
+          <TableHead
+            onClick={() => onHeaderClick("fp_positional_scarcity_slope")}
+            className={(sortable ? "cursor-pointer select-none " : "") + "whitespace-nowrap"}
+          >
+            PS
+            {sortable && sortKey === "fp_positional_scarcity_slope"
+              ? sortDir === "asc"
+                ? " ▲"
+                : " ▼"
+              : ""}
+          </TableHead>
+          <TableHead
+            onClick={() => onHeaderClick("market_delta")}
+            className={(sortable ? "cursor-pointer select-none " : "") + "whitespace-nowrap border-r border-y"}
+          >
+            MD
+            {sortable && sortKey === "market_delta"
+              ? sortDir === "asc"
+                ? " ▲"
+                : " ▼"
+              : ""}
+          </TableHead>
 
-          {renderActions ? <TableHead className="w-10" /> : null}
+          {renderActions ? <TableHead className="w-8 text-xs" /> : null}
         </TableRow>
       </TableHeader>
       <TableBody>
         {sortedRows.map((p, idx) => (
-          <TableRow key={`${p.player_id || p.name || "row"}-${idx}`}>
+          <TableRow
+            key={`${p.player_id || p.name || "row"}-${idx}`}
+            className={
+              dimDrafted && draftedIds && draftedIds.has(String(p.player_id))
+                ? "opacity-60 text-muted-foreground hover:opacity-95 hover:text-foreground"
+                : undefined
+            }
+          >
             <TableCell>{p.name}{p.position ? ` (${p.position})` : ""}</TableCell>
             <TableCell>
               {p.team || p.bye_week
@@ -174,33 +355,31 @@ export function PlayerTable({
             <TableCell className="border-r border-y">{p.sleeper_pts ?? "—"}</TableCell>
 
             <TableCell className="border-l border-y">{p.fp_tier ?? "—"}</TableCell>
-            <TableCell>{p.fp_rank_overall ?? "—"}</TableCell>
-            <TableCell>{p.fp_rank_pos ?? "—"}</TableCell>
-            <TableCell>{p.fp_pts ?? "—"}</TableCell>
-            <TableCell>{p.fp_value ?? "—"}</TableCell>
+            <TableCell>{p.ecr_round_pick ?? "—"}</TableCell>
             <TableCell>
-              {typeof p.fp_positional_scarcity_slope === "number"
-                ? `${p.fp_positional_scarcity_slope}%`
+              {typeof p.fp_rank_pos === "number" && p.position
+                ? `${String(p.position).toUpperCase()}${p.fp_rank_pos}`
                 : "—"}
             </TableCell>
+            <TableCell>{p.fp_pts ?? "—"}</TableCell>
             <TableCell>
               {typeof p.fp_player_owned_avg === "number"
                 ? `${Math.round(p.fp_player_owned_avg)}%`
                 : "—"}
             </TableCell>
-            <TableCell className={
-              (typeof p.market_delta === "number"
-                ? p.market_delta < 0
-                  ? "text-green-600"
-                  : p.market_delta > 0
-                  ? "text-red-600"
-                  : "text-foreground"
-                : "text-foreground") + " border-r border-y"
-            }>
+            <TableCell className="border-l border-y" style={{ background: colorizeValuePs ? colorFor(p.fp_value ?? p.val ?? null, valRange) : undefined }}>{p.fp_value ?? p.val ?? "—"}</TableCell>
+            <TableCell style={{ background: colorizeValuePs && (typeof (p.fp_positional_scarcity_slope ?? p.ps) === "number" && (p.fp_positional_scarcity_slope ?? p.ps) > 0) ? colorFor(p.fp_positional_scarcity_slope ?? (p.ps as number), psRange) : undefined }}>
+              {typeof p.fp_positional_scarcity_slope === "number"
+                ? p.fp_positional_scarcity_slope > 0 ? `${Math.round(p.fp_positional_scarcity_slope)}%` : "-"
+                : typeof p.ps === "number"
+                ? p.ps > 0 ? `${Math.round(p.ps)}%` : "-"
+                : "—"}
+            </TableCell>
+            <TableCell className="border-r border-y" style={{ background: colorizeValuePs ? colorFor(typeof p.market_delta === "number" ? p.market_delta : null, mdRange) : undefined }}>
               {p.market_delta ?? "—"}
             </TableCell>
 
-            {renderActions ? <TableCell>{renderActions(p)}</TableCell> : null}
+            {renderActions ? <TableCell className="w-8 text-xs p-0">{renderActions(p)}</TableCell> : null}
           </TableRow>
         ))}
       </TableBody>

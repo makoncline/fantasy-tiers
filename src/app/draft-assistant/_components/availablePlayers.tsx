@@ -6,7 +6,7 @@ import { PlayerTable, mapToPlayerRow, type PlayerRow } from "./PlayerTable";
 import { Button } from "@/components/ui/button";
 import PreviewPickDialog from "./PreviewPickDialog";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
-import { normalizePlayerName } from "@/lib/util";
+import { normalizePlayerName, ecrToRoundPick } from "@/lib/util";
 import { SEASON_WEEKS } from "@/lib/constants";
 import { useCombinedAggregateAll } from "../_lib/useDraftQueries";
 import enrichPlayers from "@/lib/enrichPlayers";
@@ -22,6 +22,8 @@ export default function AvailablePlayers({
 }: AvailablePlayersProps) {
   if (loading) return <p aria-live="polite">Loading available players...</p>;
   const { userRosterSlots, beerSheetsBoard, league } = useDraftData();
+  const DEFAULT_ALL_PLAYERS_LIMIT = 20;
+  const [showAll, setShowAll] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [previewPlayer, setPreviewPlayer] = React.useState<RankedPlayer | null>(
     null
@@ -98,6 +100,10 @@ export default function AvailablePlayers({
         sleeper_adp: hit.sleeper_adp ?? undefined,
         sleeper_rank_overall: hit.sleeper_rank_overall ?? undefined,
         fp_pts: hit.fp_pts ?? undefined,
+        ecr_round_pick:
+          hit.fp_rank_overall != null && league?.teams
+            ? ecrToRoundPick(Number(hit.fp_rank_overall), Number(league.teams))
+            : undefined,
         fp_adp: hit.fp_adp ?? undefined,
         fp_rank_overall: hit.fp_rank_overall ?? undefined,
         fp_rank_pos: hit.fp_rank_pos ?? undefined,
@@ -163,8 +169,9 @@ export default function AvailablePlayers({
       </div>
       {/* All players table */}
       <PlayerTable
-        rows={rowsWithPPG}
+        rows={showAll ? rowsWithPPG : rowsWithPPG.slice(0, DEFAULT_ALL_PLAYERS_LIMIT)}
         sortable
+        colorizeValuePs
         renderActions={(row) => (
           <Button
             variant="ghost"
@@ -191,6 +198,13 @@ export default function AvailablePlayers({
           </Button>
         )}
       />
+      {rowsWithPPG.length > DEFAULT_ALL_PLAYERS_LIMIT ? (
+        <div className="mt-3">
+          <Button variant="ghost" className="w-full" onClick={() => setShowAll((v) => !v)}>
+            {showAll ? "Show Less" : "Show More"}
+          </Button>
+        </div>
+      ) : null}
       <PreviewPickDialog
         open={open}
         onOpenChange={(o) => {
