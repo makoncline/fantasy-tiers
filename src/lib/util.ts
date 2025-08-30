@@ -26,6 +26,29 @@ export const normalizePlayerName = (str: string) => {
     .replace(" sr", "");
 };
 
+// other possible replacements
+// Patrick Mahomes	Patrick Mahomes II
+// Anthony Richardson	Anthony Richardson Sr.
+// Aaron Jones	Aaron Jones Sr.
+// Travis Etienne	Travis Etienne Jr.
+// Gus Edwards
+// Pierre Strong Jr.
+// Chris Rodriguez	Chris Rodriguez Jr.
+// Chigoziem Okonkwo	Chig Okonkwo
+// Kyle Pitts	Kyle Pitts Sr.
+// Donald Parham
+// D.J. Moore	DJ Moore
+// D.K. Metcalf	DK Metcalf
+// Deebo Samuel	Deebo Samuel Sr.
+// Gabriel Davis	Gabe Davis
+// Tyler Boyd
+// Nelson Agholor
+// D.J. Chark Jr.	DJ Chark Jr.
+// John Metchie	John Metchie III
+// Mecole Hardman	Mecole Hardman Jr.
+// Laviska Shenault	Laviska Shenault Jr.
+// Mike Williams	Mike Williams
+
 export const normalizePosition = (position: string) => {
   return position === "DST" ? "DEF" : position;
 };

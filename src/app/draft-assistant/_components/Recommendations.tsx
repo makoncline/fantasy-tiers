@@ -6,6 +6,8 @@ import { PlayerTable, mapToPlayerRow, type PlayerRow } from "./PlayerTable";
 import { Button } from "@/components/ui/button";
 import PreviewPickDialog from "./PreviewPickDialog";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
+import { normalizePlayerName } from "@/lib/util";
+import { SEASON_WEEKS } from "@/lib/constants";
 
 type RecCategory =
   | "keyPositions"
@@ -21,7 +23,7 @@ export default function RecommendationsSection({
   recommendations,
   loading,
 }: RecommendationsProps) {
-  const { userRosterSlots } = useDraftData();
+  const { userRosterSlots, beerSheetsBoard } = useDraftData();
   const [open, setOpen] = React.useState(false);
   const [previewPlayer, setPreviewPlayer] = React.useState<RankedPlayer | null>(
     null
@@ -39,6 +41,28 @@ export default function RecommendationsSection({
   if (!recommendations) {
     return <p>No recommendations available.</p>;
   }
+  const extras = React.useMemo(() => {
+    const map: Record<
+      string,
+      { val?: number; ps?: number; ecr_round_pick?: string }
+    > = {};
+    (beerSheetsBoard || []).forEach((r) => {
+      const value = {
+        // weekly display: season VBD / 17, one decimal
+        val: Number.isFinite(r.val)
+          ? Number((r.val / SEASON_WEEKS).toFixed(1))
+          : r.val,
+        ps: Number.isFinite(r.ps) ? Number(Math.round(r.ps)) : r.ps,
+        // show ADP directly
+        ecr_round_pick:
+          r.adp != null && Number.isFinite(r.adp) ? String(r.adp) : undefined,
+      } as const;
+      map[r.player_id] = value;
+      const nm = normalizePlayerName(r.name || "");
+      if (nm) map[nm] = value;
+    });
+    return map;
+  }, [beerSheetsBoard]);
 
   const onPreview = (row: PlayerRow, source: RankedPlayer[]) => {
     const found = source.find((p) => p.player_id === row.player_id);
@@ -68,7 +92,7 @@ export default function RecommendationsSection({
               <CardContent>
                 {players.length ? (
                   <PlayerTable
-                    rows={mapToPlayerRow(players)}
+                    rows={mapToPlayerRow(players, extras)}
                     renderActions={(row) => (
                       <Button
                         variant="ghost"

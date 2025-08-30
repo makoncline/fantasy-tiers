@@ -3,7 +3,8 @@ import path from "path";
 import { ScoringType } from "./schemas";
 
 // Constants for file paths
-export const RANKINGS_DIR = path.resolve("./public/data/rankings");
+export const RANKINGS_DIR = path.resolve("./public/data");
+export const BORISCHEN_DIR = path.resolve(RANKINGS_DIR, "borischen");
 export const RAW_RANKINGS_FILE_PATHS: Record<ScoringType, string> = {
   std: path.resolve(RANKINGS_DIR, "std-rankings-raw.csv"),
   ppr: path.resolve(RANKINGS_DIR, "ppr-rankings-raw.csv"),
@@ -37,6 +38,9 @@ export const POSITIONS_TO_SCORING_TYPES: Record<string, ScoringType[]> = {
 if (!fs.existsSync(RANKINGS_DIR)) {
   fs.mkdirSync(RANKINGS_DIR, { recursive: true });
 }
+if (!fs.existsSync(BORISCHEN_DIR)) {
+  fs.mkdirSync(BORISCHEN_DIR, { recursive: true });
+}
 
 export const ROSTER_SLOT_TO_RANKING_DATA_ABBV: Record<string, string> = {
   QB: "QB",
@@ -64,11 +68,11 @@ async function fetchAndSaveRankings(
   );
 
   const filePath = path.resolve(
-    RANKINGS_DIR,
+    BORISCHEN_DIR,
     `${fetchPosition}-${scoringType}-rankings-raw.csv`
   );
   const metadataFilePath = path.resolve(
-    RANKINGS_DIR,
+    BORISCHEN_DIR,
     `${fetchPosition}-${scoringType}-metadata.json`
   );
 

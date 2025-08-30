@@ -36,7 +36,7 @@ export const DraftDetailsSchema = z.object({
   draft_id: z.string(),
   type: z.string().optional(),
   season: z.string().optional(),
-  start_time: z.number().optional(),
+  start_time: z.number().nullable().optional(),
   status: z.string().optional(),
   metadata: DraftMetadataSchema,
   settings: DraftSettingsSchema,
@@ -56,6 +56,16 @@ export async function fetchDraftDetails(
     `https://api.sleeper.app/v1/draft/${encodeURIComponent(draftId)}`
   );
   if (!res.ok) {
+    // Treat null/empty bodies as not-yet-created drafts
+    if (res.status === 404 || res.status === 204) {
+      throw new Error(`Draft not found or not initialized (${res.status})`);
+    }
+    try {
+      const t = await res.text();
+      if (t === "null" || t.trim() === "") {
+        throw new Error("Draft not initialized");
+      }
+    } catch {}
     throw new Error(`Failed to fetch draft details: ${res.status}`);
   }
   const json = await res.json();

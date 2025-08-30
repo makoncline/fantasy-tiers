@@ -7,7 +7,8 @@ import { ScoringType } from "./schemas";
 import { POSITIONS_TO_SCORING_TYPES } from "./fetchRankingData";
 
 // Constants for file paths
-const RANKINGS_DIR = path.resolve("./public/data/rankings");
+const RANKINGS_DIR = path.resolve("./public/data");
+const BORISCHEN_DIR = path.resolve(RANKINGS_DIR, "borischen");
 export const RAW_RANKINGS_FILE_PATHS: Record<
   string,
   Record<ScoringType, string>
@@ -19,7 +20,7 @@ for (const [position, scoringTypes] of Object.entries(
   RAW_RANKINGS_FILE_PATHS[position] = {} as Record<ScoringType, string>;
   for (const scoringType of scoringTypes) {
     RAW_RANKINGS_FILE_PATHS[position][scoringType] = path.resolve(
-      RANKINGS_DIR,
+      BORISCHEN_DIR,
       `${position}-${scoringType}-rankings-raw.csv`
     );
   }
@@ -59,12 +60,13 @@ async function parseAndSaveRankings(
   scoringType: ScoringType
 ) {
   const filePath = path.resolve(
-    RANKINGS_DIR,
+    BORISCHEN_DIR,
     `${fetchPosition}-${scoringType}-rankings-raw.csv`
   );
   if (!fs.existsSync(filePath)) {
     throw new Error(
-      `Raw rankings file for ${fetchPosition} ${scoringType} does not exist. Please fetch the rankings first.`
+      `Raw rankings file missing: ${filePath}.\n` +
+        `Run: pnpm run fetch:borischen`
     );
   }
 
@@ -102,15 +104,9 @@ async function parseAndSaveRankings(
       })
       .filter((player) => player !== null);
 
-    // Save the parsed data to a JSON file
-    const outputFilePath = path.resolve(
-      RANKINGS_DIR,
-      `${fetchPosition}-${scoringType}-rankings.json`
-    );
-    fs.writeFileSync(outputFilePath, JSON.stringify(parsedData, null, 2));
-
+    // Deprecated: no longer writing processed rankings JSON files
     console.log(
-      `Parsed and saved rankings for ${fetchPosition} ${scoringType}`
+      `Parsed rankings for ${fetchPosition} ${scoringType} (JSON output disabled; aggregates now use raw CSV).`
     );
   } catch (error) {
     console.error(
@@ -140,7 +136,7 @@ export function getRankingLastUpdatedDate(
   scoringType: ScoringType
 ): string | null {
   const metadataFilePath = path.join(
-    RANKINGS_DIR,
+    BORISCHEN_DIR,
     `${position}-${scoringType}-metadata.json`
   );
 

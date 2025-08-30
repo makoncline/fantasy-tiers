@@ -278,7 +278,7 @@ async function scrapeOne(
 }
 
 async function main() {
-  const outDir = path.resolve("public", "data", "rankings", "fantasypros");
+  const outDir = path.resolve("public", "data", "fantasypros");
   const week = process.env.WEEK ?? "draft";
   const positions: Position[] = (process.env.POSITIONS?.split(
     ","

@@ -3,6 +3,8 @@ import {
   useDraftDetails,
   useDraftPicks,
   usePlayersByScoringType,
+  useCombinedAggregateAll,
+  useSleeperPlayersMetaStatic,
 } from "@/app/draft-assistant/_lib/useDraftQueries";
 import {
   getDraftRecommendations,
@@ -19,6 +21,9 @@ import {
   RosterSlot,
 } from "@/lib/schemas";
 import type { Position } from "../_lib/types";
+import { computeBeerSheetsBoard, type LeagueShape } from "@/lib/beersheets";
+import { normalizePlayerName } from "@/lib/util";
+import { SEASON_WEEKS } from "@/lib/constants";
 
 interface Recommendation {
   keyPositions: RankedPlayer[];
@@ -35,6 +40,7 @@ interface ProcessedData {
   draftWideNeeds: Partial<Record<Position, number>>;
   userRoster: DraftedPlayer[] | null;
   userRosterSlots: { slot: RosterSlot; player: DraftedPlayer | null }[];
+  beerSheetsBoard?: ReturnType<typeof computeBeerSheetsBoard>;
 }
 
 interface DraftDataContextType extends ProcessedData {
@@ -48,6 +54,12 @@ interface DraftDataContextType extends ProcessedData {
     draftPicks: Error | null;
     players: Error | null;
   };
+  // Minimal league shape for enrichment/UIs
+  league: {
+    teams: number;
+    scoring: ReturnType<typeof scoringTypeSchema.parse> | undefined;
+    roster: { QB: number; RB: number; WR: number; TE: number; FLEX: number; BENCH: number };
+  } | null;
   refetchData: () => void;
   lastUpdatedAt: number | null;
 }
@@ -70,6 +82,7 @@ const defaultContextValue: DraftDataContextType = {
     draftPicks: null,
     players: null,
   },
+  league: null,
   refetchData: () => {},
   lastUpdatedAt: null,
 };
@@ -115,7 +128,26 @@ export function DraftDataProvider({
   const parsedScoring = scoringTypeSchema.safeParse(
     draftDetails?.metadata?.scoring_type
   );
-  const scoringType = parsedScoring.success ? parsedScoring.data : undefined;
+  const scoringType = React.useMemo(() => {
+    if (parsedScoring.success) return parsedScoring.data;
+    const raw = (draftDetails?.metadata?.scoring_type || "")
+      .toString()
+      .toLowerCase();
+    switch (raw) {
+      case "ppr":
+      case "full_ppr":
+        return "ppr" as const;
+      case "half":
+      case "half_ppr":
+        return "half" as const;
+      case "std":
+      case "standard":
+      case "non_ppr":
+        return "std" as const;
+      default:
+        return undefined;
+    }
+  }, [parsedScoring.success, draftDetails?.metadata?.scoring_type]);
 
   const {
     data: playersMap,
@@ -124,6 +156,12 @@ export function DraftDataProvider({
     refetch: refetchPlayersMap,
     dataUpdatedAt: updatedAtPlayers,
   } = usePlayersByScoringType(scoringType);
+
+  // Sleeper-only BeerSheets board inputs
+  const { data: combinedAll } = useCombinedAggregateAll(Boolean(draftDetails));
+  const { data: playersMeta } = useSleeperPlayersMetaStatic(
+    Boolean(draftDetails)
+  );
 
   const loading = useMemo(
     () => ({
@@ -142,6 +180,25 @@ export function DraftDataProvider({
     }),
     [errorDraftDetails, errorDraftPicks, errorPlayers]
   );
+
+  // Log errors to console to aid debugging
+  React.useEffect(() => {
+    if (errorDraftDetails) {
+      // eslint-disable-next-line no-console
+      console.error("draftDetails error", {
+        draftId,
+        error: errorDraftDetails,
+      });
+    }
+    if (errorDraftPicks) {
+      // eslint-disable-next-line no-console
+      console.error("draftPicks error", { draftId, error: errorDraftPicks });
+    }
+    if (errorPlayers) {
+      // eslint-disable-next-line no-console
+      console.error("playersMap error", { error: errorPlayers });
+    }
+  }, [errorDraftDetails, errorDraftPicks, errorPlayers, draftId]);
 
   const refetchData = useCallback(() => {
     refetchDraftDetails();
@@ -300,6 +357,74 @@ export function DraftDataProvider({
 
     const totalRemainingNeeds = calculateTotalRemainingNeeds(currentRosters);
 
+    const beerSheetsBoardRaw =
+      scoringType && playersMeta && combinedAll
+        ? computeBeerSheetsBoard(
+            // adapt combinedAll to minimal SleeperProjection-like array with required fields
+            Object.entries(combinedAll).map(
+              ([id, e]: any) =>
+                ({
+                  player_id: id,
+                  category: "proj",
+                  sport: "nfl",
+                  season_type: "regular",
+                  season: String(new Date().getFullYear()),
+                  player: {
+                    first_name: String(e?.name || "").split(" ")[0] || "",
+                    last_name:
+                      String(e?.name || "")
+                        .split(" ")
+                        .slice(1)
+                        .join(" ") || "",
+                    position: e?.position,
+                    team: e?.team ?? null,
+                  },
+                  stats: e?.sleeper?.stats || {},
+                  week: null,
+                } as any)
+            ),
+            playersMeta,
+            {
+              teams: draftDetails.settings?.teams ?? 0,
+              slots_qb: draftDetails.settings?.slots_qb ?? 0,
+              slots_rb: draftDetails.settings?.slots_rb ?? 0,
+              slots_wr: draftDetails.settings?.slots_wr ?? 0,
+              slots_te: draftDetails.settings?.slots_te ?? 0,
+              slots_k: draftDetails.settings?.slots_k ?? 0,
+              slots_def: draftDetails.settings?.slots_def ?? 0,
+              slots_flex: draftDetails.settings?.slots_flex ?? 0,
+            } as LeagueShape,
+            scoringType
+          )
+        : undefined;
+
+    // Filter to tiered players only
+    let beerSheetsBoard = beerSheetsBoardRaw;
+    if (beerSheetsBoardRaw && playersMap) {
+      const allowedIds = new Set<string>();
+      const allowedNames = new Set<string>();
+      for (const p of Object.values(playersMap)) {
+        const tier = (p as any).tier;
+        if (tier == null) continue;
+        const pid = String((p as any).player_id ?? (p as any).id ?? "");
+        if (pid) allowedIds.add(pid);
+        const nm = normalizePlayerName(
+          (p as any).full_name ??
+            (p as any).name ??
+            [(p as any).first_name, (p as any).last_name]
+              .filter(Boolean)
+              .join(" ")
+        );
+        if (nm) allowedNames.add(nm);
+      }
+
+      beerSheetsBoard = beerSheetsBoardRaw.filter((r) => {
+        if (!r) return false;
+        const nm = normalizePlayerName(r.name || "");
+        return allowedIds.has(r.player_id) || allowedNames.has(nm);
+      });
+    }
+
     return {
       recommendations: nextPickRecommendations,
       availablePlayers: availableRankedPlayers,
@@ -308,8 +433,19 @@ export function DraftDataProvider({
       draftWideNeeds: totalRemainingNeeds,
       userRoster: userRoster?.players || null,
       userRosterSlots,
+      beerSheetsBoard,
     };
-  }, [draftDetails, draftPicks, playersMap, userId]);
+  }, [
+    draftDetails,
+    draftPicks,
+    playersMap,
+    userId,
+    scoringType,
+    combinedAll,
+    errorDraftDetails,
+    errorDraftPicks,
+    errorPlayers,
+  ]);
 
   const contextValue = useMemo(
     () => ({
@@ -317,6 +453,29 @@ export function DraftDataProvider({
       loading,
       error,
       refetchData,
+      league:
+        draftDetails && scoringType
+          ? {
+              teams: draftDetails.settings?.teams ?? 0,
+              scoring: scoringType,
+              roster: {
+                QB: draftDetails.settings?.slots_qb ?? 0,
+                RB: draftDetails.settings?.slots_rb ?? 0,
+                WR: draftDetails.settings?.slots_wr ?? 0,
+                TE: draftDetails.settings?.slots_te ?? 0,
+                FLEX: draftDetails.settings?.slots_flex ?? 0,
+                BENCH:
+                  (draftDetails.settings?.rounds ?? 0) -
+                  ((draftDetails.settings?.slots_qb ?? 0) +
+                    (draftDetails.settings?.slots_rb ?? 0) +
+                    (draftDetails.settings?.slots_wr ?? 0) +
+                    (draftDetails.settings?.slots_te ?? 0) +
+                    (draftDetails.settings?.slots_k ?? 0) +
+                    (draftDetails.settings?.slots_def ?? 0) +
+                    (draftDetails.settings?.slots_flex ?? 0)),
+              },
+            }
+          : null,
       lastUpdatedAt:
         Math.max(
           0,
@@ -330,11 +489,45 @@ export function DraftDataProvider({
       loading,
       error,
       refetchData,
+      draftDetails,
+      scoringType,
       updatedAtDraftDetails,
       updatedAtDraftPicks,
       updatedAtPlayers,
     ]
   );
+
+  // Snapshot key data counts when they change
+  React.useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log("DraftData snapshot", {
+      draftId,
+      hasDetails: Boolean(draftDetails),
+      picks: Array.isArray((processedData as any)?.userRoster)
+        ? (processedData as any).userRoster.length
+        : draftPicks?.length ?? 0,
+      playersMapSize: playersMap ? Object.keys(playersMap).length : 0,
+      projectionsLen: combinedAll ? Object.keys(combinedAll).length : 0,
+      beerSheetsBoardLen: (processedData as any)?.beerSheetsBoard
+        ? (processedData as any).beerSheetsBoard.length
+        : 0,
+      errors: {
+        draftDetails: Boolean(errorDraftDetails),
+        draftPicks: Boolean(errorDraftPicks),
+        players: Boolean(errorPlayers),
+      },
+    });
+  }, [
+    draftId,
+    draftDetails,
+    draftPicks,
+    playersMap,
+    combinedAll,
+    processedData,
+    errorDraftDetails,
+    errorDraftPicks,
+    errorPlayers,
+  ]);
 
   return (
     <DraftDataContext.Provider value={contextValue}>

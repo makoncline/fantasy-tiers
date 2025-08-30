@@ -4,6 +4,7 @@ import UserRoster from "@/app/draft-assistant/_components/userRoster";
 import PositionNeeds from "@/app/draft-assistant/_components/positionNeeds";
 import RecommendationsSection from "@/app/draft-assistant/_components/Recommendations";
 import AvailablePlayers from "@/app/draft-assistant/_components/availablePlayers";
+import PositionTables from "@/app/draft-assistant/_components/PositionTables";
 import { RefreshButton } from "@/app/draft-assistant/_components/RefreshButton";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -113,6 +114,11 @@ export default function DraftAssistantContent() {
 
       <Separator />
 
+      {/* Position lists above the Available Ranked Players card */}
+      <PositionTables />
+
+      <Separator />
+
       <Card>
         <CardHeader>
           <CardTitle>Available Ranked Players</CardTitle>
@@ -145,3 +151,5 @@ function LastFetchIndicator({
     </span>
   );
 }
+
+ 
