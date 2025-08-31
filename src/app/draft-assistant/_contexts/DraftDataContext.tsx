@@ -1,20 +1,6 @@
 import React, { createContext, useContext, useCallback, useMemo } from "react";
-import {
-  useDraftDetails,
-  useDraftPicks,
-  usePlayersByScoringType,
-  useCombinedAggregateAll,
-  useSleeperPlayersMetaStatic,
-} from "@/app/draft-assistant/_lib/useDraftQueries";
-import {
-  getDraftRecommendations,
-  calculatePositionNeeds,
-  calculatePositionCounts,
-  ZERO_POSITION_COUNTS,
-  calculateTotalRemainingNeeds,
-  calculateTeamNeedsAndCountsForSingleTeam,
-} from "@/lib/draftHelpers";
-import { isRankedPlayer } from "@/lib/getPlayers";
+import { useDraftDetails, useDraftPicks, usePlayersByScoringType } from "@/app/draft-assistant/_lib/useDraftQueries";
+import { buildDraftViewModel } from "@/lib/draftState";
 import {
   DraftedPlayer,
   RankedPlayer,
@@ -22,9 +8,7 @@ import {
   RosterSlot,
 } from "@/lib/schemas";
 import type { Position } from "../_lib/types";
-import { computeBeerSheetsBoard, type LeagueShape } from "@/lib/beersheets";
-import { normalizePlayerName } from "@/lib/util";
-import { SEASON_WEEKS } from "@/lib/constants";
+// BeerSheets removed from client; calculations moved server-side
 
 interface Recommendation {
   keyPositions: RankedPlayer[];
@@ -36,13 +20,14 @@ interface Recommendation {
 interface ProcessedData {
   recommendations: Recommendation | null;
   availablePlayers: RankedPlayer[];
+  availableByPosition?: Record<string, RankedPlayer[]>;
+  topAvailablePlayersByPosition?: Record<string, RankedPlayer[]>;
   userPositionNeeds: Partial<Record<Position, number>>;
   userPositionCounts: Partial<Record<Position, number>>;
   userPositionRequirements: Partial<Record<Position, number>>;
   draftWideNeeds: Partial<Record<Position, number>>;
   userRoster: DraftedPlayer[] | null;
   userRosterSlots: { slot: RosterSlot; player: DraftedPlayer | null }[];
-  beerSheetsBoard?: ReturnType<typeof computeBeerSheetsBoard>;
 }
 
 interface DraftDataContextType extends ProcessedData {
@@ -120,13 +105,14 @@ export function DraftDataProvider({
   userId: string;
   draftId: string;
 }) {
+  const readyIds = Boolean(userId && draftId);
   const {
     data: draftDetails,
     isLoading: isLoadingDraftDetails,
     error: errorDraftDetails,
     refetch: refetchDraftDetails,
     dataUpdatedAt: updatedAtDraftDetails,
-  } = useDraftDetails(draftId);
+  } = useDraftDetails(draftId, { enabled: readyIds, refetchInterval: 3000 });
 
   const {
     data: draftPicks,
@@ -134,7 +120,7 @@ export function DraftDataProvider({
     error: errorDraftPicks,
     refetch: refetchDraftPicks,
     dataUpdatedAt: updatedAtDraftPicks,
-  } = useDraftPicks(draftId);
+  } = useDraftPicks(draftId, { enabled: readyIds, refetchInterval: 3000 });
 
   const parsedScoring = scoringTypeSchema.safeParse(
     draftDetails?.metadata?.scoring_type
@@ -166,13 +152,9 @@ export function DraftDataProvider({
     error: errorPlayers,
     refetch: refetchPlayersMap,
     dataUpdatedAt: updatedAtPlayers,
-  } = usePlayersByScoringType(scoringType);
+  } = usePlayersByScoringType(scoringType, { enabled: readyIds && Boolean(scoringType) });
 
-  // Sleeper-only BeerSheets board inputs
-  const { data: combinedAll } = useCombinedAggregateAll(Boolean(draftDetails));
-  const { data: playersMeta } = useSleeperPlayersMetaStatic(
-    Boolean(draftDetails)
-  );
+  // Client-computed view-model handles available, needs, recommendations
 
   const loading = useMemo(
     () => ({
@@ -220,69 +202,9 @@ export function DraftDataProvider({
   // React Query already refetches when keys change; manual refetch is for explicit refresh
 
   const processedData: ProcessedData = useMemo(() => {
-    if (!draftDetails || !draftPicks || !playersMap) {
-      return EMPTY_PROCESSED;
-    }
+    if (!draftDetails || !playersMap) return EMPTY_PROCESSED;
+    const vm = buildDraftViewModel({ playersMap: playersMap as any, draft: draftDetails as any, picks: (draftPicks || []) as any, userId, topLimit: 3 });
 
-    const draftedPlayers = draftPicks.map((pick) => ({
-      ...pick,
-      ...(playersMap[pick.player_id] || {}),
-    }));
-    const draftedPlayerIds = draftedPlayers.map((player) => player.player_id);
-
-    const rankedPlayers = Object.values(playersMap)
-      .filter(isRankedPlayer)
-      .sort((a, b) => a.rank - b.rank);
-    const availableRankedPlayers = rankedPlayers.filter(
-      (player) => !draftedPlayerIds.includes(player.player_id)
-    );
-
-    const rosterRequirements: Record<Position | "BN", number> = {
-      QB: draftDetails.settings?.slots_qb ?? 0,
-      RB: draftDetails.settings?.slots_rb ?? 0,
-      WR: draftDetails.settings?.slots_wr ?? 0,
-      TE: draftDetails.settings?.slots_te ?? 0,
-      K: draftDetails.settings?.slots_k ?? 0,
-      DEF: draftDetails.settings?.slots_def ?? 0,
-      FLEX: draftDetails.settings?.slots_flex ?? 0,
-      BN: 0,
-    };
-
-    const teams = draftDetails.settings?.teams ?? 0;
-    const draftSlots = Array.from({ length: teams }, (_, i) => i + 1);
-    const emptyRoster = {
-      players: [] as DraftedPlayer[],
-      remainingPositionRequirements: { ...rosterRequirements },
-      rosterPositionCounts: { ...ZERO_POSITION_COUNTS },
-    };
-    const currentRosters: Record<string, typeof emptyRoster> = {};
-    draftSlots.forEach((draftSlot) => {
-      const rosteredPlayers = draftedPlayers.filter(
-        (player) => player.draft_slot === draftSlot
-      );
-      const {
-        positionNeeds: remainingPositionRequirements,
-        positionCounts: rosterPositionCounts,
-      } = calculateTeamNeedsAndCountsForSingleTeam(
-        rosteredPlayers as any,
-        rosterRequirements as any
-      );
-      currentRosters[draftSlot] = {
-        players: rosteredPlayers,
-        remainingPositionRequirements,
-        rosterPositionCounts,
-      };
-    });
-
-    const draftSlot = draftDetails.draft_order?.[userId];
-
-    if (!draftSlot) {
-      return EMPTY_PROCESSED;
-    }
-
-    const userRoster = currentRosters[draftSlot];
-
-    // Build roster slots (starters + FLEX + BN)
     const startersCount =
       (draftDetails.settings?.slots_qb ?? 0) +
       (draftDetails.settings?.slots_rb ?? 0) +
@@ -293,59 +215,25 @@ export function DraftDataProvider({
       (draftDetails.settings?.slots_flex ?? 0);
     const rounds = draftDetails.settings?.rounds ?? 0;
     const benchCount = Math.max(0, rounds - startersCount);
-
     const slotsTemplate: RosterSlot[] = [
-      ...Array.from(
-        { length: draftDetails.settings?.slots_qb ?? 0 },
-        () => "QB" as RosterSlot
-      ),
-      ...Array.from(
-        { length: draftDetails.settings?.slots_rb ?? 0 },
-        () => "RB" as RosterSlot
-      ),
-      ...Array.from(
-        { length: draftDetails.settings?.slots_wr ?? 0 },
-        () => "WR" as RosterSlot
-      ),
-      ...Array.from(
-        { length: draftDetails.settings?.slots_te ?? 0 },
-        () => "TE" as RosterSlot
-      ),
-      ...Array.from(
-        { length: draftDetails.settings?.slots_flex ?? 0 },
-        () => "FLEX" as RosterSlot
-      ),
-      ...Array.from(
-        { length: draftDetails.settings?.slots_k ?? 0 },
-        () => "K" as RosterSlot
-      ),
-      ...Array.from(
-        { length: draftDetails.settings?.slots_def ?? 0 },
-        () => "DEF" as RosterSlot
-      ),
+      ...Array.from({ length: draftDetails.settings?.slots_qb ?? 0 }, () => "QB" as RosterSlot),
+      ...Array.from({ length: draftDetails.settings?.slots_rb ?? 0 }, () => "RB" as RosterSlot),
+      ...Array.from({ length: draftDetails.settings?.slots_wr ?? 0 }, () => "WR" as RosterSlot),
+      ...Array.from({ length: draftDetails.settings?.slots_te ?? 0 }, () => "TE" as RosterSlot),
+      ...Array.from({ length: draftDetails.settings?.slots_flex ?? 0 }, () => "FLEX" as RosterSlot),
+      ...Array.from({ length: draftDetails.settings?.slots_k ?? 0 }, () => "K" as RosterSlot),
+      ...Array.from({ length: draftDetails.settings?.slots_def ?? 0 }, () => "DEF" as RosterSlot),
       ...Array.from({ length: benchCount }, () => "BN" as RosterSlot),
     ];
-
-    const userRosterSlots: {
-      slot: RosterSlot;
-      player: DraftedPlayer | null;
-    }[] = slotsTemplate.map((slot) => ({
-      slot,
-      player: null,
-    }));
-
-    if (userRoster) {
-      const findIndex = (s: RosterSlot) =>
-        userRosterSlots.findIndex((x) => x.slot === s && x.player === null);
-
-      userRoster.players.forEach((p) => {
-        // Try primary position slot
+    const userRosterSlots: { slot: RosterSlot; player: DraftedPlayer | null }[] = slotsTemplate.map((slot) => ({ slot, player: null }));
+    if (vm.userRoster?.players?.length) {
+      const findIndex = (s: RosterSlot) => userRosterSlots.findIndex((x) => x.slot === s && x.player === null);
+      (vm.userRoster.players as any[]).forEach((p) => {
         const posIndex = findIndex(p.position as RosterSlot);
         if (posIndex !== -1) {
           userRosterSlots[posIndex].player = p;
           return;
         }
-        // Try FLEX if eligible
         if ((["RB", "WR", "TE"] as RosterSlot[]).includes(p.position as any)) {
           const flexIndex = findIndex("FLEX");
           if (flexIndex !== -1) {
@@ -353,113 +241,24 @@ export function DraftDataProvider({
             return;
           }
         }
-        // Fallback to bench
         const bnIndex = findIndex("BN");
-        if (bnIndex !== -1) {
-          userRosterSlots[bnIndex].player = p;
-        }
-      });
-    }
-    const nextPickRecommendations = userRoster
-      ? getDraftRecommendations(
-          availableRankedPlayers,
-          userRoster.rosterPositionCounts,
-          userRoster.remainingPositionRequirements
-        )
-      : null;
-
-    const totalRemainingNeeds = calculateTotalRemainingNeeds(currentRosters);
-
-    const beerSheetsBoardRaw =
-      scoringType && playersMeta && combinedAll
-        ? computeBeerSheetsBoard(
-            // adapt combinedAll to minimal SleeperProjection-like array with required fields
-            Object.entries(combinedAll).map(
-              ([id, e]: any) =>
-                ({
-                  player_id: id,
-                  category: "proj",
-                  sport: "nfl",
-                  season_type: "regular",
-                  season: String(new Date().getFullYear()),
-                  player: {
-                    first_name: String(e?.name || "").split(" ")[0] || "",
-                    last_name:
-                      String(e?.name || "")
-                        .split(" ")
-                        .slice(1)
-                        .join(" ") || "",
-                    position: e?.position,
-                    team: e?.team ?? null,
-                  },
-                  stats: e?.sleeper?.stats || {},
-                  week: null,
-                } as any)
-            ),
-            playersMeta,
-            {
-              teams: draftDetails.settings?.teams ?? 0,
-              slots_qb: draftDetails.settings?.slots_qb ?? 0,
-              slots_rb: draftDetails.settings?.slots_rb ?? 0,
-              slots_wr: draftDetails.settings?.slots_wr ?? 0,
-              slots_te: draftDetails.settings?.slots_te ?? 0,
-              slots_k: draftDetails.settings?.slots_k ?? 0,
-              slots_def: draftDetails.settings?.slots_def ?? 0,
-              slots_flex: draftDetails.settings?.slots_flex ?? 0,
-            } as LeagueShape,
-            scoringType
-          )
-        : undefined;
-
-    // Filter to tiered players only
-    let beerSheetsBoard = beerSheetsBoardRaw;
-    if (beerSheetsBoardRaw && playersMap) {
-      const allowedIds = new Set<string>();
-      const allowedNames = new Set<string>();
-      for (const p of Object.values(playersMap)) {
-        const tier = (p as any).tier;
-        if (tier == null) continue;
-        const pid = String((p as any).player_id ?? (p as any).id ?? "");
-        if (pid) allowedIds.add(pid);
-        const nm = normalizePlayerName(
-          (p as any).full_name ??
-            (p as any).name ??
-            [(p as any).first_name, (p as any).last_name]
-              .filter(Boolean)
-              .join(" ")
-        );
-        if (nm) allowedNames.add(nm);
-      }
-
-      beerSheetsBoard = beerSheetsBoardRaw.filter((r) => {
-        if (!r) return false;
-        const nm = normalizePlayerName(r.name || "");
-        return allowedIds.has(r.player_id) || allowedNames.has(nm);
+        if (bnIndex !== -1) userRosterSlots[bnIndex].player = p;
       });
     }
 
     return {
-      recommendations: nextPickRecommendations,
-      availablePlayers: availableRankedPlayers,
-      userPositionNeeds: userRoster?.remainingPositionRequirements || {},
-      userPositionCounts: userRoster?.rosterPositionCounts || {},
-      userPositionRequirements: rosterRequirements,
-      draftWideNeeds: totalRemainingNeeds,
-      userRoster: userRoster?.players || null,
+      recommendations: (vm.nextPickRecommendations as any) ?? null,
+      availablePlayers: vm.available,
+      availableByPosition: vm.availableByPosition as any,
+      topAvailablePlayersByPosition: vm.topAvailablePlayersByPosition as any,
+      userPositionNeeds: (vm.userRoster?.remainingPositionRequirements as any) || {},
+      userPositionCounts: (vm.userRoster?.rosterPositionCounts as any) || {},
+      userPositionRequirements: vm.rosterRequirements as any,
+      draftWideNeeds: (vm.draftWideNeeds as any) || {},
+      userRoster: (vm.userRoster?.players as any) || null,
       userRosterSlots,
-      beerSheetsBoard,
     };
-  }, [
-    draftDetails,
-    draftPicks,
-    playersMap,
-    userId,
-    scoringType,
-    combinedAll,
-    errorDraftDetails,
-    errorDraftPicks,
-    errorPlayers,
-  ]);
+  }, [draftDetails, draftPicks, playersMap, userId]);
 
   const contextValue = useMemo(
     () => ({
@@ -521,10 +320,8 @@ export function DraftDataProvider({
         ? (processedData as any).userRoster.length
         : draftPicks?.length ?? 0,
       playersMapSize: playersMap ? Object.keys(playersMap).length : 0,
-      projectionsLen: combinedAll ? Object.keys(combinedAll).length : 0,
-      beerSheetsBoardLen: (processedData as any)?.beerSheetsBoard
-        ? (processedData as any).beerSheetsBoard.length
-        : 0,
+      projectionsLen: 0,
+      beerSheetsBoardLen: 0,
       errors: {
         draftDetails: Boolean(errorDraftDetails),
         draftPicks: Boolean(errorDraftPicks),
@@ -536,7 +333,6 @@ export function DraftDataProvider({
     draftDetails,
     draftPicks,
     playersMap,
-    combinedAll,
     processedData,
     errorDraftDetails,
     errorDraftPicks,

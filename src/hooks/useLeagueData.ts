@@ -1,5 +1,4 @@
-import { useQueries, useQuery } from "@tanstack/react-query";
-import { getPlayersByScoringTypeClient } from "@/lib/getPlayersClient";
+import { useQuery } from "@tanstack/react-query";
 import {
   DraftedPlayer,
   ScoringType,
@@ -312,37 +311,28 @@ export function useLeagueData(leagueId: string, userId: string) {
     ? determineScoringType(leagueData.leagueDetails.scoring_settings)
     : null;
 
-  const playerQueries = useQueries({
-    queries: RosterSlotEnum.options
-      .filter((position) => position !== "BN" && position !== "FLEX")
-      .map((position) => ({
-        queryKey: ["playerData", leagueScoringType, position],
-        queryFn: () =>
-          getPlayersByScoringTypeClient(
-            leagueScoringType as ScoringType,
-            position
-          ),
-        enabled: !!leagueScoringType,
-      })),
-  });
-
-  const flexQuery = useQuery({
-    queryKey: ["playerData", leagueScoringType, "FLEX"],
-    queryFn: () =>
-      getPlayersByScoringTypeClient(leagueScoringType as ScoringType, "FLEX"),
+  const playersQuery = useQuery<Record<string, DraftedPlayer>, Error>({
+    queryKey: ["players", leagueScoringType],
+    queryFn: async () => {
+      if (!leagueScoringType) return {} as Record<string, DraftedPlayer>;
+      const res = await fetch(`/api/players?scoring=${encodeURIComponent(leagueScoringType)}`);
+      if (!res.ok) throw new Error("failed to load players map");
+      return (await res.json()) as Record<string, DraftedPlayer>;
+    },
     enabled: !!leagueScoringType,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
   });
 
-  const isLoadingPlayerData =
-    playerQueries.some((query) => query.isLoading) || flexQuery.isLoading;
-  const playerDataError =
-    (playerQueries.find((query) => query.error)?.error as Error | null) ||
-    flexQuery.error;
+  const isLoadingPlayerData = playersQuery.isLoading;
+  const playerDataError = playersQuery.error as Error | null;
 
-  const positionPlayers = playerQueries.flatMap((query) =>
-    query.data ? Object.values(query.data) : []
-  );
-  const flexPlayers = flexQuery.data ? Object.values(flexQuery.data) : [];
+  const allPlayers = playersQuery.data ? Object.values(playersQuery.data) : [];
+  const positionPlayers = allPlayers;
+  const flexPlayers = allPlayers
+    .filter((p) => ["RB", "WR", "TE"].includes(p.position))
+    .sort((a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity));
 
   const rosters = leagueData?.rosters || [];
   const userRoster =
@@ -381,23 +371,23 @@ export function useLeagueData(leagueId: string, userId: string) {
     userRoster &&
     userPlayersWithDetails.length > 0 &&
     leagueData?.leagueDetails?.roster_positions &&
-    flexQuery.data
+    playersQuery.data
       ? determineCurrentRoster(
           userRoster,
           userPlayersWithDetails,
           leagueData.leagueDetails.roster_positions,
-          Object.values(flexQuery.data)
+          flexPlayers
         )
       : [];
 
   const recommendedRoster =
     userPlayersWithDetails.length > 0 &&
     leagueData?.leagueDetails?.roster_positions &&
-    flexQuery.data
+    playersQuery.data
       ? determineRecommendedRoster(
           userPlayersWithDetails,
           leagueData.leagueDetails.roster_positions,
-          Object.values(flexQuery.data)
+          flexPlayers
         )
       : [];
 

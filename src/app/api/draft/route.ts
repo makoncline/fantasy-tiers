@@ -129,6 +129,7 @@ export async function GET(req: NextRequest) {
       nextPickRecommendations,
       userRoster: userRoster,
       remainingPositionRequirements: totalRemainingNeeds,
+      availableRankedPlayers,
       topAvailablePlayersByPosition,
       currentRosters,
     });
