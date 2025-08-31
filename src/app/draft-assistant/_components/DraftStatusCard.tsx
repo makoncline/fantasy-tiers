@@ -34,6 +34,7 @@ export default function DraftStatusCard() {
   const {
     userPositionCounts,
     userPositionNeeds,
+    userPositionRequirements,
     refetchData,
     loading,
     lastUpdatedAt,
@@ -170,8 +171,8 @@ export default function DraftStatusCard() {
                 {(["QB", "RB", "WR", "TE", "FLEX", "K", "DEF"] as const).map(
                   (pos) => {
                     const have = (userPositionCounts?.[pos] ?? 0) as number;
-                    const need = (userPositionNeeds?.[pos] ?? 0) as number;
-                    const req = have + need;
+                    const req = (userPositionRequirements?.[pos] ??
+                      0) as number;
                     const met = req > 0 && have >= req;
                     return (
                       <Badge

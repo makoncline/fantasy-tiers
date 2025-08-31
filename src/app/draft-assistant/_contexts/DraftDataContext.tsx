@@ -38,6 +38,7 @@ interface ProcessedData {
   availablePlayers: RankedPlayer[];
   userPositionNeeds: Partial<Record<Position, number>>;
   userPositionCounts: Partial<Record<Position, number>>;
+  userPositionRequirements: Partial<Record<Position, number>>;
   draftWideNeeds: Partial<Record<Position, number>>;
   userRoster: DraftedPlayer[] | null;
   userRosterSlots: { slot: RosterSlot; player: DraftedPlayer | null }[];
@@ -59,7 +60,14 @@ interface DraftDataContextType extends ProcessedData {
   league: {
     teams: number;
     scoring: ReturnType<typeof scoringTypeSchema.parse> | undefined;
-    roster: { QB: number; RB: number; WR: number; TE: number; FLEX: number; BENCH: number };
+    roster: {
+      QB: number;
+      RB: number;
+      WR: number;
+      TE: number;
+      FLEX: number;
+      BENCH: number;
+    };
   } | null;
   refetchData: () => void;
   lastUpdatedAt: number | null;
@@ -70,6 +78,7 @@ const defaultContextValue: DraftDataContextType = {
   availablePlayers: [],
   userPositionNeeds: {},
   userPositionCounts: {},
+  userPositionRequirements: {},
   draftWideNeeds: {},
   userRoster: null,
   userRosterSlots: [],
@@ -93,6 +102,7 @@ const EMPTY_PROCESSED: ProcessedData = {
   availablePlayers: [],
   userPositionNeeds: {},
   userPositionCounts: {},
+  userPositionRequirements: {},
   draftWideNeeds: {},
   userRoster: null,
   userRosterSlots: [],
@@ -250,7 +260,10 @@ export function DraftDataProvider({
       const rosteredPlayers = draftedPlayers.filter(
         (player) => player.draft_slot === draftSlot
       );
-      const { positionNeeds: remainingPositionRequirements, positionCounts: rosterPositionCounts } = calculateTeamNeedsAndCountsForSingleTeam(
+      const {
+        positionNeeds: remainingPositionRequirements,
+        positionCounts: rosterPositionCounts,
+      } = calculateTeamNeedsAndCountsForSingleTeam(
         rosteredPlayers as any,
         rosterRequirements as any
       );
@@ -430,6 +443,7 @@ export function DraftDataProvider({
       availablePlayers: availableRankedPlayers,
       userPositionNeeds: userRoster?.remainingPositionRequirements || {},
       userPositionCounts: userRoster?.rosterPositionCounts || {},
+      userPositionRequirements: rosterRequirements,
       draftWideNeeds: totalRemainingNeeds,
       userRoster: userRoster?.players || null,
       userRosterSlots,
