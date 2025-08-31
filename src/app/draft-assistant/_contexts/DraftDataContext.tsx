@@ -12,6 +12,7 @@ import {
   calculatePositionCounts,
   ZERO_POSITION_COUNTS,
   calculateTotalRemainingNeeds,
+  calculateTeamNeedsAndCountsForSingleTeam,
 } from "@/lib/draftHelpers";
 import { isRankedPlayer } from "@/lib/getPlayers";
 import {
@@ -249,11 +250,10 @@ export function DraftDataProvider({
       const rosteredPlayers = draftedPlayers.filter(
         (player) => player.draft_slot === draftSlot
       );
-      const remainingPositionRequirements = calculatePositionNeeds(
-        rosterRequirements,
-        rosteredPlayers
+      const { positionNeeds: remainingPositionRequirements, positionCounts: rosterPositionCounts } = calculateTeamNeedsAndCountsForSingleTeam(
+        rosteredPlayers as any,
+        rosterRequirements as any
       );
-      const rosterPositionCounts = calculatePositionCounts(rosteredPlayers);
       currentRosters[draftSlot] = {
         players: rosteredPlayers,
         remainingPositionRequirements,

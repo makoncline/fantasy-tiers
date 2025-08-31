@@ -167,23 +167,28 @@ export function calculateTeamNeedsAndCountsForSingleTeam(
   // Copy of the roster requirements to track needs
   const teamNeeds = { ...rosterRequirements };
 
-  // Initialize position counts without FLEX
-  const positionCounts = { ...ZERO_POSITION_COUNTS };
+  // Initialize position counts including FLEX
+  const positionCounts: Record<string, number> = { ...ZERO_ROSTER_SLOT_COUNTS } as any;
 
   // Iterate over drafted players and adjust position counts and needs
   teamDraftedPlayers.forEach((player) => {
     const position = player.position;
 
-    // Increment position count
-    positionCounts[position]++;
-
     // Deduct from the primary position if there's a need
     if (teamNeeds[position] > 0) {
+      // Allocate to the primary position
+      positionCounts[position]++;
       teamNeeds[position] -= 1;
     }
     // Otherwise, deduct from FLEX if applicable
     else if (FLEX_POSITIONS.includes(position as any) && teamNeeds.FLEX > 0) {
+      // Allocate to FLEX (not the primary position)
+      positionCounts.FLEX += 1;
       teamNeeds.FLEX -= 1;
+    }
+    // Otherwise, allocate to the primary position count (excess or bench)
+    else {
+      positionCounts[position]++;
     }
   });
 
