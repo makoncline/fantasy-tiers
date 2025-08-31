@@ -188,20 +188,15 @@ async function main() {
       (fp?.player_team_id as string | undefined) ?? p.player.team ?? null;
     const bye_week = (fp?.player_bye_week as string | undefined) ?? null;
 
-    // Boris Chen rankings for this player's position
-    const borischen: Record<string, { rank: number; tier: number } | null> = {};
-    const stdMap = borisByPosScore[pos]?.["std"];
-    const stdRanking = stdMap ? stdMap.get(normalizedName) ?? null : null;
-
-    // Mirror logic: for QB/K/DEF, use std ranking for all scoring types
-    const mirrored = mirror(pos, {
-      std: stdRanking,
-      ppr: stdRanking,
-      half: stdRanking,
-    });
-    borischen["std"] = mirrored.std;
-    borischen["ppr"] = mirrored.ppr;
-    borischen["half"] = mirrored.half;
+  // Boris Chen rankings for this player's position
+  // Pull per-scoring rankings where available, and only mirror for QB/K/DEF
+  const getBoris = (scoring: "std" | "ppr" | "half") =>
+    borisByPosScore[pos]?.[scoring]?.get(normalizedName) ?? null;
+  const borischen = mirror(pos, {
+    std: getBoris("std"),
+    ppr: getBoris("ppr"),
+    half: getBoris("half"),
+  });
 
     // Sleeper subset for example-compatible format (whitelist specific stats)
     const allowedStatKeys = new Set([
@@ -274,20 +269,12 @@ async function main() {
     const shard: Record<string, any> = {};
     for (const [pid, entry] of Object.entries(combined)) {
       if (pos === "ALL") {
-        // For ALL shard, use the overall (ALL) Boris Chen rankings
+        // For ALL shard, use the overall (ALL) Boris Chen rankings per scoring
         const nm = entry.name as string;
-        const stdRanking = borisAllByScore.std.get(nm) ?? null;
-
-        // Mirror logic for ALL shard
-        const mirrored = mirror("ALL", {
-          std: stdRanking,
-          ppr: stdRanking,
-          half: stdRanking,
-        });
         const bAll = {
-          std: mirrored.std,
-          ppr: mirrored.ppr,
-          half: mirrored.half,
+          std: borisAllByScore.std.get(nm) ?? null,
+          ppr: borisAllByScore.ppr.get(nm) ?? null,
+          half: borisAllByScore.half.get(nm) ?? null,
         };
         shard[pid] = { ...entry, borischen: bAll };
       } else if (pos === "FLEX") {

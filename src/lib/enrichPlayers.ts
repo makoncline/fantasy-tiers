@@ -38,10 +38,8 @@ function toNum(x: unknown): number | null {
 // Extractors from the combined aggregate entry
 function getBoris(entry: any, scoring: ScoringType): { rank: number | null; tier: number | null } {
   const { borisKey } = scoringKeys(scoring);
-  // Primary: use matching key for scoring type; Fallback: std (e.g., QB/K/DEF only have std)
-  const bcPrimary = entry?.borischen?.[borisKey] ?? null;
-  const bcFallback = entry?.borischen?.std ?? null;
-  const bc = bcPrimary ?? bcFallback ?? null;
+  // Use only the matching key for scoring; QB/K/DEF are mirrored at build time.
+  const bc = entry?.borischen?.[borisKey] ?? null;
   const rank = bc && typeof bc.rank !== "undefined" ? toNum(bc.rank) : null;
   const tier = bc && typeof bc.tier !== "undefined" ? toNum(bc.tier) : null;
   return { rank, tier };

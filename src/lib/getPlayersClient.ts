@@ -94,8 +94,9 @@ export async function getCombinedPlayersByScoringTypeClient(
   for (const [playerId, entry] of Object.entries(combined)) {
     const pos = normalizePosition(String(entry?.position ?? ""));
     if (!allowedPositions.has(pos)) continue;
-    const rankTier =
-      entry?.borischen?.[scoringType] ?? entry?.borischen?.std ?? null;
+    // Use only the requested scoring type. Mirroring for QB/K/DEF
+    // happens during aggregation, so no std fallback required here.
+    const rankTier = entry?.borischen?.[scoringType] ?? null;
     const rank =
       typeof rankTier?.rank === "number"
         ? rankTier.rank
