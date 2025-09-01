@@ -28,19 +28,14 @@ export default function RecommendationsSection({
   const [previewPlayer, setPreviewPlayer] = React.useState<RankedPlayer | null>(
     null
   );
+
   const LABELS: Record<RecCategory, string> = {
     keyPositions: "Key positions",
     bestAvailable: "Best available",
     backups: "Backups / handcuffs",
     nonKeyPositions: "Non-key positions",
   };
-  if (loading) {
-    return <p aria-live="polite">Loading recommendations...</p>;
-  }
 
-  if (!recommendations) {
-    return <p>No recommendations available.</p>;
-  }
   const extras = React.useMemo(() => {
     const map: Record<
       string,
@@ -49,20 +44,27 @@ export default function RecommendationsSection({
     (beerSheetsBoard || []).forEach((r) => {
       const value = {
         // weekly display: season VBD / 17, one decimal
-        val: Number.isFinite(r.val)
-          ? Number((r.val / SEASON_WEEKS).toFixed(1))
-          : r.val,
+        val: Number.isFinite(r.val) ? Number((r.val / 17).toFixed(1)) : r.val,
         ps: Number.isFinite(r.ps) ? Number(Math.round(r.ps)) : r.ps,
-        // show ADP directly
-        ecr_round_pick:
-          r.adp != null && Number.isFinite(r.adp) ? String(r.adp) : undefined,
-      } as const;
-      map[r.player_id] = value;
-      const nm = normalizePlayerName(r.name || "");
+        ecr_round_pick: r.ecr
+          ? `${Math.floor(r.ecr / 12) + 1}.${r.ecr % 12 || 12}`
+          : undefined,
+      };
+      const nm = String(r.name || "")
+        .toLowerCase()
+        .replace(/[^a-z]/g, "");
       if (nm) map[nm] = value;
     });
     return map;
   }, [beerSheetsBoard]);
+
+  if (loading) {
+    return <p aria-live="polite">Loading recommendations...</p>;
+  }
+
+  if (!recommendations) {
+    return <p>No recommendations available.</p>;
+  }
 
   const onPreview = (row: PlayerRow, source: RankedPlayer[]) => {
     const found = source.find((p) => p.player_id === row.player_id);

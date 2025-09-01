@@ -1,67 +1,74 @@
 import { DraftedPlayer, ScoringType } from "./schemas";
 import { normalizePosition } from "./util";
+import { CombinedEntryT } from "./schemas-aggregates";
+import { FANTASY_POSITIONS } from "./scoring";
+
+function toNum(x: unknown): number | null {
+  if (x === null || x === undefined) return null;
+  const n = Number(String(x).replace(/[,%]/g, "").trim());
+  return Number.isFinite(n) ? n : null;
+}
 
 // Build a scoring-specific players map from the combined aggregates JSON
 export function buildPlayersMapFromCombined(
-  combined: Record<string, any>,
+  combined: Record<string, CombinedEntryT>,
   scoringType: ScoringType
 ): Record<string, DraftedPlayer & Record<string, any>> {
-  const fpKey = scoringType === "ppr" ? "ppr" : scoringType === "half" ? "half" : "standard";
-  const adpKey = scoringType === "ppr" ? "adp_ppr" : scoringType === "half" ? "adp_half_ppr" : "adp_std";
-  const ptsKey = scoringType === "ppr" ? "pts_ppr" : scoringType === "half" ? "pts_half_ppr" : "pts_std";
+  const fpKey =
+    scoringType === "ppr"
+      ? "ppr"
+      : scoringType === "half"
+      ? "half"
+      : "standard";
+  const adpKey =
+    scoringType === "ppr"
+      ? "adp_ppr"
+      : scoringType === "half"
+      ? "adp_half_ppr"
+      : "adp_std";
+  const ptsKey =
+    scoringType === "ppr"
+      ? "pts_ppr"
+      : scoringType === "half"
+      ? "pts_half_ppr"
+      : "pts_std";
 
   const out: Record<string, DraftedPlayer & Record<string, any>> = {};
-  const allowedPositions = new Set(["QB", "RB", "WR", "TE", "K", "DEF"]);
 
   for (const [playerId, entry] of Object.entries(combined)) {
-    const pos = normalizePosition(String((entry as any)?.position ?? ""));
-    if (!allowedPositions.has(pos)) continue;
+    const pos = normalizePosition(entry.position);
+    if (!FANTASY_POSITIONS.has(pos)) continue;
 
-    const rankTier = (entry as any)?.borischen?.[scoringType] ?? null;
-    const rank =
-      typeof rankTier?.rank === "number"
-        ? rankTier.rank
-        : rankTier?.rank != null
-        ? Number(rankTier.rank)
-        : null;
-    const tier =
-      typeof rankTier?.tier === "number"
-        ? rankTier.tier
-        : rankTier?.tier != null
-        ? Number(rankTier.tier)
-        : null;
+    const rankTier = entry.borischen?.[scoringType] ?? null;
+    const rank = rankTier ? toNum(rankTier.rank) : null;
+    const tier = rankTier ? toNum(rankTier.tier) : null;
 
-    const statsAny = (((entry as any)?.sleeper?.stats ?? {}) as Record<string, number>) || {};
     const sleeperStats = {
-      adp: typeof statsAny[adpKey] === "number" ? statsAny[adpKey] : undefined,
-      pts: typeof statsAny[ptsKey] === "number" ? statsAny[ptsKey] : undefined,
+      adp: entry.sleeper.stats[adpKey],
+      pts: entry.sleeper.stats[ptsKey],
     };
 
-    const fpStatsGroup = (entry as any)?.fantasypros?.stats?.[fpKey] ?? undefined;
+    const fpStatsGroup = entry.fantasypros?.stats?.[fpKey];
     const fpRanksGroup =
-      (entry as any)?.fantasypros?.rankings?.[fpKey] ?? (entry as any)?.fantasypros?.rankings ?? undefined;
+      entry.fantasypros?.rankings?.[fpKey] ?? entry.fantasypros?.rankings;
 
     out[playerId] = {
       scoringType,
-      player_id: String(playerId),
-      name: String((entry as any)?.name ?? ""),
+      player_id: playerId,
+      name: entry.name,
       position: pos,
-      team: (entry as any)?.team ?? null,
-      bye_week: (entry as any)?.bye_week ?? null,
+      team: entry.team,
+      bye_week: entry.bye_week,
       rank,
       tier,
       borischen: rank != null && tier != null ? { rank, tier } : null,
       sleeper: {
-        ...((entry as any)?.sleeper ?? null),
+        ...entry.sleeper,
         stats: sleeperStats,
       },
-      fantasypros: (entry as any)?.fantasypros
+      fantasypros: entry.fantasypros
         ? {
-            player_id: (entry as any).fantasypros.player_id,
-            player_owned_avg: (entry as any).fantasypros.player_owned_avg,
-            pos_rank: (entry as any).fantasypros.pos_rank,
-            stats: fpStatsGroup,
-            rankings: fpRanksGroup,
+            ...entry.fantasypros,
           }
         : null,
     } as any;
@@ -69,4 +76,3 @@ export function buildPlayersMapFromCombined(
 
   return out;
 }
-

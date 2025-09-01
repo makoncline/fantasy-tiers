@@ -16,6 +16,8 @@
     "agg:sleeper": "node -e \"process.exit(0)\"",
     "agg:borischen": "npx tsx src/lib/parseRankingData.ts",
     "agg:combine": "npx tsx scripts/aggregate/buildCombinedAggregate.ts",
+    "validate:aggregates": "npx tsx scripts/validate/strictAggregates.ts",
+    "validate:aggregates:ci": "npx tsx scripts/ci/validate-aggregates.ts",
     "fetch:all": "pnpm run fetch:fp && pnpm run fetch:sleeper && pnpm run fetch:borischen",
     "agg:all": "pnpm run agg:fp && pnpm run agg:borischen && pnpm run agg:sleeper && pnpm run agg:combine",
     "lint:unused": "knip && ts-prune",

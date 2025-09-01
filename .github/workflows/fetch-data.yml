@@ -1,0 +1,119 @@
+name: Fetch Fantasy Football Data
+
+on:
+  schedule:
+    # Run every night at 2 AM UTC (adjust timezone as needed)
+    - cron: "0 2 * * *"
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  fetch-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history for proper diff detection
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup tsx
+        run: pnpm add -D tsx
+
+      - name: Fetch all data sources
+        run: |
+          echo "🔄 Starting data fetch..."
+          pnpm run fetch:all
+          echo "✅ Data fetch completed"
+        env:
+          # Default configuration for data fetching
+          WEEK: draft
+          POSITIONS: QB,RB,WR,TE,K,DEF
+          SCORING: std,ppr,half
+
+      - name: Build aggregates
+        run: |
+          echo "🔄 Building aggregates..."
+          pnpm run agg:all
+          echo "✅ Aggregates built"
+
+      - name: Validate aggregates
+        run: |
+          echo "🔍 Validating aggregates..."
+          pnpm run validate:aggregates:ci
+          echo "✅ Validation completed"
+
+      - name: Check for changes
+        id: verify-changed-files
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "📝 Data changes detected"
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "✅ No data changes detected"
+          fi
+
+      - name: Commit and push changes
+        if: steps.verify-changed-files.outputs.changes == 'true'
+        run: |
+          echo "📝 Committing data changes..."
+
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+          # Show what files changed
+          echo "Changed files:"
+          git status --porcelain
+
+          # Add only aggregate data (other data dirs are in .gitignore)
+          git add public/data/aggregate/
+
+          # Create detailed commit message
+          TIMESTAMP=$(date -u +'%Y-%m-%d %H:%M UTC')
+          COMMIT_MSG="🤖 Automated data update - $TIMESTAMP
+
+          Updated combined aggregate rankings from multiple sources:
+          - FantasyPros rankings and projections
+          - Sleeper player data and projections
+          - Boris Chen expert rankings
+
+          Raw provider data cached locally (not committed to git)
+
+          Triggered by nightly cron job"
+
+          git commit -m "$COMMIT_MSG"
+
+          echo "🚀 Pushing changes..."
+          git push origin ${{ github.ref_name }}
+          echo "✅ Changes pushed successfully"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add workflow summary
+        if: always()
+        run: |
+          if [ "${{ steps.verify-changed-files.outputs.changes }}" == "true" ]; then
+            echo "🎯 Workflow completed successfully with data updates"
+          else
+            echo "📋 Workflow completed - no data changes detected"
+          fi
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Data fetch workflow failed. Check the logs for details."
+          echo "🔗 View the full logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          # You could add Slack/Discord notification here if desired

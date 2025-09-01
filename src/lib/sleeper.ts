@@ -136,7 +136,7 @@ export const SleeperProjectionSchema = z.object({
   status: z.string().nullable().optional(),
   date: z.union([z.string(), z.number()]).nullable().optional(),
   // Sleeper sometimes returns numeric fields as strings; accept both
-  stats: z.record(z.union([z.number(), z.string()])),
+  stats: z.record(z.string(), z.union([z.number(), z.string()])),
   category: z.string(),
   last_modified: z.number().optional(),
   week: z.union([z.number(), z.string()]).nullable().optional(),

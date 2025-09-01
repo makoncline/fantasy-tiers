@@ -2,6 +2,7 @@ import React from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -60,6 +61,9 @@ export default function PreviewPickDialog({
           <DialogTitle>
             Preview Pick {player ? `— ${player.name}` : ""}
           </DialogTitle>
+          <DialogDescription>
+            Preview how this player would fit into your current roster.
+          </DialogDescription>
         </DialogHeader>
         <RosterSlots slots={slots} highlightPlayerId={player?.player_id} />
       </DialogContent>

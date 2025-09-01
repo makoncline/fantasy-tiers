@@ -4,8 +4,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { normalizePlayerName, normalizePosition } from "../../src/lib/util";
-import { POSITIONS_TO_SCORING_TYPES } from "../../src/lib/fetchRankingData";
-// Avoid strict Zod parsing in this script for resilience
+import {
+  POSITIONS_TO_SCORING_TYPES,
+  FANTASY_POSITIONS,
+} from "../../src/lib/scoring";
+import { CombinedEntry, CombinedShard } from "../../src/lib/schemas-aggregates";
 import { parse as parseCsvSync } from "csv-parse/sync";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -182,21 +185,26 @@ async function main() {
     const normalizedName = normalizePlayerName(rawName);
     const pos = normalizePosition(String(p.player.position || ""));
 
+    // Skip invalid positions (FB, CB, DT, P, etc.) or non-fantasy positions
+    if (!pos || !FANTASY_POSITIONS.has(pos)) continue;
+
     // FantasyPros match by normalized name
     const fp = fpByNormName.get(normalizedName);
     const team =
       (fp?.player_team_id as string | undefined) ?? p.player.team ?? null;
-    const bye_week = (fp?.player_bye_week as string | undefined) ?? null;
+    // Coerce bye_week to number or null (handle string values from data)
+    const bye_week =
+      fp?.player_bye_week != null ? Number(fp.player_bye_week) || null : null;
 
-  // Boris Chen rankings for this player's position
-  // Pull per-scoring rankings where available, and only mirror for QB/K/DEF
-  const getBoris = (scoring: "std" | "ppr" | "half") =>
-    borisByPosScore[pos]?.[scoring]?.get(normalizedName) ?? null;
-  const borischen = mirror(pos, {
-    std: getBoris("std"),
-    ppr: getBoris("ppr"),
-    half: getBoris("half"),
-  });
+    // Boris Chen rankings for this player's position
+    // Pull per-scoring rankings where available, and only mirror for QB/K/DEF
+    const getBoris = (scoring: "std" | "ppr" | "half") =>
+      borisByPosScore[pos]?.[scoring]?.get(normalizedName) ?? null;
+    const borischen = mirror(pos, {
+      std: getBoris("std"),
+      ppr: getBoris("ppr"),
+      half: getBoris("half"),
+    });
 
     // Sleeper subset for example-compatible format (whitelist specific stats)
     const allowedStatKeys = new Set([
@@ -227,17 +235,18 @@ async function main() {
       updated_at: p.updated_at ?? null,
     };
 
-    const fantasypros = fp
-      ? {
-          player_id: fp.player_id ?? null,
-          player_owned_avg: fp.player_owned_avg ?? null,
-          pos_rank: fp.pos_rank ?? null,
-          stats: fp.stats ?? {},
-          rankings: fp.rankings ?? {},
-        }
-      : null;
+    const fantasypros =
+      fp && fp.player_id
+        ? {
+            player_id: String(fp.player_id),
+            player_owned_avg: fp.player_owned_avg ?? null,
+            pos_rank: fp.pos_rank ?? null,
+            stats: fp.stats ?? {},
+            rankings: fp.rankings ?? {},
+          }
+        : null;
 
-    combined[pid] = {
+    const entry = {
       player_id: pid,
       name: normalizedName,
       position: pos,
@@ -247,6 +256,18 @@ async function main() {
       sleeper,
       fantasypros,
     };
+
+    // Validate entry before adding to combined
+    try {
+      CombinedEntry.parse(entry);
+      combined[pid] = entry;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `Skipping invalid entry for ${normalizedName} (${pid}):`,
+        error.message
+      );
+    }
   }
 
   ensureDir(outDir);
@@ -278,13 +299,31 @@ async function main() {
         };
         shard[pid] = { ...entry, borischen: bAll };
       } else if (pos === "FLEX") {
-        if (["RB", "WR", "TE"].includes(entry.position)) shard[pid] = entry;
+        if (["RB", "WR", "TE"].includes(entry.position)) {
+          // For FLEX, use FLEX-specific Boris Chen rankings instead of individual position rankings
+          const nm = entry.name as string;
+          const bFlex = {
+            std: borisByPosScore["FLEX"]?.std?.get(nm) ?? null,
+            ppr: borisByPosScore["FLEX"]?.ppr?.get(nm) ?? null,
+            half: borisByPosScore["FLEX"]?.half?.get(nm) ?? null,
+          };
+          shard[pid] = { ...entry, borischen: bFlex };
+        }
       } else {
         if (entry.position === pos) shard[pid] = entry;
       }
     }
     const shardPath = path.join(outDir, `${pos}-combined-aggregate.json`);
-    fs.writeFileSync(shardPath, JSON.stringify(shard, null, 2));
+
+    // Validate shard before writing
+    try {
+      CombinedShard.parse(shard);
+      fs.writeFileSync(shardPath, JSON.stringify(shard, null, 2));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(`Failed to validate ${pos} shard:`, error.message);
+      throw error;
+    }
   }
   // eslint-disable-next-line no-console
   console.log(

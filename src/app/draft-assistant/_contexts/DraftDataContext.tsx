@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useCallback, useMemo } from "react";
-import { useDraftDetails, useDraftPicks, usePlayersByScoringType } from "@/app/draft-assistant/_lib/useDraftQueries";
-import { buildDraftViewModel } from "@/lib/draftState";
+import {
+  useDraftDetails,
+  useDraftPicks,
+  usePlayersByScoringType,
+} from "@/app/draft-assistant/_lib/useDraftQueries";
+import { buildDraftViewModel, type DraftViewModel } from "@/lib/draftState";
 import {
   DraftedPlayer,
   RankedPlayer,
@@ -28,6 +32,7 @@ interface ProcessedData {
   draftWideNeeds: Partial<Record<Position, number>>;
   userRoster: DraftedPlayer[] | null;
   userRosterSlots: { slot: RosterSlot; player: DraftedPlayer | null }[];
+  beerSheetsBoard?: any[]; // TODO: Add proper type for beer sheets board
 }
 
 interface DraftDataContextType extends ProcessedData {
@@ -91,6 +96,7 @@ const EMPTY_PROCESSED: ProcessedData = {
   draftWideNeeds: {},
   userRoster: null,
   userRosterSlots: [],
+  beerSheetsBoard: [],
 };
 
 const DraftDataContext =
@@ -152,7 +158,9 @@ export function DraftDataProvider({
     error: errorPlayers,
     refetch: refetchPlayersMap,
     dataUpdatedAt: updatedAtPlayers,
-  } = usePlayersByScoringType(scoringType, { enabled: readyIds && Boolean(scoringType) });
+  } = usePlayersByScoringType(scoringType, {
+    enabled: readyIds && Boolean(scoringType),
+  });
 
   // Client-computed view-model handles available, needs, recommendations
 
@@ -203,7 +211,13 @@ export function DraftDataProvider({
 
   const processedData: ProcessedData = useMemo(() => {
     if (!draftDetails || !playersMap) return EMPTY_PROCESSED;
-    const vm = buildDraftViewModel({ playersMap: playersMap as any, draft: draftDetails as any, picks: (draftPicks || []) as any, userId, topLimit: 3 });
+    const vm: DraftViewModel = buildDraftViewModel({
+      playersMap,
+      draft: draftDetails,
+      picks: draftPicks || [],
+      userId,
+      topLimit: 3,
+    });
 
     const startersCount =
       (draftDetails.settings?.slots_qb ?? 0) +
@@ -216,25 +230,50 @@ export function DraftDataProvider({
     const rounds = draftDetails.settings?.rounds ?? 0;
     const benchCount = Math.max(0, rounds - startersCount);
     const slotsTemplate: RosterSlot[] = [
-      ...Array.from({ length: draftDetails.settings?.slots_qb ?? 0 }, () => "QB" as RosterSlot),
-      ...Array.from({ length: draftDetails.settings?.slots_rb ?? 0 }, () => "RB" as RosterSlot),
-      ...Array.from({ length: draftDetails.settings?.slots_wr ?? 0 }, () => "WR" as RosterSlot),
-      ...Array.from({ length: draftDetails.settings?.slots_te ?? 0 }, () => "TE" as RosterSlot),
-      ...Array.from({ length: draftDetails.settings?.slots_flex ?? 0 }, () => "FLEX" as RosterSlot),
-      ...Array.from({ length: draftDetails.settings?.slots_k ?? 0 }, () => "K" as RosterSlot),
-      ...Array.from({ length: draftDetails.settings?.slots_def ?? 0 }, () => "DEF" as RosterSlot),
+      ...Array.from(
+        { length: draftDetails.settings?.slots_qb ?? 0 },
+        () => "QB" as RosterSlot
+      ),
+      ...Array.from(
+        { length: draftDetails.settings?.slots_rb ?? 0 },
+        () => "RB" as RosterSlot
+      ),
+      ...Array.from(
+        { length: draftDetails.settings?.slots_wr ?? 0 },
+        () => "WR" as RosterSlot
+      ),
+      ...Array.from(
+        { length: draftDetails.settings?.slots_te ?? 0 },
+        () => "TE" as RosterSlot
+      ),
+      ...Array.from(
+        { length: draftDetails.settings?.slots_flex ?? 0 },
+        () => "FLEX" as RosterSlot
+      ),
+      ...Array.from(
+        { length: draftDetails.settings?.slots_k ?? 0 },
+        () => "K" as RosterSlot
+      ),
+      ...Array.from(
+        { length: draftDetails.settings?.slots_def ?? 0 },
+        () => "DEF" as RosterSlot
+      ),
       ...Array.from({ length: benchCount }, () => "BN" as RosterSlot),
     ];
-    const userRosterSlots: { slot: RosterSlot; player: DraftedPlayer | null }[] = slotsTemplate.map((slot) => ({ slot, player: null }));
+    const userRosterSlots: {
+      slot: RosterSlot;
+      player: DraftedPlayer | null;
+    }[] = slotsTemplate.map((slot) => ({ slot, player: null }));
     if (vm.userRoster?.players?.length) {
-      const findIndex = (s: RosterSlot) => userRosterSlots.findIndex((x) => x.slot === s && x.player === null);
-      (vm.userRoster.players as any[]).forEach((p) => {
+      const findIndex = (s: RosterSlot) =>
+        userRosterSlots.findIndex((x) => x.slot === s && x.player === null);
+      vm.userRoster.players.forEach((p) => {
         const posIndex = findIndex(p.position as RosterSlot);
         if (posIndex !== -1) {
           userRosterSlots[posIndex].player = p;
           return;
         }
-        if ((["RB", "WR", "TE"] as RosterSlot[]).includes(p.position as any)) {
+        if (p.position === "RB" || p.position === "WR" || p.position === "TE") {
           const flexIndex = findIndex("FLEX");
           if (flexIndex !== -1) {
             userRosterSlots[flexIndex].player = p;
@@ -247,16 +286,17 @@ export function DraftDataProvider({
     }
 
     return {
-      recommendations: (vm.nextPickRecommendations as any) ?? null,
+      recommendations: vm.nextPickRecommendations ?? null,
       availablePlayers: vm.available,
-      availableByPosition: vm.availableByPosition as any,
-      topAvailablePlayersByPosition: vm.topAvailablePlayersByPosition as any,
-      userPositionNeeds: (vm.userRoster?.remainingPositionRequirements as any) || {},
-      userPositionCounts: (vm.userRoster?.rosterPositionCounts as any) || {},
-      userPositionRequirements: vm.rosterRequirements as any,
-      draftWideNeeds: (vm.draftWideNeeds as any) || {},
-      userRoster: (vm.userRoster?.players as any) || null,
+      availableByPosition: vm.availableByPosition,
+      topAvailablePlayersByPosition: vm.topAvailablePlayersByPosition,
+      userPositionNeeds: vm.userRoster?.remainingPositionRequirements || {},
+      userPositionCounts: vm.userRoster?.rosterPositionCounts || {},
+      userPositionRequirements: vm.rosterRequirements,
+      draftWideNeeds: vm.draftWideNeeds || {},
+      userRoster: vm.userRoster?.players || null,
       userRosterSlots,
+      beerSheetsBoard: [], // TODO: Implement beer sheets board data
     };
   }, [draftDetails, draftPicks, playersMap, userId]);
 
@@ -316,8 +356,8 @@ export function DraftDataProvider({
     console.log("DraftData snapshot", {
       draftId,
       hasDetails: Boolean(draftDetails),
-      picks: Array.isArray((processedData as any)?.userRoster)
-        ? (processedData as any).userRoster.length
+      picks: Array.isArray(processedData?.userRoster)
+        ? processedData.userRoster.length
         : draftPicks?.length ?? 0,
       playersMapSize: playersMap ? Object.keys(playersMap).length : 0,
       projectionsLen: 0,

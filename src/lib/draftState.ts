@@ -1,6 +1,6 @@
 import { DraftDetails } from "./draftDetails";
 import { DraftPick } from "./schemas";
-import type { DraftedPlayer, RankedPlayer, RosterSlot } from "./schemas";
+import type { DraftedPlayer, RankedPlayer, RosterSlot, Position } from "./schemas";
 import {
   calculateTeamNeedsAndCountsForSingleTeam,
   ZERO_POSITION_COUNTS,
@@ -101,6 +101,8 @@ export function topAvailableByPosition(
   return out;
 }
 
+export type DraftViewModel = ReturnType<typeof buildDraftViewModel>;
+
 export function buildDraftViewModel(args: {
   playersMap: Record<string, DraftedPlayer>;
   draft: DraftDetails;
@@ -155,14 +157,26 @@ export function buildDraftViewModel(args: {
   const topAvailable = topAvailableByPosition(availableByPosition, topLimit);
   const draftWideNeeds = calculateTotalRemainingNeeds(
     Object.fromEntries(
-      Object.entries(rosters).map(([k, v]) => [k, { ...v, players: v.players as any }])
+      Object.entries(rosters).map(([k, v]) => {
+        // Filter out "BN" and ensure all Position keys are present with defaults
+        const { BN, QB = 0, RB = 0, WR = 0, TE = 0, K = 0, DEF = 0, FLEX = 0, ...others } = v.remainingPositionRequirements;
+        const positionRequirements: Record<Position, number> = { QB, RB, WR, TE, K, DEF };
+        return [k, { remainingPositionRequirements: positionRequirements }];
+      })
     )
   );
   const nextPickRecommendations = userRoster
     ? getDraftRecommendations(
         base.available,
-        userRoster.rosterPositionCounts as any,
-        userRoster.remainingPositionRequirements as any
+        // Filter out "BN" and ensure all Position keys are present
+        (() => {
+          const { BN, QB = 0, RB = 0, WR = 0, TE = 0, K = 0, DEF = 0, FLEX = 0, ...others } = userRoster.rosterPositionCounts;
+          return { QB, RB, WR, TE, K, DEF } as Record<Position, number>;
+        })(),
+        // Filter out "BN" from remainingPositionRequirements
+        Object.fromEntries(
+          Object.entries(userRoster.remainingPositionRequirements).filter(([key]) => key !== "BN")
+        ) as Record<RosterSlot, number>
       )
     : null;
 

@@ -4,7 +4,7 @@ import { parse } from "csv-parse";
 import { z } from "zod";
 import { normalizePlayerName } from "./util";
 import { ScoringType } from "./schemas";
-import { POSITIONS_TO_SCORING_TYPES } from "./fetchRankingData";
+import { POSITIONS_TO_SCORING_TYPES } from "./scoring";
 
 // Constants for file paths
 const RANKINGS_DIR = path.resolve("./public/data");

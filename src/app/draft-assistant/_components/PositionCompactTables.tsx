@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -17,16 +18,29 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  useCombinedAggregate,
+  useAggregates,
+  useAggregatesLastModified,
+  useQBAggregates,
+  useRBAggregates,
+  useWRAggregates,
+  useTEAggregates,
+  useKAggregates,
+  useDEFAggregates,
+  useFlexAggregates,
   useDraftPicks,
   useSleeperPlayersMetaStatic,
 } from "../_lib/useDraftQueries";
+import { useDraftedLookups } from "../_lib/useDraftedLookups";
 import { useSearchParams } from "next/navigation";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
-import enrichPlayers from "@/lib/enrichPlayers";
+import { enrichPlayers } from "@/lib/enrichPlayers";
 import { normalizePlayerName, ecrToRoundPick } from "@/lib/util";
 import { SEASON_WEEKS } from "@/lib/constants";
-import { PlayerTable, mapToPlayerRow, type PlayerRow } from "./PlayerTable";
+import { PlayerTable } from "./PlayerTable";
+import { PlayerRow, toPlayerRows, type Extras } from "@/lib/playerRows";
+import { CombinedEntryT } from "@/lib/schemas-aggregates";
+import { sortByBcRank, findBaseline } from "@/lib/playerSorts";
+
 import PreviewPickDialog from "./PreviewPickDialog";
 import { normalizePosition } from "@/lib/util";
 import { CheckIcon, EyeIcon } from "lucide-react";
@@ -56,11 +70,24 @@ export default function PositionCompactTables({
     userRosterSlots,
     userPositionCounts,
     userPositionNeeds,
-  } = useDraftData() as any;
+  } = useDraftData();
   const searchParams = useSearchParams();
   const draftId = searchParams.get("draftId") || "";
   const { data: picks } = useDraftPicks(draftId);
   const { data: sleeperMeta } = useSleeperPlayersMetaStatic(Boolean(draftId));
+  const { data: lastModified } = useAggregatesLastModified();
+
+  // Use individual position data from their respective files
+  const { data: qbData } = useQBAggregates();
+  const { data: rbData } = useRBAggregates();
+  const { data: wrData } = useWRAggregates();
+  const { data: teData } = useTEAggregates();
+  const { data: kData } = useKAggregates();
+  const { data: defData } = useDEFAggregates();
+  const { data: flexData } = useFlexAggregates();
+
+  // Get ALL data for the all players table
+  const { data: allAggregates } = useAggregates();
   const DEFAULT_POS_TABLE_LIMIT = 10;
   const DEFAULT_ALL_TABLE_LIMIT = 20;
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
@@ -94,36 +121,55 @@ export default function PositionCompactTables({
 
   const onPreview = React.useCallback(
     (row: PlayerRow) => {
-      const found =
-        (availablePlayers as any[]).find(
-          (p: any) => p.player_id === row.player_id
-        ) ||
-        (availablePlayers as any[]).find(
-          (p: any) =>
-            normalizePlayerName(p.name || p.full_name || "") ===
-            normalizePlayerName(row.name)
+      // First try to find player in availablePlayers by ID
+      let found = availablePlayers?.find(
+        (p) => String(p.player_id) === String(row.player_id)
+      );
+
+      // If not found by ID, try by name
+      if (!found) {
+        found = availablePlayers?.find(
+          (p) =>
+            normalizePlayerName(p.name || "") === normalizePlayerName(row.name)
         );
-      if (found) {
+      }
+
+      if (found && userRosterSlots && userRosterSlots.length > 0) {
         setPreviewPlayer(found);
         setPreviewOpen(true);
+      } else {
+        // If we can't find the player, try to create a basic player object for preview
+        if (userRosterSlots && userRosterSlots.length > 0) {
+          const fallbackPlayer = {
+            player_id: row.player_id,
+            name: row.name,
+            position: row.position,
+            team: row.team || "—",
+            bye_week: row.bye_week,
+            // Include other useful fields from the row
+            bc_rank: row.bc_rank,
+            bc_tier: row.bc_tier,
+            sleeper_pts: row.sleeper_pts,
+            fp_pts: row.fp_pts,
+          };
+          setPreviewPlayer(fallbackPlayer);
+          setPreviewOpen(true);
+        }
       }
     },
-    [availablePlayers]
+    [availablePlayers, userRosterSlots]
   );
 
   // Extras from BeerSheets for VAL/PS if available (per-week VAL shown in PlayerTable usage)
-  const extras = React.useMemo(() => {
-    const map: Record<
-      string,
-      { val?: number; ps?: number; ecr_round_pick?: string }
-    > = {};
+  const extras = React.useMemo((): Extras => {
+    const map: Extras = {};
     (beerSheetsBoard || []).forEach((r: any) => {
       const value = {
         val: Number.isFinite(r.val)
           ? Number((r.val / SEASON_WEEKS).toFixed(1))
           : r.val,
         ps: Number.isFinite(r.ps) ? Number(Math.round(r.ps)) : r.ps,
-      } as const;
+      };
       map[r.player_id] = value;
       const nm = normalizePlayerName(r.name || "");
       if (nm) map[nm] = value;
@@ -131,98 +177,65 @@ export default function PositionCompactTables({
     return map;
   }, [beerSheetsBoard]);
 
-  const qbAgg = useCombinedAggregate("QB", true).data;
-  const rbAgg = useCombinedAggregate("RB", true).data;
-  const wrAgg = useCombinedAggregate("WR", true).data;
-  const teAgg = useCombinedAggregate("TE", true).data;
-  const flexAgg = useCombinedAggregate("FLEX", true).data;
-  const allAgg = useCombinedAggregate("ALL", true).data;
-  const defAgg = useCombinedAggregate("DEF", true).data;
-  const kAgg = useCombinedAggregate("K", true).data;
+  // Fetch merged aggregates and derive per-position client-side
+  const { data: aggregates } = useAggregates();
 
   const process = React.useCallback(
     (
-      dataset: any | null | undefined,
+      players: CombinedEntryT[],
       pos: "QB" | "RB" | "WR" | "TE" | "FLEX" | "DEF" | "K" | "ALL"
     ): PlayerRow[] => {
-      if (!dataset || !league?.scoring) return [] as PlayerRow[];
+      if (!players || !league?.scoring) return [];
       try {
-        const enriched = enrichPlayers(Object.values(dataset), {
+        const enriched = enrichPlayers(players, {
           teams: league.teams,
           scoring: league.scoring,
           roster: league.roster,
-        } as any);
-        const byId = new Map<string, any>();
-        const byName = new Map<string, any>();
-        for (const p of enriched) {
-          const pid = String(p?.player_id || "");
-          if (pid) byId.set(pid, p);
-          const nm = normalizePlayerName(String(p?.name || ""));
-          if (nm) byName.set(nm, p);
-        }
-        // Build base rows from the enriched shard itself so we don't drop players
-        // that aren't currently in availablePlayers (e.g., K/DEF).
-        // Note: filtering for Boris Chen rank is controlled by the "Show unranked" toggle later.
-        const base = mapToPlayerRow(enriched as any[], extras);
-        const merged = base.map((r) => {
-          const hit =
-            byId.get(r.player_id) || byName.get(normalizePlayerName(r.name));
-          if (!hit) return r;
-          return {
-            ...r,
-            bc_rank: hit.bc_rank ?? r.rank ?? undefined,
-            bc_tier: hit.bc_tier ?? r.tier ?? undefined,
-            sleeper_pts: hit.sleeper_pts ?? undefined,
-            sleeper_adp: hit.sleeper_adp ?? undefined,
-            sleeper_rank_overall: hit.sleeper_rank_overall ?? undefined,
-            fp_pts: hit.fp_pts ?? undefined,
-            ecr_round_pick:
-              hit.fp_rank_overall != null && league?.teams
-                ? ecrToRoundPick(
-                    Number(hit.fp_rank_overall),
-                    Number(league.teams)
-                  )
-                : undefined,
-            fp_rank_overall: hit.fp_rank_overall ?? undefined,
-            fp_rank_pos: hit.fp_rank_pos ?? undefined,
-            fp_tier: hit.fp_tier ?? undefined,
-            fp_baseline_pts: hit.fp_baseline_pts ?? undefined,
-            fp_value: hit.fp_value ?? undefined,
-            fp_positional_scarcity_slope:
-              hit.fp_positional_scarcity_slope ?? undefined,
-            fp_player_owned_avg: hit.fp_player_owned_avg ?? undefined,
-            market_delta: hit.market_delta ?? undefined,
-          } as PlayerRow;
         });
-        return merged.sort(
-          (a, b) =>
-            (Number(a.bc_rank ?? 1e9) as number) -
-            (Number(b.bc_rank ?? 1e9) as number)
-        );
+        // Use the new typed function to convert to PlayerRows
+        const rows = toPlayerRows(enriched, extras, league.teams);
+        return sortByBcRank(rows);
       } catch {
-        return [] as PlayerRow[];
+        return [];
       }
     },
-    [league, extras, availablePlayers]
+    [league, extras]
   );
 
-  const rowsQB = React.useMemo(() => process(qbAgg, "QB"), [process, qbAgg]);
-  const rowsRB = React.useMemo(() => process(rbAgg, "RB"), [process, rbAgg]);
-  const rowsWR = React.useMemo(() => process(wrAgg, "WR"), [process, wrAgg]);
-  const rowsTE = React.useMemo(() => process(teAgg, "TE"), [process, teAgg]);
-  const rowsFLEX = React.useMemo(
-    () => process(flexAgg, "FLEX"),
-    [process, flexAgg]
+  // Each position now uses data from its own dedicated file
+
+  const rowsQB = React.useMemo(
+    () => (qbData ? process(qbData, "QB") : []),
+    [process, qbData]
   );
-  const rowsALL = React.useMemo(
-    () => process(allAgg, "ALL"),
-    [process, allAgg]
+  const rowsRB = React.useMemo(
+    () => (rbData ? process(rbData, "RB") : []),
+    [process, rbData]
+  );
+  const rowsWR = React.useMemo(
+    () => (wrData ? process(wrData, "WR") : []),
+    [process, wrData]
+  );
+  const rowsTE = React.useMemo(
+    () => (teData ? process(teData, "TE") : []),
+    [process, teData]
+  );
+  const rowsK = React.useMemo(
+    () => (kData ? process(kData, "K") : []),
+    [process, kData]
   );
   const rowsDEF = React.useMemo(
-    () => process(defAgg, "DEF"),
-    [process, defAgg]
+    () => (defData ? process(defData, "DEF") : []),
+    [process, defData]
   );
-  const rowsK = React.useMemo(() => process(kAgg, "K"), [process, kAgg]);
+  const rowsFLEX = React.useMemo(
+    () => (flexData ? process(flexData, "FLEX") : []),
+    [process, flexData]
+  );
+  const rowsALL = React.useMemo(
+    () => (allAggregates ? process(allAggregates.all, "ALL") : []),
+    [process, allAggregates]
+  );
 
   const sections: [string, PlayerRow[], "full" | "nameOnly"][] = [
     ["QB", rowsQB, "full"],
@@ -240,34 +253,21 @@ export default function PositionCompactTables({
   const posFromLabel = (
     l: string
   ): "QB" | "RB" | "WR" | "TE" | "K" | "DEF" | "FLEX" | null => {
-    if (
-      l === "QB" ||
-      l === "RB" ||
-      l === "WR" ||
-      l === "TE" ||
-      l === "K" ||
-      l === "DEF" ||
-      l === "FLEX"
-    )
-      return l as any;
-    return null;
-  };
-  const draftedIds = React.useMemo(
-    () => new Set((picks || []).map((p: any) => String(p.player_id))),
-    [picks]
-  );
-  // Build drafted names directly from Sleeper players meta for reliable ID->name mapping
-  const draftedNames = React.useMemo(() => {
-    const set = new Set<string>();
-    if (!picks || !sleeperMeta) return set;
-    for (const p of picks) {
-      const meta = (sleeperMeta as any)[String(p.player_id)];
-      const full = String(meta?.full_name || meta?.name || "");
-      const nm = normalizePlayerName(full);
-      if (nm) set.add(nm);
+    switch (l) {
+      case "QB":
+      case "RB":
+      case "WR":
+      case "TE":
+      case "K":
+      case "DEF":
+      case "FLEX":
+        return l;
+      default:
+        return null;
     }
-    return set;
-  }, [picks, sleeperMeta]);
+  };
+  // Use centralized drafted lookups hook
+  const { draftedIds, draftedNames } = useDraftedLookups(picks, sleeperMeta);
   const refs = React.useRef<Record<string, HTMLDivElement | null>>({});
   const setRef = (label: string) => (el: HTMLDivElement | null) => {
     refs.current[label] = el;
@@ -287,9 +287,8 @@ export default function PositionCompactTables({
       } catch {}
     };
     measure();
-    const ro = (window as any).ResizeObserver
-      ? new ResizeObserver(() => measure())
-      : null;
+    const hasRO = typeof window !== "undefined" && "ResizeObserver" in window;
+    const ro = hasRO ? new ResizeObserver(() => measure()) : null;
     ro?.observe(card);
     window.addEventListener("resize", measure);
     const id = window.setInterval(measure, 1000);
@@ -299,6 +298,19 @@ export default function PositionCompactTables({
       window.clearInterval(id);
     };
   }, []);
+
+  // Show loading state if aggregates are not loaded
+  if (!aggregates) {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-center py-8">
+          <p className="text-muted-foreground" aria-live="polite">
+            Loading player data...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2">
@@ -362,6 +374,10 @@ export default function PositionCompactTables({
             ))}
           </div>
         </div>
+        {/* Data timestamp */}
+        <div className="text-xs text-muted-foreground text-right">
+          Data last updated: {lastModified?.formatted || "Loading..."}
+        </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-1">
         {sections.map(([label, rows, mode]) => {
@@ -382,12 +398,7 @@ export default function PositionCompactTables({
                 return true;
               });
           const visible = showAll ? allRows : allRows.slice(0, limit);
-          const baseline = React.useMemo(() => {
-            const v = rows.find(
-              (r) => typeof (r as any).fp_baseline_pts === "number"
-            ) as any;
-            return v?.fp_baseline_pts as number | undefined;
-          }, [rows]);
+          const baseline = findBaseline(rows);
           return (
             <div
               key={label}
@@ -408,8 +419,8 @@ export default function PositionCompactTables({
                   {(() => {
                     const pos = posFromLabel(label);
                     if (!pos) return null;
-                    const rosterCount = (userPositionCounts as any)?.[pos] ?? 0;
-                    const rosterNeeds = (userPositionNeeds as any)?.[pos] ?? 0;
+                    const rosterCount = userPositionCounts?.[pos] ?? 0;
+                    const rosterNeeds = userPositionNeeds?.[pos] ?? 0;
                     const rosterReq = rosterCount + rosterNeeds;
                     const met = rosterReq > 0 && rosterCount >= rosterReq;
                     return (
@@ -498,10 +509,7 @@ export default function PositionCompactTables({
               {(() => {
                 const tuple = sections.find(([lab]) => lab === openLabel);
                 const set = tuple ? tuple[1] : [];
-                const v = set.find(
-                  (r) => typeof (r as any).fp_baseline_pts === "number"
-                ) as any;
-                const bl = v?.fp_baseline_pts as number | undefined;
+                const bl = findBaseline(set);
                 return typeof bl === "number" ? (
                   <span className="text-sm text-muted-foreground font-normal">
                     baseline {bl.toFixed(1)} pts
@@ -512,8 +520,8 @@ export default function PositionCompactTables({
             {(() => {
               const pos = openLabel ? posFromLabel(openLabel) : null;
               if (!pos) return null;
-              const rosterCount = (userPositionCounts as any)?.[pos] ?? 0;
-              const rosterNeeds = (userPositionNeeds as any)?.[pos] ?? 0;
+              const rosterCount = userPositionCounts?.[pos] ?? 0;
+              const rosterNeeds = userPositionNeeds?.[pos] ?? 0;
               const rosterReq = rosterCount + rosterNeeds;
               const met = rosterReq > 0 && rosterCount >= rosterReq;
               return (
@@ -546,6 +554,9 @@ export default function PositionCompactTables({
                 </div>
               );
             })()}
+            <DialogDescription>
+              Detailed view of {openLabel} players with rankings and statistics.
+            </DialogDescription>
           </DialogHeader>
           <div className="overflow-x-auto max-h-[70vh] overflow-y-auto pr-2">
             {(() => {
@@ -554,7 +565,7 @@ export default function PositionCompactTables({
               const [, fullRowsRaw] = tuple;
               // Respect dialog toggles in the dialog view
               const dlgEligible = (fullRowsRaw || []).filter((r) =>
-                dlgShowUnranked ? true : typeof (r as any).bc_rank === "number"
+                dlgShowUnranked ? true : typeof r.bc_rank === "number"
               );
               const fullRows = dlgShowDrafted
                 ? dlgEligible
@@ -578,7 +589,7 @@ export default function PositionCompactTables({
                       aria-label="Preview"
                       title="Preview"
                     >
-                      <EyeIcon className="h-4 w-4" />
+                      <EyeIcon className="h-4 w-4 cursor-pointer hover:text-blue-500 transition-colors" />
                     </Button>
                   )}
                 />

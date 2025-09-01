@@ -9,36 +9,7 @@ import {
 } from "@/components/ui/table";
 import { z } from "zod";
 import { normalizePlayerName } from "@/lib/util";
-
-export type PlayerRow = {
-  player_id: string;
-  name: string;
-  position: string;
-  rank?: number | string;
-  tier?: number | string;
-  team?: string;
-  bye_week?: number | string;
-  // Enriched fields (optional)
-  ecr_round_pick?: string | null;
-  // Derived or extra fields for compact tables
-  val?: number | null;
-  ps?: number | null;
-  bc_rank?: number | null;
-  bc_tier?: number | null;
-  sleeper_pts?: number | null;
-  sleeper_adp?: number | null;
-  sleeper_rank_overall?: number | null;
-  fp_pts?: number | null;
-  fp_adp?: number | null;
-  fp_rank_overall?: number | null;
-  fp_rank_pos?: number | null;
-  fp_tier?: number | null;
-  fp_baseline_pts?: number | null;
-  fp_value?: number | null;
-  fp_positional_scarcity_slope?: number | null;
-  fp_player_owned_avg?: number | null;
-  market_delta?: number | null;
-};
+import { PlayerRow } from "@/lib/playerRows";
 
 export function PlayerTable({
   rows,

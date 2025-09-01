@@ -2,19 +2,21 @@
 
 import React from "react";
 import type { DraftedPlayer, RankedPlayer } from "@/lib/schemas";
-import { PlayerTable, mapToPlayerRow, type PlayerRow } from "./PlayerTable";
+import { PlayerTable, type PlayerRow } from "./PlayerTable";
+import { toPlayerRows, type Extras } from "@/lib/playerRows";
 import { Button } from "@/components/ui/button";
 import PreviewPickDialog from "./PreviewPickDialog";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
 import { normalizePlayerName, ecrToRoundPick } from "@/lib/util";
 import { SEASON_WEEKS } from "@/lib/constants";
 import {
-  useCombinedAggregate,
+  useAggregates,
   useDraftPicks,
   useSleeperPlayersMetaStatic,
 } from "../_lib/useDraftQueries";
+import { useDraftedLookups } from "../_lib/useDraftedLookups";
 import { useSearchParams } from "next/navigation";
-import enrichPlayers from "@/lib/enrichPlayers";
+import { enrichPlayers } from "@/lib/enrichPlayers";
 import { EyeIcon } from "lucide-react";
 
 interface AvailablePlayersProps {
@@ -34,7 +36,6 @@ export default function AvailablePlayers({
   showUnranked: externalShowUnranked,
   setShowUnranked: externalSetShowUnranked,
 }: AvailablePlayersProps) {
-  if (loading) return <p aria-live="polite">Loading available players...</p>;
   const { userRosterSlots, beerSheetsBoard, league } = useDraftData();
   const searchParams = useSearchParams();
   const draftId = searchParams.get("draftId") || "";
@@ -57,25 +58,10 @@ export default function AvailablePlayers({
   const showUnranked = externalShowUnranked ?? localShowUnranked;
   const setShowUnranked = externalSetShowUnranked ?? setLocalShowUnranked;
 
-  const { data: allAgg } = useCombinedAggregate("ALL", true);
+  const { data: aggregates } = useAggregates();
 
-  // Drafted player detection (same logic as PositionCompactTables)
-  const draftedIds = React.useMemo(
-    () => new Set((picks || []).map((p: any) => String(p.player_id))),
-    [picks]
-  );
-
-  const draftedNames = React.useMemo(() => {
-    const set = new Set<string>();
-    if (!picks || !sleeperMeta) return set;
-    for (const p of picks) {
-      const meta = (sleeperMeta as any)[String(p.player_id)];
-      const full = String(meta?.full_name || meta?.name || "");
-      const nm = normalizePlayerName(full);
-      if (nm) set.add(nm);
-    }
-    return set;
-  }, [picks, sleeperMeta]);
+  // Use centralized drafted lookups hook (removes any casts)
+  const { draftedIds, draftedNames } = useDraftedLookups(picks, sleeperMeta);
 
   const extras = React.useMemo(() => {
     const map: Record<
@@ -102,9 +88,9 @@ export default function AvailablePlayers({
 
   // Process data like PositionCompactTables does
   const process = React.useCallback((): PlayerRow[] => {
-    if (!allAgg || !league?.scoring) return [] as PlayerRow[];
+    if (!aggregates?.all || !league?.scoring) return [] as PlayerRow[];
     try {
-      const enriched = enrichPlayers(Object.values(allAgg), {
+      const enriched = enrichPlayers(aggregates.all, {
         teams: league.teams,
         scoring: league.scoring,
         roster: league.roster,
@@ -119,7 +105,7 @@ export default function AvailablePlayers({
       }
 
       // Build base rows from the enriched ALL aggregate
-      const base = mapToPlayerRow(enriched as any[], extras);
+      const base = toPlayerRows(enriched, extras, league.teams);
       const merged = base.map((r) => {
         const hit =
           byId.get(r.player_id) || byName.get(normalizePlayerName(r.name));
@@ -155,7 +141,7 @@ export default function AvailablePlayers({
     } catch {
       return [] as PlayerRow[];
     }
-  }, [allAgg, league, extras]);
+  }, [aggregates, league, extras]);
 
   const rows = React.useMemo(() => process(), [process]);
 
@@ -224,6 +210,8 @@ export default function AvailablePlayers({
     }
   };
 
+  if (loading) return <p aria-live="polite">Loading available players...</p>;
+
   return (
     <>
       {/* Filter controls */}
@@ -264,7 +252,7 @@ export default function AvailablePlayers({
             aria-label="Preview"
             title="Preview"
           >
-            <EyeIcon className="h-4 w-4" />
+            <EyeIcon className="h-4 w-4 cursor-pointer hover:text-blue-500 transition-colors" />
           </Button>
         )}
       />

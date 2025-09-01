@@ -1,6 +1,12 @@
 import fs from "fs";
 import path from "path";
 import { ScoringType } from "./schemas";
+import {
+  POSITIONS_TO_SCORING_TYPES,
+  ROSTER_SLOT_TO_RANKING_DATA_ABBV,
+  SUFFIX_FOR_SCORING,
+  ALL_SUFFIX_FOR_SCORING,
+} from "./scoring";
 
 // Constants for file paths
 export const RANKINGS_DIR = path.resolve("./public/data");
@@ -10,29 +16,6 @@ export const RAW_RANKINGS_FILE_PATHS: Record<ScoringType, string> = {
   ppr: path.resolve(RANKINGS_DIR, "ppr-rankings-raw.csv"),
   half: path.resolve(RANKINGS_DIR, "half-rankings-raw.csv"),
 };
-const SUFFIX_FOR_SCORING: Record<ScoringType, string> = {
-  std: "",
-  half: "-HALF",
-  ppr: "-PPR",
-};
-
-// Special case for ALL position
-const ALL_SUFFIX_FOR_SCORING: Record<ScoringType, string> = {
-  std: "",
-  half: "-HALF-PPR",
-  ppr: "-PPR",
-};
-
-export const POSITIONS_TO_SCORING_TYPES: Record<string, ScoringType[]> = {
-  QB: ["std"],
-  K: ["std"],
-  DEF: ["std"],
-  RB: ["std", "ppr", "half"],
-  WR: ["std", "ppr", "half"],
-  TE: ["std", "ppr", "half"],
-  FLEX: ["std", "ppr", "half"],
-  ALL: ["std", "ppr", "half"],
-};
 
 // Ensure the directory exists
 if (!fs.existsSync(RANKINGS_DIR)) {
@@ -41,17 +24,6 @@ if (!fs.existsSync(RANKINGS_DIR)) {
 if (!fs.existsSync(BORISCHEN_DIR)) {
   fs.mkdirSync(BORISCHEN_DIR, { recursive: true });
 }
-
-export const ROSTER_SLOT_TO_RANKING_DATA_ABBV: Record<string, string> = {
-  QB: "QB",
-  RB: "RB",
-  WR: "WR",
-  TE: "TE",
-  K: "K",
-  DEF: "DST",
-  FLEX: "FLX",
-  ALL: "ALL",
-};
 
 async function fetchAndSaveRankings(
   fetchPosition: string,
