@@ -1,7 +1,7 @@
 // src/lib/playerRows.ts
 import { z } from "zod";
-import { PositionEnum } from "./schemas";
-import { EnrichedPlayer } from "./enrichPlayers";
+import type { PositionEnum } from "./schemas";
+import type { EnrichedPlayer } from "./enrichPlayers";
 import { normalizePlayerName, ecrToRoundPick, normalizePosition } from "./util";
 
 export type PlayerRow = {
@@ -96,16 +96,12 @@ export function toPlayerRows(
       const extrasByName = extras[normalizePlayerName(p.name)];
       const playerExtras = extrasById || extrasByName || {};
 
-      return {
+      const result: PlayerRow = {
         player_id: p.player_id,
         name: p.name,
         position,
         team: p.team,
         bye_week: p.bye_week,
-        rank: p.bc_rank,
-        tier: p.bc_tier,
-        bc_rank: p.bc_rank,
-        bc_tier: p.bc_tier,
         sleeper_pts: p.sleeper_pts,
         sleeper_adp: p.sleeper_adp,
         sleeper_rank_overall: p.sleeper_rank_overall,
@@ -119,16 +115,28 @@ export function toPlayerRows(
         fp_positional_scarcity_slope: p.fp_positional_scarcity_slope,
         fp_player_owned_avg: p.fp_player_owned_avg,
         market_delta: p.market_delta,
-        // Use provided ecr_round_pick from extras, or calculate if not provided
-        ecr_round_pick:
-          playerExtras.ecr_round_pick ||
-          (p.fp_rank_overall != null && leagueTeams
-            ? ecrToRoundPick(Number(p.fp_rank_overall), leagueTeams)
-            : undefined),
-        // Extra fields from BeerSheets
-        val: playerExtras.val,
-        ps: playerExtras.ps,
       };
+
+      // Add optional properties only if they have values
+      if (p.bc_rank != null) {
+        result.rank = p.bc_rank;
+        result.bc_rank = p.bc_rank;
+      }
+      if (p.bc_tier != null) {
+        result.tier = p.bc_tier;
+        result.bc_tier = p.bc_tier;
+      }
+      if (playerExtras.ecr_round_pick) {
+        result.ecr_round_pick = playerExtras.ecr_round_pick;
+      }
+      if (playerExtras.val !== undefined) {
+        result.val = playerExtras.val;
+      }
+      if (playerExtras.ps !== undefined) {
+        result.ps = playerExtras.ps;
+      }
+
+      return result;
     })
     .filter((row): row is PlayerRow => row !== null);
 }
@@ -162,25 +170,13 @@ export function mapToPlayerRow(
         : undefined;
     const extras = extrasById || extrasByName || {};
 
-    return {
+    const result: PlayerRow = {
       player_id: pid,
       name,
       position: (p.position ??
         p.pos ??
         nested.position ??
         "QB") as PlayerRow["position"],
-      rank:
-        typeof p.rank === "number"
-          ? p.rank
-          : typeof nested.rank === "number"
-          ? nested.rank
-          : undefined,
-      tier:
-        typeof p.tier === "number"
-          ? p.tier
-          : typeof nested.tier === "number"
-          ? nested.tier
-          : undefined,
       team: p.team ?? p.pro_team ?? p.nfl_team ?? nested.team ?? null,
       bye_week:
         typeof p.bye_week === "number"
@@ -190,9 +186,39 @@ export function mapToPlayerRow(
           : typeof nested.bye_week === "number"
           ? nested.bye_week
           : null,
-      ecr_round_pick: extras.ecr_round_pick,
-      val: extras.val,
-      ps: extras.ps,
     };
+
+    // Add optional properties only if they have values
+    const rank =
+      typeof p.rank === "number"
+        ? p.rank
+        : typeof nested.rank === "number"
+        ? nested.rank
+        : undefined;
+    if (rank !== undefined) {
+      result.rank = rank;
+    }
+
+    const tier =
+      typeof p.tier === "number"
+        ? p.tier
+        : typeof nested.tier === "number"
+        ? nested.tier
+        : undefined;
+    if (tier !== undefined) {
+      result.tier = tier;
+    }
+
+    if (extras.ecr_round_pick) {
+      result.ecr_round_pick = extras.ecr_round_pick;
+    }
+    if (extras.val !== undefined) {
+      result.val = extras.val;
+    }
+    if (extras.ps !== undefined) {
+      result.ps = extras.ps;
+    }
+
+    return result;
   });
 }

@@ -1,5 +1,5 @@
 // src/lib/filters.ts
-import { Position, CombinedEntryT } from "./schemas-aggregates";
+import type { Position, CombinedEntryT } from "./schemas-aggregates";
 import { FLEX_POSITIONS } from "./constants";
 
 /**

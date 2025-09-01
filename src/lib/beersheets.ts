@@ -1,4 +1,4 @@
-import type { SleeperProjection } from "./sleeper";
+import type { SleeperProjection, SleeperPlayersMeta } from "./sleeper";
 
 export type LeagueShape = {
   teams: number;
@@ -18,6 +18,8 @@ export type BeerRow = {
   name: string;
   position: "QB" | "RB" | "WR" | "TE" | "K" | "DEF";
   proj_pts: number;
+  val?: number; // Value per week
+  ps?: number; // Positional scarcity percentage
 };
 
 const scoringKeyOf = (scoring: ScoringType) =>
@@ -43,7 +45,7 @@ function toRoundPick(
 
 export function computeBeerSheetsBoard(
   projections: SleeperProjection[],
-  playersMeta: Record<string, any>,
+  playersMeta: SleeperPlayersMeta,
   shape: LeagueShape,
   scoring: ScoringType,
   opts?: { baselineWindow?: number; superflex?: boolean }
@@ -55,14 +57,12 @@ export function computeBeerSheetsBoard(
   const rows: BeerRow[] = (projections || [])
     .filter(
       (p) =>
-        p?.player?.position &&
-        p.stats &&
-        Number.isFinite((p.stats as any)[key] as number)
+        p?.player?.position && p.stats && Number.isFinite(Number(p.stats[key]))
     )
     .map((p) => {
       const meta = playersMeta?.[p.player_id] ?? {};
-      const team = p.player?.team ?? (p as any).team ?? meta.team ?? undefined;
-      const proj = Number((p.stats as any)[key] ?? 0);
+      const team = p.player?.team ?? p.team ?? meta.team ?? undefined;
+      const proj = Number(p.stats[key] ?? 0);
       const position = (p.player?.position as BeerRow["position"]) ?? "WR";
       if (position === "K" || position === "DEF") return undefined;
       return {
@@ -83,7 +83,9 @@ export function computeBeerSheetsBoard(
     (byPos[r.position] ||= []).push(r);
   }
   for (const pos of Object.keys(byPos)) {
-    byPos[pos].sort((a, b) => b.proj_pts - a.proj_pts);
+    if (byPos[pos]) {
+      byPos[pos].sort((a, b) => b.proj_pts - a.proj_pts);
+    }
   }
 
   // 3) replacement indices with GREEDY FLEX (RB/WR/TE only unless superflex)
@@ -125,9 +127,12 @@ export function computeBeerSheetsBoard(
     return slice.length ? sum / slice.length : 0;
   };
   for (const pos of Object.keys(repIdx)) {
-    const base = meanFrom(byPos[pos], repIdx[pos], window);
-    const bump = STREAMING_PENALTY[pos] ?? 0;
-    baselines[pos] = base + bump;
+    const repIndex = repIdx[pos];
+    if (repIndex !== undefined) {
+      const base = meanFrom(byPos[pos], repIndex, window);
+      const bump = STREAMING_PENALTY[pos] ?? 0;
+      baselines[pos] = base + bump;
+    }
   }
 
   // instrumentation: emit baseline snapshot for sanity checks in dev

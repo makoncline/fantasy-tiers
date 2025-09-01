@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { DraftPick, DraftPickSchema } from "./schemas";
+import type { DraftPick } from "./schemas";
+import { DraftPickSchema } from "./schemas";
 
 export async function fetchDraftPicks(draftId: string): Promise<DraftPick[]> {
   const response = await fetch(
@@ -37,14 +38,17 @@ export async function fetchDraftPicks(draftId: string): Promise<DraftPick[]> {
       // Lenient fallback: coerce minimal fields when draft is pre_draft or payload shape differs
       if (Array.isArray(jsonData)) {
         return jsonData
-          .map((p: any) => {
+          .map((p: unknown) => {
             if (!p) return null;
+            const pickData = p as Record<string, unknown>;
             const draft_slot = Number(
-              p.draft_slot ?? p.draft_slot_no ?? p.slot
+              pickData.draft_slot ?? pickData.draft_slot_no ?? pickData.slot
             );
-            const round = Number(p.round ?? p.r);
-            const pick_no = Number(p.pick_no ?? p.pick ?? p.p);
-            const player_id = String(p.player_id ?? p.pid ?? "");
+            const round = Number(pickData.round ?? pickData.r);
+            const pick_no = Number(
+              pickData.pick_no ?? pickData.pick ?? pickData.p
+            );
+            const player_id = String(pickData.player_id ?? pickData.pid ?? "");
             if (
               !player_id ||
               !Number.isFinite(draft_slot) ||

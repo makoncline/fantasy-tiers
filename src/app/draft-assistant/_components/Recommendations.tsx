@@ -2,7 +2,8 @@
 import React from "react";
 import type { RankedPlayer } from "@/lib/schemas";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { PlayerTable, mapToPlayerRow, type PlayerRow } from "./PlayerTable";
+import { PlayerTable, mapToPlayerRow } from "./PlayerTable";
+import type { PlayerRow } from "@/lib/playerRows";
 import { Button } from "@/components/ui/button";
 import PreviewPickDialog from "./PreviewPickDialog";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
@@ -42,14 +43,15 @@ export default function RecommendationsSection({
       { val?: number; ps?: number; ecr_round_pick?: string }
     > = {};
     (beerSheetsBoard || []).forEach((r) => {
-      const value = {
-        // weekly display: season VBD / 17, one decimal
-        val: Number.isFinite(r.val) ? Number((r.val / 17).toFixed(1)) : r.val,
-        ps: Number.isFinite(r.ps) ? Number(Math.round(r.ps)) : r.ps,
-        ecr_round_pick: r.ecr
-          ? `${Math.floor(r.ecr / 12) + 1}.${r.ecr % 12 || 12}`
-          : undefined,
-      };
+      const value: { val?: number; ps?: number; ecr_round_pick?: string } = {};
+      // weekly display: season VBD / 17, one decimal
+      if (r.val != null && Number.isFinite(r.val)) {
+        value.val = Number((r.val / 17).toFixed(1));
+      }
+      if (r.ps != null && Number.isFinite(r.ps)) {
+        value.ps = Number(Math.round(r.ps));
+      }
+      // ecr_round_pick not available in BeerRow
       const nm = String(r.name || "")
         .toLowerCase()
         .replace(/[^a-z]/g, "");

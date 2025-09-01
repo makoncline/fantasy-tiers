@@ -32,12 +32,13 @@ export const PLAYER_DATA_FILE_PATH = path.resolve(
 );
 
 // Function to parse and save the processed player data
-export function parseAndSavePlayerData(rawData: any) {
+export function parseAndSavePlayerData(rawData: unknown) {
   const parsedData: Record<string, SleeperPlayer> = {};
+  const data = rawData as Record<string, unknown>;
 
-  for (const key in rawData) {
+  for (const key in data) {
     try {
-      const rawPlayer = RawPlayerSchema.parse(rawData[key]);
+      const rawPlayer = RawPlayerSchema.parse(data[key]);
       if (!rawPlayer.active) {
         continue;
       }

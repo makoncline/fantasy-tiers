@@ -1,5 +1,5 @@
 // src/lib/scoring.ts
-import { ScoringType, Position } from "./schemas";
+import type { ScoringType, Position } from "./schemas";
 
 // Fantasy football positions only (exclude FB, CB, P, etc.)
 export const FANTASY_POSITIONS = new Set(["QB", "RB", "WR", "TE", "K", "DEF"]);

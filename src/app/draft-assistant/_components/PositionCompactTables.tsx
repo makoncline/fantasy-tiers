@@ -27,6 +27,7 @@ import {
   useKAggregates,
   useDEFAggregates,
   useFlexAggregates,
+  useShardAggregates,
   useDraftPicks,
   useSleeperPlayersMetaStatic,
 } from "../_lib/useDraftQueries";
@@ -37,8 +38,12 @@ import { enrichPlayers } from "@/lib/enrichPlayers";
 import { normalizePlayerName, ecrToRoundPick } from "@/lib/util";
 import { SEASON_WEEKS } from "@/lib/constants";
 import { PlayerTable } from "./PlayerTable";
-import { PlayerRow, toPlayerRows, type Extras } from "@/lib/playerRows";
-import { CombinedEntryT } from "@/lib/schemas-aggregates";
+import type { PlayerRow, Extras } from "@/lib/playerRows";
+import { toPlayerRows } from "@/lib/playerRows";
+import type { CombinedEntryT } from "@/lib/schemas-aggregates";
+import type { RankedPlayer } from "@/lib/schemas";
+import type { League } from "@/lib/enrichPlayers";
+import type { BeerRow } from "@/lib/beersheets";
 import { sortByBcRank, findBaseline } from "@/lib/playerSorts";
 
 import PreviewPickDialog from "./PreviewPickDialog";
@@ -86,8 +91,8 @@ export default function PositionCompactTables({
   const { data: defData } = useDEFAggregates();
   const { data: flexData } = useFlexAggregates();
 
-  // Get ALL data for the all players table
-  const { data: allAggregates } = useAggregates();
+  // Get ALL data for the all players table using the ALL shard
+  const { data: allAggregates } = useShardAggregates("ALL");
   const DEFAULT_POS_TABLE_LIMIT = 10;
   const DEFAULT_ALL_TABLE_LIMIT = 20;
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
@@ -95,7 +100,9 @@ export default function PositionCompactTables({
     setExpanded((s) => ({ ...s, [key]: !s[key] }));
   const [openLabel, setOpenLabel] = React.useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = React.useState(false);
-  const [previewPlayer, setPreviewPlayer] = React.useState<any | null>(null);
+  const [previewPlayer, setPreviewPlayer] = React.useState<RankedPlayer | null>(
+    null
+  );
 
   // Use external state if provided, otherwise use local state
   const [localShowAll, setLocalShowAll] = React.useState(false);
@@ -135,22 +142,32 @@ export default function PositionCompactTables({
       }
 
       if (found && userRosterSlots && userRosterSlots.length > 0) {
-        setPreviewPlayer(found);
+        // Convert found player to RankedPlayer format
+        const rankedPlayer: RankedPlayer = {
+          player_id: found.player_id,
+          name: found.name,
+          position: found.position,
+          team: found.team,
+          bye_week: found.bye_week,
+          rank: found.rank || 0,
+          tier: found.tier || 0,
+        };
+        setPreviewPlayer(rankedPlayer);
         setPreviewOpen(true);
       } else {
         // If we can't find the player, try to create a basic player object for preview
         if (userRosterSlots && userRosterSlots.length > 0) {
-          const fallbackPlayer = {
+          const fallbackPlayer: RankedPlayer = {
             player_id: row.player_id,
             name: row.name,
             position: row.position,
-            team: row.team || "—",
-            bye_week: row.bye_week,
-            // Include other useful fields from the row
-            bc_rank: row.bc_rank,
-            bc_tier: row.bc_tier,
-            sleeper_pts: row.sleeper_pts,
-            fp_pts: row.fp_pts,
+            team: row.team,
+            bye_week:
+              typeof row.bye_week === "number"
+                ? row.bye_week.toString()
+                : row.bye_week,
+            rank: row.rank || 0,
+            tier: row.tier || 0,
           };
           setPreviewPlayer(fallbackPlayer);
           setPreviewOpen(true);
@@ -163,13 +180,14 @@ export default function PositionCompactTables({
   // Extras from BeerSheets for VAL/PS if available (per-week VAL shown in PlayerTable usage)
   const extras = React.useMemo((): Extras => {
     const map: Extras = {};
-    (beerSheetsBoard || []).forEach((r: any) => {
-      const value = {
-        val: Number.isFinite(r.val)
-          ? Number((r.val / SEASON_WEEKS).toFixed(1))
-          : r.val,
-        ps: Number.isFinite(r.ps) ? Number(Math.round(r.ps)) : r.ps,
-      };
+    (beerSheetsBoard || []).forEach((r: BeerRow) => {
+      const value: { val?: number; ps?: number } = {};
+      if (r.val != null && Number.isFinite(r.val)) {
+        value.val = Number((r.val / SEASON_WEEKS).toFixed(1));
+      }
+      if (r.ps != null && Number.isFinite(r.ps)) {
+        value.ps = Number(Math.round(r.ps));
+      }
       map[r.player_id] = value;
       const nm = normalizePlayerName(r.name || "");
       if (nm) map[nm] = value;
@@ -177,25 +195,26 @@ export default function PositionCompactTables({
     return map;
   }, [beerSheetsBoard]);
 
-  // Fetch merged aggregates and derive per-position client-side
-  const { data: aggregates } = useAggregates();
-
   const process = React.useCallback(
     (
       players: CombinedEntryT[],
       pos: "QB" | "RB" | "WR" | "TE" | "FLEX" | "DEF" | "K" | "ALL"
     ): PlayerRow[] => {
-      if (!players || !league?.scoring) return [];
+      if (!players || !league?.scoring) {
+        return [];
+      }
       try {
-        const enriched = enrichPlayers(players, {
+        const leagueForEnrich: League = {
           teams: league.teams,
           scoring: league.scoring,
           roster: league.roster,
-        });
+        };
+        const enriched = enrichPlayers(players, leagueForEnrich);
         // Use the new typed function to convert to PlayerRows
-        const rows = toPlayerRows(enriched, extras, league.teams);
+        const rows = toPlayerRows([...enriched], extras, league.teams);
         return sortByBcRank(rows);
-      } catch {
+      } catch (error) {
+        console.error(`process error for ${pos}:`, error);
         return [];
       }
     },
@@ -204,38 +223,32 @@ export default function PositionCompactTables({
 
   // Each position now uses data from its own dedicated file
 
-  const rowsQB = React.useMemo(
-    () => (qbData ? process(qbData, "QB") : []),
-    [process, qbData]
-  );
-  const rowsRB = React.useMemo(
-    () => (rbData ? process(rbData, "RB") : []),
-    [process, rbData]
-  );
-  const rowsWR = React.useMemo(
-    () => (wrData ? process(wrData, "WR") : []),
-    [process, wrData]
-  );
-  const rowsTE = React.useMemo(
-    () => (teData ? process(teData, "TE") : []),
-    [process, teData]
-  );
-  const rowsK = React.useMemo(
-    () => (kData ? process(kData, "K") : []),
-    [process, kData]
-  );
-  const rowsDEF = React.useMemo(
-    () => (defData ? process(defData, "DEF") : []),
-    [process, defData]
-  );
-  const rowsFLEX = React.useMemo(
-    () => (flexData ? process(flexData, "FLEX") : []),
-    [process, flexData]
-  );
-  const rowsALL = React.useMemo(
-    () => (allAggregates ? process(allAggregates.all, "ALL") : []),
-    [process, allAggregates]
-  );
+  /* eslint-disable react-hooks/exhaustive-deps */
+  const rowsQB = React.useMemo(() => {
+    return qbData ? process(qbData, "QB") : [];
+  }, [process, qbData]);
+  const rowsRB = React.useMemo(() => {
+    return rbData ? process(rbData, "RB") : [];
+  }, [process, rbData]);
+  const rowsWR = React.useMemo(() => {
+    return wrData ? process(wrData, "WR") : [];
+  }, [process, wrData]);
+  const rowsTE = React.useMemo(() => {
+    return teData ? process(teData, "TE") : [];
+  }, [process, teData]);
+  const rowsK = React.useMemo(() => {
+    return kData ? process(kData, "K") : [];
+  }, [process, kData]);
+  const rowsDEF = React.useMemo(() => {
+    return defData ? process(defData, "DEF") : [];
+  }, [process, defData]);
+  const rowsFLEX = React.useMemo(() => {
+    return flexData ? process(flexData, "FLEX") : [];
+  }, [process, flexData]);
+  const rowsALL = React.useMemo(() => {
+    return allAggregates ? process(allAggregates, "ALL") : [];
+  }, [process, allAggregates]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   const sections: [string, PlayerRow[], "full" | "nameOnly"][] = [
     ["QB", rowsQB, "full"],
@@ -299,8 +312,18 @@ export default function PositionCompactTables({
     };
   }, []);
 
-  // Show loading state if aggregates are not loaded
-  if (!aggregates) {
+  // Show loading state if position data is not loaded
+
+  if (
+    !qbData &&
+    !rbData &&
+    !wrData &&
+    !teData &&
+    !kData &&
+    !defData &&
+    !flexData &&
+    !allAggregates
+  ) {
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-center py-8">

@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { ScoringType } from "./schemas";
+import type { ScoringType } from "./schemas";
 import {
   POSITIONS_TO_SCORING_TYPES,
   ROSTER_SLOT_TO_RANKING_DATA_ABBV,

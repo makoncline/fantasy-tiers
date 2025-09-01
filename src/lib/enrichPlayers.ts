@@ -1,5 +1,5 @@
-import { ScoringType, Position } from "./schemas";
-import { CombinedEntryT } from "./schemas-aggregates";
+import type { ScoringType, Position } from "./schemas";
+import type { CombinedEntryT } from "./schemas-aggregates";
 import { scoringKeys, CORE_POSITIONS } from "./scoring";
 import { normalizePosition } from "./util";
 
@@ -89,12 +89,13 @@ function getFpRanks(
   const { fpKey } = scoringKeys(scoring);
   const r = entry.fantasypros?.rankings?.[fpKey];
   const posRankStr = entry.fantasypros?.pos_rank;
-  const posRankNum = posRankStr
-    ? Number(posRankStr.match(/^[A-Z]+(\d+)$/)?.[1] ?? "")
-    : NaN;
+  const posRankNum =
+    typeof posRankStr === "string"
+      ? Number(posRankStr.match(/^[A-Z]+(\d+)$/)?.[1] ?? "")
+      : NaN;
   return {
-    ecrOverall: toNum(r?.rank_ecr),
-    tier: toNum(r?.tier),
+    ecrOverall: toNum((r as Record<string, unknown>)?.rank_ecr),
+    tier: toNum((r as Record<string, unknown>)?.tier),
     posRank: Number.isFinite(posRankNum) ? posRankNum : null,
   };
 }
@@ -122,7 +123,7 @@ function groupByPosFpPts(
   };
   for (const p of players) {
     const raw = p.position;
-    const pos = (raw === "DST" ? "DEF" : raw) as Pos;
+    const pos = ((raw as string) === "DST" ? "DEF" : raw) as Pos;
     if (!CORE_POSITIONS.includes(pos)) continue;
     const pts = getFpPts(p, scoring);
     if (pts == null) continue;
@@ -144,7 +145,10 @@ function greedyFlexTake(
     let bestPts = -Infinity;
     for (const pos of ["RB", "WR", "TE"] as const) {
       const i = idx[pos];
-      const pts = i < by[pos].length ? by[pos][i].pts : -Infinity;
+      const pts =
+        by[pos] && i < by[pos].length && by[pos][i]
+          ? by[pos][i].pts
+          : -Infinity;
       if (pts > bestPts) {
         best = pos;
         bestPts = pts;
@@ -172,8 +176,14 @@ function computeFpBaselines(
     RB: (league.teams || 0) * (league.roster?.RB || 0) + flexTake.RB,
     WR: (league.teams || 0) * (league.roster?.WR || 0) + flexTake.WR,
     TE: (league.teams || 0) * (league.roster?.TE || 0) + flexTake.TE,
-    K: (league.teams || 0) * (league.roster?.K || 1),
-    DEF: (league.teams || 0) * (league.roster?.DEF || league.roster?.DST || 1),
+    K:
+      (league.teams || 0) *
+      (((league.roster as Record<string, unknown>)?.K as number) || 1),
+    DEF:
+      (league.teams || 0) *
+      (((league.roster as Record<string, unknown>)?.DEF as number) ||
+        ((league.roster as Record<string, unknown>)?.DST as number) ||
+        1),
   };
   const base: Record<Pos, number> = {
     QB: 0,
@@ -191,7 +201,7 @@ function computeFpBaselines(
       continue;
     }
     const i = Math.min(Math.max(0, n - 1), lst.length - 1); // clamp
-    base[pos] = lst[i].pts;
+    base[pos] = lst[i]?.pts ?? 0;
   }
   return base;
 }
@@ -206,14 +216,17 @@ function computeFpLocalScarcity(
   for (const pos of CORE_POSITIONS) {
     const lst = by[pos];
     for (let i = 0; i < lst.length; i++) {
-      const cur = lst[i].pts;
-      const next = i + 1 < lst.length ? lst[i + 1].pts : null;
-      const prev = i - 1 >= 0 ? lst[i - 1].pts : null;
+      const cur = lst[i]?.pts ?? 0;
+      const next = i + 1 < lst.length ? lst[i + 1]?.pts ?? null : null;
+      const prev = i - 1 >= 0 ? lst[i - 1]?.pts ?? null : null;
       let gap = 0;
       if (next != null) gap = cur - next; // forward gap
       else if (prev != null) gap = prev - cur; // tail fallback
       if (gap < 0) gap = 0;
-      out.set(lst[i].p, gap);
+      const player = lst[i]?.p;
+      if (player) {
+        out.set(player, gap);
+      }
     }
   }
   return out;
@@ -235,8 +248,14 @@ function computeFpReplacementSlope(
     RB: (league.teams || 0) * (league.roster?.RB || 0) + flexTake.RB,
     WR: (league.teams || 0) * (league.roster?.WR || 0) + flexTake.WR,
     TE: (league.teams || 0) * (league.roster?.TE || 0) + flexTake.TE,
-    K: (league.teams || 0) * (league.roster?.K || 1),
-    DEF: (league.teams || 0) * (league.roster?.DEF || league.roster?.DST || 1),
+    K:
+      (league.teams || 0) *
+      (((league.roster as Record<string, unknown>)?.K as number) || 1),
+    DEF:
+      (league.teams || 0) *
+      (((league.roster as Record<string, unknown>)?.DEF as number) ||
+        ((league.roster as Record<string, unknown>)?.DST as number) ||
+        1),
   };
   const slope: Record<Pos, number> = {
     QB: 0,
@@ -254,8 +273,10 @@ function computeFpReplacementSlope(
       continue;
     }
     const i = Math.min(Math.max(0, r - 1), lst.length - 1);
-    if (i + 1 < lst.length) slope[pos] = lst[i] - lst[i + 1];
-    else if (i - 1 >= 0) slope[pos] = lst[i - 1] - lst[i];
+    if (i + 1 < lst.length && lst[i] != null && lst[i + 1] != null)
+      slope[pos] = lst[i]! - lst[i + 1]!;
+    else if (i - 1 >= 0 && lst[i - 1] != null && lst[i] != null)
+      slope[pos] = lst[i - 1]! - lst[i]!;
     else slope[pos] = 0;
   }
   return slope;
@@ -278,8 +299,14 @@ function computeRemainingPositiveValuePercent(
     RB: (league.teams || 0) * (league.roster?.RB || 0) + flexTake.RB,
     WR: (league.teams || 0) * (league.roster?.WR || 0) + flexTake.WR,
     TE: (league.teams || 0) * (league.roster?.TE || 0) + flexTake.TE,
-    K: (league.teams || 0) * (league.roster?.K || 1),
-    DEF: (league.teams || 0) * (league.roster?.DEF || league.roster?.DST || 1),
+    K:
+      (league.teams || 0) *
+      (((league.roster as Record<string, unknown>)?.K as number) || 1),
+    DEF:
+      (league.teams || 0) *
+      (((league.roster as Record<string, unknown>)?.DEF as number) ||
+        ((league.roster as Record<string, unknown>)?.DST as number) ||
+        1),
   };
 
   const out = new Map<string, number>();
@@ -301,14 +328,16 @@ function computeRemainingPositiveValuePercent(
     // prefix sum to compute remaining AFTER taking player at index i
     const prefix: number[] = new Array(values.length + 1).fill(0);
     for (let i = 0; i < values.length; i++)
-      prefix[i + 1] = prefix[i] + values[i];
+      prefix[i + 1] = (prefix[i] || 0) + (values[i] || 0);
 
     for (let i = 0; i < list.length; i++) {
-      const pid = String(list[i].p.player_id);
+      const pid = String(list[i]?.p?.player_id || "");
       if (!pid) continue;
       const start = Math.min(i + 1, values.length); // after taking this player
       const remaining =
-        start < values.length ? prefix[values.length] - prefix[start] : 0;
+        start < values.length
+          ? (prefix[values.length] || 0) - (prefix[start] || 0)
+          : 0;
       const pct = Math.round((remaining / totalPool) * 100);
       out.set(pid, pct);
     }
@@ -322,11 +351,15 @@ export function enrichPlayers(
   league: League
 ): readonly EnrichedPlayer[] {
   const scoring = league.scoring;
-  const baselines = computeFpBaselines(players, league, scoring);
-  const replacementSlope = computeFpReplacementSlope(players, league, scoring);
-  const localScarcity = computeFpLocalScarcity(players, scoring);
+  const baselines = computeFpBaselines([...players], league, scoring);
+  const replacementSlope = computeFpReplacementSlope(
+    [...players],
+    league,
+    scoring
+  );
+  const localScarcity = computeFpLocalScarcity([...players], scoring);
   const remainingPct = computeRemainingPositiveValuePercent(
-    players,
+    [...players],
     league,
     scoring
   );
@@ -344,13 +377,13 @@ export function enrichPlayers(
   function overallRankFromAdp(adp: number | null): number | null {
     if (adp == null || sleeperAdps.length === 0) return null;
     for (let i = 0; i < sleeperAdps.length; i++)
-      if (adp <= sleeperAdps[i]) return i + 1; // 1-based
+      if (sleeperAdps[i] != null && adp <= sleeperAdps[i]!) return i + 1; // 1-based
     return sleeperAdps.length;
   }
   function overallRankFromPts(pts: number | null): number | null {
     if (pts == null || sleeperPtsAll.length === 0) return null;
     for (let i = 0; i < sleeperPtsAll.length; i++)
-      if (pts >= sleeperPtsAll[i]) return i + 1; // 1-based
+      if (sleeperPtsAll[i] != null && pts >= sleeperPtsAll[i]!) return i + 1; // 1-based
     return sleeperPtsAll.length;
   }
 

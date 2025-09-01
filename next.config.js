@@ -7,9 +7,7 @@ const nextConfig = {
   reactStrictMode: true,
   // Silence workspace root inference warnings by pinning tracing root
   outputFileTracingRoot: path.join(__dirname),
-  // Relax build checks to focus on draft assistant work
-  typescript: { ignoreBuildErrors: true }, // TODO: revert to default (false)
-  eslint: { ignoreDuringBuilds: true },    // TODO: revert to default (false)
+  // Build checks re-enabled
   async redirects() {
     return [];
   },

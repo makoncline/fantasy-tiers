@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { ScoringType, SCORING_TYPES } from "./schemas";
+import type { ScoringType } from "./schemas";
+import { SCORING_TYPES } from "./schemas";
 
 // Function to ensure a directory exists
 function ensureDirectoryExistence(filePath: string) {

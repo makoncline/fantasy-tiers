@@ -5,12 +5,10 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  RosteredPlayer,
-  UpgradeOption,
-  useLeagueData,
-} from "@/hooks/useLeagueData";
-import { DraftedPlayer, ROSTER_SLOTS, RosterSlot } from "@/lib/schemas";
+import type { RosteredPlayer, UpgradeOption } from "@/hooks/useLeagueData";
+import { useLeagueData } from "@/hooks/useLeagueData";
+import type { DraftedPlayer, RosterSlot } from "@/lib/schemas";
+import { ROSTER_SLOTS } from "@/lib/schemas";
 
 const formSchema = z.object({
   leagueId: z.string().min(1, "League ID is required"),
@@ -127,7 +125,9 @@ const LeagueManagerContent: React.FC = () => {
           <h2 className="text-2xl font-semibold mb-4">Who should I start?</h2>
           <RosterTable
             currentRoster={currentRoster}
-            rosterPositions={leagueDetails?.roster_positions}
+            {...(leagueDetails?.roster_positions && {
+              rosterPositions: leagueDetails.roster_positions,
+            })}
           />
         </section>
       )}

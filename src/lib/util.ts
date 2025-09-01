@@ -1,5 +1,5 @@
 // src/lib/util.ts
-import { Position } from "./schemas";
+import type { Position } from "./schemas";
 
 export function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {

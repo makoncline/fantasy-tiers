@@ -1,6 +1,6 @@
-import { DraftedPlayer, ScoringType } from "./schemas";
+import type { DraftedPlayer, ScoringType } from "./schemas";
 import { normalizePosition } from "./util";
-import { CombinedEntryT } from "./schemas-aggregates";
+import type { CombinedEntryT } from "./schemas-aggregates";
 import { FANTASY_POSITIONS } from "./scoring";
 
 function toNum(x: unknown): number | null {
@@ -13,7 +13,7 @@ function toNum(x: unknown): number | null {
 export function buildPlayersMapFromCombined(
   combined: Record<string, CombinedEntryT>,
   scoringType: ScoringType
-): Record<string, DraftedPlayer & Record<string, any>> {
+): Record<string, DraftedPlayer & Record<string, unknown>> {
   const fpKey =
     scoringType === "ppr"
       ? "ppr"
@@ -33,11 +33,11 @@ export function buildPlayersMapFromCombined(
       ? "pts_half_ppr"
       : "pts_std";
 
-  const out: Record<string, DraftedPlayer & Record<string, any>> = {};
+  const out: Record<string, DraftedPlayer & Record<string, unknown>> = {};
 
   for (const [playerId, entry] of Object.entries(combined)) {
     const pos = normalizePosition(entry.position);
-    if (!FANTASY_POSITIONS.has(pos)) continue;
+    if (!pos || !FANTASY_POSITIONS.has(pos)) continue;
 
     const rankTier = entry.borischen?.[scoringType] ?? null;
     const rank = rankTier ? toNum(rankTier.rank) : null;
@@ -58,7 +58,7 @@ export function buildPlayersMapFromCombined(
       name: entry.name,
       position: pos,
       team: entry.team,
-      bye_week: entry.bye_week,
+      bye_week: entry.bye_week?.toString() ?? null,
       rank,
       tier,
       borischen: rank != null && tier != null ? { rank, tier } : null,
@@ -71,7 +71,7 @@ export function buildPlayersMapFromCombined(
             ...entry.fantasypros,
           }
         : null,
-    } as any;
+    };
   }
 
   return out;

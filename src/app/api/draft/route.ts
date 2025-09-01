@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { fetchDraftDetails } from "@/lib/draftDetails";
 import {
   calculateTotalRemainingNeeds,
@@ -11,12 +12,8 @@ import {
 import { fetchDraftPicks } from "@/lib/draftPicks";
 import { getErrorMessage } from "@/lib/util";
 import { getRankingLastUpdatedDate } from "@/lib/parseRankingData";
-import {
-  DraftedPlayer,
-  RosterSlot,
-  scoringTypeSchema,
-  ScoringType,
-} from "@/lib/schemas";
+import type { DraftedPlayer, RosterSlot, ScoringType } from "@/lib/schemas";
+import { scoringTypeSchema } from "@/lib/schemas";
 import { isRankedPlayer } from "@/lib/getPlayers";
 import { getPlayersByScoringTypeServer } from "@/lib/getPlayersServer";
 
@@ -50,10 +47,11 @@ export async function GET(req: NextRequest) {
     };
 
     // Validate and narrow scoring type from external data
-    const scoring: ScoringType =
-      scoringTypeSchema.safeParse(draftDetails.metadata.scoring_type).success
-        ? (draftDetails.metadata.scoring_type as ScoringType)
-        : "ppr";
+    const scoring: ScoringType = scoringTypeSchema.safeParse(
+      draftDetails.metadata.scoring_type
+    ).success
+      ? (draftDetails.metadata.scoring_type as ScoringType)
+      : "ppr";
     const playersMap = getPlayersByScoringTypeServer(scoring);
     const draftPicks = await fetchDraftPicks(draftId);
     const draftedPlayers = draftPicks.map((pick) => ({
@@ -83,11 +81,19 @@ export async function GET(req: NextRequest) {
       );
       const remainingPositionRequirements = calculatePositionNeeds(
         rosterRequirements,
-        rosteredPlayers
+        rosteredPlayers.map((player) => ({
+          ...player,
+          position: player.position || null,
+        }))
       );
-      const rosterPositionCounts = calculatePositionCounts(rosteredPlayers);
+      const rosterPositionCounts = calculatePositionCounts(
+        rosteredPlayers.map((player) => ({
+          ...player,
+          position: player.position || null,
+        }))
+      );
       currentRosters[draftSlot] = {
-        players: rosteredPlayers,
+        players: rosteredPlayers as DraftedPlayer[],
         remainingPositionRequirements,
         rosterPositionCounts,
       };

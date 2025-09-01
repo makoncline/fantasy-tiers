@@ -1,11 +1,6 @@
-import { DraftDetails } from "./draftDetails";
-import {
-  RosterSlot,
-  POSITIONS,
-  DraftPick,
-  Position,
-  RankedPlayer,
-} from "./schemas";
+import type { DraftDetails } from "./draftDetails";
+import type { RosterSlot, DraftPick, Position, RankedPlayer } from "./schemas";
+import { POSITIONS } from "./schemas";
 
 const RECCOMENDATION_LIMIT = 6;
 export const KEY_ROSTER_SLOTS = ["RB", "WR", "TE", "QB", "FLEX"] as const;
@@ -168,9 +163,9 @@ export function calculateTeamNeedsAndCountsForSingleTeam(
   const teamNeeds = { ...rosterRequirements };
 
   // Initialize position counts including FLEX
-  const positionCounts: Record<string, number> = {
+  const positionCounts: Record<RosterSlot, number> = {
     ...ZERO_ROSTER_SLOT_COUNTS,
-  } as any;
+  };
 
   // First pass: Count all players at their actual positions
   teamDraftedPlayers.forEach((player) => {
@@ -345,8 +340,9 @@ function getFillRestOfRosterRecommendations(
   // Get all positions that are not in the key positions and are not fully filled
   const nonKeyPositions = (Object.keys(POSITION_LIMITS) as Position[]).filter(
     (position) =>
-      !KEY_ROSTER_SLOTS.includes(position as any) &&
-      roster[position] < POSITION_LIMITS[position] // Only include positions that haven't reached their limit
+      !KEY_ROSTER_SLOTS.includes(
+        position as "QB" | "RB" | "WR" | "TE" | "FLEX"
+      ) && roster[position] < POSITION_LIMITS[position] // Only include positions that haven't reached their limit
   );
 
   // Filter for available players in non-key positions

@@ -3,7 +3,7 @@ import path from "path";
 import { parse } from "csv-parse";
 import { z } from "zod";
 import { normalizePlayerName } from "./util";
-import { ScoringType } from "./schemas";
+import type { ScoringType } from "./schemas";
 import { POSITIONS_TO_SCORING_TYPES } from "./scoring";
 
 // Constants for file paths
@@ -45,8 +45,8 @@ export type Ranking = z.infer<typeof RankingSchema>;
 
 // Parse the CSV file
 async function parseCSV(filePath: string) {
-  return new Promise<any[]>((resolve, reject) => {
-    const results: any[] = [];
+  return new Promise<Record<string, string>[]>((resolve, reject) => {
+    const results: Record<string, string>[] = [];
     fs.createReadStream(filePath)
       .pipe(parse({ columns: true, skip_empty_lines: true }))
       .on("data", (data) => results.push(data))

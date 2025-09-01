@@ -1,11 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchDraftDetails, DraftDetails } from "@/lib/draftDetails";
+import { fetchDraftDetails } from "@/lib/draftDetails";
+import type { DraftDetails } from "@/lib/draftDetails";
 import { fetchDraftPicks } from "@/lib/draftPicks";
 import { fetchMergedAggregates, fetchShard } from "@/lib/api/aggregates";
-import { ScoringType, DraftPick, DraftedPlayer } from "@/lib/schemas";
+import type { ScoringType, DraftPick, DraftedPlayer } from "@/lib/schemas";
+import type { DraftViewModel } from "@/lib/draftState";
 import { qk } from "@/lib/queryKeys";
-import { CombinedEntryT, CombinedShard } from "@/lib/schemas-aggregates";
-import { SleeperPlayersMeta, SleeperPlayersMetaT } from "@/lib/schemas-sleeper";
+import { CombinedShard } from "@/lib/schemas-aggregates";
+import type { CombinedEntryT } from "@/lib/schemas-aggregates";
+import { SleeperPlayersMeta } from "@/lib/schemas-sleeper";
+import type { SleeperPlayersMetaT } from "@/lib/schemas-sleeper";
 import { normalizePlayerName } from "@/lib/util";
 
 type AggregatesLastModifiedResponse = {
@@ -49,51 +53,61 @@ type ShardPos = "ALL" | "QB" | "RB" | "WR" | "TE" | "K" | "DEF" | "FLEX";
 
 export function useShardAggregates(
   pos: ShardPos,
-  opts?: { enabled?: boolean }
+  opts: { enabled?: boolean } = {}
 ) {
-  const enabled = opts?.enabled ?? true;
+  const enabled = opts.enabled ?? true;
   return useQuery<CombinedEntryT[], Error>({
     queryKey: qk.aggregates.shard(pos),
     queryFn: async () => {
-      const shard = await fetchShard(pos);
-      return Object.values(shard);
+      try {
+        const shard = await fetchShard(pos);
+        const values = Object.values(shard);
+        return values;
+      } catch (error) {
+        console.error(`useShardAggregates error for ${pos}:`, error);
+        throw error;
+      }
     },
     enabled,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
   });
 }
 
 // Legacy compatibility hooks - now using unified shard hook
-export function useAllAggregates(opts?: { enabled?: boolean }) {
+export function useAllAggregates(opts: { enabled?: boolean } = {}) {
   return useShardAggregates("ALL", opts);
 }
 
-export function useFlexAggregates(opts?: { enabled?: boolean }) {
+export function useFlexAggregates(opts: { enabled?: boolean } = {}) {
   return useShardAggregates("FLEX", opts);
 }
 
 // Convenience hooks for specific positions
-export function useQBAggregates(opts?: { enabled?: boolean }) {
+export function useQBAggregates(opts: { enabled?: boolean } = {}) {
   return useShardAggregates("QB", opts);
 }
 
-export function useRBAggregates(opts?: { enabled?: boolean }) {
+export function useRBAggregates(opts: { enabled?: boolean } = {}) {
   return useShardAggregates("RB", opts);
 }
 
-export function useWRAggregates(opts?: { enabled?: boolean }) {
+export function useWRAggregates(opts: { enabled?: boolean } = {}) {
   return useShardAggregates("WR", opts);
 }
 
-export function useTEAggregates(opts?: { enabled?: boolean }) {
+export function useTEAggregates(opts: { enabled?: boolean } = {}) {
   return useShardAggregates("TE", opts);
 }
 
-export function useKAggregates(opts?: { enabled?: boolean }) {
+export function useKAggregates(opts: { enabled?: boolean } = {}) {
   return useShardAggregates("K", opts);
 }
 
-export function useDEFAggregates(opts?: { enabled?: boolean }) {
+export function useDEFAggregates(opts: { enabled?: boolean } = {}) {
   return useShardAggregates("DEF", opts);
 }
 
@@ -162,7 +176,7 @@ export function useDraftViewModel(
   opts?: { enabled?: boolean; refetchInterval?: number }
 ) {
   const enabled = Boolean(userId && draftId) && (opts?.enabled ?? true);
-  return useQuery<Record<string, any>, Error>({
+  return useQuery<DraftViewModel, Error>({
     queryKey: qk.draft.viewModel(String(draftId), String(userId)),
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -171,7 +185,7 @@ export function useDraftViewModel(
       });
       const res = await fetch(`/api/draft/view-model?${params.toString()}`);
       if (!res.ok) throw new Error("failed to load draft view model");
-      return (await res.json()) as Record<string, any>;
+      return (await res.json()) as DraftViewModel;
     },
     enabled,
     staleTime: 0,
@@ -189,7 +203,7 @@ export function useDraftSummary(
   opts?: { enabled?: boolean; refetchInterval?: number }
 ) {
   const enabled = Boolean(userId && draftId) && (opts?.enabled ?? true);
-  return useQuery<Record<string, any>, Error>({
+  return useQuery<unknown, Error>({
     queryKey: qk.draft.summary(String(draftId), String(userId)),
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -198,7 +212,7 @@ export function useDraftSummary(
       });
       const res = await fetch(`/api/draft?${params.toString()}`);
       if (!res.ok) throw new Error("failed to load draft summary");
-      return (await res.json()) as Record<string, any>;
+      return await res.json();
     },
     enabled,
     staleTime: 0,

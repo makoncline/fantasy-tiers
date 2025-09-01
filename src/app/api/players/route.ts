@@ -1,7 +1,8 @@
 import fs from "fs";
 import path from "path";
 import { CombinedShard } from "../../../lib/schemas-aggregates";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { scoringTypeSchema } from "../../../lib/schemas";
 
 export const runtime = "nodejs";

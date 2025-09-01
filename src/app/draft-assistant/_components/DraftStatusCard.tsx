@@ -43,7 +43,7 @@ export default function DraftStatusCard() {
   const teams = details?.settings?.teams ?? 0;
   const rounds = details?.settings?.rounds ?? 0;
   const totalPicks = teams && rounds ? teams * rounds : 0;
-  const made = (picks || []).filter((p: any) => p && p.player_id).length;
+  const made = (picks || []).filter((p) => p && p.player_id).length;
   const nextOverall = totalPicks ? Math.min(made + 1, totalPicks) : 0;
   const nextLabel = teams ? roundPickLabel(nextOverall, teams) : "—";
   const currentRound = teams ? Math.ceil(nextOverall / (teams || 1)) : 0;
@@ -51,7 +51,7 @@ export default function DraftStatusCard() {
 
   const userSlot = userId ? details?.draft_order?.[userId] : undefined;
   const userPicksMade = (picks || []).filter(
-    (p: any) => p.draft_slot === userSlot
+    (p) => p.draft_slot === userSlot
   ).length;
   const userPicksRemaining = rounds ? Math.max(0, rounds - userPicksMade) : 0;
   const picksTillTurn =
@@ -59,13 +59,11 @@ export default function DraftStatusCard() {
 
   const lastThree = React.useMemo(() => {
     const lst = (picks || [])
-      .filter((p: any) => p && p.player_id)
-      .sort((a: any, b: any) => (b.pick_no ?? 0) - (a.pick_no ?? 0))
+      .filter((p) => p && p.player_id)
+      .sort((a, b) => (b.pick_no ?? 0) - (a.pick_no ?? 0))
       .slice(0, 3);
-    return lst.map((p: any) => {
-      const meta = sleeperMeta
-        ? (sleeperMeta as any)[String(p.player_id)]
-        : null;
+    return lst.map((p) => {
+      const meta = sleeperMeta ? sleeperMeta[String(p.player_id)] : null;
       const nm = meta?.full_name || meta?.name || String(p.player_id);
       const lbl = teams && p?.pick_no ? roundPickLabel(p.pick_no, teams) : "—";
       return `${lbl} ${nm}` as string;

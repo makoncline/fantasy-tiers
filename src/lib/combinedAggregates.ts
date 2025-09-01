@@ -1,10 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
-import {
-  CombinedShard,
-  CombinedEntry,
-  CombinedEntryT,
-} from "./schemas-aggregates";
+import { CombinedShard, CombinedEntry } from "./schemas-aggregates";
+import type { CombinedEntryT } from "./schemas-aggregates";
 
 let _cache: { data: Record<string, CombinedEntryT>; ts: number } | null = null;
 

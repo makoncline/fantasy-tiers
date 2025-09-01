@@ -58,7 +58,7 @@ export const CombinedEntry = z.object({
   name: z.string(),
   position: PositionEnum, // Required PositionEnum for fantasy positions only
   team: z.union([z.string(), z.null()]), // nullable: observed in RB data
-  bye_week: z.union([z.coerce.number(), z.null()]), // nullable: observed in RB data
+  bye_week: z.number().nullable(), // nullable: observed in RB data
   borischen: RankTiersByScoring,
   sleeper: SleeperCombined,
   fantasypros: z.union([FantasyProsCombined, z.null()]), // nullable: observed in RB data

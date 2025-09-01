@@ -1,9 +1,9 @@
 import React from "react";
-import {
+import type {
   UseFormRegister,
   FieldErrors,
   UseFormSetValue,
-  type UseFormReturn,
+  UseFormReturn,
 } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,7 +66,9 @@ export default function DraftAssistantForm({
       drafts?.length &&
       !radioSelection
     ) {
-      const defaultId = drafts[0].draft_id;
+      const firstDraft = drafts[0];
+      if (!firstDraft) return;
+      const defaultId = firstDraft.draft_id;
       setRadioSelection(defaultId);
       setValue("draftId", defaultId, {
         shouldValidate: true,
@@ -168,13 +170,13 @@ export default function DraftAssistantForm({
                               <DraftInfo
                                 name={title}
                                 draftId={d.draft_id}
-                                type={d.type ?? undefined}
-                                teams={d.settings?.teams}
-                                rounds={d.settings?.rounds}
-                                season={d.season}
-                                startTime={d.start_time}
-                                status={d.status}
-                                scoringType={d.metadata?.scoring_type}
+                                {...(d.type && { type: d.type })}
+                                {...(d.settings?.teams && { teams: d.settings.teams })}
+                                {...(d.settings?.rounds && { rounds: d.settings.rounds })}
+                                {...(d.season && { season: d.season })}
+                                {...(d.start_time && { startTime: d.start_time })}
+                                {...(d.status && { status: d.status })}
+                                {...(d.metadata?.scoring_type && { scoringType: d.metadata.scoring_type })}
                               />
                             </div>
                           </div>

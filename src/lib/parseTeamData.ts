@@ -27,10 +27,11 @@ export type Team = z.infer<typeof TeamSchema>;
 export const TEAM_DATA_FILE_PATH = path.resolve("./public/data/nfl-teams.json");
 
 // Function to parse and save the processed team data
-export function parseAndSaveTeamData(rawData: any) {
+export function parseAndSaveTeamData(rawData: unknown) {
   const parsedData: Record<string, Team> = {};
+  const teams = rawData as unknown[];
 
-  rawData.forEach((team: any) => {
+  teams.forEach((team: unknown) => {
     try {
       const rawTeam = RawTeamSchema.parse(team);
       const parsedTeam = TeamSchema.parse({
@@ -41,7 +42,12 @@ export function parseAndSaveTeamData(rawData: any) {
 
       parsedData[rawTeam.team] = parsedTeam;
     } catch (error) {
-      console.error(`Failed to parse team ${team.name}:`, error);
+      console.error(
+        `Failed to parse team ${
+          ((team as Record<string, unknown>)?.name as string) || "unknown"
+        }:`,
+        error
+      );
     }
   });
 

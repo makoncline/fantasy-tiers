@@ -6,7 +6,7 @@ import {
   type SleeperUser,
   type SleeperDraftSummary,
 } from "@/lib/sleeper";
-import type { SleeperProjection } from "@/lib/sleeper";
+import type { SleeperProjection, SleeperPlayersMeta } from "@/lib/sleeper";
 
 export function useSleeperUserByUsername(
   username: string | undefined,
@@ -99,12 +99,12 @@ export function useSleeperProjections(
 }
 
 export function useSleeperPlayersMeta(enabled: boolean = true) {
-  return useQuery<Record<string, any>, Error>({
+  return useQuery<SleeperPlayersMeta, Error>({
     queryKey: ["sleeper:players:meta"],
     queryFn: async () => {
       const res = await fetch("/api/sleeper/players");
       if (!res.ok) throw new Error("failed to load players meta");
-      return (await res.json()) as Record<string, any>;
+      return (await res.json()) as SleeperPlayersMeta;
     },
     enabled,
     staleTime: 60 * 60 * 1000,

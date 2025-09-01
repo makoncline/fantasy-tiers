@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { fetchDraftDetails } from "../../../../lib/draftDetails";
 import { fetchDraftPicks } from "../../../../lib/draftPicks";
 import { scoringTypeSchema } from "../../../../lib/schemas";
@@ -19,8 +20,10 @@ export async function GET(req: NextRequest) {
   try {
     const draft = await fetchDraftDetails(draftId);
     const picks = await fetchDraftPicks(draftId);
-    const scoringRaw = (draft?.metadata as any)?.scoring_type || "";
-    const scoringParsed = scoringTypeSchema.safeParse(String(scoringRaw).toLowerCase());
+    const scoringRaw = draft?.metadata?.scoring_type || "";
+    const scoringParsed = scoringTypeSchema.safeParse(
+      String(scoringRaw).toLowerCase()
+    );
     const scoring = scoringParsed.success ? scoringParsed.data : "ppr";
 
     const merged = loadMergedCombinedAggregates();
@@ -31,9 +34,15 @@ export async function GET(req: NextRequest) {
       );
     }
     const playersMap = buildPlayersMapFromCombined(merged, scoring);
-    const vm = buildDraftViewModel({ playersMap: playersMap as any, draft: draft as any, picks: picks as any, userId });
+    const vm = buildDraftViewModel({
+      playersMap,
+      draft,
+      picks,
+      userId,
+    });
     return NextResponse.json(vm);
-  } catch (e: any) {
-    return NextResponse.json({ error: e?.message || "internal error" }, { status: 500 });
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : "internal error";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

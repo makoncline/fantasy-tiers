@@ -2,11 +2,8 @@ import fs from "fs";
 import path from "path";
 import { z } from "zod";
 import { normalizePlayerName } from "./util";
-import {
-  PlayerWithRankingsSchema,
-  RankTierSchema,
-  ScoringType,
-} from "./schemas";
+import { PlayerWithRankingsSchema } from "./schemas";
+import type { RankTierSchema, ScoringType, Position } from "./schemas";
 import { POSITIONS_TO_SCORING_TYPES } from "./scoring";
 import { RANKINGS_DIR } from "./fetchRankingData";
 import { FLEX_POSITIONS } from "./draftHelpers";
@@ -91,7 +88,7 @@ function aggregatePlayerData() {
     acc[id] = {
       player_id: id,
       name: normalizedName,
-      position: (p.player.position ?? "") as any,
+      position: (p.player.position ?? "") as Position,
       team: p.player.team ?? null,
     };
     return acc;
@@ -162,7 +159,9 @@ function aggregatePlayerData() {
         if (position === "ALL") {
           // No filtering for ALL
         } else if (position === "FLEX") {
-          if (!FLEX_POSITIONS.includes(player.position as any)) {
+          if (
+            !(FLEX_POSITIONS as readonly string[]).includes(player.position)
+          ) {
             return;
           }
         } else {
@@ -196,7 +195,7 @@ function aggregatePlayerData() {
         const finalPlayer: z.infer<typeof PlayerWithRankingsSchema> = {
           player_id: player.player_id,
           name: player.name,
-          position: player.position,
+          position: player.position as Position,
           team: teamFromFp,
           bye_week: byeWeekStr,
           rankingsByScoringType,

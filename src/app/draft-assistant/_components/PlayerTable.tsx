@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { z } from "zod";
 import { normalizePlayerName } from "@/lib/util";
-import { PlayerRow } from "@/lib/playerRows";
+import type { PlayerRow } from "@/lib/playerRows";
 
 export function PlayerTable({
   rows,
@@ -443,7 +443,8 @@ export function PlayerTable({
               background:
                 colorizeValuePs &&
                 typeof (p.fp_positional_scarcity_slope ?? p.ps) === "number" &&
-                (p.fp_positional_scarcity_slope ?? p.ps) > 0
+                (p.fp_positional_scarcity_slope ?? p.ps) != null &&
+                (p.fp_positional_scarcity_slope ?? p.ps)! > 0
                   ? colorFor(
                       p.fp_positional_scarcity_slope ?? (p.ps as number),
                       psRange
@@ -549,17 +550,59 @@ export function mapToPlayerRow(
         ? extrasByPlayerId[normalizePlayerName(name)]
         : undefined;
     const extras = extrasById || extrasByName || {};
-    return {
+    const result: PlayerRow = {
       player_id: pid,
       name,
-      position: p.position ?? p.pos ?? nested.position ?? "—",
-      rank: p.rank ?? nested.rank,
-      tier: p.tier ?? nested.tier,
+      position: (p.position ?? p.pos ?? nested.position ?? "—") as PlayerRow["position"],
       team: p.team ?? p.pro_team ?? p.nfl_team ?? nested.team ?? "—",
-      bye_week: p.bye_week ?? p.bye ?? nested.bye_week ?? "—",
-      ecr_round_pick: extras.ecr_round_pick,
-      val: extras.val,
-      ps: extras.ps,
+      bye_week: (() => {
+        const bye = p.bye_week ?? p.bye ?? nested.bye_week;
+        if (typeof bye === "number") return bye;
+        if (typeof bye === "string") {
+          const parsed = Number(bye);
+          return Number.isFinite(parsed) ? parsed : null;
+        }
+        return null;
+      })(),
     };
+
+    // Add optional properties only if they have valid values
+    const rank = (() => {
+      const r = p.rank ?? nested.rank;
+      if (typeof r === "number") return r;
+      if (typeof r === "string") {
+        const parsed = Number(r);
+        return Number.isFinite(parsed) ? parsed : undefined;
+      }
+      return undefined;
+    })();
+    if (rank !== undefined) {
+      result.rank = rank;
+    }
+
+    const tier = (() => {
+      const t = p.tier ?? nested.tier;
+      if (typeof t === "number") return t;
+      if (typeof t === "string") {
+        const parsed = Number(t);
+        return Number.isFinite(parsed) ? parsed : undefined;
+      }
+      return undefined;
+    })();
+    if (tier !== undefined) {
+      result.tier = tier;
+    }
+
+    if (extras.ecr_round_pick) {
+      result.ecr_round_pick = extras.ecr_round_pick;
+    }
+    if (extras.val !== undefined) {
+      result.val = extras.val;
+    }
+    if (extras.ps !== undefined) {
+      result.ps = extras.ps;
+    }
+
+    return result;
   });
 }

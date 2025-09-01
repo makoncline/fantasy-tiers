@@ -4,14 +4,12 @@ import {
   useDraftPicks,
   usePlayersByScoringType,
 } from "@/app/draft-assistant/_lib/useDraftQueries";
-import { buildDraftViewModel, type DraftViewModel } from "@/lib/draftState";
-import {
-  DraftedPlayer,
-  RankedPlayer,
-  scoringTypeSchema,
-  RosterSlot,
-} from "@/lib/schemas";
+import { buildDraftViewModel } from "@/lib/draftState";
+import type { DraftViewModel } from "@/lib/draftState";
+import type { DraftedPlayer, RankedPlayer, RosterSlot } from "@/lib/schemas";
+import { scoringTypeSchema } from "@/lib/schemas";
 import type { Position } from "../_lib/types";
+import type { BeerRow } from "@/lib/beersheets";
 // BeerSheets removed from client; calculations moved server-side
 
 interface Recommendation {
@@ -32,7 +30,7 @@ interface ProcessedData {
   draftWideNeeds: Partial<Record<Position, number>>;
   userRoster: DraftedPlayer[] | null;
   userRosterSlots: { slot: RosterSlot; player: DraftedPlayer | null }[];
-  beerSheetsBoard?: any[]; // TODO: Add proper type for beer sheets board
+  beerSheetsBoard?: BeerRow[]; // Beer sheets board data
 }
 
 interface DraftDataContextType extends ProcessedData {
@@ -150,7 +148,11 @@ export function DraftDataProvider({
       default:
         return undefined;
     }
-  }, [parsedScoring.success, draftDetails?.metadata?.scoring_type]);
+  }, [
+    parsedScoring.success,
+    parsedScoring.data,
+    draftDetails?.metadata?.scoring_type,
+  ]);
 
   const {
     data: playersMap,
@@ -212,7 +214,7 @@ export function DraftDataProvider({
   const processedData: ProcessedData = useMemo(() => {
     if (!draftDetails || !playersMap) return EMPTY_PROCESSED;
     const vm: DraftViewModel = buildDraftViewModel({
-      playersMap,
+      playersMap: playersMap as unknown as Record<string, DraftedPlayer>,
       draft: draftDetails,
       picks: draftPicks || [],
       userId,
@@ -269,19 +271,21 @@ export function DraftDataProvider({
         userRosterSlots.findIndex((x) => x.slot === s && x.player === null);
       vm.userRoster.players.forEach((p) => {
         const posIndex = findIndex(p.position as RosterSlot);
-        if (posIndex !== -1) {
+        if (posIndex !== -1 && userRosterSlots[posIndex]) {
           userRosterSlots[posIndex].player = p;
           return;
         }
         if (p.position === "RB" || p.position === "WR" || p.position === "TE") {
           const flexIndex = findIndex("FLEX");
-          if (flexIndex !== -1) {
+          if (flexIndex !== -1 && userRosterSlots[flexIndex]) {
             userRosterSlots[flexIndex].player = p;
             return;
           }
         }
         const bnIndex = findIndex("BN");
-        if (bnIndex !== -1) userRosterSlots[bnIndex].player = p;
+        if (bnIndex !== -1 && userRosterSlots[bnIndex]) {
+          userRosterSlots[bnIndex].player = p;
+        }
       });
     }
 
@@ -300,35 +304,39 @@ export function DraftDataProvider({
     };
   }, [draftDetails, draftPicks, playersMap, userId]);
 
+  // Memoize league object to prevent unnecessary re-renders
+  const league = useMemo(() => {
+    if (!draftDetails || !scoringType) return null;
+
+    return {
+      teams: draftDetails.settings?.teams ?? 0,
+      scoring: scoringType,
+      roster: {
+        QB: draftDetails.settings?.slots_qb ?? 0,
+        RB: draftDetails.settings?.slots_rb ?? 0,
+        WR: draftDetails.settings?.slots_wr ?? 0,
+        TE: draftDetails.settings?.slots_te ?? 0,
+        FLEX: draftDetails.settings?.slots_flex ?? 0,
+        BENCH:
+          (draftDetails.settings?.rounds ?? 0) -
+          ((draftDetails.settings?.slots_qb ?? 0) +
+            (draftDetails.settings?.slots_rb ?? 0) +
+            (draftDetails.settings?.slots_wr ?? 0) +
+            (draftDetails.settings?.slots_te ?? 0) +
+            (draftDetails.settings?.slots_k ?? 0) +
+            (draftDetails.settings?.slots_def ?? 0) +
+            (draftDetails.settings?.slots_flex ?? 0)),
+      },
+    };
+  }, [draftDetails, scoringType]);
+
   const contextValue = useMemo(
     () => ({
       ...processedData,
       loading,
       error,
       refetchData,
-      league:
-        draftDetails && scoringType
-          ? {
-              teams: draftDetails.settings?.teams ?? 0,
-              scoring: scoringType,
-              roster: {
-                QB: draftDetails.settings?.slots_qb ?? 0,
-                RB: draftDetails.settings?.slots_rb ?? 0,
-                WR: draftDetails.settings?.slots_wr ?? 0,
-                TE: draftDetails.settings?.slots_te ?? 0,
-                FLEX: draftDetails.settings?.slots_flex ?? 0,
-                BENCH:
-                  (draftDetails.settings?.rounds ?? 0) -
-                  ((draftDetails.settings?.slots_qb ?? 0) +
-                    (draftDetails.settings?.slots_rb ?? 0) +
-                    (draftDetails.settings?.slots_wr ?? 0) +
-                    (draftDetails.settings?.slots_te ?? 0) +
-                    (draftDetails.settings?.slots_k ?? 0) +
-                    (draftDetails.settings?.slots_def ?? 0) +
-                    (draftDetails.settings?.slots_flex ?? 0)),
-              },
-            }
-          : null,
+      league,
       lastUpdatedAt:
         Math.max(
           0,
@@ -342,8 +350,7 @@ export function DraftDataProvider({
       loading,
       error,
       refetchData,
-      draftDetails,
-      scoringType,
+      league,
       updatedAtDraftDetails,
       updatedAtDraftPicks,
       updatedAtPlayers,

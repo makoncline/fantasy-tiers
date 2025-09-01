@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import {
+import type {
   DraftedPlayer,
   ScoringType,
-  RosterSlotEnum,
   Position,
   RosterSlot,
-  ROSTER_SLOTS,
 } from "@/lib/schemas";
+import { RosterSlotEnum } from "@/lib/schemas";
+import { ROSTER_SLOTS } from "@/lib/schemas";
 import { z } from "zod";
 
 const RosterSchema = z.object({
@@ -115,14 +115,19 @@ const determineCurrentRoster = (
         positionCounts[slot] = (positionCounts[slot] || 0) + 1;
         const slotName = getSlotLabel(slot, positionCounts[slot]);
         const flexInfo = flexPlayerMap.get(player.player_id);
-        rosterPlayers.push({
+        const rosterPlayer: RosteredPlayer = {
           ...player,
           slot: slotName,
           recommendedSlot: "",
-          flexTier: flexInfo?.flexTier ?? undefined,
-          flexRank: flexInfo?.flexRank ?? undefined,
           rosterOrder: index,
-        });
+        };
+        if (flexInfo?.flexTier !== undefined && flexInfo?.flexTier !== null) {
+          rosterPlayer.flexTier = flexInfo.flexTier;
+        }
+        if (flexInfo?.flexRank !== undefined && flexInfo?.flexRank !== null) {
+          rosterPlayer.flexRank = flexInfo.flexRank;
+        }
+        rosterPlayers.push(rosterPlayer);
       }
     } else {
       // Add empty slot for unfilled positions
@@ -149,14 +154,19 @@ const determineCurrentRoster = (
       const player = playerMap[playerId];
       if (player) {
         const flexInfo = flexPlayerMap.get(player.player_id);
-        rosterPlayers.push({
+        const rosterPlayer: RosteredPlayer = {
           ...player,
           slot: "BN",
           recommendedSlot: "BN",
-          flexTier: flexInfo?.flexTier ?? undefined,
-          flexRank: flexInfo?.flexRank ?? undefined,
           rosterOrder: benchIndex + index,
-        });
+        };
+        if (flexInfo?.flexTier !== undefined && flexInfo?.flexTier !== null) {
+          rosterPlayer.flexTier = flexInfo.flexTier;
+        }
+        if (flexInfo?.flexRank !== undefined && flexInfo?.flexRank !== null) {
+          rosterPlayer.flexRank = flexInfo.flexRank;
+        }
+        rosterPlayers.push(rosterPlayer);
       }
     }
   });
@@ -212,14 +222,19 @@ const determineRecommendedRoster = (
       positionCounts[slot] = (positionCounts[slot] || 0) + 1;
       const recommendedSlot = getSlotLabel(slot, positionCounts[slot]);
       const flexInfo = flexPlayerMap.get(bestPlayer.player_id);
-      rosterPlayers.push({
+      const rosterPlayer: RosteredPlayer = {
         ...bestPlayer,
         slot: recommendedSlot,
         recommendedSlot,
-        flexTier: flexInfo?.flexTier ?? undefined,
-        flexRank: flexInfo?.flexRank ?? undefined,
         rosterOrder: index,
-      });
+      };
+      if (flexInfo?.flexTier !== undefined && flexInfo?.flexTier !== null) {
+        rosterPlayer.flexTier = flexInfo.flexTier;
+      }
+      if (flexInfo?.flexRank !== undefined && flexInfo?.flexRank !== null) {
+        rosterPlayer.flexRank = flexInfo.flexRank;
+      }
+      rosterPlayers.push(rosterPlayer);
       usedPlayers.add(bestPlayer.player_id);
     } else {
       console.log("No eligible player found for slot:", slot);
@@ -231,14 +246,19 @@ const determineRecommendedRoster = (
     .filter((p) => !usedPlayers.has(p.player_id))
     .forEach((player, index) => {
       const flexInfo = flexPlayerMap.get(player.player_id);
-      rosterPlayers.push({
+      const rosterPlayer: RosteredPlayer = {
         ...player,
         slot: "BN",
         recommendedSlot: "BN",
-        flexTier: flexInfo?.flexTier ?? undefined,
-        flexRank: flexInfo?.flexRank ?? undefined,
         rosterOrder: rosterPositions.length + index,
-      });
+      };
+      if (flexInfo?.flexTier !== undefined && flexInfo?.flexTier !== null) {
+        rosterPlayer.flexTier = flexInfo.flexTier;
+      }
+      if (flexInfo?.flexRank !== undefined && flexInfo?.flexRank !== null) {
+        rosterPlayer.flexRank = flexInfo.flexRank;
+      }
+      rosterPlayers.push(rosterPlayer);
     });
 
   return rosterPlayers;
@@ -315,7 +335,9 @@ export function useLeagueData(leagueId: string, userId: string) {
     queryKey: ["players", leagueScoringType],
     queryFn: async () => {
       if (!leagueScoringType) return {} as Record<string, DraftedPlayer>;
-      const res = await fetch(`/api/players?scoring=${encodeURIComponent(leagueScoringType)}`);
+      const res = await fetch(
+        `/api/players?scoring=${encodeURIComponent(leagueScoringType)}`
+      );
       if (!res.ok) throw new Error("failed to load players map");
       return (await res.json()) as Record<string, DraftedPlayer>;
     },
@@ -395,15 +417,25 @@ export function useLeagueData(leagueId: string, userId: string) {
     const recommendedPlayer = recommendedRoster.find(
       (rp) => rp.player_id === player.player_id
     );
-    return {
+    const result: RosteredPlayer = {
       ...player,
       recommendedSlot: recommendedPlayer
         ? recommendedPlayer.recommendedSlot
         : player.slot,
-      flexTier: recommendedPlayer?.flexTier ?? player.flexTier,
-      flexRank: recommendedPlayer?.flexRank ?? player.flexRank,
-      rosterOrder: recommendedPlayer?.rosterOrder ?? player.rosterOrder,
     };
+    const rosterOrder = recommendedPlayer?.rosterOrder ?? player.rosterOrder;
+    if (rosterOrder !== undefined) {
+      result.rosterOrder = rosterOrder;
+    }
+    const flexTier = recommendedPlayer?.flexTier ?? player.flexTier;
+    if (flexTier !== undefined) {
+      result.flexTier = flexTier;
+    }
+    const flexRank = recommendedPlayer?.flexRank ?? player.flexRank;
+    if (flexRank !== undefined) {
+      result.flexRank = flexRank;
+    }
+    return result;
   });
 
   // Add any players that are in recommendedRoster but not in currentRoster
@@ -411,15 +443,26 @@ export function useLeagueData(leagueId: string, userId: string) {
     if (
       !mergedRoster.some((p) => p.player_id === recommendedPlayer.player_id)
     ) {
-      mergedRoster.push({
+      const rosterPlayer: RosteredPlayer = {
         ...recommendedPlayer,
         slot: "BN", // Assume these players are currently on the bench
         recommendedSlot: recommendedPlayer.recommendedSlot,
-        flexTier: recommendedPlayer.flexTier ?? undefined,
-        flexRank: recommendedPlayer.flexRank ?? undefined,
         rosterOrder: mergedRoster.length, // Assign a roster order
         isEmpty: false, // It's not an empty slot
-      });
+      };
+      if (
+        recommendedPlayer.flexTier !== undefined &&
+        recommendedPlayer.flexTier !== null
+      ) {
+        rosterPlayer.flexTier = recommendedPlayer.flexTier;
+      }
+      if (
+        recommendedPlayer.flexRank !== undefined &&
+        recommendedPlayer.flexRank !== null
+      ) {
+        rosterPlayer.flexRank = recommendedPlayer.flexRank;
+      }
+      mergedRoster.push(rosterPlayer);
     }
   });
 

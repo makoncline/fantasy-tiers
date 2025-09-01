@@ -1,6 +1,11 @@
-import { DraftDetails } from "./draftDetails";
-import { DraftPick } from "./schemas";
-import type { DraftedPlayer, RankedPlayer, RosterSlot, Position } from "./schemas";
+import type { DraftDetails } from "./draftDetails";
+import type { DraftPick } from "./schemas";
+import type {
+  DraftedPlayer,
+  RankedPlayer,
+  RosterSlot,
+  Position,
+} from "./schemas";
 import {
   calculateTeamNeedsAndCountsForSingleTeam,
   ZERO_POSITION_COUNTS,
@@ -39,7 +44,7 @@ export function buildDraftState(args: {
 
   const playersWithDraft: Record<string, PlayerWithDraftMeta> = {};
   const drafted: PlayerWithDraftMeta[] = [];
-  const available: RankedPlayer[] = [] as any;
+  const available: RankedPlayer[] = [];
 
   for (const [id, player] of Object.entries(playersMap)) {
     const pick = pickByPlayerId.get(id);
@@ -56,7 +61,10 @@ export function buildDraftState(args: {
       playersWithDraft[id] = merged;
       drafted.push(merged);
     } else {
-      const merged: PlayerWithDraftMeta = { ...(player as DraftedPlayer), drafted: false };
+      const merged: PlayerWithDraftMeta = {
+        ...(player as DraftedPlayer),
+        drafted: false,
+      };
       playersWithDraft[id] = merged;
       if (merged.rank != null && merged.tier != null) {
         available.push(merged as unknown as RankedPlayer);
@@ -82,10 +90,12 @@ export function groupAvailableByPosition(available: RankedPlayer[]) {
   const out: Record<string, RankedPlayer[]> = {};
   for (const p of available) {
     if (!out[p.position]) out[p.position] = [];
-    out[p.position].push(p);
+    out[p.position]!.push(p);
   }
   for (const k of Object.keys(out)) {
-    out[k].sort((a, b) => a.rank - b.rank);
+    if (out[k]) {
+      out[k].sort((a, b) => a.rank - b.rank);
+    }
   }
   return out;
 }
@@ -139,19 +149,31 @@ export function buildDraftViewModel(args: {
 
   for (const slot of draftSlots) {
     const rosteredPlayers = base.drafted.filter((p) => p.draft_slot === slot);
+    const rosterReqsWithoutBN: Record<RosterSlot, number> = {
+      QB: rosterRequirements.QB,
+      RB: rosterRequirements.RB,
+      WR: rosterRequirements.WR,
+      TE: rosterRequirements.TE,
+      K: rosterRequirements.K,
+      DEF: rosterRequirements.DEF,
+      FLEX: rosterRequirements.FLEX,
+      BN: rosterRequirements.BN,
+    };
     const { positionNeeds, positionCounts } =
       calculateTeamNeedsAndCountsForSingleTeam(
-        rosteredPlayers as any,
-        rosterRequirements as any
+        rosteredPlayers,
+        rosterReqsWithoutBN
       );
     rosters[slot] = {
-      players: rosteredPlayers as any,
+      players: rosteredPlayers,
       remainingPositionRequirements: positionNeeds,
       rosterPositionCounts: positionCounts,
     };
   }
 
-  const userSlot = userId ? (draft.draft_order?.[userId] as number | undefined) : undefined;
+  const userSlot = userId
+    ? (draft.draft_order?.[userId] as number | undefined)
+    : undefined;
   const userRoster = userSlot ? rosters[userSlot] : undefined;
   const availableByPosition = groupAvailableByPosition(base.available);
   const topAvailable = topAvailableByPosition(availableByPosition, topLimit);
@@ -159,8 +181,25 @@ export function buildDraftViewModel(args: {
     Object.fromEntries(
       Object.entries(rosters).map(([k, v]) => {
         // Filter out "BN" and ensure all Position keys are present with defaults
-        const { BN, QB = 0, RB = 0, WR = 0, TE = 0, K = 0, DEF = 0, FLEX = 0, ...others } = v.remainingPositionRequirements;
-        const positionRequirements: Record<Position, number> = { QB, RB, WR, TE, K, DEF };
+        const {
+          BN,
+          QB = 0,
+          RB = 0,
+          WR = 0,
+          TE = 0,
+          K = 0,
+          DEF = 0,
+          FLEX = 0,
+          ...others
+        } = v.remainingPositionRequirements;
+        const positionRequirements: Record<Position, number> = {
+          QB,
+          RB,
+          WR,
+          TE,
+          K,
+          DEF,
+        };
         return [k, { remainingPositionRequirements: positionRequirements }];
       })
     )
@@ -170,12 +209,24 @@ export function buildDraftViewModel(args: {
         base.available,
         // Filter out "BN" and ensure all Position keys are present
         (() => {
-          const { BN, QB = 0, RB = 0, WR = 0, TE = 0, K = 0, DEF = 0, FLEX = 0, ...others } = userRoster.rosterPositionCounts;
+          const {
+            BN,
+            QB = 0,
+            RB = 0,
+            WR = 0,
+            TE = 0,
+            K = 0,
+            DEF = 0,
+            FLEX = 0,
+            ...others
+          } = userRoster.rosterPositionCounts;
           return { QB, RB, WR, TE, K, DEF } as Record<Position, number>;
         })(),
         // Filter out "BN" from remainingPositionRequirements
         Object.fromEntries(
-          Object.entries(userRoster.remainingPositionRequirements).filter(([key]) => key !== "BN")
+          Object.entries(userRoster.remainingPositionRequirements).filter(
+            ([key]) => key !== "BN"
+          )
         ) as Record<RosterSlot, number>
       )
     : null;

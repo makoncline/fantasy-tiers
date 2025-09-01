@@ -94,7 +94,7 @@ async function main() {
   > = {};
   // Additionally load ALL overall Boris Chen rankings per scoring
   const borisAllByScore: Record<
-    string,
+    "std" | "ppr" | "half",
     Map<string, { rank: number; tier: number }>
   > = {
     std: new Map(),
@@ -145,7 +145,7 @@ async function main() {
     );
   }
   // Load ALL (overall) Boris Chen CSVs to be used for the ALL shard
-  for (const scoring of ["std", "ppr", "half"]) {
+  for (const scoring of ["std", "ppr", "half"] as const) {
     const file = path.join(borisDir, `ALL-${scoring}-rankings-raw.csv`);
     const map = borisAllByScore[scoring];
     if (fs.existsSync(file)) {
@@ -265,7 +265,7 @@ async function main() {
       // eslint-disable-next-line no-console
       console.warn(
         `Skipping invalid entry for ${normalizedName} (${pid}):`,
-        error.message
+        error instanceof Error ? error.message : String(error)
       );
     }
   }
@@ -321,7 +321,10 @@ async function main() {
       fs.writeFileSync(shardPath, JSON.stringify(shard, null, 2));
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error(`Failed to validate ${pos} shard:`, error.message);
+      console.error(
+        `Failed to validate ${pos} shard:`,
+        error instanceof Error ? error.message : String(error)
+      );
       throw error;
     }
   }

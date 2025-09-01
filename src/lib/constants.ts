@@ -1,4 +1,4 @@
-import { Position } from "./schemas";
+import type { Position } from "./schemas";
 
 export const SEASON_WEEKS = 18;
 

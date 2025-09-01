@@ -7,7 +7,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import RosterSlots from "@/app/draft-assistant/_components/RosterSlots";
-import type { DraftedPlayer, RankedPlayer, RosterSlot } from "@/lib/schemas";
+import type {
+  DraftedPlayer,
+  RankedPlayer,
+  RosterSlot,
+  Position,
+} from "@/lib/schemas";
 
 function assignToSlots(
   baseSlots: { slot: RosterSlot; player: DraftedPlayer | null }[],
@@ -19,21 +24,21 @@ function assignToSlots(
 
   // Try primary position
   const posIndex = findIndex(preview.position as RosterSlot);
-  if (posIndex !== -1) {
+  if (posIndex !== -1 && slots[posIndex]) {
     slots[posIndex].player = preview as DraftedPlayer;
     return slots;
   }
   // Try FLEX
-  if ((["RB", "WR", "TE"] as RosterSlot[]).includes(preview.position as any)) {
+  if ((["RB", "WR", "TE"] as Position[]).includes(preview.position)) {
     const flexIndex = findIndex("FLEX");
-    if (flexIndex !== -1) {
+    if (flexIndex !== -1 && slots[flexIndex]) {
       slots[flexIndex].player = preview as DraftedPlayer;
       return slots;
     }
   }
   // Fallback to BN
   const bnIndex = findIndex("BN");
-  if (bnIndex !== -1) {
+  if (bnIndex !== -1 && slots[bnIndex]) {
     slots[bnIndex].player = preview as DraftedPlayer;
   }
   return slots;
@@ -65,7 +70,10 @@ export default function PreviewPickDialog({
             Preview how this player would fit into your current roster.
           </DialogDescription>
         </DialogHeader>
-        <RosterSlots slots={slots} highlightPlayerId={player?.player_id} />
+        <RosterSlots
+          slots={slots}
+          {...(player?.player_id && { highlightPlayerId: player.player_id })}
+        />
       </DialogContent>
     </Dialog>
   );

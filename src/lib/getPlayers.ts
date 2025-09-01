@@ -1,4 +1,4 @@
-import {
+import type {
   DraftedPlayer,
   PlayerWithRankings,
   RankedPlayer,
@@ -14,7 +14,8 @@ export function getPlayersByScoringType(
     // Use only the requested scoring type; no std fallback needed since
     // QB/K/DEF are mirrored at build time and others have true variants.
     const rankings =
-      player.rankingsByScoringType[scoringType] || ({ rank: null, tier: null } as const);
+      player.rankingsByScoringType[scoringType] ||
+      ({ rank: null, tier: null } as const);
 
     acc[playerId] = {
       ...player,

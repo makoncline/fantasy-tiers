@@ -131,7 +131,9 @@ async function main() {
     // ECR per scoring
     const ecrByScoring: Record<string, EcrRow | undefined> = {};
     scorings.forEach((s, idx) => {
-      const { byId, byKey, byName } = perScoringEcr[idx];
+      const scoringEcr = perScoringEcr[idx];
+      if (!scoringEcr) return;
+      const { byId, byKey, byName } = scoringEcr;
       let matched: EcrRow | undefined;
       if (filename) {
         for (const ecr of byId.values()) {
@@ -145,7 +147,9 @@ async function main() {
         // Fallback: for DST, FantasyPros may not include "Team" in projections rows; match by name only
         if (!matched && normKey.includes("|")) {
           const nameOnly = normKey.split("|")[0];
-          matched = byName.get(nameOnly);
+          if (nameOnly) {
+            matched = byName.get(nameOnly);
+          }
         }
       }
       ecrByScoring[s.toLowerCase()] = matched;
@@ -161,6 +165,7 @@ async function main() {
     const stats: any = {};
     scorings.forEach((s, idx) => {
       const map = perScoringProjections[idx];
+      if (!map) return;
       const bucket = map.get(key)?.[`stats_${s}`];
       const row = pickStatsRow(bucket, primaryPos);
       if (row) {
@@ -173,7 +178,8 @@ async function main() {
         // Normalize FantasyPros K/DST points keys so downstream can read FPTS_AVG/HIGH/LOW
         if (posUp === "K" || posUp === "DST") {
           const avg = (row as any)["FPTS_FPTS_AVG"] ?? (row as any)["FPTS_AVG"];
-          const hi = (row as any)["FPTS_FPTS_HIGH"] ?? (row as any)["FPTS_HIGH"];
+          const hi =
+            (row as any)["FPTS_FPTS_HIGH"] ?? (row as any)["FPTS_HIGH"];
           const lo = (row as any)["FPTS_FPTS_LOW"] ?? (row as any)["FPTS_LOW"];
           if (avg != null) base["FPTS_AVG"] = String(avg);
           if (hi != null) base["FPTS_HIGH"] = String(hi);

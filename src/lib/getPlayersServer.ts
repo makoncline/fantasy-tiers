@@ -1,6 +1,7 @@
 import fs from "fs";
 import { z } from "zod";
-import { PlayerWithRankingsSchema, ScoringType } from "./schemas";
+import { PlayerWithRankingsSchema } from "./schemas";
+import type { ScoringType } from "./schemas";
 import { getPlayersByScoringType } from "./getPlayers";
 import { getAggregateDataFilePath } from "./aggregatePlayerData";
 

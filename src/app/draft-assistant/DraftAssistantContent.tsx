@@ -76,7 +76,7 @@ const DraftAssistantShell: React.FC = () => {
             userIdError={userIdError}
             draftIdError={draftIdError}
             drafts={drafts}
-            selectedDraftId={selectedDraftId}
+            {...(selectedDraftId && { selectedDraftId })}
             step="user"
           />
         )}
@@ -115,7 +115,7 @@ const DraftAssistantShell: React.FC = () => {
             userIdError={userIdError}
             draftIdError={draftIdError}
             drafts={drafts}
-            selectedDraftId={selectedDraftId}
+            {...(selectedDraftId && { selectedDraftId })}
             step="draft"
           />
         )}
@@ -139,14 +139,28 @@ const DraftAssistantShell: React.FC = () => {
                           "—"
                     }
                     draftId={draftDetails?.draft_id || draftId}
-                    type={draftDetails?.type}
-                    teams={draftDetails?.settings?.teams}
-                    rounds={draftDetails?.settings?.rounds}
-                    season={draftDetails?.season}
-                    startTime={draftDetails?.start_time ?? undefined}
-                    status={draftDetails?.status}
-                    pickNumber={draftDetails?.draft_order?.[userId]}
-                    scoringType={draftDetails?.metadata?.scoring_type}
+                    {...(draftDetails?.type && { type: draftDetails.type })}
+                    {...(draftDetails?.settings?.teams && {
+                      teams: draftDetails.settings.teams,
+                    })}
+                    {...(draftDetails?.settings?.rounds && {
+                      rounds: draftDetails.settings.rounds,
+                    })}
+                    {...(draftDetails?.season && {
+                      season: draftDetails.season,
+                    })}
+                    {...(draftDetails?.start_time && {
+                      startTime: draftDetails.start_time,
+                    })}
+                    {...(draftDetails?.status && {
+                      status: draftDetails.status,
+                    })}
+                    {...(draftDetails?.draft_order?.[userId] && {
+                      pickNumber: draftDetails.draft_order[userId],
+                    })}
+                    {...(draftDetails?.metadata?.scoring_type && {
+                      scoringType: draftDetails.metadata.scoring_type,
+                    })}
                   />
                 </div>
                 <div>

@@ -186,47 +186,71 @@ export async function fetchSleeperProjections(
   const json = await res.json();
   // Normalize numeric string stats and tolerate provider variances
   const arr: unknown[] = Array.isArray(json) ? json : [];
-  return arr.map((it: any) => {
-    const stats = it?.stats && typeof it.stats === "object" ? it.stats : {};
+  return arr.map((it: unknown) => {
+    const item = it as Record<string, unknown>;
+    const stats =
+      item?.stats && typeof item.stats === "object" ? item.stats : {};
     const normalizedStats: Record<string, number> = {};
     for (const [k, v] of Object.entries(stats)) {
       const n = typeof v === "string" ? Number(v) : v;
       normalizedStats[k] = typeof n === "number" && isFinite(n) ? n : 0;
     }
     return {
-      status: it?.status ?? null,
-      date: it?.date ?? null,
+      status: item?.status ?? null,
+      date: item?.date ?? null,
       stats: normalizedStats,
-      category: it?.category ?? "proj",
+      category: item?.category ?? "proj",
       last_modified:
-        typeof it?.last_modified === "number" ? it.last_modified : undefined,
-      week: it?.week ?? null,
-      sport: it?.sport ?? "nfl",
-      season_type: it?.season_type ?? "regular",
-      season: String(it?.season ?? season),
+        typeof item?.last_modified === "number"
+          ? item.last_modified
+          : undefined,
+      week: item?.week ?? null,
+      sport: item?.sport ?? "nfl",
+      season_type: item?.season_type ?? "regular",
+      season: String(item?.season ?? season),
       player: {
-        fantasy_positions: it?.player?.fantasy_positions ?? [],
-        first_name: it?.player?.first_name ?? undefined,
-        last_name: it?.player?.last_name ?? undefined,
-        position: it?.player?.position ?? undefined,
-        team: it?.player?.team ?? null,
-        team_abbr: it?.player?.team_abbr ?? null,
-        team_changed_at: it?.player?.team_changed_at ?? null,
-        years_exp: it?.player?.years_exp ?? undefined,
-        news_updated: it?.player?.news_updated ?? undefined,
-        injury_body_part: it?.player?.injury_body_part ?? null,
-        injury_notes: it?.player?.injury_notes ?? null,
-        injury_start_date: it?.player?.injury_start_date ?? null,
-        injury_status: it?.player?.injury_status ?? null,
-        metadata: it?.player?.metadata ?? {},
+        fantasy_positions:
+          ((item?.player as Record<string, unknown>)
+            ?.fantasy_positions as string[]) ?? [],
+        first_name:
+          ((item?.player as Record<string, unknown>)?.first_name as string) ??
+          undefined,
+        last_name:
+          ((item?.player as Record<string, unknown>)?.last_name as string) ??
+          undefined,
+        position:
+          ((item?.player as Record<string, unknown>)?.position as string) ??
+          undefined,
+        team:
+          ((item?.player as Record<string, unknown>)?.team as string) ?? null,
+        team_abbr:
+          ((item?.player as Record<string, unknown>)?.team_abbr as string) ??
+          null,
+        team_changed_at:
+          (item?.player as Record<string, unknown>)?.team_changed_at ?? null,
+        years_exp:
+          ((item?.player as Record<string, unknown>)?.years_exp as number) ??
+          undefined,
+        news_updated:
+          (item as Record<string, unknown>)?.news_updated ?? undefined,
+        injury_body_part:
+          ((item as Record<string, unknown>)?.injury_body_part as string) ??
+          null,
+        injury_notes:
+          ((item as Record<string, unknown>)?.injury_notes as string) ?? null,
+        injury_start_date:
+          (item?.player as Record<string, unknown>)?.injury_start_date ?? null,
+        injury_status:
+          (item?.player as Record<string, unknown>)?.injury_status ?? null,
+        metadata: (item?.player as Record<string, unknown>)?.metadata ?? {},
       },
-      team: it?.team ?? null,
-      player_id: String(it?.player_id ?? ""),
+      team: item?.team ?? null,
+      player_id: String(item?.player_id ?? ""),
       updated_at:
-        typeof it?.updated_at === "number" ? it.updated_at : undefined,
-      game_id: it?.game_id ?? null,
-      company: it?.company ?? null,
-      opponent: it?.opponent ?? null,
+        typeof item?.updated_at === "number" ? item.updated_at : undefined,
+      game_id: item?.game_id ?? null,
+      company: item?.company ?? null,
+      opponent: item?.opponent ?? null,
     } as SleeperProjection;
   });
 }

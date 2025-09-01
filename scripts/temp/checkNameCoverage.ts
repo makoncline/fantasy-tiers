@@ -153,9 +153,12 @@ async function main() {
   for (const item of topNames) {
     const adp = adpByName.get(item.normalized);
     if (!borisSet.has(item.normalized))
-      missingInBoris.push({ ...item, adp_std: adp });
+      missingInBoris.push({
+        ...item,
+        ...(adp !== undefined && { adp_std: adp }),
+      });
     if (!fpSet.has(item.normalized))
-      missingInFp.push({ ...item, adp_std: adp });
+      missingInFp.push({ ...item, ...(adp !== undefined && { adp_std: adp }) });
   }
 
   // eslint-disable-next-line no-console

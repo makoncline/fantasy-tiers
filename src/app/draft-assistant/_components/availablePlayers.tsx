@@ -2,7 +2,10 @@
 
 import React from "react";
 import type { DraftedPlayer, RankedPlayer } from "@/lib/schemas";
-import { PlayerTable, type PlayerRow } from "./PlayerTable";
+import type { BeerRow } from "@/lib/beersheets";
+import { PlayerTable } from "./PlayerTable";
+import type { PlayerRow } from "@/lib/playerRows";
+import type { EnrichedPlayer } from "@/lib/enrichPlayers";
 import { toPlayerRows, type Extras } from "@/lib/playerRows";
 import { Button } from "@/components/ui/button";
 import PreviewPickDialog from "./PreviewPickDialog";
@@ -68,17 +71,17 @@ export default function AvailablePlayers({
       string,
       { val?: number; ps?: number; ecr_round_pick?: string }
     > = {};
-    (beerSheetsBoard || []).forEach((r: any) => {
-      const value = {
-        // weekly display: season VBD / 17, one decimal
-        val: Number.isFinite(r.val)
-          ? Number((r.val / SEASON_WEEKS).toFixed(1))
-          : r.val,
-        ps: Number.isFinite(r.ps) ? Number(Math.round(r.ps)) : r.ps,
-        // show ADP directly
-        ecr_round_pick:
-          r.adp != null && Number.isFinite(r.adp) ? String(r.adp) : undefined,
-      } as const;
+    (beerSheetsBoard || []).forEach((r: BeerRow) => {
+      const value: { val?: number; ps?: number; ecr_round_pick?: string } = {};
+      // weekly display: season VBD / 17, one decimal
+      if (r.val != null && Number.isFinite(r.val)) {
+        value.val = Number((r.val / SEASON_WEEKS).toFixed(1));
+      }
+      if (r.ps != null && Number.isFinite(r.ps)) {
+        value.ps = Number(Math.round(r.ps));
+      }
+      // show ADP directly (not available in BeerRow)
+      // ecr_round_pick remains undefined
       map[r.player_id] = value;
       const nm = normalizePlayerName(r.name || "");
       if (nm) map[nm] = value;
@@ -94,9 +97,9 @@ export default function AvailablePlayers({
         teams: league.teams,
         scoring: league.scoring,
         roster: league.roster,
-      } as any);
-      const byId = new Map<string, any>();
-      const byName = new Map<string, any>();
+      });
+      const byId = new Map<string, EnrichedPlayer>();
+      const byName = new Map<string, EnrichedPlayer>();
       for (const p of enriched) {
         const pid = String(p?.player_id || "");
         if (pid) byId.set(pid, p);
@@ -105,7 +108,7 @@ export default function AvailablePlayers({
       }
 
       // Build base rows from the enriched ALL aggregate
-      const base = toPlayerRows(enriched, extras, league.teams);
+      const base = toPlayerRows([...enriched], extras, league.teams);
       const merged = base.map((r) => {
         const hit =
           byId.get(r.player_id) || byName.get(normalizePlayerName(r.name));
@@ -184,7 +187,7 @@ export default function AvailablePlayers({
   const rowsWithPPG = React.useMemo(() => {
     if (!beerSheetsBoard) return filteredRows;
     const byId = new Map<string, number>();
-    for (const r of beerSheetsBoard as any[]) {
+    for (const r of beerSheetsBoard) {
       if (r && r.player_id && Number.isFinite(r.proj_pts)) {
         byId.set(r.player_id, Number(r.proj_pts));
       }
@@ -198,12 +201,8 @@ export default function AvailablePlayers({
   }, [filteredRows, beerSheetsBoard]);
 
   const onPreview = (row: PlayerRow) => {
-    // Try to find in availablePlayers first (for proper typing), then fall back to our processed data
-    let found = availablePlayers.find((p) => p.player_id === row.player_id);
-    if (!found) {
-      // Fall back to our processed rows data
-      found = rows.find((p) => p.player_id === row.player_id) as any;
-    }
+    // Find the player in availablePlayers (which contains properly typed RankedPlayer objects)
+    const found = availablePlayers.find((p) => p.player_id === row.player_id);
     if (found) {
       setPreviewPlayer(found);
       setOpen(true);
@@ -227,7 +226,11 @@ export default function AvailablePlayers({
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-background text-foreground border-muted"
               }`}
-              onClick={() => setFilter(f as any)}
+              onClick={() =>
+                setFilter(
+                  f as "ALL" | "RB" | "WR" | "TE" | "QB" | "RB/WR" | "K" | "DEF"
+                )
+              }
               aria-pressed={filter === f}
             >
               {f}

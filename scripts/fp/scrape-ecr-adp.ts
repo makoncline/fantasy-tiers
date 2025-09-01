@@ -36,6 +36,7 @@ function extractJson<T>(html: string, varName: string): T {
   const match = html.match(pattern);
   if (!match) throw new Error(`Could not find ${varName}`);
   const jsonText = match[1];
+  if (!jsonText) throw new Error(`Could not extract JSON for ${varName}`);
   return JSON.parse(jsonText) as T;
 }
 
