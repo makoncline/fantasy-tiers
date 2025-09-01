@@ -10,7 +10,7 @@ export type PlayerRow = {
   position: "QB" | "RB" | "WR" | "TE" | "K" | "DEF";
   team: string | null;
   bye_week: number | null;
-  rank?: number;
+  rank?: number | undefined;
   tier?: number;
   bc_rank?: number;
   bc_tier?: number;
@@ -18,7 +18,7 @@ export type PlayerRow = {
   ecr_round_pick?: string | undefined;
   fp_tier?: number | null;
   fp_value?: number | null;
-  fp_positional_scarcity_slope?: number | undefined;
+  fp_positional_scarcity_slope?: number | null | undefined;
   // Additional fields from EnrichedPlayer
   sleeper_pts?: number | null;
   sleeper_adp?: number | null;
@@ -130,10 +130,8 @@ export function toPlayerRows(
         result.ecr_round_pick = playerExtras.ecr_round_pick;
       } else if (p.fp_rank_overall != null && leagueTeams) {
         // Calculate ecr_round_pick from fantasypros data if not provided in extras
-        result.ecr_round_pick = ecrToRoundPick(
-          Number(p.fp_rank_overall),
-          leagueTeams
-        );
+        result.ecr_round_pick =
+          ecrToRoundPick(Number(p.fp_rank_overall), leagueTeams) || undefined;
       }
       if (playerExtras.val !== undefined) {
         result.val = playerExtras.val;
@@ -227,4 +225,82 @@ export function mapToPlayerRow(
 
     return result;
   });
+}
+
+// New functions for bundle data mapping
+import type { AggregatesBundlePlayerT } from "./schemas-bundle";
+
+/**
+ * Convert AggregatesBundlePlayer to PlayerRow for UI components
+ */
+export function toPlayerRowFromBundle(
+  p: AggregatesBundlePlayerT,
+  leagueTeams?: number
+): PlayerRow {
+  // Parse pos_rank to get numeric rank if possible
+  let fp_rank_pos: number | null = null;
+  if (p.fantasypros.pos_rank) {
+    const match = p.fantasypros.pos_rank.match(/^[A-Z]+(\d+)$/);
+    if (match && match[1]) {
+      fp_rank_pos = parseInt(match[1], 10);
+    }
+  }
+
+  const result: PlayerRow = {
+    player_id: p.player_id,
+    name: p.name,
+    position: p.position as PlayerRow["position"],
+    team: p.team,
+    bye_week: p.bye_week,
+    // Always carry rank field (can be null) for downstream expectations
+    rank: p.borischen.rank ?? undefined,
+    ...(typeof p.borischen.rank === "number"
+      ? { bc_rank: p.borischen.rank }
+      : {}),
+    ...(p.borischen.tier ? { bc_tier: p.borischen.tier } : {}),
+    fp_pts: p.fantasypros.pts,
+    fp_tier: p.fantasypros.tier,
+    fp_rank_overall: p.fantasypros.ecr,
+    fp_rank_pos,
+    fp_baseline_pts: p.fantasypros.baseline_pts,
+    fp_value: p.calc.value,
+    // Preserve null for tests/filters expecting explicit null
+    fp_positional_scarcity_slope: p.calc.positional_scarcity as
+      | number
+      | null
+      | undefined,
+    fp_player_owned_avg: p.fantasypros.player_owned_avg,
+    sleeper_pts: p.sleeper.pts,
+    sleeper_adp: p.sleeper.adp,
+    sleeper_rank_overall: p.sleeper.rank,
+    fp_adp: p.fantasypros.adp,
+    market_delta: p.calc.market_delta,
+  };
+
+  // Add tier if borischen tier exists
+  if (p.borischen.tier != null) {
+    result.tier = p.borischen.tier;
+  }
+
+  // Calculate ecr_round_pick if not provided and we have the data
+  if (p.fantasypros.ecr_round_pick) {
+    result.ecr_round_pick = p.fantasypros.ecr_round_pick;
+  } else if (p.fantasypros.ecr && leagueTeams) {
+    result.ecr_round_pick =
+      ecrToRoundPick(p.fantasypros.ecr, leagueTeams) || undefined;
+  }
+
+  return result;
+}
+
+/**
+ * Convert array of AggregatesBundlePlayer to PlayerRow[] for UI components
+ */
+export function toPlayerRowsFromBundle(
+  arr: AggregatesBundlePlayerT[],
+  leagueTeams?: number
+): PlayerRow[] {
+  return arr
+    .map((p) => toPlayerRowFromBundle(p, leagueTeams))
+    .sort((a, b) => (a.bc_rank ?? 999999) - (b.bc_rank ?? 999999));
 }

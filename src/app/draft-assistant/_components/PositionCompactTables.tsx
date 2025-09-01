@@ -17,32 +17,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  useAggregates,
-  useAggregatesLastModified,
-  useQBAggregates,
-  useRBAggregates,
-  useWRAggregates,
-  useTEAggregates,
-  useKAggregates,
-  useDEFAggregates,
-  useFlexAggregates,
-  useShardAggregates,
-  useDraftPicks,
-  useSleeperPlayersMetaStatic,
-} from "../_lib/useDraftQueries";
+import { useAggregatesLastModified } from "../_lib/useDraftQueries";
 import { useDraftedLookups } from "../_lib/useDraftedLookups";
 import { useSearchParams } from "next/navigation";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
-import { enrichPlayers } from "@/lib/enrichPlayers";
-import { normalizePlayerName, ecrToRoundPick } from "@/lib/util";
+import { normalizePlayerName } from "@/lib/util";
 import { SEASON_WEEKS } from "@/lib/constants";
 import { PlayerTable } from "./PlayerTable";
 import type { PlayerRow, Extras } from "@/lib/playerRows";
-import { toPlayerRows } from "@/lib/playerRows";
-import type { CombinedEntryT } from "@/lib/schemas-aggregates";
 import type { RankedPlayer } from "@/lib/schemas";
-import type { League } from "@/lib/enrichPlayers";
 import type { BeerRow } from "@/lib/beersheets";
 import { sortByBcRank, findBaseline } from "@/lib/playerSorts";
 
@@ -69,30 +52,26 @@ export default function PositionCompactTables({
   setShowUnranked: externalSetShowUnranked,
 }: PositionCompactTablesProps = {}) {
   const {
-    league,
+    positionRows,
     beerSheetsBoard,
     availablePlayers,
     userRosterSlots,
     userPositionCounts,
     userPositionNeeds,
+    picks,
+    showAll,
+    setShowAll,
+    showDrafted,
+    setShowDrafted,
+    showUnranked,
+    setShowUnranked,
   } = useDraftData();
-  const searchParams = useSearchParams();
-  const draftId = searchParams.get("draftId") || "";
-  const { data: picks } = useDraftPicks(draftId);
-  const { data: sleeperMeta } = useSleeperPlayersMetaStatic(Boolean(draftId));
+
   const { data: lastModified } = useAggregatesLastModified();
 
-  // Use individual position data from their respective files
-  const { data: qbData } = useQBAggregates();
-  const { data: rbData } = useRBAggregates();
-  const { data: wrData } = useWRAggregates();
-  const { data: teData } = useTEAggregates();
-  const { data: kData } = useKAggregates();
-  const { data: defData } = useDEFAggregates();
-  const { data: flexData } = useFlexAggregates();
+  // Use drafted lookups hook
+  const { draftedIds, draftedNames } = useDraftedLookups(picks);
 
-  // Get ALL data for the all players table using the ALL shard
-  const { data: allAggregates } = useShardAggregates("ALL");
   const DEFAULT_POS_TABLE_LIMIT = 10;
   const DEFAULT_ALL_TABLE_LIMIT = 20;
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
@@ -104,27 +83,13 @@ export default function PositionCompactTables({
     null
   );
 
-  // Use external state if provided, otherwise use local state
-  const [localShowAll, setLocalShowAll] = React.useState(false);
-  const [localShowDrafted, setLocalShowDrafted] = React.useState(false);
-  const [localShowUnranked, setLocalShowUnranked] = React.useState(false);
-
-  const showAll = externalShowAll ?? localShowAll;
-  const setShowAll = externalSetShowAll ?? setLocalShowAll;
-  const showDrafted = externalShowDrafted ?? localShowDrafted;
-  const setShowDrafted = externalSetShowDrafted ?? setLocalShowDrafted;
-  const showUnranked = externalShowUnranked ?? localShowUnranked;
-  const setShowUnranked = externalSetShowUnranked ?? setLocalShowUnranked;
-
-  // Dialog-scoped toggles (default from page state when opened)
-  const [dlgShowDrafted, setDlgShowDrafted] = React.useState(false);
-  const [dlgShowUnranked, setDlgShowUnranked] = React.useState(false);
-  React.useEffect(() => {
-    if (openLabel != null) {
-      setDlgShowDrafted(showDrafted);
-      setDlgShowUnranked(showUnranked);
-    }
-  }, [openLabel, showDrafted, showUnranked]);
+  // Use external state if provided, otherwise use context state
+  const actualShowAll = externalShowAll ?? showAll;
+  const actualSetShowAll = externalSetShowAll ?? setShowAll;
+  const actualShowDrafted = externalShowDrafted ?? showDrafted;
+  const actualSetShowDrafted = externalSetShowDrafted ?? setShowDrafted;
+  const actualShowUnranked = externalShowUnranked ?? showUnranked;
+  const actualSetShowUnranked = externalSetShowUnranked ?? setShowUnranked;
 
   const onPreview = React.useCallback(
     (row: PlayerRow) => {
@@ -195,70 +160,18 @@ export default function PositionCompactTables({
     return map;
   }, [beerSheetsBoard]);
 
-  const process = React.useCallback(
-    (
-      players: CombinedEntryT[],
-      pos: "QB" | "RB" | "WR" | "TE" | "FLEX" | "DEF" | "K" | "ALL"
-    ): PlayerRow[] => {
-      if (!players || !league?.scoring) {
-        return [];
-      }
-      try {
-        const leagueForEnrich: League = {
-          teams: league.teams,
-          scoring: league.scoring,
-          roster: league.roster,
-        };
-        const enriched = enrichPlayers(players, leagueForEnrich);
-        // Use the new typed function to convert to PlayerRows
-        const rows = toPlayerRows([...enriched], extras, league.teams);
-        return sortByBcRank(rows);
-      } catch (error) {
-        console.error(`process error for ${pos}:`, error);
-        return [];
-      }
-    },
-    [league, extras]
-  );
+  // Each position now uses data from the bundle
 
-  // Each position now uses data from its own dedicated file
-
-  /* eslint-disable react-hooks/exhaustive-deps */
-  const rowsQB = React.useMemo(() => {
-    return qbData ? process(qbData, "QB") : [];
-  }, [process, qbData]);
-  const rowsRB = React.useMemo(() => {
-    return rbData ? process(rbData, "RB") : [];
-  }, [process, rbData]);
-  const rowsWR = React.useMemo(() => {
-    return wrData ? process(wrData, "WR") : [];
-  }, [process, wrData]);
-  const rowsTE = React.useMemo(() => {
-    return teData ? process(teData, "TE") : [];
-  }, [process, teData]);
-  const rowsK = React.useMemo(() => {
-    return kData ? process(kData, "K") : [];
-  }, [process, kData]);
-  const rowsDEF = React.useMemo(() => {
-    return defData ? process(defData, "DEF") : [];
-  }, [process, defData]);
-  const rowsFLEX = React.useMemo(() => {
-    return flexData ? process(flexData, "FLEX") : [];
-  }, [process, flexData]);
-  const rowsALL = React.useMemo(() => {
-    return allAggregates ? process(allAggregates, "ALL") : [];
-  }, [process, allAggregates]);
-  /* eslint-enable react-hooks/exhaustive-deps */
+  // Use position rows from context instead of computing locally
 
   const sections: [string, PlayerRow[], "full" | "nameOnly"][] = [
-    ["QB", rowsQB, "full"],
-    ["RB", rowsRB, "full"],
-    ["WR", rowsWR, "full"],
-    ["FLEX", rowsFLEX, "full"],
-    ["TE", rowsTE, "full"],
-    ["DEF", rowsDEF, "full"],
-    ["K", rowsK, "full"],
-    // ["ALL", rowsALL, "full"],
+    ["QB", positionRows?.QB ?? [], "full"],
+    ["RB", positionRows?.RB ?? [], "full"],
+    ["WR", positionRows?.WR ?? [], "full"],
+    ["FLEX", positionRows?.FLEX ?? [], "full"],
+    ["TE", positionRows?.TE ?? [], "full"],
+    ["DEF", positionRows?.DEF ?? [], "full"],
+    ["K", positionRows?.K ?? [], "full"],
   ];
 
   // sticky nav + filter controls
@@ -279,8 +192,8 @@ export default function PositionCompactTables({
         return null;
     }
   };
-  // Use centralized drafted lookups hook
-  const { draftedIds, draftedNames } = useDraftedLookups(picks, sleeperMeta);
+  // draftedIds and draftedNames are already from context via useDraftedLookups
+  // We need to get them from the context
   const refs = React.useRef<Record<string, HTMLDivElement | null>>({});
   const setRef = (label: string) => (el: HTMLDivElement | null) => {
     refs.current[label] = el;
@@ -312,18 +225,8 @@ export default function PositionCompactTables({
     };
   }, []);
 
-  // Show loading state if position data is not loaded
-
-  if (
-    !qbData &&
-    !rbData &&
-    !wrData &&
-    !teData &&
-    !kData &&
-    !defData &&
-    !flexData &&
-    !allAggregates
-  ) {
+  // Show loading state if bundle data is not loaded
+  if (!positionRows) {
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-center py-8">
@@ -343,45 +246,7 @@ export default function PositionCompactTables({
       >
         <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between gap-2 md:gap-4 px-1 py-1">
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={showAll}
-                onCheckedChange={setShowAll}
-                id="show-all"
-              />
-              <label
-                htmlFor="show-all"
-                className="text-xs text-muted-foreground select-none"
-              >
-                Show all
-              </label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={showDrafted}
-                onCheckedChange={setShowDrafted}
-                id="show-drafted"
-              />
-              <label
-                htmlFor="show-drafted"
-                className="text-xs text-muted-foreground select-none"
-              >
-                Show drafted players
-              </label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={showUnranked}
-                onCheckedChange={setShowUnranked}
-                id="show-unranked"
-              />
-              <label
-                htmlFor="show-unranked"
-                className="text-xs text-muted-foreground select-none"
-              >
-                Show unranked players
-              </label>
-            </div>
+            {/* Switch controls moved to Draft Status Card */}
           </div>
           <div className="flex flex-wrap gap-1 w-full md:w-auto justify-start md:justify-end">
             {labels.map((l) => (
@@ -398,7 +263,10 @@ export default function PositionCompactTables({
           </div>
         </div>
         {/* Data timestamp */}
-        <div className="text-xs text-muted-foreground text-right">
+        <div
+          className="text-xs text-muted-foreground text-right"
+          data-testid="data-last-updated"
+        >
           Data last updated: {lastModified?.formatted || "Loading..."}
         </div>
       </div>
@@ -408,10 +276,10 @@ export default function PositionCompactTables({
           const limit =
             label === "ALL" ? DEFAULT_ALL_TABLE_LIMIT : DEFAULT_POS_TABLE_LIMIT;
           // Optionally include only players that have a Boris Chen rank
-          const eligible = showUnranked
+          const eligible = actualShowUnranked
             ? rows
             : rows.filter((r) => typeof r.bc_rank === "number");
-          const allRows = showDrafted
+          const allRows = actualShowDrafted
             ? eligible
             : eligible.filter((r) => {
                 const id = String(r.player_id);
@@ -420,7 +288,7 @@ export default function PositionCompactTables({
                 if (nm && draftedNames.has(nm)) return false;
                 return true;
               });
-          const visible = showAll ? allRows : allRows.slice(0, limit);
+          const visible = actualShowAll ? allRows : allRows.slice(0, limit);
           const baseline = findBaseline(rows);
           return (
             <div
@@ -429,7 +297,7 @@ export default function PositionCompactTables({
               className="scroll-mt-24"
               style={{ scrollMarginTop: stickyTop + 16 }}
             >
-              <Card className="block w-full">
+              <Card className="block w-full" data-testid={`pos-card-${label}`}>
                 <CardHeader className="py-1 px-2">
                   <CardTitle className="text-sm flex items-baseline gap-2">
                     {label}
@@ -504,7 +372,7 @@ export default function PositionCompactTables({
                       )}
                     />
                   </div>
-                  {!showAll && rows.length > limit ? (
+                  {!actualShowAll && rows.length > limit ? (
                     <div className="mt-3">
                       <button
                         type="button"
@@ -557,19 +425,19 @@ export default function PositionCompactTables({
                       <CheckIcon className="h-3 w-3 text-green-500" />
                     ) : null}
                   </div>
-                  {/* Dialog-scoped toggles */}
+                  {/* Dialog toggles - use global context switches */}
                   <div className="flex flex-wrap items-center gap-3">
                     <label className="flex items-center gap-2">
                       <Switch
-                        checked={dlgShowDrafted}
-                        onCheckedChange={setDlgShowDrafted}
+                        checked={actualShowDrafted}
+                        onCheckedChange={actualSetShowDrafted}
                       />{" "}
                       <span>Show drafted</span>
                     </label>
                     <label className="flex items-center gap-2">
                       <Switch
-                        checked={dlgShowUnranked}
-                        onCheckedChange={setDlgShowUnranked}
+                        checked={actualShowUnranked}
+                        onCheckedChange={actualSetShowUnranked}
                       />{" "}
                       <span>Show unranked</span>
                     </label>
@@ -588,9 +456,9 @@ export default function PositionCompactTables({
               const [, fullRowsRaw] = tuple;
               // Respect dialog toggles in the dialog view
               const dlgEligible = (fullRowsRaw || []).filter((r) =>
-                dlgShowUnranked ? true : typeof r.bc_rank === "number"
+                actualShowUnranked ? true : typeof r.bc_rank === "number"
               );
-              const fullRows = dlgShowDrafted
+              const fullRows = actualShowDrafted
                 ? dlgEligible
                 : dlgEligible.filter(
                     (r) => !draftedIds.has(String(r.player_id))
@@ -601,8 +469,8 @@ export default function PositionCompactTables({
                   sortable
                   colorizeValuePs
                   draftedIds={draftedIds}
-                  dimDrafted={dlgShowDrafted}
-                  hideDrafted={!dlgShowDrafted}
+                  dimDrafted={actualShowDrafted}
+                  hideDrafted={!actualShowDrafted}
                   renderActions={(r) => (
                     <Button
                       variant="ghost"

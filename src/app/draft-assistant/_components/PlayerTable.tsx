@@ -136,6 +136,7 @@ export function PlayerTable({
     };
     arr.sort(cmp);
     if (sortDir === "desc") arr.reverse();
+
     return arr;
   }, [rows, sortable, sortKey, sortDir, hideDrafted, draftedIds]);
 
@@ -391,8 +392,14 @@ export function PlayerTable({
           }
         >
           <TableCell>
-            {p.name}
-            {p.position ? ` (${p.position})` : ""}
+            <span
+              data-drafted={
+                draftedIds && draftedIds.has(String(p.player_id)) ? "D" : ""
+              }
+            >
+              {p.name}
+              {p.position ? ` (${p.position})` : ""}
+            </span>
           </TableCell>
           <TableCell>
             {p.team || p.bye_week
@@ -553,7 +560,10 @@ export function mapToPlayerRow(
     const result: PlayerRow = {
       player_id: pid,
       name,
-      position: (p.position ?? p.pos ?? nested.position ?? "—") as PlayerRow["position"],
+      position: (p.position ??
+        p.pos ??
+        nested.position ??
+        "—") as PlayerRow["position"],
       team: p.team ?? p.pro_team ?? p.nfl_team ?? nested.team ?? "—",
       bye_week: (() => {
         const bye = p.bye_week ?? p.bye ?? nested.bye_week;

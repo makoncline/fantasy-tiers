@@ -3,6 +3,32 @@ export const qk = {
   aggregates: {
     merged: ["aggregates", "merged"] as const,
     shard: (pos: string) => ["aggregates", "shard", pos] as const,
+    bundle: (
+      scoring: string,
+      teams: number,
+      slots: {
+        QB: number;
+        RB: number;
+        WR: number;
+        TE: number;
+        K: number;
+        DEF: number;
+        FLEX: number;
+      }
+    ) =>
+      [
+        "aggregates",
+        "bundle",
+        scoring,
+        teams,
+        slots.QB,
+        slots.RB,
+        slots.WR,
+        slots.TE,
+        slots.K,
+        slots.DEF,
+        slots.FLEX,
+      ] as const,
     lastModified: ["aggregates", "last-modified"] as const,
   },
   draft: {

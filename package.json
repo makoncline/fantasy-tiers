@@ -7,6 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "e2e": "playwright test --config e2e.config.ts",
+    "e2e:headed": "playwright test --headed --config e2e.config.ts",
+    "e2e:ci": "playwright test --reporter=line --config e2e.config.ts",
     "fetch:fp": "node --import=tsx scripts/fp/fetch-fantasypros-all.ts",
     "fetch:sleeper:projections": "npx tsx scripts/sleeper/fetchProjections.ts",
     "fetch:sleeper:players-meta": "npx tsx scripts/sleeper/fetchPlayersMeta.ts",
@@ -20,13 +23,12 @@
     "validate:aggregates:ci": "npx tsx scripts/ci/validate-aggregates.ts",
     "fetch:all": "pnpm run fetch:fp && pnpm run fetch:sleeper && pnpm run fetch:borischen",
     "agg:all": "pnpm run agg:fp && pnpm run agg:borischen && pnpm run agg:sleeper && pnpm run agg:combine",
-    "lint:unused": "knip && ts-prune",
     "fix:imports": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "temp:check-name-coverage": "npx tsx scripts/temp/checkNameCoverage.ts",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -83,6 +85,7 @@
     "zod": "^4.1.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -94,7 +97,9 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
     "jsdom": "^26.1.0",
+    "playwright": "^1.55.0",
     "postcss": "^8",
+    "start-server-and-test": "^2.0.13",
     "tailwindcss": "^4.1.12",
     "tsx": "^4.20.5",
     "typescript": "^5",

@@ -4,9 +4,15 @@ import path from "path";
 export default defineConfig({
   test: {
     environment: "node",
-    alias: {
-      "@": path.resolve(__dirname, "src"),
-    },
+    exclude: [
+      "node_modules/**",
+      "**/node_modules/**",
+      "**/.pnpm/**",
+      "**/dist/**",
+      "**/.next/**",
+      // Exclude Playwright E2E tests from Vitest run
+      "tests/e2e/**",
+    ],
   },
   resolve: {
     alias: {

@@ -12,6 +12,8 @@ export interface League {
     RB: number;
     WR: number;
     TE: number;
+    K: number;
+    DEF: number;
     FLEX: number;
     BENCH: number; // unused in calculations, but part of shape
   };

@@ -34,11 +34,6 @@ export default function DraftAssistantContent() {
   const isLoading = Object.values(loading).some(Boolean);
   const hasError = Object.values(error).some(Boolean);
 
-  // Shared switch states for both position tables and available players
-  const [showAll, setShowAll] = React.useState(false);
-  const [showDrafted, setShowDrafted] = React.useState(false);
-  const [showUnranked, setShowUnranked] = React.useState(false);
-
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -80,14 +75,7 @@ export default function DraftAssistantContent() {
       </div>
 
       {/* Positions + Available players are grouped to keep toolbar pinned */}
-      <PositionCompactTables
-        showAll={showAll}
-        setShowAll={setShowAll}
-        showDrafted={showDrafted}
-        setShowDrafted={setShowDrafted}
-        showUnranked={showUnranked}
-        setShowUnranked={setShowUnranked}
-      />
+      <PositionCompactTables />
 
       {/* Bring back page-level Available section */}
       <Card id="available-section">
@@ -98,10 +86,6 @@ export default function DraftAssistantContent() {
           <AvailablePlayers
             availablePlayers={availablePlayers}
             loading={isLoading}
-            showDrafted={showDrafted}
-            setShowDrafted={setShowDrafted}
-            showUnranked={showUnranked}
-            setShowUnranked={setShowUnranked}
           />
         </CardContent>
       </Card>

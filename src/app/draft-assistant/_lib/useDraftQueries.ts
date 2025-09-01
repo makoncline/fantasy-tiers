@@ -1,3 +1,4 @@
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchDraftDetails } from "@/lib/draftDetails";
 import type { DraftDetails } from "@/lib/draftDetails";
@@ -252,5 +253,73 @@ export function useAggregatesLastModified(opts?: { enabled?: boolean }) {
     },
     enabled,
     staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+// New bundle hook that fetches all shards at once
+export function useAggregatesBundle(
+  league: {
+    teams: number;
+    scoring: ScoringType;
+    roster: {
+      QB: number;
+      RB: number;
+      WR: number;
+      TE: number;
+      K: number;
+      DEF: number;
+      FLEX: number;
+      BENCH: number;
+    };
+  } | null,
+  opts?: { enabled?: boolean }
+) {
+  const enabled = Boolean(league) && (opts?.enabled ?? true);
+
+  React.useEffect(() => {
+    if (league) {
+      console.log("useAggregatesBundle: League config:", {
+        scoring: league.scoring,
+        teams: league.teams,
+        roster: league.roster,
+        enabled,
+      });
+    } else {
+      console.log("useAggregatesBundle: No league config provided");
+    }
+  }, [league, enabled]);
+
+  return useQuery({
+    queryKey: league
+      ? qk.aggregates.bundle(league.scoring, league.teams, {
+          QB: league.roster.QB,
+          RB: league.roster.RB,
+          WR: league.roster.WR,
+          TE: league.roster.TE,
+          K: league.roster.K,
+          DEF: league.roster.DEF,
+          FLEX: league.roster.FLEX,
+        })
+      : ["aggregates", "bundle"],
+    queryFn: async () => {
+      console.log("useAggregatesBundle: Fetching bundle data...");
+      if (!league) throw new Error("League configuration required");
+      const { fetchAggregatesBundle } = await import(
+        "@/lib/api/aggregatesBundle"
+      );
+      const result = await fetchAggregatesBundle({
+        scoring: league.scoring,
+        teams: league.teams,
+        roster: league.roster,
+      });
+      console.log("useAggregatesBundle: Bundle data fetched successfully");
+      return result;
+    },
+    enabled,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
   });
 }

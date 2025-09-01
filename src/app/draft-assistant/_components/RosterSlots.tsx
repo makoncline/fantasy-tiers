@@ -17,7 +17,7 @@ export default function RosterSlots({
   highlightPlayerId?: string;
 }) {
   return (
-    <Table>
+    <Table data-testid="roster-table">
       <TableHeader>
         <TableRow>
           <TableHead>Slot</TableHead>
@@ -48,7 +48,7 @@ export default function RosterSlots({
               <TableCell
                 className={highlight ? "border-primary border-y-2" : undefined}
               >
-                {p ? p.name : "—"}
+                {p ? <span data-drafted="D">{p.name}</span> : "—"}
               </TableCell>
               <TableCell
                 className={highlight ? "border-primary border-y-2" : undefined}

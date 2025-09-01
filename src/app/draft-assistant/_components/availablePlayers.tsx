@@ -5,26 +5,22 @@ import type { DraftedPlayer, RankedPlayer } from "@/lib/schemas";
 import type { BeerRow } from "@/lib/beersheets";
 import { PlayerTable } from "./PlayerTable";
 import type { PlayerRow } from "@/lib/playerRows";
-import type { EnrichedPlayer } from "@/lib/enrichPlayers";
-import { toPlayerRows, type Extras } from "@/lib/playerRows";
+
+import type { Extras } from "@/lib/playerRows";
 import { Button } from "@/components/ui/button";
 import PreviewPickDialog from "./PreviewPickDialog";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
-import { normalizePlayerName, ecrToRoundPick } from "@/lib/util";
+import { normalizePlayerName } from "@/lib/util";
 import { SEASON_WEEKS } from "@/lib/constants";
-import {
-  useAggregates,
-  useDraftPicks,
-  useSleeperPlayersMetaStatic,
-} from "../_lib/useDraftQueries";
 import { useDraftedLookups } from "../_lib/useDraftedLookups";
-import { useSearchParams } from "next/navigation";
-import { enrichPlayers } from "@/lib/enrichPlayers";
 import { EyeIcon } from "lucide-react";
+import { filterAvailableRows } from "@/app/draft-assistant/_lib/filterAvailableRows";
 
 interface AvailablePlayersProps {
   availablePlayers: RankedPlayer[];
   loading: boolean;
+  showAll?: boolean;
+  setShowAll?: (value: boolean) => void;
   showDrafted?: boolean;
   setShowDrafted?: (value: boolean) => void;
   showUnranked?: boolean;
@@ -34,16 +30,15 @@ interface AvailablePlayersProps {
 export default function AvailablePlayers({
   availablePlayers,
   loading,
+  showAll: externalShowAll,
+  setShowAll: externalSetShowAll,
   showDrafted: externalShowDrafted,
   setShowDrafted: externalSetShowDrafted,
   showUnranked: externalShowUnranked,
   setShowUnranked: externalSetShowUnranked,
 }: AvailablePlayersProps) {
-  const { userRosterSlots, beerSheetsBoard, league } = useDraftData();
-  const searchParams = useSearchParams();
-  const draftId = searchParams.get("draftId") || "";
-  const { data: picks } = useDraftPicks(draftId);
-  const { data: sleeperMeta } = useSleeperPlayersMetaStatic(Boolean(draftId));
+  const { userRosterSlots, beerSheetsBoard, picks, positionRows } =
+    useDraftData();
   const [open, setOpen] = React.useState(false);
   const [previewPlayer, setPreviewPlayer] = React.useState<RankedPlayer | null>(
     null
@@ -52,19 +47,44 @@ export default function AvailablePlayers({
     "ALL" | "RB" | "WR" | "TE" | "QB" | "RB/WR" | "K" | "DEF"
   >("ALL");
 
-  // Use external state if provided, otherwise use local state
+  // Get context switches as fallback
+  const {
+    showAll: ctxShowAll,
+    setShowAll: setCtxShowAll,
+    showDrafted: ctxShowDrafted,
+    setShowDrafted: setCtxShowDrafted,
+    showUnranked: ctxShowUnranked,
+    setShowUnranked: setCtxShowUnranked,
+  } = useDraftData();
+
+  // Use external state if provided, otherwise context, otherwise local state
+  const [localShowAll, setLocalShowAll] = React.useState(false);
   const [localShowDrafted, setLocalShowDrafted] = React.useState(false);
   const [localShowUnranked, setLocalShowUnranked] = React.useState(false);
 
-  const showDrafted = externalShowDrafted ?? localShowDrafted;
-  const setShowDrafted = externalSetShowDrafted ?? setLocalShowDrafted;
-  const showUnranked = externalShowUnranked ?? localShowUnranked;
-  const setShowUnranked = externalSetShowUnranked ?? setLocalShowUnranked;
-
-  const { data: aggregates } = useAggregates();
+  const showAll = externalShowAll ?? ctxShowAll ?? localShowAll;
+  const setShowAll = externalSetShowAll ?? setCtxShowAll ?? setLocalShowAll;
+  const showDrafted = externalShowDrafted ?? ctxShowDrafted ?? localShowDrafted;
+  const setShowDrafted =
+    externalSetShowDrafted ?? setCtxShowDrafted ?? setLocalShowDrafted;
+  const showUnranked =
+    externalShowUnranked ?? ctxShowUnranked ?? localShowUnranked;
+  const setShowUnranked =
+    externalSetShowUnranked ?? setCtxShowUnranked ?? setLocalShowUnranked;
 
   // Use centralized drafted lookups hook (removes any casts)
-  const { draftedIds, draftedNames } = useDraftedLookups(picks, sleeperMeta);
+  const { draftedIds, draftedNames } = useDraftedLookups(picks);
+
+  // Helper to convert PlayerRow to RankedPlayer for preview
+  const toRanked = (r: PlayerRow): RankedPlayer => ({
+    player_id: r.player_id,
+    name: r.name,
+    position: r.position,
+    team: r.team ?? null,
+    bye_week: r.bye_week != null ? String(r.bye_week) : null,
+    rank: (r.bc_rank ?? r.rank ?? 0) as number,
+    tier: (r.bc_tier ?? r.tier ?? 0) as number,
+  });
 
   const extras = React.useMemo(() => {
     const map: Record<
@@ -89,124 +109,96 @@ export default function AvailablePlayers({
     return map;
   }, [beerSheetsBoard]);
 
-  // Process data like PositionCompactTables does
-  const process = React.useCallback((): PlayerRow[] => {
-    if (!aggregates?.all || !league?.scoring) return [] as PlayerRow[];
-    try {
-      const enriched = enrichPlayers(aggregates.all, {
-        teams: league.teams,
-        scoring: league.scoring,
-        roster: league.roster,
-      });
-      const byId = new Map<string, EnrichedPlayer>();
-      const byName = new Map<string, EnrichedPlayer>();
-      for (const p of enriched) {
-        const pid = String(p?.player_id || "");
-        if (pid) byId.set(pid, p);
-        const nm = normalizePlayerName(String(p?.name || ""));
-        if (nm) byName.set(nm, p);
-      }
+  // Create rowExtras object for row formatting
+  const rowExtras = React.useMemo(
+    () => ({
+      draftedIds,
+      draftedNames,
+      beerSheetsMap: extras,
+    }),
+    [draftedIds, draftedNames, extras]
+  );
 
-      // Build base rows from the enriched ALL aggregate
-      const base = toPlayerRows([...enriched], extras, league.teams);
-      const merged = base.map((r) => {
-        const hit =
-          byId.get(r.player_id) || byName.get(normalizePlayerName(r.name));
-        if (!hit) return r;
-        return {
-          ...r,
-          bc_rank: hit.bc_rank ?? r.rank ?? undefined,
-          bc_tier: hit.bc_tier ?? r.tier ?? undefined,
-          sleeper_pts: hit.sleeper_pts ?? undefined,
-          sleeper_adp: hit.sleeper_adp ?? undefined,
-          sleeper_rank_overall: hit.sleeper_rank_overall ?? undefined,
-          fp_pts: hit.fp_pts ?? undefined,
-          ecr_round_pick:
-            hit.fp_rank_overall != null && league?.teams
-              ? ecrToRoundPick(
-                  Number(hit.fp_rank_overall),
-                  Number(league.teams)
-                )
-              : undefined,
-          fp_adp: hit.fp_adp ?? undefined,
-          fp_rank_overall: hit.fp_rank_overall ?? undefined,
-          fp_rank_pos: hit.fp_rank_pos ?? undefined,
-          fp_tier: hit.fp_tier ?? undefined,
-          fp_baseline_pts: hit.fp_baseline_pts ?? undefined,
-          fp_value: hit.fp_value ?? undefined,
-          fp_positional_scarcity_slope:
-            hit.fp_positional_scarcity_slope ?? undefined,
-          fp_player_owned_avg: hit.fp_player_owned_avg ?? undefined,
-          market_delta: hit.market_delta ?? undefined,
-        } as PlayerRow;
-      });
-      return merged;
-    } catch {
-      return [] as PlayerRow[];
-    }
-  }, [aggregates, league, extras]);
-
-  const rows = React.useMemo(() => process(), [process]);
+  // Always source rows from enriched ALL bundle rows so toggles have full effect
+  const rows = React.useMemo(() => {
+    // Always start from enriched ALL rows so toggles have full effect
+    return positionRows?.ALL ?? [];
+  }, [positionRows]);
 
   const filteredRows = React.useMemo(() => {
-    // Apply position filter
-    let filtered = rows;
-    if (filter === "ALL") {
-      filtered = rows;
-    } else if (filter === "RB/WR") {
-      filtered = rows.filter((r) => r.position === "RB" || r.position === "WR");
-    } else {
-      filtered = rows.filter((r) => r.position === filter);
-    }
+    const result = filterAvailableRows(rows, {
+      position: filter,
+      showDrafted,
+      showUnranked,
+      draftedIds,
+      draftedNames,
+    });
 
-    // Apply showUnranked filter: only show players with bc_rank if showUnranked is false
-    const eligible = showUnranked
-      ? filtered
-      : filtered.filter((r) => typeof r.bc_rank === "number");
-
-    // Apply showDrafted filter: filter out drafted players if showDrafted is false
-    const finalRows = showDrafted
-      ? eligible
-      : eligible.filter((r) => {
-          const id = String(r.player_id);
-          if (draftedIds.has(id)) return false;
-          const nm = normalizePlayerName(r.name);
-          if (nm && draftedNames.has(nm)) return false;
-          return true;
-        });
-
-    // Sort by Boris Chen rank (same as PositionCompactTables)
-    return finalRows.sort(
-      (a, b) =>
-        (Number(a.bc_rank ?? 1e9) as number) -
-        (Number(b.bc_rank ?? 1e9) as number)
-    );
+    return result;
   }, [rows, filter, showDrafted, showUnranked, draftedIds, draftedNames]);
 
   // Enrich rows with pts/game (season projected pts / SEASON_WEEKS) when available
   const rowsWithPPG = React.useMemo(() => {
-    if (!beerSheetsBoard) return filteredRows;
-    const byId = new Map<string, number>();
-    for (const r of beerSheetsBoard) {
-      if (r && r.player_id && Number.isFinite(r.proj_pts)) {
-        byId.set(r.player_id, Number(r.proj_pts));
+    const result = (() => {
+      if (!beerSheetsBoard) return filteredRows;
+      const byId = new Map<string, number>();
+      for (const r of beerSheetsBoard) {
+        if (r && r.player_id && Number.isFinite(r.proj_pts)) {
+          byId.set(r.player_id, Number(r.proj_pts));
+        }
+      }
+      return filteredRows.map((r) => {
+        const proj = byId.get(r.player_id);
+        return proj != null
+          ? { ...r, pts_per_game: (proj / SEASON_WEEKS).toFixed(1) }
+          : r;
+      });
+    })();
+
+    // Log data being passed to PlayerTable
+    console.log("=== AvailablePlayers Data Passed to PlayerTable ===");
+    console.log("rowsWithPPG length:", result.length);
+    console.log(
+      "rowsWithPPG sample:",
+      result.slice(0, 5).map((p) => ({
+        id: p.player_id,
+        name: p.name,
+        position: p.position,
+        bc_rank: p.bc_rank,
+        pts_per_game:
+          "pts_per_game" in p
+            ? String((p as PlayerRow & { pts_per_game?: string }).pts_per_game)
+            : "N/A",
+      }))
+    );
+
+    // Check if any drafted players are in the final data
+    if (draftedIds && result.length > 0) {
+      const draftedInFinal = result.filter((p) =>
+        draftedIds.has(String(p.player_id))
+      );
+      console.log("Drafted players in rowsWithPPG:", draftedInFinal.length);
+      if (draftedInFinal.length > 0) {
+        console.log(
+          "Drafted players in rowsWithPPG sample:",
+          draftedInFinal.slice(0, 3).map((p) => ({
+            id: p.player_id,
+            name: p.name,
+            position: p.position,
+          }))
+        );
       }
     }
-    return filteredRows.map((r) => {
-      const proj = byId.get(r.player_id);
-      return proj != null
-        ? { ...r, pts_per_game: (proj / SEASON_WEEKS).toFixed(1) }
-        : r;
-    });
-  }, [filteredRows, beerSheetsBoard]);
+    console.log("===============================================");
+
+    return result;
+  }, [filteredRows, beerSheetsBoard, draftedIds]);
 
   const onPreview = (row: PlayerRow) => {
-    // Find the player in availablePlayers (which contains properly typed RankedPlayer objects)
-    const found = availablePlayers.find((p) => p.player_id === row.player_id);
-    if (found) {
-      setPreviewPlayer(found);
-      setOpen(true);
-    }
+    // Convert PlayerRow to RankedPlayer for preview
+    const rankedPlayer = toRanked(row);
+    setPreviewPlayer(rankedPlayer);
+    setOpen(true);
   };
 
   if (loading) return <p aria-live="polite">Loading available players...</p>;
@@ -243,9 +235,9 @@ export default function AvailablePlayers({
         rows={rowsWithPPG}
         sortable
         colorizeValuePs
-        dimDrafted={true}
+        dimDrafted={showDrafted} // Dim drafted players when showing them (to distinguish)
         draftedIds={draftedIds}
-        hideDrafted={!showDrafted}
+        hideDrafted={!showDrafted} // Hide drafted when switch is off, show when on
         renderActions={(row) => (
           <Button
             variant="ghost"

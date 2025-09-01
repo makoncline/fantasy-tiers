@@ -1,11 +1,7 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { useSearchParams } from "next/navigation";
-import {
-  useDraftDetails,
-  useDraftPicks,
-  useSleeperPlayersMetaStatic,
-} from "@/app/draft-assistant/_lib/useDraftQueries";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,23 +21,31 @@ function roundPickLabel(overall: number, teams: number) {
 }
 
 export default function DraftStatusCard() {
-  const sp = useSearchParams();
-  const draftId = sp.get("draftId") || "";
-  const userId = sp.get("userId") || "";
-  const { data: details } = useDraftDetails(draftId);
-  const { data: picks } = useDraftPicks(draftId);
-  const { data: sleeperMeta } = useSleeperPlayersMetaStatic(Boolean(draftId));
   const {
+    user,
+    draftDetails,
+    picks,
     userPositionCounts,
     userPositionNeeds,
     userPositionRequirements,
     refetchData,
     loading,
     lastUpdatedAt,
+    league,
+    showAll,
+    setShowAll,
+    showDrafted,
+    setShowDrafted,
+    showUnranked,
+    setShowUnranked,
   } = useDraftData();
 
-  const teams = details?.settings?.teams ?? 0;
-  const rounds = details?.settings?.rounds ?? 0;
+  // For now, we'll disable sleeper meta usage since we removed the hook
+  // TODO: Add sleeper meta back if needed for player name lookups
+  const sleeperMeta = null;
+
+  const teams = draftDetails?.settings?.teams ?? league?.teams ?? 0;
+  const rounds = draftDetails?.settings?.rounds ?? 0;
   const totalPicks = teams && rounds ? teams * rounds : 0;
   const made = (picks || []).filter((p) => p && p.player_id).length;
   const nextOverall = totalPicks ? Math.min(made + 1, totalPicks) : 0;
@@ -49,7 +53,9 @@ export default function DraftStatusCard() {
   const currentRound = teams ? Math.ceil(nextOverall / (teams || 1)) : 0;
   const currentPos = teams ? ((nextOverall - 1) % teams) + 1 : 0;
 
-  const userSlot = userId ? details?.draft_order?.[userId] : undefined;
+  const userSlot = user?.user_id
+    ? draftDetails?.draft_order?.[user.user_id]
+    : undefined;
   const userPicksMade = (picks || []).filter(
     (p) => p.draft_slot === userSlot
   ).length;
@@ -63,8 +69,7 @@ export default function DraftStatusCard() {
       .sort((a, b) => (b.pick_no ?? 0) - (a.pick_no ?? 0))
       .slice(0, 3);
     return lst.map((p) => {
-      const meta = sleeperMeta ? sleeperMeta[String(p.player_id)] : null;
-      const nm = meta?.full_name || meta?.name || String(p.player_id);
+      const nm = String(p.player_id);
       const lbl = teams && p?.pick_no ? roundPickLabel(p.pick_no, teams) : "—";
       return `${lbl} ${nm}` as string;
     });
@@ -105,6 +110,7 @@ export default function DraftStatusCard() {
   return (
     <Card
       id="draft-status-card"
+      data-testid="draft-status-card"
       className="sticky top-0 z-40 bg-background/95 supports-[backdrop-filter]:bg-background/60 backdrop-blur p-2"
     >
       <CardHeader className="flex flex-row justify-between p-0 items-center">
@@ -139,7 +145,7 @@ export default function DraftStatusCard() {
             onClick={typeof refetchData === "function" ? refetchData : () => {}}
             disabled={Boolean(
               loading &&
-                (loading.draftDetails || loading.draftPicks || loading.players)
+                (loading.draftDetails || loading.picks || loading.players)
             )}
           >
             <RefreshCwIcon className="h-2 w-2" />
@@ -157,7 +163,7 @@ export default function DraftStatusCard() {
                 rounds || "—"
               } rounds - draft slot ${userSlot ?? "—"} - ${made}${
                 totalPicks ? `/${totalPicks}` : ""
-              } picks - status ${details?.status || "—"}`}
+              } picks - status ${draftDetails?.status || "—"}`}
             </div>
             <div className="text-muted-foreground leading-5">
               {`you have ${userPicksRemaining ?? "—"} picks remaining - ${
@@ -258,6 +264,34 @@ export default function DraftStatusCard() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Filter switches */}
+        <div className="mt-3 border-t pt-3 flex flex-wrap gap-4">
+          <label className="flex items-center gap-2 text-xs">
+            <Switch
+              checked={showAll}
+              onCheckedChange={setShowAll}
+              data-testid="status-toggle-show-all"
+            />
+            <span>Show all</span>
+          </label>
+          <label className="flex items-center gap-2 text-xs">
+            <Switch
+              checked={showDrafted}
+              onCheckedChange={setShowDrafted}
+              data-testid="status-toggle-show-drafted"
+            />
+            <span>Show drafted</span>
+          </label>
+          <label className="flex items-center gap-2 text-xs">
+            <Switch
+              checked={showUnranked}
+              onCheckedChange={setShowUnranked}
+              data-testid="status-toggle-show-unranked"
+            />
+            <span>Show unranked</span>
+          </label>
         </div>
       </CardContent>
     </Card>
