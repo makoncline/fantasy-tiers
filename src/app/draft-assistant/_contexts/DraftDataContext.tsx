@@ -48,6 +48,12 @@ interface ProcessedData {
   userPositionNeeds: Partial<Record<Position, number>>;
   userPositionCounts: Partial<Record<Position, number>>;
   userPositionRequirements: Partial<Record<Position, number>>;
+  // Helper function to get roster status for a position
+  getRosterStatus: (pos: Position) => {
+    count: number;
+    requirement: number;
+    met: boolean;
+  };
   draftWideNeeds: Partial<Record<Position, number>>;
   userRoster: DraftedPlayer[] | null;
   userRosterSlots: { slot: RosterSlot; player: DraftedPlayer | null }[];
@@ -152,6 +158,8 @@ const defaultContextValue: DraftDataContextType = {
   userPositionNeeds: {},
   userPositionCounts: {},
   userPositionRequirements: {},
+  // Helper function for consistent roster status calculation
+  getRosterStatus: () => ({ count: 0, requirement: 0, met: false }),
   draftWideNeeds: {},
   userRoster: null,
   userRosterSlots: [],
@@ -185,6 +193,8 @@ const EMPTY_PROCESSED: ProcessedData = {
   userPositionNeeds: {},
   userPositionCounts: {},
   userPositionRequirements: {},
+  // Helper function for consistent roster status calculation
+  getRosterStatus: () => ({ count: 0, requirement: 0, met: false }),
   draftWideNeeds: {},
   userRoster: null,
   userRosterSlots: [],
@@ -524,6 +534,13 @@ export function DraftDataProvider({
           viewModel.userRoster?.remainingPositionRequirements || {},
         userPositionCounts: viewModel.userRoster?.rosterPositionCounts || {},
         userPositionRequirements: viewModel.rosterRequirements,
+        // Helper function for consistent roster status calculation
+        getRosterStatus: (pos: Position) => {
+          const count = viewModel.userRoster?.rosterPositionCounts?.[pos] ?? 0;
+          const requirement = viewModel.rosterRequirements?.[pos] ?? 0;
+          const met = requirement > 0 && count >= requirement;
+          return { count, requirement, met };
+        },
         draftWideNeeds: viewModel.draftWideNeeds,
         userRoster: viewModel.userRoster?.players || [],
         userRosterSlots: (() => {

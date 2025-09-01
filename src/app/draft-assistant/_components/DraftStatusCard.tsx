@@ -28,6 +28,7 @@ export default function DraftStatusCard() {
     userPositionCounts,
     userPositionNeeds,
     userPositionRequirements,
+    getRosterStatus,
     refetchData,
     loading,
     lastUpdatedAt,
@@ -174,10 +175,11 @@ export default function DraftStatusCard() {
               <div className="flex gap-1.5 flex-wrap md:flex-nowrap">
                 {(["QB", "RB", "WR", "TE", "FLEX", "K", "DEF"] as const).map(
                   (pos) => {
-                    const have = (userPositionCounts?.[pos] ?? 0) as number;
-                    const req = (userPositionRequirements?.[pos] ??
-                      0) as number;
-                    const met = req > 0 && have >= req;
+                    const {
+                      count: have,
+                      requirement: req,
+                      met,
+                    } = getRosterStatus(pos);
                     return (
                       <Badge
                         key={pos}

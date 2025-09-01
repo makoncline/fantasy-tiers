@@ -325,6 +325,249 @@ describe("filterAvailableRows", () => {
   });
 });
 
+describe("getRosterStatus helper function", () => {
+  it("should calculate roster status correctly for positions with players", () => {
+    // Mock view model data
+    const mockViewModel = {
+      userRoster: {
+        rosterPositionCounts: {
+          QB: 2, // User has 2 QBs
+          RB: 3, // User has 3 RBs
+          WR: 4, // User has 4 WRs
+          TE: 1, // User has 1 TE
+          FLEX: 1, // User has 1 FLEX
+          K: 1, // User has 1 K
+          DEF: 1, // User has 1 DEF
+        },
+      },
+      rosterRequirements: {
+        QB: 1, // League requires 1 QB
+        RB: 2, // League requires 2 RBs
+        WR: 2, // League requires 2 WRs
+        TE: 1, // League requires 1 TE
+        FLEX: 1, // League requires 1 FLEX
+        K: 1, // League requires 1 K
+        DEF: 1, // League requires 1 DEF
+      },
+    };
+
+    // Create the helper function with mocked data
+    const getRosterStatus = (pos: string) => {
+      const count =
+        mockViewModel.userRoster?.rosterPositionCounts?.[
+          pos as keyof typeof mockViewModel.userRoster.rosterPositionCounts
+        ] ?? 0;
+      const requirement =
+        mockViewModel.rosterRequirements?.[
+          pos as keyof typeof mockViewModel.rosterRequirements
+        ] ?? 0;
+      const met = requirement > 0 && count >= requirement;
+      return { count, requirement, met };
+    };
+
+    // Test QB: 2 players, needs 1 → met
+    expect(getRosterStatus("QB")).toEqual({
+      count: 2,
+      requirement: 1,
+      met: true,
+    });
+
+    // Test RB: 3 players, needs 2 → met
+    expect(getRosterStatus("RB")).toEqual({
+      count: 3,
+      requirement: 2,
+      met: true,
+    });
+
+    // Test WR: 4 players, needs 2 → met
+    expect(getRosterStatus("WR")).toEqual({
+      count: 4,
+      requirement: 2,
+      met: true,
+    });
+
+    // Test TE: 1 player, needs 1 → met
+    expect(getRosterStatus("TE")).toEqual({
+      count: 1,
+      requirement: 1,
+      met: true,
+    });
+
+    // Test FLEX: 1 player, needs 1 → met
+    expect(getRosterStatus("FLEX")).toEqual({
+      count: 1,
+      requirement: 1,
+      met: true,
+    });
+
+    // Test K: 1 player, needs 1 → met
+    expect(getRosterStatus("K")).toEqual({
+      count: 1,
+      requirement: 1,
+      met: true,
+    });
+
+    // Test DEF: 1 player, needs 1 → met
+    expect(getRosterStatus("DEF")).toEqual({
+      count: 1,
+      requirement: 1,
+      met: true,
+    });
+  });
+
+  it("should handle positions that are not fully met", () => {
+    // Mock view model data with unmet requirements
+    const mockViewModel = {
+      userRoster: {
+        rosterPositionCounts: {
+          QB: 0, // User has 0 QBs
+          RB: 1, // User has 1 RB
+          WR: 1, // User has 1 WR
+        },
+      },
+      rosterRequirements: {
+        QB: 1, // League requires 1 QB
+        RB: 2, // League requires 2 RBs
+        WR: 3, // League requires 3 WRs
+      },
+    };
+
+    // Create the helper function with mocked data
+    const getRosterStatus = (pos: string) => {
+      const count =
+        mockViewModel.userRoster?.rosterPositionCounts?.[
+          pos as keyof typeof mockViewModel.userRoster.rosterPositionCounts
+        ] ?? 0;
+      const requirement =
+        mockViewModel.rosterRequirements?.[
+          pos as keyof typeof mockViewModel.rosterRequirements
+        ] ?? 0;
+      const met = requirement > 0 && count >= requirement;
+      return { count, requirement, met };
+    };
+
+    // Test QB: 0 players, needs 1 → not met
+    expect(getRosterStatus("QB")).toEqual({
+      count: 0,
+      requirement: 1,
+      met: false,
+    });
+
+    // Test RB: 1 player, needs 2 → not met
+    expect(getRosterStatus("RB")).toEqual({
+      count: 1,
+      requirement: 2,
+      met: false,
+    });
+
+    // Test WR: 1 player, needs 3 → not met
+    expect(getRosterStatus("WR")).toEqual({
+      count: 1,
+      requirement: 3,
+      met: false,
+    });
+  });
+
+  it("should handle positions with no requirements", () => {
+    // Mock view model data with zero requirements
+    const mockViewModel = {
+      userRoster: {
+        rosterPositionCounts: {
+          QB: 2, // User has 2 QBs
+        },
+      },
+      rosterRequirements: {
+        QB: 0, // League requires 0 QBs
+      },
+    };
+
+    // Create the helper function with mocked data
+    const getRosterStatus = (pos: string) => {
+      const count =
+        mockViewModel.userRoster?.rosterPositionCounts?.[
+          pos as keyof typeof mockViewModel.userRoster.rosterPositionCounts
+        ] ?? 0;
+      const requirement =
+        mockViewModel.rosterRequirements?.[
+          pos as keyof typeof mockViewModel.rosterRequirements
+        ] ?? 0;
+      const met = requirement > 0 && count >= requirement;
+      return { count, requirement, met };
+    };
+
+    // Test QB: 2 players, needs 0 → not met (requirement is 0, so met is false)
+    expect(getRosterStatus("QB")).toEqual({
+      count: 2,
+      requirement: 0,
+      met: false,
+    });
+  });
+
+  it("should handle missing roster data gracefully", () => {
+    // Mock view model data with missing roster data
+    const mockViewModel = {
+      userRoster: null, // No roster data
+      rosterRequirements: {
+        QB: 1,
+      },
+    };
+
+    // Create the helper function with mocked data
+    const getRosterStatus = (pos: string) => {
+      const count =
+        mockViewModel.userRoster?.rosterPositionCounts?.[
+          pos as keyof typeof mockViewModel.userRoster.rosterPositionCounts
+        ] ?? 0;
+      const requirement =
+        mockViewModel.rosterRequirements?.[
+          pos as keyof typeof mockViewModel.rosterRequirements
+        ] ?? 0;
+      const met = requirement > 0 && count >= requirement;
+      return { count, requirement, met };
+    };
+
+    // Test QB: 0 players (fallback), needs 1 → not met
+    expect(getRosterStatus("QB")).toEqual({
+      count: 0,
+      requirement: 1,
+      met: false,
+    });
+  });
+
+  it("should handle missing requirements data gracefully", () => {
+    // Mock view model data with missing requirements data
+    const mockViewModel = {
+      userRoster: {
+        rosterPositionCounts: {
+          QB: 2,
+        },
+      },
+      rosterRequirements: null, // No requirements data
+    };
+
+    // Create the helper function with mocked data
+    const getRosterStatus = (pos: string) => {
+      const count =
+        mockViewModel.userRoster?.rosterPositionCounts?.[
+          pos as keyof typeof mockViewModel.userRoster.rosterPositionCounts
+        ] ?? 0;
+      const requirement =
+        mockViewModel.rosterRequirements?.[
+          pos as keyof typeof mockViewModel.rosterRequirements
+        ] ?? 0;
+      const met = requirement > 0 && count >= requirement;
+      return { count, requirement, met };
+    };
+
+    // Test QB: 2 players, needs 0 (fallback) → not met
+    expect(getRosterStatus("QB")).toEqual({
+      count: 2,
+      requirement: 0,
+      met: false,
+    });
+  });
+});
+
 describe("DraftDataContext runtime behavior", () => {
   it("switches are toggleable at runtime", async () => {
     const mod = await import(

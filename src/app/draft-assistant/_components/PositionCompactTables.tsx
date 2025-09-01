@@ -58,6 +58,8 @@ export default function PositionCompactTables({
     userRosterSlots,
     userPositionCounts,
     userPositionNeeds,
+    userPositionRequirements,
+    getRosterStatus,
     picks,
     showAll,
     setShowAll,
@@ -310,10 +312,11 @@ export default function PositionCompactTables({
                   {(() => {
                     const pos = posFromLabel(label);
                     if (!pos) return null;
-                    const rosterCount = userPositionCounts?.[pos] ?? 0;
-                    const rosterNeeds = userPositionNeeds?.[pos] ?? 0;
-                    const rosterReq = rosterCount + rosterNeeds;
-                    const met = rosterReq > 0 && rosterCount >= rosterReq;
+                    const {
+                      count: rosterCount,
+                      requirement: rosterReq,
+                      met,
+                    } = getRosterStatus(pos);
                     return (
                       <div className="text-xs text-muted-foreground flex flex-col gap-0.5 mt-0.5">
                         <div className="flex items-center gap-1">
@@ -411,10 +414,11 @@ export default function PositionCompactTables({
             {(() => {
               const pos = openLabel ? posFromLabel(openLabel) : null;
               if (!pos) return null;
-              const rosterCount = userPositionCounts?.[pos] ?? 0;
-              const rosterNeeds = userPositionNeeds?.[pos] ?? 0;
-              const rosterReq = rosterCount + rosterNeeds;
-              const met = rosterReq > 0 && rosterCount >= rosterReq;
+              const {
+                count: rosterCount,
+                requirement: rosterReq,
+                met,
+              } = getRosterStatus(pos);
               return (
                 <div className="text-xs text-muted-foreground flex flex-col gap-1 mt-1">
                   <div className="flex items-center gap-1">
