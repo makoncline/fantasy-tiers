@@ -303,7 +303,7 @@ describe("Aggregate Schemas", () => {
       const result = CombinedEntry.parse(input);
       expect(result.player_id).toBe("12345");
       expect(result.team).toBeNull();
-      expect(result.bye_week).toBe(0); // null gets coerced to 0
+      expect(result.bye_week).toBeNull(); // null remains null
       expect(result.sleeper.week).toBeNull();
       expect(result.sleeper.updated_at).toBeNull();
       expect(result.fantasypros).toBeNull();

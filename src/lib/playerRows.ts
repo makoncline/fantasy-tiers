@@ -128,6 +128,12 @@ export function toPlayerRows(
       }
       if (playerExtras.ecr_round_pick) {
         result.ecr_round_pick = playerExtras.ecr_round_pick;
+      } else if (p.fp_rank_overall != null && leagueTeams) {
+        // Calculate ecr_round_pick from fantasypros data if not provided in extras
+        result.ecr_round_pick = ecrToRoundPick(
+          Number(p.fp_rank_overall),
+          leagueTeams
+        );
       }
       if (playerExtras.val !== undefined) {
         result.val = playerExtras.val;

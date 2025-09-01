@@ -115,7 +115,7 @@ describe("buildPlayersMapFromCombined", () => {
         name: "john doe",
         position: "QB",
         team: "TB",
-        bye_week: 9,
+        bye_week: "9",
         rank: 12,
         tier: 3,
       });

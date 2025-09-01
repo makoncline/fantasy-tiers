@@ -130,9 +130,7 @@ describe("API Aggregates", () => {
 
       const result = await fetchShard("QB");
 
-      expect(fetchMock).toHaveBeenCalledWith(
-        "/data/aggregate/QB-combined-aggregate.json"
-      );
+      expect(fetchMock).toHaveBeenCalledWith("/api/aggregates/shard?pos=QB");
       expect(result).toEqual(mockData);
       expect(result["12345"].position).toBe("QB");
     });
@@ -190,7 +188,7 @@ describe("API Aggregates", () => {
         const result = await fetchShard(position as any);
         expect(result).toBeDefined();
         expect(fetchMock).toHaveBeenCalledWith(
-          `/data/aggregate/${position}-combined-aggregate.json`
+          `/api/aggregates/shard?pos=${position}`
         );
       }
     );
