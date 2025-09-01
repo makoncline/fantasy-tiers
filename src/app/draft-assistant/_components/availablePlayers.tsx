@@ -155,41 +155,7 @@ export default function AvailablePlayers({
       });
     })();
 
-    // Log data being passed to PlayerTable
-    console.log("=== AvailablePlayers Data Passed to PlayerTable ===");
-    console.log("rowsWithPPG length:", result.length);
-    console.log(
-      "rowsWithPPG sample:",
-      result.slice(0, 5).map((p) => ({
-        id: p.player_id,
-        name: p.name,
-        position: p.position,
-        bc_rank: p.bc_rank,
-        pts_per_game:
-          "pts_per_game" in p
-            ? String((p as PlayerRow & { pts_per_game?: string }).pts_per_game)
-            : "N/A",
-      }))
-    );
-
-    // Check if any drafted players are in the final data
-    if (draftedIds && result.length > 0) {
-      const draftedInFinal = result.filter((p) =>
-        draftedIds.has(String(p.player_id))
-      );
-      console.log("Drafted players in rowsWithPPG:", draftedInFinal.length);
-      if (draftedInFinal.length > 0) {
-        console.log(
-          "Drafted players in rowsWithPPG sample:",
-          draftedInFinal.slice(0, 3).map((p) => ({
-            id: p.player_id,
-            name: p.name,
-            position: p.position,
-          }))
-        );
-      }
-    }
-    console.log("===============================================");
+    // Data processing complete
 
     return result;
   }, [filteredRows, beerSheetsBoard, draftedIds]);

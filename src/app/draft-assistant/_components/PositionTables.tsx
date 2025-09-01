@@ -43,29 +43,7 @@ export default function PositionTables() {
     }
   };
 
-  // Debug logging
-  React.useEffect(() => {
-    if (positionRows) {
-      console.log("Position rows received:", {
-        hasQB: !!positionRows.QB?.length,
-        hasRB: !!positionRows.RB?.length,
-        hasWR: !!positionRows.WR?.length,
-        hasTE: !!positionRows.TE?.length,
-        hasFLEX: !!positionRows.FLEX?.length,
-        QBCount: positionRows.QB?.length || 0,
-        RBCount: positionRows.RB?.length || 0,
-        WRCount: positionRows.WR?.length || 0,
-        TECount: positionRows.TE?.length || 0,
-        FLEXCount: positionRows.FLEX?.length || 0,
-      });
-    }
-    if (error.players) {
-      console.error("Bundle fetch error:", error.players);
-    }
-    if (loading.players) {
-      console.log("Bundle is loading...");
-    }
-  }, [positionRows, loading.players, error.players]);
+  // Component setup complete
 
   const extras = React.useMemo(() => {
     const map: Record<

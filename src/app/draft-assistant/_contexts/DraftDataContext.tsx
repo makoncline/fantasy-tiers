@@ -330,7 +330,6 @@ export function DraftDataProvider({
       },
     };
 
-    console.log("DraftDataContext: League object constructed:", leagueObj);
     return leagueObj;
   }, [draftDetails, scoringType]);
 
@@ -465,17 +464,6 @@ export function DraftDataProvider({
       FLEX: toPlayerRowsFromBundle(playersBundle.shards.FLEX, league.teams),
       ALL: toPlayerRowsFromBundle(playersBundle.shards.ALL, league.teams),
     } as const;
-
-    console.log("PositionRows created successfully");
-    console.log("QB length:", result.QB.length);
-    console.log("RB length:", result.RB.length);
-    console.log("WR length:", result.WR.length);
-    console.log("TE length:", result.TE.length);
-    console.log("FLEX length:", result.FLEX.length);
-    console.log("K length:", result.K.length);
-    console.log("DEF length:", result.DEF.length);
-    console.log("ALL length:", result.ALL.length);
-    console.log("TE sample:", result.TE.slice(0, 3));
 
     return result;
   }, [playersBundle, league]);
@@ -693,39 +681,7 @@ export function DraftDataProvider({
     ]
   );
 
-  // Snapshot key data counts when they change
-  React.useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log("DraftData snapshot", {
-      username,
-      userId: user?.user_id,
-      selectedDraftId,
-      hasDetails: Boolean(draftDetails),
-      picks: picks?.length ?? 0,
-      hasPlayersBundle: Boolean(playersBundle),
-      hasLeague: Boolean(league),
-      errors: {
-        user: Boolean(errorUser),
-        drafts: Boolean(errorDrafts),
-        draftDetails: Boolean(errorDraftDetails),
-        picks: Boolean(errorPicks),
-        players: Boolean(errorPlayers),
-      },
-    });
-  }, [
-    username,
-    user?.user_id,
-    selectedDraftId,
-    draftDetails,
-    picks,
-    playersBundle,
-    league,
-    errorUser,
-    errorDrafts,
-    errorDraftDetails,
-    errorPicks,
-    errorPlayers,
-  ]);
+  // Data processing complete
 
   return (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

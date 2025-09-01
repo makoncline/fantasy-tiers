@@ -277,16 +277,7 @@ export function useAggregatesBundle(
   const enabled = Boolean(league) && (opts?.enabled ?? true);
 
   React.useEffect(() => {
-    if (league) {
-      console.log("useAggregatesBundle: League config:", {
-        scoring: league.scoring,
-        teams: league.teams,
-        roster: league.roster,
-        enabled,
-      });
-    } else {
-      console.log("useAggregatesBundle: No league config provided");
-    }
+    // Debug effect - no-op
   }, [league, enabled]);
 
   return useQuery({
@@ -302,7 +293,6 @@ export function useAggregatesBundle(
         })
       : ["aggregates", "bundle"],
     queryFn: async () => {
-      console.log("useAggregatesBundle: Fetching bundle data...");
       if (!league) throw new Error("League configuration required");
       const { fetchAggregatesBundle } = await import(
         "@/lib/api/aggregatesBundle"
@@ -312,7 +302,6 @@ export function useAggregatesBundle(
         teams: league.teams,
         roster: league.roster,
       });
-      console.log("useAggregatesBundle: Bundle data fetched successfully");
       return result;
     },
     enabled,
