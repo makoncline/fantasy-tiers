@@ -39,6 +39,7 @@ export default function DraftStatusCard() {
     setShowDrafted,
     showUnranked,
     setShowUnranked,
+    positionRows,
   } = useDraftData();
 
   // For now, we'll disable sleeper meta usage since we removed the hook
@@ -70,11 +71,15 @@ export default function DraftStatusCard() {
       .sort((a, b) => (b.pick_no ?? 0) - (a.pick_no ?? 0))
       .slice(0, 3);
     return lst.map((p) => {
-      const nm = String(p.player_id);
+      // Look up player name from positionRows.ALL
+      const playerData = positionRows?.ALL?.find(
+        (player) => player.player_id === p.player_id
+      );
+      const nm = playerData?.name || String(p.player_id);
       const lbl = teams && p?.pick_no ? roundPickLabel(p.pick_no, teams) : "—";
       return `${lbl} ${nm}` as string;
     });
-  }, [picks, sleeperMeta, teams]);
+  }, [picks, teams, positionRows]);
 
   // Local ticker to keep the "Updated … ago" label fresh
   function useTicker(intervalMs: number = 1000) {
