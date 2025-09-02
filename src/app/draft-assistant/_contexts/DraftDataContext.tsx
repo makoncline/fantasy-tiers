@@ -19,7 +19,7 @@ import {
   useSleeperDrafts,
 } from "@/app/draft-assistant/_lib/useSleeper";
 import { buildDraftViewModel } from "@/lib/draftState";
-import type { DraftViewModel } from "@/lib/draftState";
+
 import type {
   DraftedPlayer,
   RankedPlayer,
@@ -34,6 +34,9 @@ import type { BeerRow } from "@/lib/beersheets";
 import type { AggregatesBundleResponseT } from "@/lib/schemas-bundle";
 import type { PlayerRow } from "@/lib/playerRows";
 import { toPlayerRowsFromBundle } from "@/lib/playerRows";
+import type { PlayerWithPick } from "@/lib/types.draft";
+import { normalizePick } from "@/lib/normalizePick";
+import type { PickMeta } from "@/lib/types.draft";
 // BeerSheets removed from client; calculations moved server-side
 
 interface Recommendation {
@@ -132,6 +135,20 @@ interface DraftDataContextType extends ProcessedData {
 
   refetchData: () => void;
   lastUpdatedAt: number | null;
+
+  // Enriched player data with pick overlay
+  playersAll: PlayerWithPick[];
+  playersByPosition: {
+    QB: PlayerWithPick[];
+    RB: PlayerWithPick[];
+    WR: PlayerWithPick[];
+    TE: PlayerWithPick[];
+    K: PlayerWithPick[];
+    DEF: PlayerWithPick[];
+    FLEX: PlayerWithPick[];
+    ALL: PlayerWithPick[];
+  } | null;
+  draftedIds: Set<string>;
 }
 
 const defaultContextValue: DraftDataContextType = {
@@ -192,6 +209,11 @@ const defaultContextValue: DraftDataContextType = {
   league: null,
   refetchData: () => {},
   lastUpdatedAt: null,
+
+  // Enriched player data with pick overlay
+  playersAll: [],
+  playersByPosition: null,
+  draftedIds: new Set<string>(),
 };
 
 const EMPTY_PROCESSED: ProcessedData = {
@@ -566,8 +588,7 @@ export function DraftDataProvider({
       map[r.player_id] = {
         player_id: r.player_id,
         name: r.name,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        position: r.position as any,
+        position: r.position as DraftedPlayer["position"],
         team: r.team,
         bye_week: r.bye_week != null ? String(r.bye_week) : null,
         rank: typeof r.bc_rank === "number" ? r.bc_rank : r.rank ?? null,
@@ -708,8 +729,68 @@ export function DraftDataProvider({
     }
   }, [viewModel, user, positionRows, draftDetails]);
 
+  // Build the overlay and enriched lists
+  const pickOverlay = useMemo(() => {
+    const m = new Map<string, PickMeta>();
+    const teams = league?.teams;
+
+    for (const p of picks ?? []) {
+      const norm = normalizePick(p, teams ? { teams } : undefined);
+      if (!norm) continue;
+      m.set(norm.playerId, norm.meta);
+    }
+    return m;
+  }, [picks, league?.teams]);
+
+  // Enriched ALL
+  const playersAll: PlayerWithPick[] = useMemo(() => {
+    const base = positionRows?.ALL ?? [];
+    if (base.length === 0) return [];
+    if (pickOverlay.size === 0) return base.map((r) => ({ ...r }));
+
+    const me = user?.user_id;
+    return base.map((r) => {
+      const meta = pickOverlay.get(r.player_id);
+      return meta
+        ? { ...r, picked: meta, draftedByMe: meta.drafterId === me }
+        : { ...r };
+    });
+  }, [positionRows, pickOverlay, user?.user_id]);
+
+  // Enriched per-position (preserve order)
+  const playersByPosition = useMemo(() => {
+    if (!positionRows) return null;
+
+    const me = user?.user_id;
+    const enrich = (arr: PlayerRow[]): PlayerWithPick[] =>
+      arr.map((r) => {
+        const meta = pickOverlay.get(r.player_id);
+        return meta
+          ? { ...r, picked: meta, draftedByMe: meta.drafterId === me }
+          : { ...r };
+      });
+
+    return {
+      QB: enrich(positionRows.QB),
+      RB: enrich(positionRows.RB),
+      WR: enrich(positionRows.WR),
+      TE: enrich(positionRows.TE),
+      K: enrich(positionRows.K),
+      DEF: enrich(positionRows.DEF),
+      FLEX: enrich(positionRows.FLEX),
+      ALL: enrich(positionRows.ALL),
+    };
+  }, [positionRows, pickOverlay, user?.user_id]);
+
+  // Drafted ids for legacy consumers and quick checks
+  const draftedIds = useMemo(() => {
+    const out = new Set<string>();
+    for (const id of pickOverlay.keys()) out.add(id);
+    return out;
+  }, [pickOverlay]);
+
   // Context value
-  const contextValue = useMemo(
+  const contextValue: DraftDataContextType = useMemo(
     () => ({
       // Input state and handlers
       username,
@@ -723,7 +804,7 @@ export function DraftDataProvider({
       // Data state
       user: user || null,
       drafts: drafts || [],
-      draftDetails,
+      draftDetails: draftDetails || null,
       playersBundle: playersBundle || null,
       picks: picks || [],
 
@@ -752,6 +833,11 @@ export function DraftDataProvider({
           updatedAtPicks || 0,
           updatedAtPlayers || 0
         ) || null,
+
+      // Enriched player data with pick overlay
+      playersAll,
+      playersByPosition,
+      draftedIds,
     }),
     [
       username,
@@ -776,14 +862,16 @@ export function DraftDataProvider({
       updatedAtPicks,
       updatedAtPlayers,
       processedData,
+      playersAll,
+      playersByPosition,
+      draftedIds,
     ]
   );
 
   // Data processing complete
 
   return (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    <DraftDataContext.Provider value={contextValue as any}>
+    <DraftDataContext.Provider value={contextValue}>
       {children}
     </DraftDataContext.Provider>
   );

@@ -11,7 +11,7 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: 'sh -c "pnpm build && pnpm start -p 3000"',
+    command: 'sh -c "npm run build && npm start -- -p 3000"',
     port: 3000,
     reuseExistingServer: true,
     timeout: 120_000,

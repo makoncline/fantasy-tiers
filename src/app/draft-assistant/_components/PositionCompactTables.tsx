@@ -9,28 +9,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useAggregatesLastModified } from "../_lib/useDraftQueries";
-import { useDraftedLookups } from "../_lib/useDraftedLookups";
-import { useSearchParams } from "next/navigation";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
-import { normalizePlayerName } from "@/lib/util";
-import { SEASON_WEEKS } from "@/lib/constants";
+import { normalizePosition } from "@/lib/util";
 import { PlayerTable } from "./PlayerTable";
-import type { PlayerRow, Extras } from "@/lib/playerRows";
+
 import type { RankedPlayer } from "@/lib/schemas";
-import type { BeerRow } from "@/lib/beersheets";
-import { sortByBcRank, findBaseline } from "@/lib/playerSorts";
+import type { PlayerWithPick } from "@/lib/types.draft";
+import { findBaseline } from "@/lib/playerSorts";
+import PlayersTableBase from "./table/PlayersTableBase";
+import { GROUPS_COMPACT_FULL, GROUPS_COMPACT_NAMEONLY } from "./table/presets";
 
 import PreviewPickDialog from "./PreviewPickDialog";
-import { normalizePosition } from "@/lib/util";
 import { CheckIcon, EyeIcon } from "lucide-react";
 
 // Compact position tables: fixed columns and non-sortable, grouped by Boris Chen tiers
@@ -52,17 +42,10 @@ export default function PositionCompactTables({
   setShowUnranked: externalSetShowUnranked,
 }: PositionCompactTablesProps = {}) {
   const {
-    positionRows,
-    beerSheetsBoard,
-    availablePlayers,
+    playersByPosition,
     userRosterSlots,
-    userPositionCounts,
-    userPositionNeeds,
-    userPositionRequirements,
     getRosterStatus,
-    picks,
     showAll,
-    setShowAll,
     showDrafted,
     setShowDrafted,
     showUnranked,
@@ -72,13 +55,9 @@ export default function PositionCompactTables({
   const { data: lastModified } = useAggregatesLastModified();
 
   // Use drafted lookups hook
-  const { draftedIds, draftedNames } = useDraftedLookups(picks);
+  // Remove useDraftedLookups - using enriched data from context
 
   const DEFAULT_POS_TABLE_LIMIT = 10;
-  const DEFAULT_ALL_TABLE_LIMIT = 20;
-  const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
-  const toggleExpanded = (key: string) =>
-    setExpanded((s) => ({ ...s, [key]: !s[key] }));
   const [openLabel, setOpenLabel] = React.useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const [previewPlayer, setPreviewPlayer] = React.useState<RankedPlayer | null>(
@@ -87,26 +66,15 @@ export default function PositionCompactTables({
 
   // Use external state if provided, otherwise use context state
   const actualShowAll = externalShowAll ?? showAll;
-  const actualSetShowAll = externalSetShowAll ?? setShowAll;
   const actualShowDrafted = externalShowDrafted ?? showDrafted;
   const actualSetShowDrafted = externalSetShowDrafted ?? setShowDrafted;
   const actualShowUnranked = externalShowUnranked ?? showUnranked;
   const actualSetShowUnranked = externalSetShowUnranked ?? setShowUnranked;
 
   const onPreview = React.useCallback(
-    (row: PlayerRow) => {
-      // First try to find player in availablePlayers by ID
-      let found = availablePlayers?.find(
-        (p) => String(p.player_id) === String(row.player_id)
-      );
-
-      // If not found by ID, try by name
-      if (!found) {
-        found = availablePlayers?.find(
-          (p) =>
-            normalizePlayerName(p.name || "") === normalizePlayerName(row.name)
-        );
-      }
+    (row: PlayerWithPick) => {
+      // Use the enriched row directly since it already has pick data
+      let found = row;
 
       if (found && userRosterSlots && userRosterSlots.length > 0) {
         // Convert found player to RankedPlayer format
@@ -115,7 +83,7 @@ export default function PositionCompactTables({
           name: found.name,
           position: found.position,
           team: found.team,
-          bye_week: found.bye_week,
+          bye_week: found.bye_week != null ? String(found.bye_week) : null,
           rank: found.rank || 0,
           tier: found.tier || 0,
         };
@@ -141,61 +109,26 @@ export default function PositionCompactTables({
         }
       }
     },
-    [availablePlayers, userRosterSlots]
+    [userRosterSlots]
   );
-
-  // Extras from BeerSheets for VAL/PS if available (per-week VAL shown in PlayerTable usage)
-  const extras = React.useMemo((): Extras => {
-    const map: Extras = {};
-    (beerSheetsBoard || []).forEach((r: BeerRow) => {
-      const value: { val?: number; ps?: number } = {};
-      if (r.val != null && Number.isFinite(r.val)) {
-        value.val = Number((r.val / SEASON_WEEKS).toFixed(1));
-      }
-      if (r.ps != null && Number.isFinite(r.ps)) {
-        value.ps = Number(Math.round(r.ps));
-      }
-      map[r.player_id] = value;
-      const nm = normalizePlayerName(r.name || "");
-      if (nm) map[nm] = value;
-    });
-    return map;
-  }, [beerSheetsBoard]);
 
   // Each position now uses data from the bundle
 
   // Use position rows from context instead of computing locally
 
-  const sections: [string, PlayerRow[], "full" | "nameOnly"][] = [
-    ["QB", positionRows?.QB ?? [], "full"],
-    ["RB", positionRows?.RB ?? [], "full"],
-    ["WR", positionRows?.WR ?? [], "full"],
-    ["FLEX", positionRows?.FLEX ?? [], "full"],
-    ["TE", positionRows?.TE ?? [], "full"],
-    ["DEF", positionRows?.DEF ?? [], "full"],
-    ["K", positionRows?.K ?? [], "full"],
+  const sections: [string, PlayerWithPick[], "full" | "nameOnly"][] = [
+    ["QB", playersByPosition?.QB ?? [], "full"],
+    ["RB", playersByPosition?.RB ?? [], "full"],
+    ["WR", playersByPosition?.WR ?? [], "full"],
+    ["FLEX", playersByPosition?.FLEX ?? [], "full"],
+    ["TE", playersByPosition?.TE ?? [], "full"],
+    ["DEF", playersByPosition?.DEF ?? [], "full"],
+    ["K", playersByPosition?.K ?? [], "full"],
   ];
 
   // sticky nav + filter controls
   const labels = sections.map(([l]) => l);
-  const posFromLabel = (
-    l: string
-  ): "QB" | "RB" | "WR" | "TE" | "K" | "DEF" | "FLEX" | null => {
-    switch (l) {
-      case "QB":
-      case "RB":
-      case "WR":
-      case "TE":
-      case "K":
-      case "DEF":
-      case "FLEX":
-        return l;
-      default:
-        return null;
-    }
-  };
-  // draftedIds and draftedNames are already from context via useDraftedLookups
-  // We need to get them from the context
+  // draftedIds is available from context
   const refs = React.useRef<Record<string, HTMLDivElement | null>>({});
   const setRef = (label: string) => (el: HTMLDivElement | null) => {
     refs.current[label] = el;
@@ -219,16 +152,16 @@ export default function PositionCompactTables({
     const ro = hasRO ? new ResizeObserver(() => measure()) : null;
     ro?.observe(card);
     window.addEventListener("resize", measure);
-    const id = window.setInterval(measure, 1000);
+    const id = hasRO ? null : window.setInterval(measure, 1000);
     return () => {
       ro?.disconnect();
       window.removeEventListener("resize", measure);
-      window.clearInterval(id);
+      if (id) window.clearInterval(id);
     };
   }, []);
 
   // Show loading state if bundle data is not loaded
-  if (!positionRows) {
+  if (!playersByPosition) {
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-center py-8">
@@ -274,22 +207,14 @@ export default function PositionCompactTables({
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-1">
         {sections.map(([label, rows, mode]) => {
-          const isOpen = !!expanded[label];
-          const limit =
-            label === "ALL" ? DEFAULT_ALL_TABLE_LIMIT : DEFAULT_POS_TABLE_LIMIT;
+          const limit = DEFAULT_POS_TABLE_LIMIT;
           // Optionally include only players that have a Boris Chen rank
           const eligible = actualShowUnranked
             ? rows
             : rows.filter((r) => typeof r.bc_rank === "number");
           const allRows = actualShowDrafted
             ? eligible
-            : eligible.filter((r) => {
-                const id = String(r.player_id);
-                if (draftedIds.has(id)) return false;
-                const nm = normalizePlayerName(r.name);
-                if (nm && draftedNames.has(nm)) return false;
-                return true;
-              });
+            : eligible.filter((r) => !r.picked);
           const visible = actualShowAll ? allRows : allRows.slice(0, limit);
           const baseline = findBaseline(rows);
           return (
@@ -310,7 +235,7 @@ export default function PositionCompactTables({
                     ) : null}
                   </CardTitle>
                   {(() => {
-                    const pos = posFromLabel(label);
+                    const pos = normalizePosition(label);
                     if (!pos) return null;
                     const {
                       count: rosterCount,
@@ -344,11 +269,16 @@ export default function PositionCompactTables({
                 </CardHeader>
                 <CardContent className="pt-0 px-2 pb-2">
                   <div className="overflow-x-auto">
-                    <CompactTable
+                    <PlayersTableBase
                       rows={visible}
-                      mode={mode}
-                      draftedIds={draftedIds}
-                      draftedNames={draftedNames}
+                      groups={
+                        mode === "nameOnly"
+                          ? GROUPS_COMPACT_NAMEONLY
+                          : GROUPS_COMPACT_FULL
+                      }
+                      sortable={false}
+                      colorize={true}
+                      dimDrafted={true}
                       renderActions={(r) => (
                         <Button
                           variant="ghost"
@@ -412,7 +342,7 @@ export default function PositionCompactTables({
               })()}
             </DialogTitle>
             {(() => {
-              const pos = openLabel ? posFromLabel(openLabel) : null;
+              const pos = openLabel ? normalizePosition(openLabel) : null;
               if (!pos) return null;
               const {
                 count: rosterCount,
@@ -464,15 +394,12 @@ export default function PositionCompactTables({
               );
               const fullRows = actualShowDrafted
                 ? dlgEligible
-                : dlgEligible.filter(
-                    (r) => !draftedIds.has(String(r.player_id))
-                  );
+                : dlgEligible.filter((r) => !r.picked);
               return (
                 <PlayerTable
                   rows={fullRows}
                   sortable
                   colorizeValuePs
-                  draftedIds={draftedIds}
                   dimDrafted={actualShowDrafted}
                   hideDrafted={!actualShowDrafted}
                   renderActions={(r) => (
@@ -502,169 +429,5 @@ export default function PositionCompactTables({
         player={previewPlayer}
       />
     </div>
-  );
-}
-
-function CompactTable({
-  rows,
-  mode = "full",
-  renderActions,
-  draftedIds,
-  draftedNames,
-}: {
-  rows: PlayerRow[];
-  mode?: "full" | "nameOnly";
-  renderActions?: (row: PlayerRow) => React.ReactNode;
-  draftedIds?: Set<string>;
-  draftedNames?: Set<string>;
-}) {
-  // Compute alternating backgrounds by Boris Chen tier
-  let lastTier: number | string | null = null;
-  let flip = false;
-
-  // Helpers to colorize cells from green (high) to red (low)
-  const vals = React.useMemo(() => {
-    const list = rows
-      .map((p) =>
-        p.fp_value != null ? p.fp_value : p.val != null ? p.val : null
-      )
-      .filter((n): n is number => n != null);
-    const min = list.length ? Math.min(...list) : 0;
-    const max = list.length ? Math.max(...list) : 0;
-    return { min, max };
-  }, [rows]);
-  const pss = React.useMemo(() => {
-    const list = rows
-      .map((p) =>
-        typeof p.fp_positional_scarcity_slope === "number"
-          ? p.fp_positional_scarcity_slope
-          : typeof p.ps === "number"
-          ? p.ps
-          : null
-      )
-      .filter((n): n is number => n != null && n > 0);
-    const min = list.length ? Math.min(...list) : 0;
-    const max = list.length ? Math.max(...list) : 0;
-    return { min, max };
-  }, [rows]);
-
-  function colorFor(value: number | null, min: number, max: number) {
-    if (value == null || min === max) return undefined;
-    const t = Math.max(0, Math.min(1, (value - min) / (max - min)));
-    // 0 => red (0deg), 1 => green (120deg)
-    const hue = Math.round(0 + (120 - 0) * t);
-    return `hsl(${hue} 60% 30% / 0.35)`; // subtle overlay
-  }
-
-  return (
-    <Table className="table-fixed w-full text-sm">
-      <TableHeader>
-        <TableRow>
-          <TableHead className="whitespace-nowrap w-[4ch] text-right">
-            RNK
-          </TableHead>
-          <TableHead className="whitespace-nowrap w-[16ch]">Name</TableHead>
-          {mode === "full" && (
-            <>
-              <TableHead className="whitespace-nowrap w-[7ch]">TM/BW</TableHead>
-              <TableHead className="whitespace-nowrap w-[5ch]">ECR</TableHead>
-              <TableHead className="whitespace-nowrap w-[3ch]">RT</TableHead>
-              <TableHead className="whitespace-nowrap w-[5ch]">VAL</TableHead>
-              <TableHead className="whitespace-nowrap w-[5ch]">PS</TableHead>
-            </>
-          )}
-          {renderActions ? <TableHead className="w-8" /> : null}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((p, idx) => {
-          const tier = p.bc_tier ?? p.tier ?? null;
-          if (tier !== lastTier) {
-            flip = !flip;
-            lastTier = tier;
-          }
-          const band = flip ? "bg-muted/100" : "bg-muted/5";
-          const isDrafted = Boolean(
-            (draftedIds && draftedIds.has(String(p.player_id))) ||
-              (draftedNames && draftedNames.has(normalizePlayerName(p.name)))
-          );
-          return (
-            <TableRow
-              key={`${p.player_id || p.name || "row"}-${idx}`}
-              className={
-                (isDrafted
-                  ? "opacity-60 text-muted-foreground hover:opacity-95 hover:text-foreground "
-                  : "") + band
-              }
-            >
-              <TableCell className="whitespace-nowrap pr-2 text-right">
-                {p.bc_rank ?? p.rank ?? "—"}
-              </TableCell>
-              <TableCell className="whitespace-nowrap max-w-[16ch] truncate">
-                {p.name}
-              </TableCell>
-              {mode === "full" && (
-                <>
-                  <TableCell className="whitespace-nowrap">
-                    {p.team || p.bye_week
-                      ? `${p.team ?? ""}${p.bye_week ? `/${p.bye_week}` : ""}`
-                      : "—"}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    {p.ecr_round_pick ?? "—"}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    {p.fp_tier ?? "—"}
-                  </TableCell>
-                  {(() => {
-                    const v =
-                      p.fp_value != null
-                        ? p.fp_value
-                        : p.val != null
-                        ? p.val
-                        : null;
-                    const bg = colorFor(
-                      typeof v === "number" ? v : null,
-                      vals.min,
-                      vals.max
-                    );
-                    return (
-                      <TableCell
-                        className="whitespace-nowrap"
-                        style={bg ? { background: bg } : undefined}
-                      >
-                        {v != null ? v : "—"}
-                      </TableCell>
-                    );
-                  })()}
-                  {(() => {
-                    const raw =
-                      typeof p.fp_positional_scarcity_slope === "number"
-                        ? p.fp_positional_scarcity_slope
-                        : typeof p.ps === "number"
-                        ? p.ps
-                        : null;
-                    const val = raw != null && raw > 0 ? Math.round(raw) : 0;
-                    const bg =
-                      val > 0 ? colorFor(val, pss.min, pss.max) : undefined;
-                    return (
-                      <TableCell
-                        className="whitespace-nowrap"
-                        style={bg ? { background: bg } : undefined}
-                      >
-                        {val === 0 ? "-" : `${val}%`}
-                      </TableCell>
-                    );
-                  })()}
-                </>
-              )}
-              {renderActions ? (
-                <TableCell className="w-8">{renderActions(p)}</TableCell>
-              ) : null}
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
   );
 }

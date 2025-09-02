@@ -30,7 +30,37 @@ export async function GET(req: NextRequest) {
   const allFile = path.join(dir, "ALL-combined-aggregate.json");
 
   try {
-    const allData = JSON.parse(fs.readFileSync(allFile, "utf-8"));
+    // Check if file exists first
+    if (!fs.existsSync(allFile)) {
+      console.error("ALL file does not exist:", allFile);
+      return NextResponse.json(
+        {
+          error: {
+            code: "FILE_NOT_FOUND",
+            message: "ALL combined aggregates file not found",
+          },
+        },
+        { status: 404 }
+      );
+    }
+
+    const fileContent = fs.readFileSync(allFile, "utf-8");
+
+    // Check if file is empty
+    if (!fileContent.trim()) {
+      console.error("ALL file is empty:", allFile);
+      return NextResponse.json(
+        {
+          error: {
+            code: "FILE_EMPTY",
+            message: "ALL combined aggregates file is empty",
+          },
+        },
+        { status: 500 }
+      );
+    }
+
+    const allData = JSON.parse(fileContent);
     const validatedData = CombinedShard.parse(allData);
 
     // Return typed aggregate data structure that UI components expect
@@ -43,7 +73,12 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error("Error loading ALL file:", error);
     return NextResponse.json(
-      { error: "failed to load ALL combined aggregates" },
+      {
+        error: {
+          code: "FILE_LOAD_ERROR",
+          message: "Failed to load ALL combined aggregates",
+        },
+      },
       { status: 500 }
     );
   }

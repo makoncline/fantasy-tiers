@@ -33,7 +33,17 @@ function loadShard(shardName: string) {
       `Shard file not found: ${shardName}-combined-aggregate.json`
     );
   }
-  const json = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+
+  const fileContent = fs.readFileSync(filePath, "utf-8");
+
+  // Check if file is empty
+  if (!fileContent.trim()) {
+    throw new Error(
+      `Shard file is empty: ${shardName}-combined-aggregate.json`
+    );
+  }
+
+  const json = JSON.parse(fileContent);
   return CombinedShard.parse(json);
 }
 

@@ -118,7 +118,7 @@ describe("DraftDataContext mocks setup", () => {
 });
 
 describe("filterAvailableRows", () => {
-  const mockPlayers: PlayerRow[] = [
+  const mockPlayers: PlayerWithPick[] = [
     {
       player_id: "1",
       name: "Jonathan Taylor",
@@ -131,6 +131,7 @@ describe("filterAvailableRows", () => {
       fp_rank_pos: 1,
       fp_pts: 350,
       fp_player_owned_avg: 95,
+      picked: true, // Jonathan Taylor is drafted
     },
     {
       player_id: "2",
@@ -144,6 +145,7 @@ describe("filterAvailableRows", () => {
       fp_rank_pos: 2,
       fp_pts: 340,
       fp_player_owned_avg: 90,
+      picked: false,
     },
     {
       player_id: "3",
@@ -157,6 +159,7 @@ describe("filterAvailableRows", () => {
       fp_rank_pos: 3,
       fp_pts: 330,
       fp_player_owned_avg: 85,
+      picked: false,
     },
     {
       player_id: "4",
@@ -170,16 +173,14 @@ describe("filterAvailableRows", () => {
       fp_rank_pos: undefined,
       fp_pts: undefined,
       fp_player_owned_avg: undefined,
+      picked: true, // Unranked but drafted player
     },
   ];
 
   it("should filter by position correctly", () => {
     const result = filterAvailableRows(mockPlayers, {
-      position: "RB",
       showDrafted: true,
       showUnranked: true,
-      draftedIds: new Set(),
-      draftedNames: new Set(),
     });
 
     expect(result).toHaveLength(4); // All players are RB
@@ -188,50 +189,40 @@ describe("filterAvailableRows", () => {
 
   it("should filter out unranked players when showUnranked is false", () => {
     const result = filterAvailableRows(mockPlayers, {
-      position: "ALL",
       showDrafted: true,
       showUnranked: false,
-      draftedIds: new Set(),
-      draftedNames: new Set(),
     });
 
-    expect(result).toHaveLength(3); // Only ranked players
-    expect(result.every((p) => typeof p.bc_rank === "number")).toBe(true);
-    expect(result.find((p) => p.name === "Unranked Player")).toBeUndefined();
+    expect(result).toHaveLength(4); // 3 ranked players + 1 drafted unranked player
+    // All players should either be ranked OR drafted (drafted unranked players are allowed)
+    expect(
+      result.every((p) => typeof p.bc_rank === "number" || p.picked === true)
+    ).toBe(true);
+    expect(result.find((p) => p.name === "Unranked Player")).toBeDefined(); // Should be included as drafted unranked
   });
 
   it("should filter out drafted players when showDrafted is false", () => {
-    const draftedIds = new Set(["1"]); // Jonathan Taylor is drafted
-
     const result = filterAvailableRows(mockPlayers, {
-      position: "ALL",
       showDrafted: false,
       showUnranked: true,
-      draftedIds,
-      draftedNames: new Set(),
     });
 
-    expect(result).toHaveLength(3); // All except Jonathan Taylor
+    expect(result).toHaveLength(2); // All except drafted players (Jonathan Taylor and Unranked Player)
     expect(result.find((p) => p.player_id === "1")).toBeUndefined();
     expect(result.some((p) => p.player_id !== "1")).toBe(true);
   });
 
   it("should include drafted players when showDrafted is true", () => {
-    const draftedIds = new Set(["1"]); // Jonathan Taylor is drafted
-
     const result = filterAvailableRows(mockPlayers, {
-      position: "ALL",
       showDrafted: true,
       showUnranked: true,
-      draftedIds,
-      draftedNames: new Set(),
     });
 
     expect(result).toHaveLength(4); // All players including drafted
     expect(result.find((p) => p.player_id === "1")).toBeDefined();
   });
 
-  it("should handle RB/WR combined filter", () => {
+  it("should handle mixed position players", () => {
     const mixedPlayers = [
       ...mockPlayers,
       {
@@ -241,6 +232,7 @@ describe("filterAvailableRows", () => {
         position: "WR",
         bc_rank: 4,
         bc_tier: 1,
+        picked: false,
       },
       {
         ...mockPlayers[0],
@@ -249,30 +241,24 @@ describe("filterAvailableRows", () => {
         position: "QB",
         bc_rank: 5,
         bc_tier: 1,
+        picked: false,
       },
     ];
 
     const result = filterAvailableRows(mixedPlayers, {
-      position: "RB/WR",
       showDrafted: true,
       showUnranked: true,
-      draftedIds: new Set(),
-      draftedNames: new Set(),
     });
 
-    expect(
-      result.every((p) => p.position === "RB" || p.position === "WR")
-    ).toBe(true);
-    expect(result.find((p) => p.position === "QB")).toBeUndefined();
+    expect(result).toHaveLength(6); // All players regardless of position
+    expect(result.find((p) => p.position === "QB")).toBeDefined();
+    expect(result.find((p) => p.position === "WR")).toBeDefined();
   });
 
   it("should sort by Boris rank ascending", () => {
     const result = filterAvailableRows(mockPlayers, {
-      position: "ALL",
       showDrafted: true,
       showUnranked: true,
-      draftedIds: new Set(),
-      draftedNames: new Set(),
     });
 
     expect(result[0].bc_rank).toBe(1); // Jonathan Taylor
@@ -282,45 +268,32 @@ describe("filterAvailableRows", () => {
 
   it("should handle empty drafted sets", () => {
     const result = filterAvailableRows(mockPlayers, {
-      position: "ALL",
       showDrafted: false,
       showUnranked: true,
-      draftedIds: new Set(),
-      draftedNames: new Set(),
     });
 
-    expect(result).toHaveLength(4); // No players filtered out
+    expect(result).toHaveLength(2); // Jonathan Taylor and Unranked Player filtered out (both picked), others included
   });
 
-  it("should handle drafted players by name", () => {
-    const draftedNames = new Set(["jonathan taylor"]);
-
+  it("should handle drafted players", () => {
     const result = filterAvailableRows(mockPlayers, {
-      position: "ALL",
       showDrafted: false,
       showUnranked: true,
-      draftedIds: new Set(),
-      draftedNames,
     });
 
-    expect(result).toHaveLength(3); // All except Jonathan Taylor
+    expect(result).toHaveLength(2); // All except drafted players (Jonathan Taylor and Unranked Player)
     expect(result.find((p) => p.name === "Jonathan Taylor")).toBeUndefined();
   });
 
   it("should include drafted players in unranked filter when showUnranked is false", () => {
-    const draftedIds = new Set(["4"]); // Unranked Player is drafted
-
     const result = filterAvailableRows(mockPlayers, {
-      position: "ALL",
       showDrafted: true,
       showUnranked: false,
-      draftedIds,
-      draftedNames: new Set(),
     });
 
-    // Should include the drafted unranked player
+    // Should include the drafted unranked player (player 4)
     expect(result.find((p) => p.player_id === "4")).toBeDefined();
-    // Should exclude other unranked players
+    // Should exclude other unranked players, include ranked players
     expect(result).toHaveLength(4); // 3 ranked + 1 drafted unranked
   });
 });
