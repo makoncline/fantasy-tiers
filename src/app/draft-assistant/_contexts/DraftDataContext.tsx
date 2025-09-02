@@ -1,3 +1,5 @@
+"use client";
+
 import React, {
   createContext,
   useContext,
@@ -5,6 +7,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   useDraftDetails,
   useDraftPicks,
@@ -77,6 +80,8 @@ interface DraftDataContextType extends ProcessedData {
   loadUserAndDrafts: () => Promise<void>;
   selectedDraftId: string;
   setSelectedDraftId: (draftId: string) => void;
+  clearDraft?: () => void;
+  clearUser?: () => void;
 
   // Data state
   user: SleeperUser | null;
@@ -136,6 +141,8 @@ const defaultContextValue: DraftDataContextType = {
   loadUserAndDrafts: async () => {},
   selectedDraftId: "",
   setSelectedDraftId: () => {},
+  clearDraft: () => {},
+  clearUser: () => {},
 
   // Data state
   user: null,
@@ -214,6 +221,29 @@ export function DraftDataProvider({
   initialUserId?: string;
   initialDraftId?: string;
 }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Merge-write helper: always read the live URL to avoid stale closures
+  const setQuery = useCallback(
+    (next: Record<string, string | null>) => {
+      const src =
+        typeof window !== "undefined"
+          ? window.location.search
+          : searchParams?.toString() ?? "";
+      const sp = new URLSearchParams(src);
+      for (const [k, v] of Object.entries(next)) {
+        if (v == null || v === "") sp.delete(k);
+        else sp.set(k, v);
+      }
+      const qs = sp.toString();
+      router.replace(qs ? `/draft-assistant?${qs}` : `/draft-assistant`, {
+        scroll: false,
+      });
+    },
+    [router, searchParams]
+  );
+
   // Input state
   const [username, setUsername] = useState("");
   const [selectedDraftId, setSelectedDraftId] = useState(initialDraftId || "");
@@ -225,6 +255,8 @@ export function DraftDataProvider({
 
   // Trigger state for user/drafts loading
   const [shouldLoadUser, setShouldLoadUser] = useState(false);
+  // Intent gate to prevent re-writing userId after clearing
+  const [isExplicitlyLoading, setIsExplicitlyLoading] = useState(false);
 
   // Fetch user by ID when initialUserId is provided
   const {
@@ -235,11 +267,21 @@ export function DraftDataProvider({
 
   // Automatically load data when we get the user from initialUserId
   React.useEffect(() => {
-    if (initialUser && initialUser.username && !shouldLoadUser) {
+    if (
+      initialUserId &&
+      initialUser &&
+      initialUser.username &&
+      !shouldLoadUser
+    ) {
       setUsername(initialUser.username);
       setShouldLoadUser(true);
     }
-  }, [initialUser, shouldLoadUser]);
+  }, [initialUserId, initialUser, shouldLoadUser]);
+
+  // Sync selectedDraftId with the initial URL (helps direct deep links)
+  React.useEffect(() => {
+    if (initialDraftId != null) setSelectedDraftId(initialDraftId);
+  }, [initialDraftId]);
 
   // User and drafts fetching
   const {
@@ -360,11 +402,46 @@ export function DraftDataProvider({
       throw new Error("Username is required");
     }
     setShouldLoadUser(true);
+    setIsExplicitlyLoading(true);
   }, [username]);
 
-  const handleSetSelectedDraftId = useCallback((draftId: string) => {
-    setSelectedDraftId(draftId);
-  }, []);
+  // When user is loaded, reflect userId in URL exactly once per change
+  React.useEffect(() => {
+    if (isExplicitlyLoading && shouldLoadUser && user?.user_id) {
+      const current = searchParams?.get("userId") || "";
+      if (current !== user.user_id) {
+        setQuery({ userId: user.user_id });
+      }
+      setIsExplicitlyLoading(false);
+    }
+  }, [
+    isExplicitlyLoading,
+    shouldLoadUser,
+    user?.user_id,
+    searchParams,
+    setQuery,
+  ]);
+
+  const handleSetSelectedDraftId = useCallback(
+    (draftId: string) => {
+      setSelectedDraftId(draftId);
+      setQuery({ draftId: draftId || null });
+    },
+    [setQuery]
+  );
+
+  const clearDraft = useCallback(() => {
+    setSelectedDraftId("");
+    setQuery({ draftId: null });
+  }, [setQuery]);
+
+  const clearUser = useCallback(() => {
+    setUsername("");
+    setShouldLoadUser(false);
+    setIsExplicitlyLoading(false);
+    setSelectedDraftId("");
+    setQuery({ userId: null, draftId: null });
+  }, [setQuery]);
 
   // Loading and error states
   const loading = useMemo(
@@ -640,6 +717,8 @@ export function DraftDataProvider({
       loadUserAndDrafts,
       selectedDraftId,
       setSelectedDraftId: handleSetSelectedDraftId,
+      clearDraft,
+      clearUser,
 
       // Data state
       user: user || null,
@@ -679,6 +758,8 @@ export function DraftDataProvider({
       loadUserAndDrafts,
       selectedDraftId,
       handleSetSelectedDraftId,
+      clearDraft,
+      clearUser,
       user,
       drafts,
       draftDetails,

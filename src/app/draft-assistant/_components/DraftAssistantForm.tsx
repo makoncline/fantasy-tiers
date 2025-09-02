@@ -54,6 +54,13 @@ export default function DraftAssistantForm({
     },
   });
 
+  // Keep form synced with context username (for URL prefill and clearing)
+  React.useEffect(() => {
+    if (form.getValues("username") !== username) {
+      form.setValue("username", username, { shouldDirty: false });
+    }
+  }, [username, form]);
+
   const [radioSelection, setRadioSelection] = React.useState<string>(
     selectedDraftId || ""
   );
@@ -77,31 +84,39 @@ export default function DraftAssistantForm({
       if (!firstDraft) return;
       const defaultId = firstDraft.draft_id;
       setRadioSelection(defaultId);
-      setSelectedDraftId(defaultId);
+      // IMPORTANT: don't commit to context/URL here.
+      // Only commit when user presses Submit.
     }
-  }, [drafts, step, radioSelection, setSelectedDraftId]);
+  }, [drafts, step, radioSelection]);
 
   const onSubmit = async (data: DraftAssistantFormData) => {
     triedSubmitRef.current = true;
-
     try {
-      // Update username in context
-      setUsername(data.username);
+      const normalizedUsername = (data.username || "").trim();
+      const shouldRunUser =
+        step === "user" ||
+        (step === "full" &&
+          normalizedUsername &&
+          normalizedUsername !== username);
+      if (shouldRunUser) {
+        setUsername(normalizedUsername);
+        await loadUserAndDrafts();
+      }
 
-      // Load user and drafts
-      await loadUserAndDrafts();
-
-      // Handle draft URL if provided
-      if (data.draftUrl?.trim()) {
-        // Extract draft ID from URL
-        const draftUrlMatch =
-          data.draftUrl.match(/\/draft\/[A-Za-z]+\/([A-Za-z0-9]+)/) ||
-          data.draftUrl.match(/^([A-Za-z0-9]+)$/);
-        if (draftUrlMatch?.[1]) {
-          setSelectedDraftId(draftUrlMatch[1]);
+      // Handle draft choice (draft step or full step)
+      if (step !== "user") {
+        if (radioSelection === "manual" && data.draftUrl?.trim()) {
+          const draftUrlMatch =
+            data.draftUrl.match(/\/draft\/[A-Za-z]+\/([A-Za-z0-9]+)/) ||
+            data.draftUrl.match(/^([A-Za-z0-9]+)$/);
+          if (draftUrlMatch?.[1]) {
+            setSelectedDraftId(draftUrlMatch[1]);
+          }
+        } else if (data.draftId?.trim()) {
+          setSelectedDraftId(data.draftId.trim());
+        } else if (radioSelection && radioSelection !== "manual") {
+          setSelectedDraftId(radioSelection);
         }
-      } else if (data.draftId?.trim()) {
-        setSelectedDraftId(data.draftId.trim());
       }
     } catch (err) {
       console.error("Form submission error:", err);
@@ -171,8 +186,6 @@ export default function DraftAssistantForm({
                         shouldValidate: true,
                         shouldDirty: true,
                       });
-                    } else {
-                      setSelectedDraftId(v);
                     }
                   }}
                   className="grid gap-3"

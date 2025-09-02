@@ -20,17 +20,6 @@ const DraftAssistantShell: React.FC = () => {
   const hasUser = Boolean(userId);
   const hasDraft = Boolean(draftId);
 
-  const clearUser = () => {
-    const qs = new URLSearchParams();
-    router.push(`/draft-assistant?${qs.toString()}`);
-  };
-
-  const clearDraft = () => {
-    const qs = new URLSearchParams();
-    if (userId) qs.set("userId", userId);
-    router.push(`/draft-assistant?${qs.toString()}`);
-  };
-
   return (
     <DraftDataProvider initialUserId={userId} initialDraftId={draftId}>
       <div className="p-6">
@@ -40,8 +29,6 @@ const DraftAssistantShell: React.FC = () => {
           draftId={draftId}
           hasUser={hasUser}
           hasDraft={hasDraft}
-          clearUser={clearUser}
-          clearDraft={clearDraft}
         />
       </div>
     </DraftDataProvider>
@@ -53,11 +40,17 @@ const DraftAssistantInner: React.FC<{
   draftId: string;
   hasUser: boolean;
   hasDraft: boolean;
-  clearUser: () => void;
-  clearDraft: () => void;
-}> = ({ userId, draftId, hasUser, hasDraft, clearUser, clearDraft }) => {
-  const { user, drafts, selectedDraftId, draftDetails, loading, error } =
-    useDraftData();
+}> = ({ userId, draftId, hasUser, hasDraft }) => {
+  const {
+    user,
+    drafts,
+    selectedDraftId,
+    draftDetails,
+    loading,
+    error,
+    clearDraft: contextClearDraft,
+    clearUser: contextClearUser,
+  } = useDraftData();
 
   const selectedDraft = drafts?.find((d) => d.draft_id === selectedDraftId);
 
@@ -86,7 +79,11 @@ const DraftAssistantInner: React.FC<{
                   userId: {userId}
                 </div>
               </div>
-              <Button variant="outline" onClick={clearUser}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={contextClearUser}
+              >
                 Clear user
               </Button>
             </div>
@@ -144,8 +141,9 @@ const DraftAssistantInner: React.FC<{
               </div>
               <div>
                 <Button
+                  type="button"
                   variant="outline"
-                  onClick={clearDraft}
+                  onClick={contextClearDraft}
                   data-testid="clear-draft"
                 >
                   Clear draft
