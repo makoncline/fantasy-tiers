@@ -18,8 +18,7 @@ function makeRow(overrides: Partial<PlayerWithPick> = {}): PlayerWithPick {
     ecr_round_pick: overrides.ecr_round_pick,
     fp_tier: overrides.fp_tier ?? null,
     fp_value: overrides.fp_value ?? null,
-    fp_positional_scarcity_slope:
-      overrides.fp_positional_scarcity_slope ?? null,
+    fp_remaining_value_pct: overrides.fp_remaining_value_pct ?? null,
     sleeper_pts: overrides.sleeper_pts ?? null,
     sleeper_adp: overrides.sleeper_adp ?? null,
     sleeper_rank_overall: overrides.sleeper_rank_overall ?? null,

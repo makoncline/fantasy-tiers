@@ -125,8 +125,8 @@ export const GROUPS_FULL: ColumnGroup<PlayerWithPick>[] = [
         header: "PS",
         accessor: (r) => {
           const raw =
-            typeof r.fp_positional_scarcity_slope === "number"
-              ? r.fp_positional_scarcity_slope
+            typeof r.fp_remaining_value_pct === "number"
+              ? r.fp_remaining_value_pct
               : typeof r.ps === "number"
               ? r.ps
               : null;
@@ -230,8 +230,8 @@ export const GROUPS_COMPACT_FULL: ColumnGroup<PlayerWithPick>[] = [
         header: "PS",
         accessor: (r) => {
           const raw =
-            typeof r.fp_positional_scarcity_slope === "number"
-              ? r.fp_positional_scarcity_slope
+            typeof r.fp_remaining_value_pct === "number"
+              ? r.fp_remaining_value_pct
               : typeof r.ps === "number"
               ? r.ps
               : null;

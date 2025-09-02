@@ -85,7 +85,7 @@ function enrichedToBundlePlayer(
     },
     calc: {
       value: player.fp_value,
-      positional_scarcity: Math.round(player.fp_positional_scarcity_slope || 0),
+      positional_scarcity: Math.round(player.fp_remaining_value_pct || 0),
       market_delta: player.market_delta,
     },
   };
