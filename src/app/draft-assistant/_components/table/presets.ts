@@ -26,6 +26,7 @@ export const GROUPS_FULL: ColumnGroup<PlayerWithPick>[] = [
         accessor: (r) => r.name,
         sortAs: "string",
         width: "16ch",
+        render: (name, r) => `${name} (${r.position})`,
       },
       {
         id: "tm_bw",
@@ -180,6 +181,7 @@ export const GROUPS_COMPACT_FULL: ColumnGroup<PlayerWithPick>[] = [
         accessor: (r) => r.name,
         sortAs: "string",
         width: "16ch",
+        render: (name, r) => `${name} (${r.position})`,
       },
       {
         id: "tm_bw",
@@ -256,6 +258,7 @@ export const GROUPS_COMPACT_NAMEONLY: ColumnGroup<PlayerWithPick>[] = [
         accessor: (r) => r.name,
         sortAs: "string",
         width: "16ch",
+        render: (name, r) => `${name} (${r.position})`,
       },
     ],
   },
