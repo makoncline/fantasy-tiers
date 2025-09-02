@@ -65,7 +65,7 @@ export function useDraftAssistantForm(
       setResolvedUserId(user.user_id);
       const ds = await fetchDraftsForUserYear(user.user_id, currentYear);
       setDrafts(ds || []);
-      if (ds && ds.length === 1) {
+      if (ds && ds.length === 1 && ds[0]) {
         setValue("draftId", ds[0].draft_id, { shouldValidate: true });
       }
       const qs = new URLSearchParams();

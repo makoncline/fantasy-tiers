@@ -84,8 +84,9 @@ function parseColumns($: CheerioAPI, table: any): ColumnSpec[] {
   const columns: ColumnSpec[] = [];
   for (let i = 0; i < statLabels.length; i++) {
     const label = statLabels[i];
+    if (!label) continue;
     const group = groupMap[i] || "";
-    const groupKey = group ? group.split(/\s+/)[0].toUpperCase() : "";
+    const groupKey = group ? (group.split(/\s+/)[0] || "").toUpperCase() : "";
     const key = `${groupKey ? groupKey + "_" : ""}${label.toUpperCase()}`;
     columns.push({ group: groupKey, label, key });
   }
@@ -134,7 +135,7 @@ function parseTable(html: string) {
     const team = teamMatch ? teamMatch[0] : "";
     row["Player"] = name;
     row["Team"] = team;
-    row["PlayerFilename"] = filename;
+    row["PlayerFilename"] = filename || "";
 
     // Remaining tds map to stats in order
     tds.slice(1).each((idx, td) => {
@@ -278,7 +279,7 @@ async function scrapeOne(
 }
 
 async function main() {
-  const outDir = path.resolve("public", "data", "rankings", "fantasypros");
+  const outDir = path.resolve("public", "data", "fantasypros");
   const week = process.env.WEEK ?? "draft";
   const positions: Position[] = (process.env.POSITIONS?.split(
     ","

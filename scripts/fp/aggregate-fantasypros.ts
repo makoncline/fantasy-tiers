@@ -30,7 +30,13 @@ async function readJson<T>(file: string): Promise<T> {
 }
 
 async function collectProjections(scoring: Scoring): Promise<Map<string, any>> {
-  const dir = path.resolve("public", "data", "rankings", "fantasypros", "raw");
+  const dir = path.resolve("public", "data", "fantasypros", "raw");
+  if (!require("node:fs").existsSync(dir)) {
+    throw new Error(
+      `FantasyPros raw directory missing: ${dir}.\n` +
+        `Fetch first with: pnpm run fetch:fp`
+    );
+  }
   const result = new Map<string, any>();
   const positions: Position[] = ["QB", "RB", "WR", "TE", "K", "DST"]; // FLEX not needed
   for (const pos of positions) {
@@ -63,35 +69,38 @@ async function collectProjections(scoring: Scoring): Promise<Map<string, any>> {
   return result;
 }
 
-async function collectEcr(
-  scoring: Scoring
-): Promise<{ byId: Map<number, EcrRow>; byKey: Map<string, EcrRow> }> {
-  const dir = path.resolve("public", "data", "rankings", "fantasypros", "raw");
+async function collectEcr(scoring: Scoring): Promise<{
+  byId: Map<number, EcrRow>;
+  byKey: Map<string, EcrRow>;
+  byName: Map<string, EcrRow>;
+}> {
+  const dir = path.resolve("public", "data", "fantasypros", "raw");
   const file = path.join(
     dir,
     `ECR-ADP-${scoring.toLowerCase()}-draft_raw.json`
   );
   const byId = new Map<number, EcrRow>();
   const byKey = new Map<string, EcrRow>();
+  const byName = new Map<string, EcrRow>();
   try {
     const raw = await readJson<RawJson<EcrRow>>(file);
     for (const row of raw.rows) {
       byId.set(row.player_id, row);
-      const key = `${(row.player_name || "")
+      const nameOnly = (row.player_name || "")
         .toLowerCase()
-        .replace(/[^a-z0-9]/g, "")}|${(
-        row.player_team_id || ""
-      ).toLowerCase()}`;
+        .replace(/[^a-z0-9]/g, "");
+      const key = `${nameOnly}|${(row.player_team_id || "").toLowerCase()}`;
       byKey.set(key, row);
+      byName.set(nameOnly, row);
     }
   } catch {
     // ignore
   }
-  return { byId, byKey };
+  return { byId, byKey, byName };
 }
 
 async function main() {
-  const outDir = path.resolve("public", "data", "rankings", "fantasypros");
+  const outDir = path.resolve("public", "data", "fantasypros");
   const scorings: Scoring[] = ["STD", "HALF", "PPR"];
 
   // Build indices
@@ -122,7 +131,9 @@ async function main() {
     // ECR per scoring
     const ecrByScoring: Record<string, EcrRow | undefined> = {};
     scorings.forEach((s, idx) => {
-      const { byId, byKey } = perScoringEcr[idx];
+      const scoringEcr = perScoringEcr[idx];
+      if (!scoringEcr) return;
+      const { byId, byKey, byName } = scoringEcr;
       let matched: EcrRow | undefined;
       if (filename) {
         for (const ecr of byId.values()) {
@@ -133,6 +144,13 @@ async function main() {
         }
       } else if (normKey) {
         matched = byKey.get(normKey);
+        // Fallback: for DST, FantasyPros may not include "Team" in projections rows; match by name only
+        if (!matched && normKey.includes("|")) {
+          const nameOnly = normKey.split("|")[0];
+          if (nameOnly) {
+            matched = byName.get(nameOnly);
+          }
+        }
       }
       ecrByScoring[s.toLowerCase()] = matched;
     });
@@ -147,6 +165,7 @@ async function main() {
     const stats: any = {};
     scorings.forEach((s, idx) => {
       const map = perScoringProjections[idx];
+      if (!map) return;
       const bucket = map.get(key)?.[`stats_${s}`];
       const row = pickStatsRow(bucket, primaryPos);
       if (row) {
@@ -154,7 +173,19 @@ async function main() {
           string,
           string
         >;
-        stats[s.toLowerCase()] = rest;
+        const posUp = (primaryPos || "").toUpperCase();
+        const base: Record<string, string> = { ...rest };
+        // Normalize FantasyPros K/DST points keys so downstream can read FPTS_AVG/HIGH/LOW
+        if (posUp === "K" || posUp === "DST") {
+          const avg = (row as any)["FPTS_FPTS_AVG"] ?? (row as any)["FPTS_AVG"];
+          const hi =
+            (row as any)["FPTS_FPTS_HIGH"] ?? (row as any)["FPTS_HIGH"];
+          const lo = (row as any)["FPTS_FPTS_LOW"] ?? (row as any)["FPTS_LOW"];
+          if (avg != null) base["FPTS_AVG"] = String(avg);
+          if (hi != null) base["FPTS_HIGH"] = String(hi);
+          if (lo != null) base["FPTS_LOW"] = String(lo);
+        }
+        stats[s.toLowerCase()] = base;
       }
     });
 

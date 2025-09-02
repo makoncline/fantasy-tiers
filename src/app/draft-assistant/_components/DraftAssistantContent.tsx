@@ -1,31 +1,20 @@
 import React from "react";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
 import UserRoster from "@/app/draft-assistant/_components/userRoster";
-import PositionNeeds from "@/app/draft-assistant/_components/positionNeeds";
-import RecommendationsSection from "@/app/draft-assistant/_components/Recommendations";
+// import PositionNeeds from "@/app/draft-assistant/_components/positionNeeds";
+// import RecommendationsSection from "@/app/draft-assistant/_components/Recommendations";
 import AvailablePlayers from "@/app/draft-assistant/_components/availablePlayers";
-import { RefreshButton } from "@/app/draft-assistant/_components/RefreshButton";
+import PositionCompactTables from "@/app/draft-assistant/_components/PositionCompactTables";
+// import { RefreshButton } from "@/app/draft-assistant/_components/RefreshButton";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+// import { Separator } from "@/components/ui/separator";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import RosterSlots from "@/app/draft-assistant/_components/RosterSlots";
+import DraftStatusCard from "@/app/draft-assistant/_components/DraftStatusCard";
+import { Badge } from "@/components/ui/badge";
 
-function useTicker(intervalMs: number = 1000) {
-  const [, force] = React.useReducer((x) => x + 1, 0);
-  React.useEffect(() => {
-    const id = setInterval(force, intervalMs);
-    return () => clearInterval(id);
-  }, [intervalMs]);
-}
-
-function formatAgo(ms: number) {
-  const s = Math.floor(ms / 1000);
-  const m = Math.floor(s / 60);
-  const h = Math.floor(m / 60);
-  if (h > 0) return `${h}h ${m % 60}m ago`;
-  if (m > 0) return `${m}m ${s % 60}s ago`;
-  return `${s}s ago`;
-}
+// Removed ticker/ago helpers; status card shows freshness
 
 export default function DraftAssistantContent() {
   const {
@@ -39,6 +28,7 @@ export default function DraftAssistantContent() {
     error,
     refetchData,
     lastUpdatedAt,
+    userRosterSlots,
   } = useDraftData();
 
   const isLoading = Object.values(loading).some(Boolean);
@@ -68,50 +58,27 @@ export default function DraftAssistantContent() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <DraftStatusCard />
+
+      <Card id="roster-section">
         <CardHeader>
           <CardTitle>Your Roster</CardTitle>
         </CardHeader>
         <CardContent>
-          <UserRoster players={userRoster || []} />
+          <RosterSlots slots={userRosterSlots || []} />
         </CardContent>
       </Card>
 
-      <div className="flex items-center gap-4">
-        <RefreshButton loading={isLoading} onRefresh={refetchData} />
-        <LastFetchIndicator lastUpdatedAt={lastUpdatedAt} />
+      {/* Positions section header */}
+      <div id="positions-section" className="mb-4">
+        <h2 className="text-2xl font-semibold">Position Rankings</h2>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Position Needs</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <PositionNeeds
-            userPositionNeeds={userPositionNeeds}
-            userPositionCounts={userPositionCounts}
-            draftWideNeeds={draftWideNeeds}
-          />
-        </CardContent>
-      </Card>
+      {/* Positions + Available players are grouped to keep toolbar pinned */}
+      <PositionCompactTables />
 
-      <Separator />
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recommendations</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <RecommendationsSection
-            recommendations={recommendations}
-            loading={isLoading}
-          />
-        </CardContent>
-      </Card>
-
-      <Separator />
-
-      <Card>
+      {/* Bring back page-level Available section */}
+      <Card id="available-section">
         <CardHeader>
           <CardTitle>Available Ranked Players</CardTitle>
         </CardHeader>
@@ -126,16 +93,4 @@ export default function DraftAssistantContent() {
   );
 }
 
-function LastFetchIndicator({ lastUpdatedAt }: { lastUpdatedAt: number | null }) {
-  // Tick every second so the label stays fresh.
-  useTicker(1000);
-  if (!lastUpdatedAt) {
-    return <span className="text-sm text-muted-foreground">Updated —</span>;
-  }
-  const diff = Date.now() - lastUpdatedAt;
-  return (
-    <span className="text-sm text-muted-foreground">
-      Updated {formatAgo(Math.max(0, diff))}
-    </span>
-  );
-}
+// Removed page-level refresh + last-updated; handled in status card

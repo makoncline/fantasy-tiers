@@ -1,11 +1,6 @@
-import { DraftDetails } from "./draftDetails";
-import {
-  RosterSlot,
-  POSITIONS,
-  DraftPick,
-  Position,
-  RankedPlayer,
-} from "./schemas";
+import type { DraftDetails } from "./draftDetails";
+import type { RosterSlot, DraftPick, Position, RankedPlayer } from "./schemas";
+import { POSITIONS } from "./schemas";
 
 const RECCOMENDATION_LIMIT = 6;
 export const KEY_ROSTER_SLOTS = ["RB", "WR", "TE", "QB", "FLEX"] as const;
@@ -167,25 +162,41 @@ export function calculateTeamNeedsAndCountsForSingleTeam(
   // Copy of the roster requirements to track needs
   const teamNeeds = { ...rosterRequirements };
 
-  // Initialize position counts without FLEX
-  const positionCounts = { ...ZERO_POSITION_COUNTS };
+  // Initialize position counts including FLEX
+  const positionCounts: Record<RosterSlot, number> = {
+    ...ZERO_ROSTER_SLOT_COUNTS,
+  };
 
-  // Iterate over drafted players and adjust position counts and needs
+  // First pass: Count all players at their actual positions
   teamDraftedPlayers.forEach((player) => {
     const position = player.position;
-
-    // Increment position count
     positionCounts[position]++;
-
-    // Deduct from the primary position if there's a need
-    if (teamNeeds[position] > 0) {
-      teamNeeds[position] -= 1;
-    }
-    // Otherwise, deduct from FLEX if applicable
-    else if (FLEX_POSITIONS.includes(position as any) && teamNeeds.FLEX > 0) {
-      teamNeeds.FLEX -= 1;
-    }
   });
+
+  // Second pass: Allocate players to FLEX after primary needs are filled
+  const flexEligiblePositions = ["RB", "WR", "TE"] as const;
+
+  // Calculate how many extra FLEX-eligible players we have beyond primary needs
+  const extraFlexPlayers =
+    Math.max(0, positionCounts.RB - rosterRequirements.RB) +
+    Math.max(0, positionCounts.WR - rosterRequirements.WR) +
+    Math.max(0, positionCounts.TE - rosterRequirements.TE);
+
+  // Allocate extras to FLEX up to the FLEX requirement
+  const flexToAllocate = Math.min(extraFlexPlayers, rosterRequirements.FLEX);
+  positionCounts.FLEX = flexToAllocate;
+
+  // Update needs based on allocations
+  // Primary position needs are filled first
+  teamNeeds.RB = Math.max(0, rosterRequirements.RB - positionCounts.RB);
+  teamNeeds.WR = Math.max(0, rosterRequirements.WR - positionCounts.WR);
+  teamNeeds.TE = Math.max(0, rosterRequirements.TE - positionCounts.TE);
+  teamNeeds.QB = Math.max(0, rosterRequirements.QB - positionCounts.QB);
+  teamNeeds.K = Math.max(0, rosterRequirements.K - positionCounts.K);
+  teamNeeds.DEF = Math.max(0, rosterRequirements.DEF - positionCounts.DEF);
+
+  // FLEX needs are filled by extras from FLEX-eligible positions
+  teamNeeds.FLEX = Math.max(0, rosterRequirements.FLEX - flexToAllocate);
 
   return {
     positionNeeds: teamNeeds,
@@ -329,8 +340,9 @@ function getFillRestOfRosterRecommendations(
   // Get all positions that are not in the key positions and are not fully filled
   const nonKeyPositions = (Object.keys(POSITION_LIMITS) as Position[]).filter(
     (position) =>
-      !KEY_ROSTER_SLOTS.includes(position as any) &&
-      roster[position] < POSITION_LIMITS[position] // Only include positions that haven't reached their limit
+      !KEY_ROSTER_SLOTS.includes(
+        position as "QB" | "RB" | "WR" | "TE" | "FLEX"
+      ) && roster[position] < POSITION_LIMITS[position] // Only include positions that haven't reached their limit
   );
 
   // Filter for available players in non-key positions

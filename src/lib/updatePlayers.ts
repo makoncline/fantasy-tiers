@@ -47,12 +47,13 @@ async function fetchPlayerDataFromSleeper() {
 }
 
 // Function to parse and save the processed player data
-function parseAndSavePlayerData(rawData: any) {
+function parseAndSavePlayerData(rawData: unknown) {
   const parsedData: Record<string, Player> = {};
+  const data = rawData as Record<string, unknown>;
 
-  for (const key in rawData) {
+  for (const key in data) {
     try {
-      const rawPlayer = RawPlayerSchema.parse(rawData[key]);
+      const rawPlayer = RawPlayerSchema.parse(data[key]);
       const normalized_name = normalizePlayerName(
         `${rawPlayer.first_name} ${rawPlayer.last_name}`
       );

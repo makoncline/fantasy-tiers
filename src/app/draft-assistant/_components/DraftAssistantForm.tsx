@@ -1,18 +1,14 @@
 import React from "react";
-import {
-  UseFormRegister,
-  FieldErrors,
-  UseFormSetValue,
-  type UseFormReturn,
-} from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import type { SleeperDraftSummary } from "@/lib/sleeper";
-import type { DraftAssistantFormData } from "@/app/draft-assistant/_hooks/useDraftAssistantForm";
+import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
 import {
   Form,
   FormControl,
@@ -23,64 +19,113 @@ import {
 } from "@/components/ui/form";
 import DraftInfo from "./DraftInfo";
 
+const formSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  draftId: z.string().optional(),
+  draftUrl: z.string().optional(),
+});
+
+type DraftAssistantFormData = z.infer<typeof formSchema>;
+
 interface DraftAssistantFormProps {
-  form: UseFormReturn<DraftAssistantFormData>;
-  register: UseFormRegister<DraftAssistantFormData>;
-  setValue: UseFormSetValue<DraftAssistantFormData>;
-  onSubmit: (data: DraftAssistantFormData) => void;
-  errors: FieldErrors<DraftAssistantFormData>;
-  isSubmitting: boolean;
-  userIdError: string | null;
-  draftIdError: string | null;
-  drafts?: SleeperDraftSummary[];
-  selectedDraftId?: string;
   step?: "user" | "draft" | "full";
 }
 
 export default function DraftAssistantForm({
-  form,
-  register,
-  setValue,
-  onSubmit,
-  errors,
-  isSubmitting,
-  userIdError,
-  draftIdError,
-  drafts = [],
-  selectedDraftId,
   step = "full",
 }: DraftAssistantFormProps) {
+  const {
+    username,
+    setUsername,
+    loadUserAndDrafts,
+    selectedDraftId,
+    setSelectedDraftId,
+    drafts,
+    error,
+    loading,
+  } = useDraftData();
+
+  const form = useForm<DraftAssistantFormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      username: "",
+      draftId: "",
+      draftUrl: "",
+    },
+  });
+
+  // Keep form synced with context username (for URL prefill and clearing)
+  React.useEffect(() => {
+    if (form.getValues("username") !== username) {
+      form.setValue("username", username, { shouldDirty: false });
+    }
+  }, [username, form]);
+
   const [radioSelection, setRadioSelection] = React.useState<string>(
     selectedDraftId || ""
   );
   const triedSubmitRef = React.useRef(false);
+
   React.useEffect(() => {
     if (selectedDraftId && selectedDraftId !== radioSelection) {
       setRadioSelection(selectedDraftId);
     }
   }, [selectedDraftId, radioSelection]);
+
   const draftUrlCurrent = (form.watch("draftUrl") || "").trim();
+
   React.useEffect(() => {
     if (
       (step === "draft" || step === "full") &&
       drafts?.length &&
       !radioSelection
     ) {
-      const defaultId = drafts[0].draft_id;
+      const firstDraft = drafts[0];
+      if (!firstDraft) return;
+      const defaultId = firstDraft.draft_id;
       setRadioSelection(defaultId);
-      setValue("draftId", defaultId, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
+      // IMPORTANT: don't commit to context/URL here.
+      // Only commit when user presses Submit.
     }
-  }, [drafts, step, radioSelection, setValue]);
+  }, [drafts, step, radioSelection]);
+
+  const onSubmit = async (data: DraftAssistantFormData) => {
+    triedSubmitRef.current = true;
+    try {
+      const normalizedUsername = (data.username || "").trim();
+      const shouldRunUser =
+        step === "user" ||
+        (step === "full" &&
+          normalizedUsername &&
+          normalizedUsername !== username);
+      if (shouldRunUser) {
+        setUsername(normalizedUsername);
+        await loadUserAndDrafts();
+      }
+
+      // Handle draft choice (draft step or full step)
+      if (step !== "user") {
+        if (radioSelection === "manual" && data.draftUrl?.trim()) {
+          const draftUrlMatch =
+            data.draftUrl.match(/\/draft\/[A-Za-z]+\/([A-Za-z0-9]+)/) ||
+            data.draftUrl.match(/^([A-Za-z0-9]+)$/);
+          if (draftUrlMatch?.[1]) {
+            setSelectedDraftId(draftUrlMatch[1]);
+          }
+        } else if (data.draftId?.trim()) {
+          setSelectedDraftId(data.draftId.trim());
+        } else if (radioSelection && radioSelection !== "manual") {
+          setSelectedDraftId(radioSelection);
+        }
+      }
+    } catch (err) {
+      console.error("Form submission error:", err);
+    }
+  };
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((data) => {
-          triedSubmitRef.current = true;
-          return onSubmit(data);
-        })}
+        onSubmit={form.handleSubmit(onSubmit)}
         className="mb-4"
         autoComplete="off"
         data-lpignore="true"
@@ -117,6 +162,10 @@ export default function DraftAssistantForm({
                         inputMode="text"
                         data-lpignore="true"
                         {...field}
+                        onChange={(e) => {
+                          setUsername(e.target.value);
+                          field.onChange(e);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -133,23 +182,17 @@ export default function DraftAssistantForm({
                   onValueChange={(v) => {
                     setRadioSelection(v);
                     if (v === "manual") {
-                      setValue("draftId", "", {
-                        shouldValidate: true,
-                        shouldDirty: true,
-                      });
-                    } else {
-                      setValue("draftId", v, {
+                      form.setValue("draftId", "", {
                         shouldValidate: true,
                         shouldDirty: true,
                       });
                     }
                   }}
                   className="grid gap-3"
-                  aria-disabled={isSubmitting}
+                  aria-disabled={loading.user || loading.drafts}
                 >
                   {drafts.map((d) => {
                     const title = d.metadata?.name || d.name || d.draft_id;
-                    // intentionally unused display locals removed
                     const value = d.draft_id;
                     const checked = selectedDraftId === value;
                     return (
@@ -162,19 +205,27 @@ export default function DraftAssistantForm({
                             <RadioGroupItem
                               value={value}
                               aria-label={`Select draft ${title}`}
-                              disabled={isSubmitting}
+                              disabled={loading.user || loading.drafts}
                             />
                             <div className="flex flex-col grow">
                               <DraftInfo
                                 name={title}
                                 draftId={d.draft_id}
-                                type={d.type ?? undefined}
-                                teams={d.settings?.teams}
-                                rounds={d.settings?.rounds}
-                                season={d.season}
-                                startTime={d.start_time}
-                                status={d.status}
-                                scoringType={d.metadata?.scoring_type}
+                                {...(d.type && { type: d.type })}
+                                {...(d.settings?.teams && {
+                                  teams: d.settings.teams,
+                                })}
+                                {...(d.settings?.rounds && {
+                                  rounds: d.settings.rounds,
+                                })}
+                                {...(d.season && { season: d.season })}
+                                {...(d.start_time && {
+                                  startTime: d.start_time,
+                                })}
+                                {...(d.status && { status: d.status })}
+                                {...(d.metadata?.scoring_type && {
+                                  scoringType: d.metadata.scoring_type,
+                                })}
                               />
                             </div>
                           </div>
@@ -189,11 +240,11 @@ export default function DraftAssistantForm({
                         <RadioGroupItem
                           value="manual"
                           aria-label="Select manual draft"
-                          disabled={isSubmitting}
+                          disabled={loading.user || loading.drafts}
                           onClick={() => {
                             if (radioSelection !== "manual") {
                               setRadioSelection("manual");
-                              setValue("draftId", "", {
+                              form.setValue("draftId", "", {
                                 shouldValidate: true,
                                 shouldDirty: true,
                               });
@@ -204,29 +255,29 @@ export default function DraftAssistantForm({
                           <Label htmlFor="draftUrl">
                             Or paste a Sleeper draft URL
                           </Label>
-                          {(() => {
-                            const draftUrlReg = register("draftUrl");
-                            return (
-                              <Input
-                                type="url"
-                                id="draftUrl"
-                                placeholder="https://sleeper.com/draft/nfl/XXXXXXXXXXXX"
-                                {...draftUrlReg}
-                                onFocus={(e) => {
-                                  if (radioSelection !== "manual") {
-                                    setRadioSelection("manual");
-                                    setValue("draftId", "", {
-                                      shouldValidate: true,
-                                      shouldDirty: true,
-                                    });
-                                  }
-                                }}
-                                onChange={(e) => {
-                                  draftUrlReg.onChange(e);
-                                }}
-                              />
-                            );
-                          })()}
+                          <FormField
+                            control={form.control}
+                            name="draftUrl"
+                            render={({ field }) => (
+                              <FormControl>
+                                <Input
+                                  type="url"
+                                  id="draftUrl"
+                                  placeholder="https://sleeper.com/draft/nfl/XXXXXXXXXXXX"
+                                  {...field}
+                                  onFocus={(e) => {
+                                    if (radioSelection !== "manual") {
+                                      setRadioSelection("manual");
+                                      form.setValue("draftId", "", {
+                                        shouldValidate: true,
+                                        shouldDirty: true,
+                                      });
+                                    }
+                                  }}
+                                />
+                              </FormControl>
+                            )}
+                          />
                           {radioSelection === "manual" &&
                             !draftUrlCurrent &&
                             (form.getFieldState("draftUrl").isTouched ||
@@ -240,14 +291,16 @@ export default function DraftAssistantForm({
                     </CardContent>
                   </Card>
                 </RadioGroup>
-                <input
-                  id="draftIdHidden"
-                  type="hidden"
-                  {...register("draftId")}
+                <FormField
+                  control={form.control}
+                  name="draftId"
+                  render={({ field }) => (
+                    <input id="draftIdHidden" type="hidden" {...field} />
+                  )}
                 />
-                {errors.draftId?.message && (
+                {form.formState.errors.draftId?.message && (
                   <p className="text-sm text-red-500">
-                    {errors.draftId.message}
+                    {form.formState.errors.draftId.message}
                   </p>
                 )}
               </div>
@@ -258,10 +311,10 @@ export default function DraftAssistantForm({
                 <Button
                   type="submit"
                   disabled={
-                    isSubmitting || !(form.watch("username") || "").trim()
+                    loading.user || loading.drafts || !(username || "").trim()
                   }
                 >
-                  {isSubmitting ? "Working..." : "Submit"}
+                  {loading.user || loading.drafts ? "Working..." : "Submit"}
                 </Button>
               </div>
             )}
@@ -271,28 +324,29 @@ export default function DraftAssistantForm({
                 <Button
                   type="submit"
                   disabled={
-                    isSubmitting ||
+                    loading.user ||
+                    loading.drafts ||
                     (radioSelection === "manual"
                       ? !draftUrlCurrent
                       : !radioSelection)
                   }
                 >
-                  {isSubmitting ? "Working..." : "Select Draft"}
+                  {loading.user || loading.drafts
+                    ? "Working..."
+                    : "Select Draft"}
                 </Button>
               </div>
             )}
 
-            {userIdError && (
+            {(error.user || error.drafts || error.draftDetails) && (
               <Alert variant="destructive">
                 <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{userIdError}</AlertDescription>
-              </Alert>
-            )}
-
-            {draftIdError && (
-              <Alert variant="destructive">
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{draftIdError}</AlertDescription>
+                <AlertDescription>
+                  {error.user?.message ||
+                    error.drafts?.message ||
+                    error.draftDetails?.message ||
+                    "An error occurred while loading data"}
+                </AlertDescription>
               </Alert>
             )}
           </CardContent>

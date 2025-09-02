@@ -1,19 +1,40 @@
-import React, { createContext, useContext, useCallback, useMemo } from "react";
+"use client";
+
+import React, {
+  createContext,
+  useContext,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   useDraftDetails,
   useDraftPicks,
-  usePlayersByScoringType,
+  useAggregatesBundle,
 } from "@/app/draft-assistant/_lib/useDraftQueries";
 import {
-  getDraftRecommendations,
-  calculatePositionNeeds,
-  calculatePositionCounts,
-  ZERO_POSITION_COUNTS,
-  calculateTotalRemainingNeeds,
-} from "@/lib/draftHelpers";
-import { isRankedPlayer } from "@/lib/getPlayers";
-import { DraftedPlayer, RankedPlayer, scoringTypeSchema } from "@/lib/schemas";
+  useSleeperUserByUsername,
+  useSleeperUserById,
+  useSleeperDrafts,
+} from "@/app/draft-assistant/_lib/useSleeper";
+import { buildDraftViewModel } from "@/lib/draftState";
+import type { DraftViewModel } from "@/lib/draftState";
+import type {
+  DraftedPlayer,
+  RankedPlayer,
+  RosterSlot,
+  DraftPick,
+} from "@/lib/schemas";
+import { scoringTypeSchema } from "@/lib/schemas";
+import type { SleeperUser, SleeperDraftSummary } from "@/lib/sleeper";
+import type { DraftDetails } from "@/lib/draftDetails";
 import type { Position } from "../_lib/types";
+import type { BeerRow } from "@/lib/beersheets";
+import type { AggregatesBundleResponseT } from "@/lib/schemas-bundle";
+import type { PlayerRow } from "@/lib/playerRows";
+import { toPlayerRowsFromBundle } from "@/lib/playerRows";
+// BeerSheets removed from client; calculations moved server-side
 
 interface Recommendation {
   keyPositions: RankedPlayer[];
@@ -25,44 +46,150 @@ interface Recommendation {
 interface ProcessedData {
   recommendations: Recommendation | null;
   availablePlayers: RankedPlayer[];
+  availableByPosition?: Record<string, RankedPlayer[]>;
+  topAvailablePlayersByPosition?: Record<string, RankedPlayer[]>;
   userPositionNeeds: Partial<Record<Position, number>>;
   userPositionCounts: Partial<Record<Position, number>>;
+  userPositionRequirements: Partial<Record<Position, number>>;
+  // Helper function to get roster status for a position
+  getRosterStatus: (pos: Position) => {
+    count: number;
+    requirement: number;
+    met: boolean;
+  };
   draftWideNeeds: Partial<Record<Position, number>>;
   userRoster: DraftedPlayer[] | null;
+  userRosterSlots: { slot: RosterSlot; player: DraftedPlayer | null }[];
+  beerSheetsBoard?: BeerRow[]; // Beer sheets board data
+  positionRows?: {
+    QB: PlayerRow[];
+    RB: PlayerRow[];
+    WR: PlayerRow[];
+    TE: PlayerRow[];
+    K: PlayerRow[];
+    DEF: PlayerRow[];
+    FLEX: PlayerRow[];
+    ALL: PlayerRow[];
+  } | null;
 }
 
 interface DraftDataContextType extends ProcessedData {
+  // Input state and handlers
+  username: string;
+  setUsername: (username: string) => void;
+  loadUserAndDrafts: () => Promise<void>;
+  selectedDraftId: string;
+  setSelectedDraftId: (draftId: string) => void;
+  clearDraft?: () => void;
+  clearUser?: () => void;
+
+  // Data state
+  user: SleeperUser | null;
+  drafts: SleeperDraftSummary[];
+  draftDetails: DraftDetails | null;
+  playersBundle: AggregatesBundleResponseT | null;
+  picks: DraftPick[];
+
+  // UI state
+  showAll: boolean;
+  setShowAll: (show: boolean) => void;
+  showDrafted: boolean;
+  setShowDrafted: (show: boolean) => void;
+  showUnranked: boolean;
+  setShowUnranked: (show: boolean) => void;
+
+  // Loading states
   loading: {
+    user: boolean;
+    drafts: boolean;
     draftDetails: boolean;
-    draftPicks: boolean;
     players: boolean;
+    picks: boolean;
   };
+
+  // Error states
   error: {
+    user: Error | null;
+    drafts: Error | null;
     draftDetails: Error | null;
-    draftPicks: Error | null;
     players: Error | null;
+    picks: Error | null;
   };
+
+  // Minimal league shape for enrichment/UIs
+  league: {
+    teams: number;
+    scoring: ReturnType<typeof scoringTypeSchema.parse> | undefined;
+    roster: {
+      QB: number;
+      RB: number;
+      WR: number;
+      TE: number;
+      FLEX: number;
+      BENCH: number;
+    };
+  } | null;
+
   refetchData: () => void;
   lastUpdatedAt: number | null;
 }
 
 const defaultContextValue: DraftDataContextType = {
+  // Input state
+  username: "",
+  setUsername: () => {},
+  loadUserAndDrafts: async () => {},
+  selectedDraftId: "",
+  setSelectedDraftId: () => {},
+  clearDraft: () => {},
+  clearUser: () => {},
+
+  // Data state
+  user: null,
+  drafts: [],
+  draftDetails: null,
+  playersBundle: null,
+  picks: [],
+
+  // UI state
+  showAll: false,
+  setShowAll: () => {},
+  showDrafted: false,
+  setShowDrafted: () => {},
+  showUnranked: false,
+  setShowUnranked: () => {},
+
+  // Processed data
   recommendations: null,
   availablePlayers: [],
   userPositionNeeds: {},
   userPositionCounts: {},
+  userPositionRequirements: {},
+  // Helper function for consistent roster status calculation
+  getRosterStatus: () => ({ count: 0, requirement: 0, met: false }),
   draftWideNeeds: {},
   userRoster: null,
+  userRosterSlots: [],
+
+  // Loading states
   loading: {
+    user: false,
+    drafts: false,
     draftDetails: false,
-    draftPicks: false,
     players: false,
+    picks: false,
   },
+
+  // Error states
   error: {
+    user: null,
+    drafts: null,
     draftDetails: null,
-    draftPicks: null,
     players: null,
+    picks: null,
   },
+
+  league: null,
   refetchData: () => {},
   lastUpdatedAt: null,
 };
@@ -72,8 +199,14 @@ const EMPTY_PROCESSED: ProcessedData = {
   availablePlayers: [],
   userPositionNeeds: {},
   userPositionCounts: {},
+  userPositionRequirements: {},
+  // Helper function for consistent roster status calculation
+  getRosterStatus: () => ({ count: 0, requirement: 0, met: false }),
   draftWideNeeds: {},
   userRoster: null,
+  userRosterSlots: [],
+  beerSheetsBoard: [],
+  positionRows: null,
 };
 
 const DraftDataContext =
@@ -81,174 +214,576 @@ const DraftDataContext =
 
 export function DraftDataProvider({
   children,
-  userId,
-  draftId,
+  initialUserId,
+  initialDraftId,
 }: {
   children: React.ReactNode;
-  userId: string;
-  draftId: string;
+  initialUserId?: string;
+  initialDraftId?: string;
 }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Merge-write helper: always read the live URL to avoid stale closures
+  const setQuery = useCallback(
+    (next: Record<string, string | null>) => {
+      const src =
+        typeof window !== "undefined"
+          ? window.location.search
+          : searchParams?.toString() ?? "";
+      const sp = new URLSearchParams(src);
+      for (const [k, v] of Object.entries(next)) {
+        if (v == null || v === "") sp.delete(k);
+        else sp.set(k, v);
+      }
+      const qs = sp.toString();
+      router.replace(qs ? `/draft-assistant?${qs}` : `/draft-assistant`, {
+        scroll: false,
+      });
+    },
+    [router, searchParams]
+  );
+
+  // Input state
+  const [username, setUsername] = useState("");
+  const [selectedDraftId, setSelectedDraftId] = useState(initialDraftId || "");
+
+  // UI state
+  const [showAll, setShowAll] = useState(false);
+  const [showDrafted, setShowDrafted] = useState(false);
+  const [showUnranked, setShowUnranked] = useState(false);
+
+  // Trigger state for user/drafts loading
+  const [shouldLoadUser, setShouldLoadUser] = useState(false);
+  // Intent gate to prevent re-writing userId after clearing
+  const [isExplicitlyLoading, setIsExplicitlyLoading] = useState(false);
+
+  // Fetch user by ID when initialUserId is provided
+  const {
+    data: initialUser,
+    isLoading: isLoadingInitialUser,
+    error: errorInitialUser,
+  } = useSleeperUserById(initialUserId, Boolean(initialUserId));
+
+  // Automatically load data when we get the user from initialUserId
+  React.useEffect(() => {
+    if (
+      initialUserId &&
+      initialUser &&
+      initialUser.username &&
+      !shouldLoadUser
+    ) {
+      setUsername(initialUser.username);
+      setShouldLoadUser(true);
+    }
+  }, [initialUserId, initialUser, shouldLoadUser]);
+
+  // Sync selectedDraftId with the initial URL (helps direct deep links)
+  React.useEffect(() => {
+    if (initialDraftId != null) setSelectedDraftId(initialDraftId);
+  }, [initialDraftId]);
+
+  // User and drafts fetching
+  const {
+    data: user,
+    isLoading: isLoadingUser,
+    error: errorUser,
+    refetch: refetchUser,
+  } = useSleeperUserByUsername(username, shouldLoadUser);
+
+  const currentYear = String(new Date().getFullYear());
+  const {
+    data: drafts,
+    isLoading: isLoadingDrafts,
+    error: errorDrafts,
+    refetch: refetchDrafts,
+  } = useSleeperDrafts(
+    user?.user_id,
+    currentYear,
+    shouldLoadUser && Boolean(user?.user_id)
+  );
+
+  // Draft details and picks fetching
   const {
     data: draftDetails,
     isLoading: isLoadingDraftDetails,
     error: errorDraftDetails,
     refetch: refetchDraftDetails,
     dataUpdatedAt: updatedAtDraftDetails,
-  } = useDraftDetails(draftId);
+  } = useDraftDetails(selectedDraftId, {
+    enabled: Boolean(selectedDraftId),
+    refetchInterval: 3000,
+  });
 
   const {
-    data: draftPicks,
-    isLoading: isLoadingDraftPicks,
-    error: errorDraftPicks,
-    refetch: refetchDraftPicks,
-    dataUpdatedAt: updatedAtDraftPicks,
-  } = useDraftPicks(draftId);
+    data: picks,
+    isLoading: isLoadingPicks,
+    error: errorPicks,
+    refetch: refetchPicks,
+    dataUpdatedAt: updatedAtPicks,
+  } = useDraftPicks(selectedDraftId, {
+    enabled: Boolean(selectedDraftId),
+    refetchInterval: 3000,
+  });
 
+  // Parse scoring type from draft details
   const parsedScoring = scoringTypeSchema.safeParse(
     draftDetails?.metadata?.scoring_type
   );
-  const scoringType = parsedScoring.success ? parsedScoring.data : undefined;
+  const scoringType = React.useMemo(() => {
+    if (parsedScoring.success) return parsedScoring.data;
+    const raw = (draftDetails?.metadata?.scoring_type || "")
+      .toString()
+      .toLowerCase();
+    switch (raw) {
+      case "ppr":
+      case "full_ppr":
+        return "ppr" as const;
+      case "half":
+      case "half_ppr":
+        return "half" as const;
+      case "std":
+      case "standard":
+      case "non_ppr":
+        return "std" as const;
+      default:
+        return undefined;
+    }
+  }, [
+    parsedScoring.success,
+    parsedScoring.data,
+    draftDetails?.metadata?.scoring_type,
+  ]);
 
+  // Build league object from draft details
+  const league = useMemo(() => {
+    if (!draftDetails || !scoringType) return null;
+
+    const leagueObj = {
+      teams: draftDetails.settings?.teams ?? 0,
+      scoring: scoringType,
+      roster: {
+        QB: draftDetails.settings?.slots_qb ?? 0,
+        RB: draftDetails.settings?.slots_rb ?? 0,
+        WR: draftDetails.settings?.slots_wr ?? 0,
+        TE: draftDetails.settings?.slots_te ?? 0,
+        K: draftDetails.settings?.slots_k ?? 0,
+        DEF: draftDetails.settings?.slots_def ?? 0,
+        FLEX: draftDetails.settings?.slots_flex ?? 0,
+        BENCH:
+          (draftDetails.settings?.rounds ?? 0) -
+          ((draftDetails.settings?.slots_qb ?? 0) +
+            (draftDetails.settings?.slots_rb ?? 0) +
+            (draftDetails.settings?.slots_wr ?? 0) +
+            (draftDetails.settings?.slots_te ?? 0) +
+            (draftDetails.settings?.slots_k ?? 0) +
+            (draftDetails.settings?.slots_def ?? 0) +
+            (draftDetails.settings?.slots_flex ?? 0)),
+      },
+    };
+
+    return leagueObj;
+  }, [draftDetails, scoringType]);
+
+  // Players bundle fetching
   const {
-    data: playersMap,
+    data: playersBundle,
     isLoading: isLoadingPlayers,
     error: errorPlayers,
-    refetch: refetchPlayersMap,
+    refetch: refetchPlayers,
     dataUpdatedAt: updatedAtPlayers,
-  } = usePlayersByScoringType(scoringType);
+  } = useAggregatesBundle(league, {
+    enabled: Boolean(league),
+  });
 
+  // Handlers
+  const loadUserAndDrafts = useCallback(async () => {
+    if (!username.trim()) {
+      throw new Error("Username is required");
+    }
+    setShouldLoadUser(true);
+    setIsExplicitlyLoading(true);
+  }, [username]);
+
+  // When user is loaded, reflect userId in URL exactly once per change
+  React.useEffect(() => {
+    if (isExplicitlyLoading && shouldLoadUser && user?.user_id) {
+      const current = searchParams?.get("userId") || "";
+      if (current !== user.user_id) {
+        setQuery({ userId: user.user_id });
+      }
+      setIsExplicitlyLoading(false);
+    }
+  }, [
+    isExplicitlyLoading,
+    shouldLoadUser,
+    user?.user_id,
+    searchParams,
+    setQuery,
+  ]);
+
+  const handleSetSelectedDraftId = useCallback(
+    (draftId: string) => {
+      setSelectedDraftId(draftId);
+      setQuery({ draftId: draftId || null });
+    },
+    [setQuery]
+  );
+
+  const clearDraft = useCallback(() => {
+    setSelectedDraftId("");
+    setQuery({ draftId: null });
+  }, [setQuery]);
+
+  const clearUser = useCallback(() => {
+    setUsername("");
+    setShouldLoadUser(false);
+    setIsExplicitlyLoading(false);
+    setSelectedDraftId("");
+    setQuery({ userId: null, draftId: null });
+  }, [setQuery]);
+
+  // Loading and error states
   const loading = useMemo(
     () => ({
+      user: isLoadingUser || isLoadingInitialUser,
+      drafts: isLoadingDrafts,
       draftDetails: isLoadingDraftDetails,
-      draftPicks: isLoadingDraftPicks,
       players: isLoadingPlayers,
+      picks: isLoadingPicks,
     }),
-    [isLoadingDraftDetails, isLoadingDraftPicks, isLoadingPlayers]
+    [
+      isLoadingUser,
+      isLoadingInitialUser,
+      isLoadingDrafts,
+      isLoadingDraftDetails,
+      isLoadingPlayers,
+      isLoadingPicks,
+    ]
   );
 
   const error = useMemo(
     () => ({
+      user: errorUser || errorInitialUser,
+      drafts: errorDrafts,
       draftDetails: errorDraftDetails,
-      draftPicks: errorDraftPicks,
       players: errorPlayers,
-    }),
-    [errorDraftDetails, errorDraftPicks, errorPlayers]
-  );
-
-  const refetchData = useCallback(() => {
-    refetchDraftDetails();
-    refetchDraftPicks();
-    refetchPlayersMap();
-  }, [refetchDraftDetails, refetchDraftPicks, refetchPlayersMap]);
-
-  // React Query already refetches when keys change; manual refetch is for explicit refresh
-
-  const processedData: ProcessedData = useMemo(() => {
-    if (!draftDetails || !draftPicks || !playersMap) {
-      return EMPTY_PROCESSED;
-    }
-
-    const draftedPlayers = draftPicks.map((pick) => ({
-      ...pick,
-      ...(playersMap[pick.player_id] || {}),
-    }));
-    const draftedPlayerIds = draftedPlayers.map((player) => player.player_id);
-
-    const rankedPlayers = Object.values(playersMap)
-      .filter(isRankedPlayer)
-      .sort((a, b) => a.rank - b.rank);
-    const availableRankedPlayers = rankedPlayers.filter(
-      (player) => !draftedPlayerIds.includes(player.player_id)
-    );
-
-    const rosterRequirements: Record<Position | "BN", number> = {
-      QB: draftDetails.settings?.slots_qb ?? 0,
-      RB: draftDetails.settings?.slots_rb ?? 0,
-      WR: draftDetails.settings?.slots_wr ?? 0,
-      TE: draftDetails.settings?.slots_te ?? 0,
-      K: draftDetails.settings?.slots_k ?? 0,
-      DEF: draftDetails.settings?.slots_def ?? 0,
-      FLEX: draftDetails.settings?.slots_flex ?? 0,
-      BN: 0,
-    };
-
-    const teams = draftDetails.settings?.teams ?? 0;
-    const draftSlots = Array.from({ length: teams }, (_, i) => i + 1);
-    const emptyRoster = {
-      players: [] as DraftedPlayer[],
-      remainingPositionRequirements: { ...rosterRequirements },
-      rosterPositionCounts: { ...ZERO_POSITION_COUNTS },
-    };
-    const currentRosters: Record<string, typeof emptyRoster> = {};
-    draftSlots.forEach((draftSlot) => {
-      const rosteredPlayers = draftedPlayers.filter(
-        (player) => player.draft_slot === draftSlot
-      );
-      const remainingPositionRequirements = calculatePositionNeeds(
-        rosterRequirements,
-        rosteredPlayers
-      );
-      const rosterPositionCounts = calculatePositionCounts(rosteredPlayers);
-      currentRosters[draftSlot] = {
-        players: rosteredPlayers,
-        remainingPositionRequirements,
-        rosterPositionCounts,
-      };
-    });
-
-    const draftSlot = draftDetails.draft_order?.[userId];
-
-    if (!draftSlot) {
-      return EMPTY_PROCESSED;
-    }
-
-    const userRoster = currentRosters[draftSlot];
-    const nextPickRecommendations = userRoster
-      ? getDraftRecommendations(
-          availableRankedPlayers,
-          userRoster.rosterPositionCounts,
-          userRoster.remainingPositionRequirements
-        )
-      : null;
-
-    const totalRemainingNeeds = calculateTotalRemainingNeeds(currentRosters);
-
-    return {
-      recommendations: nextPickRecommendations,
-      availablePlayers: availableRankedPlayers,
-      userPositionNeeds: userRoster?.remainingPositionRequirements || {},
-      userPositionCounts: userRoster?.rosterPositionCounts || {},
-      draftWideNeeds: totalRemainingNeeds,
-      userRoster: userRoster?.players || null,
-    };
-  }, [draftDetails, draftPicks, playersMap, userId]);
-
-  const contextValue = useMemo(
-    () => ({
-      ...processedData,
-      loading,
-      error,
-      refetchData,
-      lastUpdatedAt: Math.max(
-        0,
-        updatedAtDraftDetails || 0,
-        updatedAtDraftPicks || 0,
-        updatedAtPlayers || 0
-      ) || null,
+      picks: errorPicks,
     }),
     [
-      processedData,
-      loading,
-      error,
-      refetchData,
-      updatedAtDraftDetails,
-      updatedAtDraftPicks,
-      updatedAtPlayers,
+      errorUser,
+      errorInitialUser,
+      errorDrafts,
+      errorDraftDetails,
+      errorPlayers,
+      errorPicks,
     ]
   );
 
+  // Log errors to console to aid debugging
+  React.useEffect(() => {
+    if (errorUser) {
+      // eslint-disable-next-line no-console
+      console.error("user error", { username, error: errorUser });
+    }
+    if (errorDrafts) {
+      // eslint-disable-next-line no-console
+      console.error("drafts error", {
+        userId: user?.user_id,
+        error: errorDrafts,
+      });
+    }
+    if (errorDraftDetails) {
+      // eslint-disable-next-line no-console
+      console.error("draftDetails error", {
+        draftId: selectedDraftId,
+        error: errorDraftDetails,
+      });
+    }
+    if (errorPicks) {
+      // eslint-disable-next-line no-console
+      console.error("draftPicks error", {
+        draftId: selectedDraftId,
+        error: errorPicks,
+      });
+    }
+    if (errorPlayers) {
+      // eslint-disable-next-line no-console
+      console.error("players error", { error: errorPlayers });
+    }
+  }, [
+    errorUser,
+    errorDrafts,
+    errorDraftDetails,
+    errorPicks,
+    errorPlayers,
+    username,
+    user?.user_id,
+    selectedDraftId,
+  ]);
+
+  const refetchData = useCallback(() => {
+    refetchUser();
+    refetchDrafts();
+    refetchDraftDetails();
+    refetchPicks();
+    refetchPlayers();
+  }, [
+    refetchUser,
+    refetchDrafts,
+    refetchDraftDetails,
+    refetchPicks,
+    refetchPlayers,
+  ]);
+
+  // Build position rows from bundle when available
+  const positionRows = useMemo(() => {
+    if (!playersBundle || !league) return null;
+
+    // Use existing import instead of require
+    const result = {
+      QB: toPlayerRowsFromBundle(playersBundle.shards.QB, league.teams),
+      RB: toPlayerRowsFromBundle(playersBundle.shards.RB, league.teams),
+      WR: toPlayerRowsFromBundle(playersBundle.shards.WR, league.teams),
+      TE: toPlayerRowsFromBundle(playersBundle.shards.TE, league.teams),
+      K: toPlayerRowsFromBundle(playersBundle.shards.K, league.teams),
+      DEF: toPlayerRowsFromBundle(playersBundle.shards.DEF, league.teams),
+      FLEX: toPlayerRowsFromBundle(playersBundle.shards.FLEX, league.teams),
+      ALL: toPlayerRowsFromBundle(playersBundle.shards.ALL, league.teams),
+    } as const;
+
+    return result;
+  }, [playersBundle, league]);
+
+  // Build playersMap from ALL shard for view-model
+  const playersMap = useMemo(() => {
+    const map: Record<string, DraftedPlayer> = {};
+    if (!positionRows) return map;
+
+    // For view-model, use ALL rows (global pool) to include every player exactly once
+    for (const r of positionRows.ALL) {
+      // rank/tier must exist for Ranked filtering downstream
+      map[r.player_id] = {
+        player_id: r.player_id,
+        name: r.name,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        position: r.position as any,
+        team: r.team,
+        bye_week: r.bye_week != null ? String(r.bye_week) : null,
+        rank: typeof r.bc_rank === "number" ? r.bc_rank : r.rank ?? null,
+        tier: typeof r.bc_tier === "number" ? r.bc_tier : r.tier ?? null,
+      };
+    }
+    return map;
+  }, [positionRows]);
+
+  // Build the server-like draft VM on the client
+  const viewModel = useMemo(() => {
+    if (
+      !draftDetails ||
+      !playersMap ||
+      Object.keys(playersMap).length === 0 ||
+      !user?.user_id
+    )
+      return null;
+    return buildDraftViewModel({
+      playersMap, // <- use the map from bundle rows
+      draft: draftDetails,
+      picks: picks || [],
+      userId: user.user_id,
+      topLimit: 3,
+    });
+  }, [playersMap, draftDetails, picks, user?.user_id]);
+
+  // Build processed data when all required data is available
+  const processedData = useMemo(() => {
+    if (!viewModel || !user) {
+      return EMPTY_PROCESSED;
+    }
+
+    try {
+      const result = {
+        recommendations: viewModel.nextPickRecommendations,
+        availablePlayers: viewModel.available || [],
+        availableByPosition: viewModel.availableByPosition,
+        topAvailablePlayersByPosition: viewModel.topAvailablePlayersByPosition,
+        userPositionNeeds:
+          viewModel.userRoster?.remainingPositionRequirements || {},
+        userPositionCounts: viewModel.userRoster?.rosterPositionCounts || {},
+        userPositionRequirements: viewModel.rosterRequirements,
+        // Helper function for consistent roster status calculation
+        getRosterStatus: (pos: Position) => {
+          const count = viewModel.userRoster?.rosterPositionCounts?.[pos] ?? 0;
+          const requirement = viewModel.rosterRequirements?.[pos] ?? 0;
+          const met = requirement > 0 && count >= requirement;
+          return { count, requirement, met };
+        },
+        draftWideNeeds: viewModel.draftWideNeeds,
+        userRoster: viewModel.userRoster?.players || [],
+        userRosterSlots: (() => {
+          // Build slots template from draft settings
+          if (!draftDetails) return [];
+          const startersCount =
+            (draftDetails.settings?.slots_qb ?? 0) +
+            (draftDetails.settings?.slots_rb ?? 0) +
+            (draftDetails.settings?.slots_wr ?? 0) +
+            (draftDetails.settings?.slots_te ?? 0) +
+            (draftDetails.settings?.slots_k ?? 0) +
+            (draftDetails.settings?.slots_def ?? 0) +
+            (draftDetails.settings?.slots_flex ?? 0);
+          const rounds = draftDetails.settings?.rounds ?? 0;
+          const benchCount = Math.max(0, rounds - startersCount);
+
+          const slots: RosterSlot[] = [
+            ...Array.from(
+              { length: draftDetails.settings?.slots_qb ?? 0 },
+              () => "QB" as RosterSlot
+            ),
+            ...Array.from(
+              { length: draftDetails.settings?.slots_rb ?? 0 },
+              () => "RB" as RosterSlot
+            ),
+            ...Array.from(
+              { length: draftDetails.settings?.slots_wr ?? 0 },
+              () => "WR" as RosterSlot
+            ),
+            ...Array.from(
+              { length: draftDetails.settings?.slots_te ?? 0 },
+              () => "TE" as RosterSlot
+            ),
+            ...Array.from(
+              { length: draftDetails.settings?.slots_flex ?? 0 },
+              () => "FLEX" as RosterSlot
+            ),
+            ...Array.from(
+              { length: draftDetails.settings?.slots_k ?? 0 },
+              () => "K" as RosterSlot
+            ),
+            ...Array.from(
+              { length: draftDetails.settings?.slots_def ?? 0 },
+              () => "DEF" as RosterSlot
+            ),
+            ...Array.from({ length: benchCount }, () => "BN" as RosterSlot),
+          ];
+
+          const rows = slots.map((slot) => ({
+            slot,
+            player: null as DraftedPlayer | null,
+          }));
+          const rosterPlayers = viewModel.userRoster?.players || [];
+          if (rosterPlayers.length) {
+            const findIndex = (s: RosterSlot) =>
+              rows.findIndex((x) => x.slot === s && x.player === null);
+            for (const p of rosterPlayers) {
+              const pos = p.position as RosterSlot;
+              // place in primary slot
+              const posIdx = findIndex(pos);
+              if (posIdx !== -1 && posIdx < rows.length) {
+                rows[posIdx]!.player = p;
+                continue;
+              }
+              // flex allocation if RB/WR/TE
+              if (pos === "RB" || pos === "WR" || pos === "TE") {
+                const flexIdx = findIndex("FLEX");
+                if (flexIdx !== -1 && flexIdx < rows.length) {
+                  rows[flexIdx]!.player = p;
+                  continue;
+                }
+              }
+              // bench fallback
+              const bnIdx = findIndex("BN");
+              if (bnIdx !== -1 && bnIdx < rows.length) rows[bnIdx]!.player = p;
+            }
+          }
+          return rows;
+        })(),
+        beerSheetsBoard: [], // TODO: Implement beer sheets
+        positionRows, // expose to tables to avoid recomputing
+      };
+
+      return result;
+    } catch (error) {
+      console.error("Error building processed data:", error);
+      return EMPTY_PROCESSED;
+    }
+  }, [viewModel, user, positionRows, draftDetails]);
+
+  // Context value
+  const contextValue = useMemo(
+    () => ({
+      // Input state and handlers
+      username,
+      setUsername,
+      loadUserAndDrafts,
+      selectedDraftId,
+      setSelectedDraftId: handleSetSelectedDraftId,
+      clearDraft,
+      clearUser,
+
+      // Data state
+      user: user || null,
+      drafts: drafts || [],
+      draftDetails,
+      playersBundle: playersBundle || null,
+      picks: picks || [],
+
+      // UI state
+      showAll,
+      setShowAll,
+      showDrafted,
+      setShowDrafted,
+      showUnranked,
+      setShowUnranked,
+
+      // Processed data - build view model when all data is available
+      ...processedData,
+
+      // Loading states
+      loading,
+      error,
+
+      // League and other data
+      league,
+      refetchData,
+      lastUpdatedAt:
+        Math.max(
+          0,
+          updatedAtDraftDetails || 0,
+          updatedAtPicks || 0,
+          updatedAtPlayers || 0
+        ) || null,
+    }),
+    [
+      username,
+      loadUserAndDrafts,
+      selectedDraftId,
+      handleSetSelectedDraftId,
+      clearDraft,
+      clearUser,
+      user,
+      drafts,
+      draftDetails,
+      playersBundle,
+      picks,
+      showAll,
+      showDrafted,
+      showUnranked,
+      loading,
+      error,
+      league,
+      refetchData,
+      updatedAtDraftDetails,
+      updatedAtPicks,
+      updatedAtPlayers,
+      processedData,
+    ]
+  );
+
+  // Data processing complete
+
   return (
-    <DraftDataContext.Provider value={contextValue}>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    <DraftDataContext.Provider value={contextValue as any}>
       {children}
     </DraftDataContext.Provider>
   );

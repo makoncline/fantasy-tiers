@@ -4,12 +4,12 @@ import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import DraftAssistantForm from "@/app/draft-assistant/_components/DraftAssistantForm";
 import DraftAssistantContentComponent from "@/app/draft-assistant/_components/DraftAssistantContent";
-import { useDraftAssistantForm } from "@/app/draft-assistant/_hooks/useDraftAssistantForm";
-import { DraftDataProvider } from "@/app/draft-assistant/_contexts/DraftDataContext";
+import {
+  DraftDataProvider,
+  useDraftData,
+} from "@/app/draft-assistant/_contexts/DraftDataContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useSleeperUserById } from "@/app/draft-assistant/_lib/useSleeper";
-import { useDraftDetails } from "@/app/draft-assistant/_lib/useDraftQueries";
 import DraftInfo from "@/app/draft-assistant/_components/DraftInfo";
 
 const DraftAssistantShell: React.FC = () => {
@@ -20,148 +20,142 @@ const DraftAssistantShell: React.FC = () => {
   const hasUser = Boolean(userId);
   const hasDraft = Boolean(draftId);
 
-  const {
-    register,
-    form,
-    setValue,
-    errors,
-    onSubmit,
-    isSubmitting,
-    userIdError,
-    draftIdError,
-    drafts,
-    selectedDraftId,
-  } = useDraftAssistantForm(userId, draftId);
-
-  const selectedDraft = drafts?.find((d) => d.draft_id === selectedDraftId);
-  const { data: userData, isLoading: loadingUser } = useSleeperUserById(
-    userId || undefined,
-    Boolean(userId)
-  );
-  const { data: draftDetails, isLoading: loadingDraftDetails } =
-    useDraftDetails(draftId);
-
-  const clearUser = () => {
-    try {
-      // Reset form fields to avoid carrying over a stale draftId/draftUrl
-      form.reset({ username: "", draftId: "", draftUrl: "" });
-    } catch {}
-    const qs = new URLSearchParams();
-    router.push(`/draft-assistant?${qs.toString()}`);
-  };
-
-  const clearDraft = () => {
-    try {
-      // Clear only the draft-related fields
-      form.setValue("draftId", "");
-      form.setValue("draftUrl", "");
-    } catch {}
-    const qs = new URLSearchParams();
-    if (userId) qs.set("userId", userId);
-    router.push(`/draft-assistant?${qs.toString()}`);
-  };
-
   return (
-    <DraftDataProvider userId={userId} draftId={draftId}>
+    <DraftDataProvider initialUserId={userId} initialDraftId={draftId}>
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-4">Fantasy Draft Assistant</h1>
-        {!hasUser && (
-          <DraftAssistantForm
-            form={form}
-            register={register}
-            setValue={setValue}
-            onSubmit={onSubmit}
-            errors={errors}
-            isSubmitting={isSubmitting}
-            userIdError={userIdError}
-            draftIdError={draftIdError}
-            drafts={drafts}
-            selectedDraftId={selectedDraftId}
-            step="user"
-          />
-        )}
-
-        {hasUser && (
-          <Card className="mb-4">
-            <CardHeader>
-              <CardTitle>Selected User</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">
-                    {loadingUser ? "Loading..." : userData?.username ?? "—"}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    userId: {userId}
-                  </div>
-                </div>
-                <Button variant="outline" onClick={clearUser}>
-                  Clear user
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {hasUser && !hasDraft && (
-          <DraftAssistantForm
-            form={form}
-            register={register}
-            setValue={setValue}
-            onSubmit={onSubmit}
-            errors={errors}
-            isSubmitting={isSubmitting}
-            userIdError={userIdError}
-            draftIdError={draftIdError}
-            drafts={drafts}
-            selectedDraftId={selectedDraftId}
-            step="draft"
-          />
-        )}
-
-        {hasDraft && (
-          <Card className="mb-4">
-            <CardHeader>
-              <CardTitle>Selected Draft</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-start justify-between gap-4 text-sm">
-                <div className="grow">
-                  <DraftInfo
-                    name={
-                      loadingDraftDetails
-                        ? "Loading..."
-                        : draftDetails?.metadata?.name ||
-                          selectedDraft?.metadata?.name ||
-                          draftDetails?.draft_id ||
-                          selectedDraft?.draft_id ||
-                          "—"
-                    }
-                    draftId={draftDetails?.draft_id || draftId}
-                    type={draftDetails?.type}
-                    teams={draftDetails?.settings?.teams}
-                    rounds={draftDetails?.settings?.rounds}
-                    season={draftDetails?.season}
-                    startTime={draftDetails?.start_time ?? undefined}
-                    status={draftDetails?.status}
-                    pickNumber={draftDetails?.draft_order?.[userId]}
-                    scoringType={draftDetails?.metadata?.scoring_type}
-                  />
-                </div>
-                <div>
-                  <Button variant="outline" onClick={clearDraft}>
-                    Clear draft
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {hasUser && hasDraft && <DraftAssistantContentComponent />}
+        <DraftAssistantInner
+          userId={userId}
+          draftId={draftId}
+          hasUser={hasUser}
+          hasDraft={hasDraft}
+        />
       </div>
     </DraftDataProvider>
+  );
+};
+
+const DraftAssistantInner: React.FC<{
+  userId: string;
+  draftId: string;
+  hasUser: boolean;
+  hasDraft: boolean;
+}> = ({ userId, draftId, hasUser, hasDraft }) => {
+  const {
+    user,
+    drafts,
+    selectedDraftId,
+    draftDetails,
+    loading,
+    error,
+    clearDraft: contextClearDraft,
+    clearUser: contextClearUser,
+  } = useDraftData();
+
+  const selectedDraft = drafts?.find((d) => d.draft_id === selectedDraftId);
+
+  return (
+    <>
+      {!hasUser && <DraftAssistantForm step="user" />}
+
+      {hasUser && (
+        <Card className="mb-4">
+          <CardHeader>
+            <CardTitle>Selected User</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              className="flex items-center justify-between"
+              data-testid="selected-user-card"
+            >
+              <div>
+                <div className="font-medium" data-testid="selected-username">
+                  {loading.user ? "Loading..." : user?.username ?? "—"}
+                </div>
+                <div
+                  className="text-sm text-muted-foreground"
+                  data-testid="selected-user-id"
+                >
+                  userId: {userId}
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={contextClearUser}
+              >
+                Clear user
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {hasUser && !hasDraft && <DraftAssistantForm step="draft" />}
+
+      {hasDraft && (
+        <Card className="mb-4">
+          <CardHeader>
+            <CardTitle>Selected Draft</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              className="flex items-start justify-between gap-4 text-sm"
+              data-testid="selected-draft-card"
+            >
+              <div className="grow">
+                <DraftInfo
+                  name={
+                    loading.draftDetails
+                      ? "Loading..."
+                      : draftDetails?.metadata?.name ||
+                        selectedDraft?.metadata?.name ||
+                        draftDetails?.draft_id ||
+                        selectedDraft?.draft_id ||
+                        "—"
+                  }
+                  draftId={draftDetails?.draft_id || draftId}
+                  {...(draftDetails?.type && { type: draftDetails.type })}
+                  {...(draftDetails?.settings?.teams && {
+                    teams: draftDetails.settings.teams,
+                  })}
+                  {...(draftDetails?.settings?.rounds && {
+                    rounds: draftDetails.settings.rounds,
+                  })}
+                  {...(draftDetails?.season && {
+                    season: draftDetails.season,
+                  })}
+                  {...(draftDetails?.start_time && {
+                    startTime: draftDetails.start_time,
+                  })}
+                  {...(draftDetails?.status && {
+                    status: draftDetails.status,
+                  })}
+                  {...(draftDetails?.draft_order?.[userId] && {
+                    pickNumber: draftDetails.draft_order[userId],
+                  })}
+                  {...(draftDetails?.metadata?.scoring_type && {
+                    scoringType: draftDetails.metadata.scoring_type,
+                  })}
+                />
+              </div>
+              <div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={contextClearDraft}
+                  data-testid="clear-draft"
+                >
+                  Clear draft
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {hasUser && hasDraft && <DraftAssistantContentComponent />}
+    </>
   );
 };
 

@@ -2,15 +2,15 @@ import { parse } from "csv-parse";
 import { getErrorMessage, normalizePlayerName } from "@/lib/util";
 import fs from "fs";
 import path from "path";
-import { ScoringType } from "./schemas";
+import type { ScoringType } from "./schemas";
 
 const parseCSV = async (rawStr: string) => {
   // Assuming you have the CSV parsing logic here
   // You can use your existing CSV parsing logic
-  return new Promise<any[]>((resolve, reject) => {
+  return new Promise<Record<string, string>[]>((resolve, reject) => {
     parse(rawStr, { columns: true, skip_empty_lines: true }, (err, records) => {
       if (err) reject(err);
-      resolve(records);
+      resolve(records as Record<string, string>[]);
     });
   });
 };
@@ -35,7 +35,7 @@ export async function fetchRankings(scoring: ScoringType) {
 
   try {
     const csvText = fs.readFileSync(filePath, "utf-8");
-    const parsedData: any[] = await parseCSV(csvText);
+    const parsedData = await parseCSV(csvText);
 
     const metadata = JSON.parse(fs.readFileSync(metadataPath, "utf-8"));
     const lastModified = metadata.lastModified;
@@ -46,10 +46,12 @@ export async function fetchRankings(scoring: ScoringType) {
     > = {};
 
     parsedData.forEach((row) => {
-      const sanitizedName = normalizePlayerName(row["Player.Name"]);
+      const sanitizedName = row["Player.Name"]
+        ? normalizePlayerName(row["Player.Name"])
+        : "";
       if (sanitizedName) {
         // Parse and validate the tier
-        const tier = parseInt(row["Tier"], 10);
+        const tier = row["Tier"] ? parseInt(row["Tier"], 10) : NaN;
         if (isNaN(tier)) {
           console.error(
             `Invalid tier for player ${sanitizedName}: ${row["Tier"]}`
@@ -57,7 +59,7 @@ export async function fetchRankings(scoring: ScoringType) {
         }
 
         // Parse and validate the rank
-        const rank = parseInt(row["Rank"], 10);
+        const rank = row["Rank"] ? parseInt(row["Rank"], 10) : NaN;
         if (isNaN(rank)) {
           console.error(
             `Invalid rank for player ${sanitizedName}: ${row["Rank"]}`

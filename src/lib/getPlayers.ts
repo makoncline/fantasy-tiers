@@ -1,4 +1,4 @@
-import {
+import type {
   DraftedPlayer,
   PlayerWithRankings,
   RankedPlayer,
@@ -11,8 +11,11 @@ export function getPlayersByScoringType(
   players: Record<string, PlayerWithRankings>
 ): Record<string, DraftedPlayer> {
   return Object.entries(players).reduce((acc, [playerId, player]) => {
-    const rankings = player.rankingsByScoringType[scoringType] ||
-      player.rankingsByScoringType["std"] || { rank: null, tier: null };
+    // Use only the requested scoring type; no std fallback needed since
+    // QB/K/DEF are mirrored at build time and others have true variants.
+    const rankings =
+      player.rankingsByScoringType[scoringType] ||
+      ({ rank: null, tier: null } as const);
 
     acc[playerId] = {
       ...player,

@@ -6,6 +6,7 @@ import {
   type SleeperUser,
   type SleeperDraftSummary,
 } from "@/lib/sleeper";
+import type { SleeperProjection, SleeperPlayersMeta } from "@/lib/sleeper";
 
 export function useSleeperUserByUsername(
   username: string | undefined,
@@ -50,5 +51,62 @@ export function useSleeperDrafts(
     },
     enabled: Boolean(userId) && enabled,
     staleTime: 60 * 1000,
+  });
+}
+
+export function useSleeperProjections(
+  season: string | undefined,
+  opts?: {
+    seasonType?: string;
+    positions?: string[];
+    orderBy?: string;
+    week?: number | string;
+    sport?: string;
+    enabled?: boolean;
+  }
+) {
+  const enabled = (opts?.enabled ?? true) && Boolean(season);
+  const seasonType = opts?.seasonType ?? "regular";
+  const positions = opts?.positions ?? ["DEF", "K", "QB", "RB", "TE", "WR"];
+  const orderBy = opts?.orderBy ?? "adp_half_ppr";
+  const week = opts?.week;
+  const sport = opts?.sport ?? "nfl";
+  return useQuery<SleeperProjection[], Error>({
+    queryKey: [
+      "sleeper:projections",
+      season,
+      seasonType,
+      positions.join(","),
+      orderBy,
+      week,
+      sport,
+    ],
+    queryFn: async () => {
+      if (!season) throw new Error("season is required");
+      const params = new URLSearchParams();
+      params.set("season", season);
+      if (seasonType) params.set("season_type", seasonType);
+      positions.forEach((p) => params.append("position[]", p));
+      if (orderBy) params.set("order_by", orderBy);
+      if (week != null) params.set("week", String(week));
+      const res = await fetch(`/api/sleeper/projections?${params.toString()}`);
+      if (!res.ok) throw new Error("failed to load projections");
+      return (await res.json()) as SleeperProjection[];
+    },
+    enabled,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useSleeperPlayersMeta(enabled: boolean = true) {
+  return useQuery<SleeperPlayersMeta, Error>({
+    queryKey: ["sleeper:players:meta"],
+    queryFn: async () => {
+      const res = await fetch("/api/sleeper/players");
+      if (!res.ok) throw new Error("failed to load players meta");
+      return (await res.json()) as SleeperPlayersMeta;
+    },
+    enabled,
+    staleTime: 60 * 60 * 1000,
   });
 }

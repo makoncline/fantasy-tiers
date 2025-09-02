@@ -1,32 +1,314 @@
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getPlayersByScoringTypeClient } from "@/lib/getPlayersClient";
-import { fetchDraftDetails, DraftDetails } from "@/lib/draftDetails";
+import { fetchDraftDetails } from "@/lib/draftDetails";
+import type { DraftDetails } from "@/lib/draftDetails";
 import { fetchDraftPicks } from "@/lib/draftPicks";
-import { ScoringType, DraftPick, DraftedPlayer } from "@/lib/schemas";
+import { fetchMergedAggregates, fetchShard } from "@/lib/api/aggregates";
+import type { ScoringType, DraftPick, DraftedPlayer } from "@/lib/schemas";
+import type { DraftViewModel } from "@/lib/draftState";
+import { qk } from "@/lib/queryKeys";
+import { CombinedShard } from "@/lib/schemas-aggregates";
+import type { CombinedEntryT } from "@/lib/schemas-aggregates";
+import { SleeperPlayersMeta } from "@/lib/schemas-sleeper";
+import type { SleeperPlayersMetaT } from "@/lib/schemas-sleeper";
+import { normalizePlayerName } from "@/lib/util";
 
-export function useDraftDetails(draftId: string) {
+type AggregatesLastModifiedResponse = {
+  timestamp: number | null;
+  formatted: string | null;
+};
+
+// Consolidated aggregates query - fetches merged data for compatibility
+export function useAggregates(opts?: { enabled?: boolean }) {
+  const enabled = opts?.enabled ?? true;
+  return useQuery({
+    queryKey: qk.aggregates.merged,
+    queryFn: fetchMergedAggregates,
+    enabled,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    select: (merged) => {
+      const all = Object.values(merged);
+      const byId = new Map(all.map((p) => [p.player_id, p]));
+      const byName = new Map(all.map((p) => [normalizePlayerName(p.name), p]));
+      return {
+        all,
+        byId,
+        byName,
+        positions: {
+          ALL: all,
+          QB: all.filter((p) => p.position === "QB"),
+          RB: all.filter((p) => p.position === "RB"),
+          WR: all.filter((p) => p.position === "WR"),
+          TE: all.filter((p) => p.position === "TE"),
+          K: all.filter((p) => p.position === "K"),
+          DEF: all.filter((p) => p.position === "DEF"),
+          FLEX: all.filter((p) => ["RB", "WR", "TE"].includes(p.position)),
+        },
+      } as const;
+    },
+  });
+}
+
+// Unified shard hook that supports ALL, FLEX, and position shards
+type ShardPos = "ALL" | "QB" | "RB" | "WR" | "TE" | "K" | "DEF" | "FLEX";
+
+export function useShardAggregates(
+  pos: ShardPos,
+  opts: { enabled?: boolean } = {}
+) {
+  const enabled = opts.enabled ?? true;
+  return useQuery<CombinedEntryT[], Error>({
+    queryKey: qk.aggregates.shard(pos),
+    queryFn: async () => {
+      try {
+        const shard = await fetchShard(pos);
+        const values = Object.values(shard);
+        return values;
+      } catch (error) {
+        console.error(`useShardAggregates error for ${pos}:`, error);
+        throw error;
+      }
+    },
+    enabled,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
+  });
+}
+
+// Legacy compatibility hooks - now using unified shard hook
+export function useAllAggregates(opts: { enabled?: boolean } = {}) {
+  return useShardAggregates("ALL", opts);
+}
+
+export function useFlexAggregates(opts: { enabled?: boolean } = {}) {
+  return useShardAggregates("FLEX", opts);
+}
+
+// Convenience hooks for specific positions
+export function useQBAggregates(opts: { enabled?: boolean } = {}) {
+  return useShardAggregates("QB", opts);
+}
+
+export function useRBAggregates(opts: { enabled?: boolean } = {}) {
+  return useShardAggregates("RB", opts);
+}
+
+export function useWRAggregates(opts: { enabled?: boolean } = {}) {
+  return useShardAggregates("WR", opts);
+}
+
+export function useTEAggregates(opts: { enabled?: boolean } = {}) {
+  return useShardAggregates("TE", opts);
+}
+
+export function useKAggregates(opts: { enabled?: boolean } = {}) {
+  return useShardAggregates("K", opts);
+}
+
+export function useDEFAggregates(opts: { enabled?: boolean } = {}) {
+  return useShardAggregates("DEF", opts);
+}
+
+export function useDraftDetails(
+  draftId: string | undefined,
+  opts?: { enabled?: boolean; refetchInterval?: number }
+) {
+  const enabled = Boolean(draftId) && (opts?.enabled ?? true);
   return useQuery<DraftDetails, Error>({
-    queryKey: ["draft", draftId, "details"],
-    queryFn: () => fetchDraftDetails(draftId),
-    enabled: !!draftId,
+    queryKey: qk.draft.details(String(draftId)),
+    queryFn: () => fetchDraftDetails(String(draftId)),
+    enabled,
+    staleTime: 0,
+    gcTime: 0,
+    refetchInterval: opts?.refetchInterval ?? 3000,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
 
-export function useDraftPicks(draftId: string) {
+export function useDraftPicks(
+  draftId: string | undefined,
+  opts?: { enabled?: boolean; refetchInterval?: number }
+) {
+  const enabled = Boolean(draftId) && (opts?.enabled ?? true);
   return useQuery<DraftPick[], Error>({
-    queryKey: ["draft", draftId, "picks"],
-    queryFn: () => fetchDraftPicks(draftId),
-    enabled: !!draftId,
+    queryKey: qk.draft.picks(String(draftId)),
+    queryFn: () => fetchDraftPicks(String(draftId)),
+    enabled,
+    staleTime: 0,
+    gcTime: 0,
+    refetchInterval: opts?.refetchInterval ?? 3000,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
 
-export function usePlayersByScoringType(scoringType: ScoringType | undefined) {
-  return useQuery<Record<string, DraftedPlayer>, Error>({
-    queryKey: ["players", scoringType],
-    queryFn: () =>
-      scoringType
-        ? getPlayersByScoringTypeClient(scoringType)
-        : Promise.resolve({}),
-    enabled: !!scoringType,
+export function usePlayersByScoringType(
+  scoringType: ScoringType | undefined,
+  opts?: { enabled?: boolean }
+) {
+  const enabled = Boolean(scoringType) && (opts?.enabled ?? true);
+  return useQuery<Record<string, CombinedEntryT>, Error>({
+    queryKey: qk.players.byScoring(String(scoringType)),
+    queryFn: async () => {
+      if (!scoringType) return {} as Record<string, CombinedEntryT>;
+      const res = await fetch(
+        `/api/players?scoring=${encodeURIComponent(scoringType)}`
+      );
+      if (!res.ok) throw new Error("failed to load players map");
+      const json = await res.json();
+      return CombinedShard.parse(json);
+    },
+    enabled,
+    // Fetch on each page load; do not cache long-term
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
+  });
+}
+
+// Server-computed draft view-model using same helpers as client
+export function useDraftViewModel(
+  userId: string | undefined,
+  draftId: string | undefined,
+  opts?: { enabled?: boolean; refetchInterval?: number }
+) {
+  const enabled = Boolean(userId && draftId) && (opts?.enabled ?? true);
+  return useQuery<DraftViewModel, Error>({
+    queryKey: qk.draft.viewModel(String(draftId), String(userId)),
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        draft_id: String(draftId),
+        user_id: String(userId),
+      });
+      const res = await fetch(`/api/draft/view-model?${params.toString()}`);
+      if (!res.ok) throw new Error("failed to load draft view model");
+      return (await res.json()) as DraftViewModel;
+    },
+    enabled,
+    staleTime: 0,
+    gcTime: 0,
+    refetchInterval: opts?.refetchInterval ?? 3000,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+  });
+}
+
+// Server-computed draft summary
+export function useDraftSummary(
+  userId: string | undefined,
+  draftId: string | undefined,
+  opts?: { enabled?: boolean; refetchInterval?: number }
+) {
+  const enabled = Boolean(userId && draftId) && (opts?.enabled ?? true);
+  return useQuery<unknown, Error>({
+    queryKey: qk.draft.summary(String(draftId), String(userId)),
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        draft_id: String(draftId),
+        user_id: String(userId),
+      });
+      const res = await fetch(`/api/draft?${params.toString()}`);
+      if (!res.ok) throw new Error("failed to load draft summary");
+      return await res.json();
+    },
+    enabled,
+    staleTime: 0,
+    gcTime: 0,
+    refetchInterval: opts?.refetchInterval ?? 3000,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+  });
+}
+
+// Legacy: load the ALL combined aggregate file for beer sheets computations
+
+export function useSleeperPlayersMetaStatic(enabled: boolean) {
+  return useQuery<SleeperPlayersMetaT, Error>({
+    queryKey: qk.sleeper.playersMeta,
+    queryFn: async () => {
+      const res = await fetch("/data/sleeper/raw/players-meta-latest.json");
+      if (!res.ok) throw new Error("failed to load players meta");
+      const json = await res.json();
+      return SleeperPlayersMeta.parse(json);
+    },
+    enabled,
+    staleTime: 60 * 60 * 1000,
+  });
+}
+
+export function useAggregatesLastModified(opts?: { enabled?: boolean }) {
+  const enabled = opts?.enabled ?? true;
+  return useQuery({
+    queryKey: qk.aggregates.lastModified,
+    queryFn: async (): Promise<AggregatesLastModifiedResponse> => {
+      const res = await fetch("/api/aggregates/last-modified");
+      if (!res.ok) {
+        throw new Error("Failed to fetch aggregates last modified");
+      }
+      return res.json();
+    },
+    enabled,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+// New bundle hook that fetches all shards at once
+export function useAggregatesBundle(
+  league: {
+    teams: number;
+    scoring: ScoringType;
+    roster: {
+      QB: number;
+      RB: number;
+      WR: number;
+      TE: number;
+      K: number;
+      DEF: number;
+      FLEX: number;
+      BENCH: number;
+    };
+  } | null,
+  opts?: { enabled?: boolean }
+) {
+  const enabled = Boolean(league) && (opts?.enabled ?? true);
+
+  React.useEffect(() => {
+    // Debug effect - no-op
+  }, [league, enabled]);
+
+  return useQuery({
+    queryKey: league
+      ? qk.aggregates.bundle(league.scoring, league.teams, {
+          QB: league.roster.QB,
+          RB: league.roster.RB,
+          WR: league.roster.WR,
+          TE: league.roster.TE,
+          K: league.roster.K,
+          DEF: league.roster.DEF,
+          FLEX: league.roster.FLEX,
+        })
+      : ["aggregates", "bundle"],
+    queryFn: async () => {
+      if (!league) throw new Error("League configuration required");
+      const { fetchAggregatesBundle } = await import(
+        "@/lib/api/aggregatesBundle"
+      );
+      const result = await fetchAggregatesBundle({
+        scoring: league.scoring,
+        teams: league.teams,
+        roster: league.roster,
+      });
+      return result;
+    },
+    enabled,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
   });
 }
