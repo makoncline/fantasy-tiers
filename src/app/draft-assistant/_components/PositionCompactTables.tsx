@@ -243,7 +243,7 @@ export default function PositionCompactTables({
   return (
     <div className="space-y-2">
       <div
-        className="sticky z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+        className="sticky z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
         style={{ top: stickyTop }}
       >
         <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between gap-2 md:gap-4 px-1 py-1">
