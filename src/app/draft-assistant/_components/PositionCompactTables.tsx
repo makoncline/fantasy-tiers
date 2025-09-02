@@ -279,6 +279,7 @@ export default function PositionCompactTables({
                       sortable={false}
                       colorize={true}
                       dimDrafted={true}
+                      tierRowColors={true}
                       renderActions={(r) => (
                         <Button
                           variant="ghost"

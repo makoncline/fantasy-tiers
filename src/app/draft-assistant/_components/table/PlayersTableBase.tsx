@@ -20,6 +20,7 @@ type Props = {
   dimDrafted?: boolean;
   hideDrafted?: boolean;
   renderActions?: (row: PlayerWithPick) => React.ReactNode;
+  tierRowColors?: boolean; // Enable alternating tier-based row backgrounds
 };
 
 export default function PlayersTableBase({
@@ -30,6 +31,7 @@ export default function PlayersTableBase({
   dimDrafted = false,
   hideDrafted = false,
   renderActions = undefined,
+  tierRowColors = false,
 }: Props) {
   // 1) Filter/dim drafted once
   const baseRows = React.useMemo(
@@ -166,15 +168,30 @@ export default function PlayersTableBase({
       <TableBody>
         {sorted.map((r, idx) => {
           const isDrafted = isDraftedRow(r);
+
+          // Tier-based row coloring for compact tables
+          let tierClass = "";
+          if (tierRowColors) {
+            const currentTier = r.bc_tier ?? r.tier ?? 1;
+            // Even tiers get lighter background
+            if (currentTier % 2 === 0) {
+              tierClass = "bg-muted";
+            }
+          }
+
+          const baseClass =
+            dimDrafted && isDrafted
+              ? "opacity-60 text-muted-foreground hover:opacity-95 hover:text-foreground"
+              : undefined;
+
+          const combinedClass =
+            [baseClass, tierClass].filter(Boolean).join(" ") || undefined;
+
           return (
             <TableRow
               key={`${r.player_id || r.name || "row"}-${idx}`}
               data-row-drafted={isDrafted ? "true" : undefined}
-              className={
-                dimDrafted && isDrafted
-                  ? "opacity-60 text-muted-foreground hover:opacity-95 hover:text-foreground"
-                  : undefined
-              }
+              className={combinedClass}
             >
               {allColumns.map((c) => {
                 const v = c.accessor(r);
