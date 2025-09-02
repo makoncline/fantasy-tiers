@@ -47,7 +47,7 @@ describe("toPlayerRowFromBundle", () => {
       fp_rank_pos: 1, // Parsed from "RB1"
       fp_baseline_pts: 192.5,
       fp_value: 86,
-      fp_positional_scarcity_slope: 62,
+      fp_remaining_value_pct: 62,
       fp_player_owned_avg: 97.3,
       sleeper_pts: 263.4,
       sleeper_adp: 3.2,
@@ -85,7 +85,7 @@ describe("toPlayerRowFromBundle", () => {
     expect(result.tier).toBeUndefined();
     expect(result.fp_pts).toBeNull();
     expect(result.fp_value).toBeNull();
-    expect(result.fp_positional_scarcity_slope).toBeNull();
+    expect(result.fp_remaining_value_pct).toBeNull();
     expect(result.market_delta).toBeNull();
     expect(result.team).toBeNull();
     expect(result.bye_week).toBeNull();
@@ -221,7 +221,7 @@ describe("toPlayerRowsFromBundle", () => {
       fp_rank_pos: 1,
       fp_baseline_pts: 200,
       fp_value: 90,
-      fp_positional_scarcity_slope: 70,
+      fp_remaining_value_pct: 70,
       fp_player_owned_avg: 98,
       sleeper_pts: 300,
       sleeper_adp: 1.5,

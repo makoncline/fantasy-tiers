@@ -1,26 +1,22 @@
-// src/components/AvailablePlayers.tsx
+// src/app/draft-assistant/_components/availablePlayers.tsx
 
 import React from "react";
-import type { DraftedPlayer, RankedPlayer } from "@/lib/schemas";
-import type { BeerRow } from "@/lib/beersheets";
+import type { RankedPlayer } from "@/lib/schemas";
 import { PlayerTable } from "./PlayerTable";
-import type { PlayerRow } from "@/lib/playerRows";
 
-import type { Extras } from "@/lib/playerRows";
 import { Button } from "@/components/ui/button";
 import PreviewPickDialog from "./PreviewPickDialog";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
-import { normalizePlayerName } from "@/lib/util";
-import { SEASON_WEEKS } from "@/lib/constants";
-import { useDraftedLookups } from "../_lib/useDraftedLookups";
+import type { PlayerWithPick } from "@/lib/types.draft";
 import { EyeIcon } from "lucide-react";
 import { filterAvailableRows } from "@/app/draft-assistant/_lib/filterAvailableRows";
 
+const FILTERS = ["ALL", "RB", "WR", "TE", "QB", "RB/WR", "K", "DEF"] as const;
+type Filter = (typeof FILTERS)[number];
+
 interface AvailablePlayersProps {
-  availablePlayers: RankedPlayer[];
+  availablePlayers: RankedPlayer[]; // kept for compat, not used locally
   loading: boolean;
-  showAll?: boolean;
-  setShowAll?: (value: boolean) => void;
   showDrafted?: boolean;
   setShowDrafted?: (value: boolean) => void;
   showUnranked?: boolean;
@@ -28,42 +24,35 @@ interface AvailablePlayersProps {
 }
 
 export default function AvailablePlayers({
-  availablePlayers,
+  availablePlayers: _availablePlayers,
   loading,
-  showAll: externalShowAll,
-  setShowAll: externalSetShowAll,
   showDrafted: externalShowDrafted,
   setShowDrafted: externalSetShowDrafted,
   showUnranked: externalShowUnranked,
   setShowUnranked: externalSetShowUnranked,
 }: AvailablePlayersProps) {
-  const { userRosterSlots, beerSheetsBoard, picks, positionRows } =
-    useDraftData();
-  const [open, setOpen] = React.useState(false);
-  const [previewPlayer, setPreviewPlayer] = React.useState<RankedPlayer | null>(
-    null
-  );
-  const [filter, setFilter] = React.useState<
-    "ALL" | "RB" | "WR" | "TE" | "QB" | "RB/WR" | "K" | "DEF"
-  >("ALL");
-
-  // Get context switches as fallback
+  // Single useDraftData call with all needed properties
   const {
-    showAll: ctxShowAll,
-    setShowAll: setCtxShowAll,
+    playersAll,
+    playersByPosition,
+    userRosterSlots,
     showDrafted: ctxShowDrafted,
     setShowDrafted: setCtxShowDrafted,
     showUnranked: ctxShowUnranked,
     setShowUnranked: setCtxShowUnranked,
   } = useDraftData();
 
+  const [open, setOpen] = React.useState(false);
+  const [previewPlayer, setPreviewPlayer] = React.useState<RankedPlayer | null>(
+    null
+  );
+  const [filter, setFilter] = React.useState<Filter>("ALL");
+
   // Use external state if provided, otherwise context, otherwise local state
-  const [localShowAll, setLocalShowAll] = React.useState(false);
   const [localShowDrafted, setLocalShowDrafted] = React.useState(false);
   const [localShowUnranked, setLocalShowUnranked] = React.useState(false);
 
-  const showAll = externalShowAll ?? ctxShowAll ?? localShowAll;
-  const setShowAll = externalSetShowAll ?? setCtxShowAll ?? setLocalShowAll;
+  // showAll UI isn't used in this component; keep local state but don't derive helpers
   const showDrafted = externalShowDrafted ?? ctxShowDrafted ?? localShowDrafted;
   const setShowDrafted =
     externalSetShowDrafted ?? setCtxShowDrafted ?? setLocalShowDrafted;
@@ -72,11 +61,8 @@ export default function AvailablePlayers({
   const setShowUnranked =
     externalSetShowUnranked ?? setCtxShowUnranked ?? setLocalShowUnranked;
 
-  // Use centralized drafted lookups hook (removes any casts)
-  const { draftedIds, draftedNames } = useDraftedLookups(picks);
-
-  // Helper to convert PlayerRow to RankedPlayer for preview
-  const toRanked = (r: PlayerRow): RankedPlayer => ({
+  // Helper to convert PlayerWithPick to RankedPlayer for preview
+  const toRanked = (r: PlayerWithPick): RankedPlayer => ({
     player_id: r.player_id,
     name: r.name,
     position: r.position,
@@ -86,82 +72,38 @@ export default function AvailablePlayers({
     tier: (r.bc_tier ?? r.tier ?? 0) as number,
   });
 
-  const extras = React.useMemo(() => {
-    const map: Record<
-      string,
-      { val?: number; ps?: number; ecr_round_pick?: string }
-    > = {};
-    (beerSheetsBoard || []).forEach((r: BeerRow) => {
-      const value: { val?: number; ps?: number; ecr_round_pick?: string } = {};
-      // weekly display: season VBD / 17, one decimal
-      if (r.val != null && Number.isFinite(r.val)) {
-        value.val = Number((r.val / SEASON_WEEKS).toFixed(1));
-      }
-      if (r.ps != null && Number.isFinite(r.ps)) {
-        value.ps = Number(Math.round(r.ps));
-      }
-      // show ADP directly (not available in BeerRow)
-      // ecr_round_pick remains undefined
-      map[r.player_id] = value;
-      const nm = normalizePlayerName(r.name || "");
-      if (nm) map[nm] = value;
-    });
-    return map;
-  }, [beerSheetsBoard]);
-
-  // Create rowExtras object for row formatting
-  const rowExtras = React.useMemo(
-    () => ({
-      draftedIds,
-      draftedNames,
-      beerSheetsMap: extras,
-    }),
-    [draftedIds, draftedNames, extras]
-  );
+  // (deleted) PPG enrichment: compute in column accessor instead
 
   // Always source rows from enriched ALL bundle rows so toggles have full effect
-  const rows = React.useMemo(() => {
-    // Always start from enriched ALL rows so toggles have full effect
-    return positionRows?.ALL ?? [];
-  }, [positionRows]);
+  const rows = React.useMemo<PlayerWithPick[]>(() => {
+    switch (filter) {
+      case "ALL":
+        return playersAll;
+      case "RB/WR":
+        return [
+          ...(playersByPosition?.RB ?? []),
+          ...(playersByPosition?.WR ?? []),
+        ];
+      default:
+        return (
+          (playersByPosition &&
+            (playersByPosition as Record<string, PlayerWithPick[]>)[filter]) ||
+          []
+        );
+    }
+  }, [playersAll, playersByPosition, filter]);
 
-  const filteredRows = React.useMemo(() => {
-    const result = filterAvailableRows(rows, {
-      position: filter,
-      showDrafted,
-      showUnranked,
-      draftedIds,
-      draftedNames,
-    });
+  const filteredRows = React.useMemo(
+    () =>
+      filterAvailableRows(rows, {
+        showDrafted,
+        showUnranked,
+      }),
+    [rows, showDrafted, showUnranked]
+  );
 
-    return result;
-  }, [rows, filter, showDrafted, showUnranked, draftedIds, draftedNames]);
-
-  // Enrich rows with pts/game (season projected pts / SEASON_WEEKS) when available
-  const rowsWithPPG = React.useMemo(() => {
-    const result = (() => {
-      if (!beerSheetsBoard) return filteredRows;
-      const byId = new Map<string, number>();
-      for (const r of beerSheetsBoard) {
-        if (r && r.player_id && Number.isFinite(r.proj_pts)) {
-          byId.set(r.player_id, Number(r.proj_pts));
-        }
-      }
-      return filteredRows.map((r) => {
-        const proj = byId.get(r.player_id);
-        return proj != null
-          ? { ...r, pts_per_game: (proj / SEASON_WEEKS).toFixed(1) }
-          : r;
-      });
-    })();
-
-    // Data processing complete
-
-    return result;
-  }, [filteredRows, beerSheetsBoard, draftedIds]);
-
-  const onPreview = (row: PlayerRow) => {
-    // Convert PlayerRow to RankedPlayer for preview
+  const onPreview = (row: PlayerWithPick) => {
+    // Convert PlayerWithPick to RankedPlayer for preview
     const rankedPlayer = toRanked(row);
     setPreviewPlayer(rankedPlayer);
     setOpen(true);
@@ -175,7 +117,7 @@ export default function AvailablePlayers({
       <div className="flex flex-wrap items-center gap-4 mb-3">
         {/* Position filters */}
         <div className="flex flex-wrap items-center gap-2">
-          {["ALL", "RB", "WR", "TE", "QB", "RB/WR", "K", "DEF"].map((f) => (
+          {FILTERS.map((f) => (
             <button
               key={f}
               type="button"
@@ -184,11 +126,7 @@ export default function AvailablePlayers({
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-background text-foreground border-muted"
               }`}
-              onClick={() =>
-                setFilter(
-                  f as "ALL" | "RB" | "WR" | "TE" | "QB" | "RB/WR" | "K" | "DEF"
-                )
-              }
+              onClick={() => setFilter(f)}
               aria-pressed={filter === f}
             >
               {f}
@@ -198,11 +136,10 @@ export default function AvailablePlayers({
       </div>
       {/* All players table - always shows all filtered rows */}
       <PlayerTable
-        rows={rowsWithPPG}
+        rows={filteredRows}
         sortable
         colorizeValuePs
         dimDrafted={showDrafted} // Dim drafted players when showing them (to distinguish)
-        draftedIds={draftedIds}
         hideDrafted={!showDrafted} // Hide drafted when switch is off, show when on
         renderActions={(row) => (
           <Button

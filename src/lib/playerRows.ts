@@ -18,7 +18,7 @@ export type PlayerRow = {
   ecr_round_pick?: string | undefined;
   fp_tier?: number | null;
   fp_value?: number | null;
-  fp_positional_scarcity_slope?: number | null | undefined;
+  fp_remaining_value_pct?: number | null | undefined;
   // Additional fields from EnrichedPlayer
   sleeper_pts?: number | null;
   sleeper_adp?: number | null;
@@ -112,7 +112,7 @@ export function toPlayerRows(
         fp_tier: p.fp_tier,
         fp_baseline_pts: p.fp_baseline_pts,
         fp_value: p.fp_value,
-        fp_positional_scarcity_slope: p.fp_positional_scarcity_slope,
+        fp_remaining_value_pct: p.fp_remaining_value_pct,
         fp_player_owned_avg: p.fp_player_owned_avg,
         market_delta: p.market_delta,
       };
@@ -265,7 +265,7 @@ export function toPlayerRowFromBundle(
     fp_baseline_pts: p.fantasypros.baseline_pts,
     fp_value: p.calc.value,
     // Preserve null for tests/filters expecting explicit null
-    fp_positional_scarcity_slope: p.calc.positional_scarcity as
+    fp_remaining_value_pct: p.calc.positional_scarcity as
       | number
       | null
       | undefined,

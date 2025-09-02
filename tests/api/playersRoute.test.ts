@@ -322,7 +322,10 @@ describe("/api/players route", () => {
     const res = await playersGET(req);
     expect(res.status).toBe(500);
     const json = await res.json();
-    expect(json.error).toContain("failed to load ALL combined aggregates");
+    expect(json.error.code).toBe("FILE_LOAD_ERROR");
+    expect(json.error.message).toContain(
+      "Failed to load ALL combined aggregates"
+    );
     readSpy.mockRestore();
   });
 });

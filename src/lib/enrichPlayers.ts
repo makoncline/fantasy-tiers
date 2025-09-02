@@ -1,6 +1,18 @@
 import type { ScoringType, Position } from "./schemas";
 import type { CombinedEntryT } from "./schemas-aggregates";
 import { scoringKeys, CORE_POSITIONS } from "./scoring";
+
+// VBD Baseline Strategy: Choose VORP (first bench) or VOLS (last starter)
+type BaselineMode = "VORP" | "VOLS";
+const BASELINE_MODE: BaselineMode = "VORP"; // Use VORP as primary strategy
+
+function baselineIndex(starters: number, listLen: number): number {
+  if (listLen === 0) return 0;
+  return BASELINE_MODE === "VORP"
+    ? Math.min(starters, listLen - 1) // First bench player (VORP)
+    : Math.min(Math.max(0, starters - 1), listLen - 1); // Last starter (VOLS)
+}
+
 import { normalizePosition } from "./util";
 
 // League shape for enrichment inputs
@@ -36,7 +48,7 @@ export type EnrichedPlayer = CombinedEntryT & {
   fp_positional_scarcity: number;
   fp_replacement_slope: number;
   fp_scarcity_index: number;
-  fp_positional_scarcity_slope: number;
+  fp_remaining_value_pct: number;
   fp_player_owned_avg: number | null;
   market_delta: number | null;
 };
@@ -69,6 +81,7 @@ function getSleeperPtsAdp(
   const { sleeperSuffix } = scoringKeys(scoring);
   const stats = entry.sleeper.stats;
   const pts = toNum(stats[`pts_${sleeperSuffix}`]);
+  // Use scoring-specific ADP (fallback is not needed as specific ADP should always be available)
   const adp = toNum(stats[`adp_${sleeperSuffix}`]);
   return { pts, adp };
 }
@@ -77,7 +90,8 @@ function getFpPts(entry: CombinedEntryT, scoring: ScoringType): number | null {
   const { fpKey } = scoringKeys(scoring);
   const grp = entry.fantasypros?.stats?.[fpKey];
   if (!grp) return null;
-  return toNum(grp["FPTS_AVG"]);
+  // Prefer season totals (FPTS) over per-game (FPTS_AVG) for drafting economics
+  return toNum(grp["FPTS"]) ?? toNum(grp["FPTS_AVG"]);
 }
 
 function getFpRanks(
@@ -138,19 +152,24 @@ function groupByPosFpPts(
 // Greedy allocation of FLEX across RB/WR/TE using the next-best FP points
 function greedyFlexTake(
   by: Record<Pos, { p: CombinedEntryT; pts: number }[]>,
-  flexSlots: number
+  flexSlots: number,
+  base: Record<"RB" | "WR" | "TE", number>
 ): Record<"RB" | "WR" | "TE", number> {
   const take: Record<"RB" | "WR" | "TE", number> = { RB: 0, WR: 0, TE: 0 };
-  const idx: Record<"RB" | "WR" | "TE", number> = { RB: 0, WR: 0, TE: 0 };
+  // Start from marginal candidates (after base starters), not index 0
+  const idx: Record<"RB" | "WR" | "TE", number> = {
+    RB: base.RB,
+    WR: base.WR,
+    TE: base.TE,
+  };
+
   for (let k = 0; k < Math.max(0, flexSlots); k++) {
     let best: "RB" | "WR" | "TE" | null = null;
     let bestPts = -Infinity;
     for (const pos of ["RB", "WR", "TE"] as const) {
       const i = idx[pos];
       const pts =
-        by[pos] && i < by[pos].length && by[pos][i]
-          ? by[pos][i].pts
-          : -Infinity;
+        i < (by[pos]?.length ?? 0) ? by[pos]?.[i]?.pts ?? -Infinity : -Infinity;
       if (pts > bestPts) {
         best = pos;
         bestPts = pts;
@@ -169,23 +188,27 @@ function computeFpBaselines(
   scoring: ScoringType
 ): Record<Pos, number> {
   const by = groupByPosFpPts(players, scoring);
+
+  // Calculate base starters (without flex) first
+  const baseStarters: Record<"RB" | "WR" | "TE", number> = {
+    RB: (league.teams || 0) * (league.roster?.RB ?? 0),
+    WR: (league.teams || 0) * (league.roster?.WR ?? 0),
+    TE: (league.teams || 0) * (league.roster?.TE ?? 0),
+  };
+
   const flexTake = greedyFlexTake(
     by,
-    (league.teams || 0) * (league.roster?.FLEX || 0)
+    (league.teams || 0) * (league.roster?.FLEX || 0),
+    baseStarters
   );
+
   const starters: Record<Pos, number> = {
-    QB: (league.teams || 0) * (league.roster?.QB || 0),
-    RB: (league.teams || 0) * (league.roster?.RB || 0) + flexTake.RB,
-    WR: (league.teams || 0) * (league.roster?.WR || 0) + flexTake.WR,
-    TE: (league.teams || 0) * (league.roster?.TE || 0) + flexTake.TE,
-    K:
-      (league.teams || 0) *
-      (((league.roster as Record<string, unknown>)?.K as number) || 1),
-    DEF:
-      (league.teams || 0) *
-      (((league.roster as Record<string, unknown>)?.DEF as number) ||
-        ((league.roster as Record<string, unknown>)?.DST as number) ||
-        1),
+    QB: (league.teams || 0) * (league.roster?.QB ?? 0),
+    RB: baseStarters.RB + flexTake.RB,
+    WR: baseStarters.WR + flexTake.WR,
+    TE: baseStarters.TE + flexTake.TE,
+    K: (league.teams || 0) * (league.roster?.K ?? 0),
+    DEF: (league.teams || 0) * (league.roster?.DEF ?? 0),
   };
   const base: Record<Pos, number> = {
     QB: 0,
@@ -202,7 +225,7 @@ function computeFpBaselines(
       base[pos] = 0;
       continue;
     }
-    const i = Math.min(Math.max(0, n - 1), lst.length - 1); // clamp
+    const i = baselineIndex(n, lst.length);
     base[pos] = lst[i]?.pts ?? 0;
   }
   return base;
@@ -241,23 +264,25 @@ function computeFpReplacementSlope(
   scoring: ScoringType
 ): Record<Pos, number> {
   const by = groupByPosFpPts(players, scoring);
+
+  const baseStarters: Record<"RB" | "WR" | "TE", number> = {
+    RB: (league.teams || 0) * (league.roster?.RB ?? 0),
+    WR: (league.teams || 0) * (league.roster?.WR ?? 0),
+    TE: (league.teams || 0) * (league.roster?.TE ?? 0),
+  };
+
   const flexTake = greedyFlexTake(
     by,
-    (league.teams || 0) * (league.roster?.FLEX || 0)
+    (league.teams || 0) * (league.roster?.FLEX || 0),
+    baseStarters
   );
   const starters: Record<Pos, number> = {
-    QB: (league.teams || 0) * (league.roster?.QB || 0),
-    RB: (league.teams || 0) * (league.roster?.RB || 0) + flexTake.RB,
-    WR: (league.teams || 0) * (league.roster?.WR || 0) + flexTake.WR,
-    TE: (league.teams || 0) * (league.roster?.TE || 0) + flexTake.TE,
-    K:
-      (league.teams || 0) *
-      (((league.roster as Record<string, unknown>)?.K as number) || 1),
-    DEF:
-      (league.teams || 0) *
-      (((league.roster as Record<string, unknown>)?.DEF as number) ||
-        ((league.roster as Record<string, unknown>)?.DST as number) ||
-        1),
+    QB: (league.teams || 0) * (league.roster?.QB ?? 0),
+    RB: baseStarters.RB + flexTake.RB,
+    WR: baseStarters.WR + flexTake.WR,
+    TE: baseStarters.TE + flexTake.TE,
+    K: (league.teams || 0) * (league.roster?.K ?? 0),
+    DEF: (league.teams || 0) * (league.roster?.DEF ?? 0),
   };
   const slope: Record<Pos, number> = {
     QB: 0,
@@ -274,12 +299,13 @@ function computeFpReplacementSlope(
       slope[pos] = 0;
       continue;
     }
-    const i = Math.min(Math.max(0, r - 1), lst.length - 1);
-    if (i + 1 < lst.length && lst[i] != null && lst[i + 1] != null)
-      slope[pos] = lst[i]! - lst[i + 1]!;
-    else if (i - 1 >= 0 && lst[i - 1] != null && lst[i] != null)
-      slope[pos] = lst[i - 1]! - lst[i]!;
-    else slope[pos] = 0;
+    // removed unused variable: baselineIndex(r, lst.length);
+    // Define slope strictly as pts[lastStarter] - pts[firstBench] when 0 < r < list.length
+    if (r > 0 && r < lst.length && lst[r - 1] != null && lst[r] != null) {
+      slope[pos] = lst[r - 1]! - lst[r]!;
+    } else {
+      slope[pos] = 0;
+    }
   }
   return slope;
 }
@@ -292,23 +318,25 @@ function computeRemainingPositiveValuePercent(
   scoring: ScoringType
 ): Map<string, number> {
   const by = groupByPosFpPts(players, scoring);
+
+  const baseStarters: Record<"RB" | "WR" | "TE", number> = {
+    RB: (league.teams || 0) * (league.roster?.RB ?? 0),
+    WR: (league.teams || 0) * (league.roster?.WR ?? 0),
+    TE: (league.teams || 0) * (league.roster?.TE ?? 0),
+  };
+
   const flexTake = greedyFlexTake(
     by,
-    (league.teams || 0) * (league.roster?.FLEX || 0)
+    (league.teams || 0) * (league.roster?.FLEX || 0),
+    baseStarters
   );
   const starters: Record<Pos, number> = {
-    QB: (league.teams || 0) * (league.roster?.QB || 0),
-    RB: (league.teams || 0) * (league.roster?.RB || 0) + flexTake.RB,
-    WR: (league.teams || 0) * (league.roster?.WR || 0) + flexTake.WR,
-    TE: (league.teams || 0) * (league.roster?.TE || 0) + flexTake.TE,
-    K:
-      (league.teams || 0) *
-      (((league.roster as Record<string, unknown>)?.K as number) || 1),
-    DEF:
-      (league.teams || 0) *
-      (((league.roster as Record<string, unknown>)?.DEF as number) ||
-        ((league.roster as Record<string, unknown>)?.DST as number) ||
-        1),
+    QB: (league.teams || 0) * (league.roster?.QB ?? 0),
+    RB: baseStarters.RB + flexTake.RB,
+    WR: baseStarters.WR + flexTake.WR,
+    TE: baseStarters.TE + flexTake.TE,
+    K: (league.teams || 0) * (league.roster?.K ?? 0),
+    DEF: (league.teams || 0) * (league.roster?.DEF ?? 0),
   };
 
   const out = new Map<string, number>();
@@ -316,8 +344,8 @@ function computeRemainingPositiveValuePercent(
     const list = by[pos]; // sorted desc by pts
     if (!list.length) continue;
 
-    const r = Math.max(0, starters[pos] - 1);
-    const baseline = list[Math.min(r, list.length - 1)]?.pts ?? 0;
+    const rIdx = baselineIndex(starters[pos], list.length);
+    const baseline = list[rIdx]?.pts ?? 0;
     const starterEnd = Math.min(starters[pos], list.length);
     const values = list
       .slice(0, starterEnd)
@@ -429,10 +457,10 @@ export function enrichPlayers(
         fp_pts == null ? null : Math.round(fp_pts - fp_baseline_pts);
       const local = localScarcity.get(p) ?? 0;
       const repl = replacementSlope[pos] ?? 0;
-      const index = repl > 0 ? local / repl : 0; // dimensionless index
+      const EPS = 0.5;
+      const index = repl > EPS ? local / repl : 0; // dimensionless index, stabilized
       // UI scarcity = percent of positive value remaining after this player is taken
-      const fp_positional_scarcity_slope =
-        remainingPct.get(String(p.player_id)) ?? 0;
+      const fp_remaining_value_pct = remainingPct.get(String(p.player_id)) ?? 0;
       const fp_player_owned_avg = toNum(p.fantasypros?.player_owned_avg);
       // Market delta (MD): Sleeper ADP - FP ECR (whole number)
       const market_delta =
@@ -461,7 +489,7 @@ export function enrichPlayers(
         fp_positional_scarcity: Math.round(local),
         fp_replacement_slope: Math.round(repl),
         fp_scarcity_index: index,
-        fp_positional_scarcity_slope,
+        fp_remaining_value_pct,
         fp_player_owned_avg,
         market_delta, // negative: market earlier than experts; positive: falls vs experts
       } as const;

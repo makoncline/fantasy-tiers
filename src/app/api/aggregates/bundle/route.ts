@@ -33,7 +33,17 @@ function loadShard(shardName: string) {
       `Shard file not found: ${shardName}-combined-aggregate.json`
     );
   }
-  const json = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+
+  const fileContent = fs.readFileSync(filePath, "utf-8");
+
+  // Check if file is empty
+  if (!fileContent.trim()) {
+    throw new Error(
+      `Shard file is empty: ${shardName}-combined-aggregate.json`
+    );
+  }
+
+  const json = JSON.parse(fileContent);
   return CombinedShard.parse(json);
 }
 
@@ -75,7 +85,7 @@ function enrichedToBundlePlayer(
     },
     calc: {
       value: player.fp_value,
-      positional_scarcity: Math.round(player.fp_positional_scarcity_slope || 0),
+      positional_scarcity: Math.round(player.fp_remaining_value_pct || 0),
       market_delta: player.market_delta,
     },
   };
