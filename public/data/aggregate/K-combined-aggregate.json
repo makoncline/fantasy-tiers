@@ -3,8 +3,8 @@
     "player_id": "17",
     "name": "matt prater",
     "position": "K",
-    "team": null,
-    "bye_week": null,
+    "team": "BUF",
+    "bye_week": 7,
     "borischen": {
       "std": null,
       "ppr": null,
@@ -24,11 +24,94 @@
         "injury_body_part": null,
         "injury_notes": null,
         "injury_start_date": null,
-        "injury_status": "Questionable"
+        "injury_status": null
       },
-      "updated_at": 1756927112186
+      "updated_at": 1756972250412
     },
-    "fantasypros": null
+    "fantasypros": {
+      "player_id": "9443",
+      "player_owned_avg": 1.1,
+      "pos_rank": "K27",
+      "stats": {
+        "standard": {
+          "FG_FG_AVG": "0.0",
+          "FG_FG_HIGH": "0.0",
+          "FG_FG_LOW": "0.0",
+          "FGA_FGA_AVG": "0.0",
+          "FGA_FGA_HIGH": "0.0",
+          "FGA_FGA_LOW": "0.0",
+          "XPT_XPT_AVG": "0.0",
+          "XPT_XPT_HIGH": "0.0",
+          "XPT_XPT_LOW": "0.0",
+          "FPTS_FPTS_AVG": "0.0",
+          "FPTS_FPTS_HIGH": "0.0",
+          "FPTS_FPTS_LOW": "0.0",
+          "FPTS_AVG": "0.0",
+          "FPTS_HIGH": "0.0",
+          "FPTS_LOW": "0.0"
+        },
+        "half": {
+          "FG_FG_AVG": "0.0",
+          "FG_FG_HIGH": "0.0",
+          "FG_FG_LOW": "0.0",
+          "FGA_FGA_AVG": "0.0",
+          "FGA_FGA_HIGH": "0.0",
+          "FGA_FGA_LOW": "0.0",
+          "XPT_XPT_AVG": "0.0",
+          "XPT_XPT_HIGH": "0.0",
+          "XPT_XPT_LOW": "0.0",
+          "FPTS_FPTS_AVG": "0.0",
+          "FPTS_FPTS_HIGH": "0.0",
+          "FPTS_FPTS_LOW": "0.0",
+          "FPTS_AVG": "0.0",
+          "FPTS_HIGH": "0.0",
+          "FPTS_LOW": "0.0"
+        },
+        "ppr": {
+          "FG_FG_AVG": "0.0",
+          "FG_FG_HIGH": "0.0",
+          "FG_FG_LOW": "0.0",
+          "FGA_FGA_AVG": "0.0",
+          "FGA_FGA_HIGH": "0.0",
+          "FGA_FGA_LOW": "0.0",
+          "XPT_XPT_AVG": "0.0",
+          "XPT_XPT_HIGH": "0.0",
+          "XPT_XPT_LOW": "0.0",
+          "FPTS_FPTS_AVG": "0.0",
+          "FPTS_FPTS_HIGH": "0.0",
+          "FPTS_FPTS_LOW": "0.0",
+          "FPTS_AVG": "0.0",
+          "FPTS_HIGH": "0.0",
+          "FPTS_LOW": "0.0"
+        }
+      },
+      "rankings": {
+        "standard": {
+          "rank_ecr": 411,
+          "rank_min": 191,
+          "rank_max": 319,
+          "rank_ave": 260.25,
+          "rank_std": 41.58,
+          "tier": 14
+        },
+        "half": {
+          "rank_ecr": 448,
+          "rank_min": 278,
+          "rank_max": 369,
+          "rank_ave": 297.86,
+          "rank_std": 32.29,
+          "tier": 14
+        },
+        "ppr": {
+          "rank_ecr": 414,
+          "rank_min": 192,
+          "rank_max": 319,
+          "rank_ave": 261,
+          "rank_std": 41.35,
+          "tier": 14
+        }
+      }
+    }
   },
   "49": {
     "player_id": "49",
@@ -54,7 +137,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927116090
+      "updated_at": 1756972253497
     },
     "fantasypros": null
   },
@@ -82,7 +165,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927117931
+      "updated_at": 1756972254971
     },
     "fantasypros": null
   },
@@ -110,7 +193,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927107342
+      "updated_at": 1756972246451
     },
     "fantasypros": null
   },
@@ -138,7 +221,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927109324
+      "updated_at": 1756972248122
     },
     "fantasypros": null
   },
@@ -166,7 +249,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927110724
+      "updated_at": 1756972249256
     },
     "fantasypros": null
   },
@@ -194,7 +277,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927114600
+      "updated_at": 1756972252284
     },
     "fantasypros": null
   },
@@ -225,12 +308,12 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927116333
+      "updated_at": 1756972253695
     },
     "fantasypros": {
       "player_id": "9232",
       "player_owned_avg": 1,
-      "pos_rank": "K26",
+      "pos_rank": "K28",
       "stats": {
         "standard": {
           "FG_FG_AVG": "24.6",
@@ -286,27 +369,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 406,
-          "rank_min": 19,
+          "rank_ecr": 412,
+          "rank_min": 196,
           "rank_max": 311,
-          "rank_ave": 202.2,
-          "rank_std": 101.64,
+          "rank_ave": 245.43,
+          "rank_std": 42.65,
           "tier": 14
         },
         "half": {
-          "rank_ecr": 438,
+          "rank_ecr": 437,
           "rank_min": 198,
-          "rank_max": 400,
-          "rank_ave": 331.88,
-          "rank_std": 63.94,
+          "rank_max": 399,
+          "rank_ave": 331.5,
+          "rank_std": 62.47,
           "tier": 13
         },
         "ppr": {
-          "rank_ecr": 423,
+          "rank_ecr": 417,
           "rank_min": 197,
           "rank_max": 363,
-          "rank_ave": 271.4,
-          "rank_std": 63.48,
+          "rank_ave": 258.14,
+          "rank_std": 59.27,
           "tier": 15
         }
       }
@@ -339,11 +422,11 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927119058
+      "updated_at": 1756972255906
     },
     "fantasypros": {
       "player_id": "9491",
-      "player_owned_avg": 2.1,
+      "player_owned_avg": 2.2,
       "pos_rank": "K32",
       "stats": {
         "standard": {
@@ -400,27 +483,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 434,
-          "rank_min": 209,
+          "rank_ecr": 428,
+          "rank_min": 210,
           "rank_max": 245,
-          "rank_ave": 224.67,
-          "rank_std": 15.06,
+          "rank_ave": 221.75,
+          "rank_std": 13.94,
           "tier": 15
         },
         "half": {
-          "rank_ecr": 465,
-          "rank_min": 209,
-          "rank_max": 350,
-          "rank_ave": 269,
-          "rank_std": 52.6,
+          "rank_ecr": 470,
+          "rank_min": 239,
+          "rank_max": 390,
+          "rank_ave": 309.4,
+          "rank_std": 53.01,
           "tier": 14
         },
         "ppr": {
-          "rank_ecr": 429,
-          "rank_min": 211,
+          "rank_ecr": 421,
+          "rank_min": 207,
           "rank_max": 217,
-          "rank_ave": 213.67,
-          "rank_std": 2.49,
+          "rank_ave": 212.25,
+          "rank_std": 3.56,
           "tier": 15
         }
       }
@@ -450,7 +533,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927119202
+      "updated_at": 1756972256020
     },
     "fantasypros": null
   },
@@ -478,7 +561,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927121425
+      "updated_at": 1756972257802
     },
     "fantasypros": null
   },
@@ -506,7 +589,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927123785
+      "updated_at": 1756972259716
     },
     "fantasypros": null
   },
@@ -534,7 +617,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927107320
+      "updated_at": 1756972246435
     },
     "fantasypros": null
   },
@@ -565,7 +648,7 @@
         "injury_start_date": null,
         "injury_status": "Sus"
       },
-      "updated_at": 1756927110605
+      "updated_at": 1756972249156
     },
     "fantasypros": null
   },
@@ -596,7 +679,7 @@
         "injury_start_date": null,
         "injury_status": "Questionable"
       },
-      "updated_at": 1756927110644
+      "updated_at": 1756972249186
     },
     "fantasypros": null
   },
@@ -624,7 +707,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927111073
+      "updated_at": 1756972249522
     },
     "fantasypros": null
   },
@@ -655,7 +738,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927111892
+      "updated_at": 1756972250176
     },
     "fantasypros": null
   },
@@ -695,11 +778,11 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927111968
+      "updated_at": 1756972250235
     },
     "fantasypros": {
       "player_id": "13274",
-      "player_owned_avg": 7.6,
+      "player_owned_avg": 8,
       "pos_rank": "K20",
       "stats": {
         "standard": {
@@ -756,27 +839,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 328,
-          "rank_min": 170,
+          "rank_ecr": 317,
+          "rank_min": 82,
           "rank_max": 332,
-          "rank_ave": 251.5,
-          "rank_std": 41.05,
+          "rank_ave": 254.4,
+          "rank_std": 48.15,
           "tier": 13
         },
         "half": {
-          "rank_ecr": 335,
-          "rank_min": 173,
-          "rank_max": 355,
-          "rank_ave": 267.28,
-          "rank_std": 47.51,
+          "rank_ecr": 320,
+          "rank_min": 174,
+          "rank_max": 376,
+          "rank_ave": 265.99,
+          "rank_std": 45.73,
           "tier": 12
         },
         "ppr": {
-          "rank_ecr": 326,
-          "rank_min": 180,
+          "rank_ecr": 318,
+          "rank_min": 79,
           "rank_max": 362,
-          "rank_ave": 254.86,
-          "rank_std": 41.94,
+          "rank_ave": 256.7,
+          "rank_std": 48.65,
           "tier": 13
         }
       }
@@ -818,12 +901,12 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927112354
+      "updated_at": 1756972250547
     },
     "fantasypros": {
       "player_id": "13029",
       "player_owned_avg": 86.2,
-      "pos_rank": "K7",
+      "pos_rank": "K8",
       "stats": {
         "standard": {
           "FG_FG_AVG": "30.2",
@@ -879,27 +962,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 216,
-          "rank_min": 157,
-          "rank_max": 328,
-          "rank_ave": 209.53,
-          "rank_std": 19.32,
+          "rank_ecr": 220,
+          "rank_min": 106,
+          "rank_max": 308,
+          "rank_ave": 209.59,
+          "rank_std": 19.61,
           "tier": 11
         },
         "half": {
-          "rank_ecr": 224,
-          "rank_min": 166,
-          "rank_max": 324,
-          "rank_ave": 211.11,
-          "rank_std": 20.54,
+          "rank_ecr": 229,
+          "rank_min": 171,
+          "rank_max": 320,
+          "rank_ave": 212.12,
+          "rank_std": 21.27,
           "tier": 10
         },
         "ppr": {
-          "rank_ecr": 213,
-          "rank_min": 146,
-          "rank_max": 256,
-          "rank_ave": 207.42,
-          "rank_std": 15.48,
+          "rank_ecr": 214,
+          "rank_min": 68,
+          "rank_max": 309,
+          "rank_ave": 208.1,
+          "rank_std": 22.4,
           "tier": 11
         }
       }
@@ -929,7 +1012,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927112374
+      "updated_at": 1756972250563
     },
     "fantasypros": null
   },
@@ -960,12 +1043,12 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927112423
+      "updated_at": 1756972250608
     },
     "fantasypros": {
       "player_id": "13731",
-      "player_owned_avg": 16.1,
-      "pos_rank": "K25",
+      "player_owned_avg": 16.3,
+      "pos_rank": "K24",
       "stats": {
         "standard": {
           "FG_FG_AVG": "26.7",
@@ -1021,27 +1104,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 383,
-          "rank_min": 192,
+          "rank_ecr": 375,
+          "rank_min": 191,
           "rank_max": 332,
-          "rank_ave": 239.7,
-          "rank_std": 39.44,
+          "rank_ave": 253.65,
+          "rank_std": 47.33,
           "tier": 14
         },
         "half": {
-          "rank_ecr": 398,
+          "rank_ecr": 377,
           "rank_min": 204,
-          "rank_max": 420,
-          "rank_ave": 282.63,
-          "rank_std": 63.2,
-          "tier": 13
+          "rank_max": 419,
+          "rank_ave": 290.63,
+          "rank_std": 57.1,
+          "tier": 12
         },
         "ppr": {
-          "rank_ecr": 390,
-          "rank_min": 200,
+          "rank_ecr": 375,
+          "rank_min": 194,
           "rank_max": 373,
-          "rank_ave": 253.8,
-          "rank_std": 56.09,
+          "rank_ave": 260.9,
+          "rank_std": 53.82,
           "tier": 14
         }
       }
@@ -1071,7 +1154,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927113110
+      "updated_at": 1756972251131
     },
     "fantasypros": null
   },
@@ -1111,11 +1194,11 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927113182
+      "updated_at": 1756972251193
     },
     "fantasypros": {
       "player_id": "14003",
-      "player_owned_avg": 3.2,
+      "player_owned_avg": 3.3,
       "pos_rank": "K21",
       "stats": {
         "standard": {
@@ -1172,27 +1255,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 338,
-          "rank_min": 185,
+          "rank_ecr": 343,
+          "rank_min": 186,
           "rank_max": 332,
-          "rank_ave": 276.89,
-          "rank_std": 31.09,
+          "rank_ave": 272.87,
+          "rank_std": 31.11,
           "tier": 13
         },
         "half": {
-          "rank_ecr": 338,
-          "rank_min": 208,
-          "rank_max": 408,
-          "rank_ave": 285.94,
-          "rank_std": 41.95,
+          "rank_ecr": 340,
+          "rank_min": 196,
+          "rank_max": 407,
+          "rank_ave": 284.67,
+          "rank_std": 44.48,
           "tier": 12
         },
         "ppr": {
-          "rank_ecr": 338,
+          "rank_ecr": 343,
           "rank_min": 66,
           "rank_max": 333,
-          "rank_ave": 272.81,
-          "rank_std": 46,
+          "rank_ave": 268.73,
+          "rank_std": 45.18,
           "tier": 13
         }
       }
@@ -1222,7 +1305,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927113261
+      "updated_at": 1756972251246
     },
     "fantasypros": null
   },
@@ -1250,7 +1333,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927113273
+      "updated_at": 1756972251260
     },
     "fantasypros": null
   },
@@ -1278,7 +1361,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927113376
+      "updated_at": 1756972251337
     },
     "fantasypros": null
   },
@@ -1318,7 +1401,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927114040
+      "updated_at": 1756972251838
     },
     "fantasypros": {
       "player_id": "15756",
@@ -1379,27 +1462,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 208,
-          "rank_min": 154,
+          "rank_ecr": 206,
+          "rank_min": 152,
           "rank_max": 266,
-          "rank_ave": 207.31,
-          "rank_std": 14.12,
+          "rank_ave": 207.92,
+          "rank_std": 15.01,
           "tier": 11
         },
         "half": {
-          "rank_ecr": 220,
-          "rank_min": 165,
-          "rank_max": 309,
-          "rank_ave": 210.4,
-          "rank_std": 18.62,
+          "rank_ecr": 219,
+          "rank_min": 173,
+          "rank_max": 308,
+          "rank_ave": 211.05,
+          "rank_std": 18,
           "tier": 10
         },
         "ppr": {
-          "rank_ecr": 207,
-          "rank_min": 143,
+          "rank_ecr": 204,
+          "rank_min": 104,
           "rank_max": 253,
-          "rank_ave": 206.4,
-          "rank_std": 13.51,
+          "rank_ave": 206.36,
+          "rank_std": 15.73,
           "tier": 11
         }
       }
@@ -1429,7 +1512,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927114056
+      "updated_at": 1756972251848
     },
     "fantasypros": null
   },
@@ -1457,7 +1540,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927114065
+      "updated_at": 1756972251859
     },
     "fantasypros": null
   },
@@ -1485,7 +1568,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927114233
+      "updated_at": 1756972251992
     },
     "fantasypros": null
   },
@@ -1513,7 +1596,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927114240
+      "updated_at": 1756972251997
     },
     "fantasypros": null
   },
@@ -1553,11 +1636,11 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927114383
+      "updated_at": 1756972252109
     },
     "fantasypros": {
       "player_id": "16026",
-      "player_owned_avg": 43.5,
+      "player_owned_avg": 44.2,
       "pos_rank": "K4",
       "stats": {
         "standard": {
@@ -1615,26 +1698,26 @@
       "rankings": {
         "standard": {
           "rank_ecr": 204,
-          "rank_min": 169,
+          "rank_min": 136,
           "rank_max": 332,
-          "rank_ave": 203.71,
-          "rank_std": 17.73,
+          "rank_ave": 202.55,
+          "rank_std": 16.76,
           "tier": 11
         },
         "half": {
-          "rank_ecr": 214,
-          "rank_min": 180,
+          "rank_ecr": 213,
+          "rank_min": 179,
           "rank_max": 332,
-          "rank_ave": 207,
-          "rank_std": 22.63,
-          "tier": 9
+          "rank_ave": 206.29,
+          "rank_std": 22.24,
+          "tier": 10
         },
         "ppr": {
-          "rank_ecr": 205,
-          "rank_min": 138,
+          "rank_ecr": 203,
+          "rank_min": 76,
           "rank_max": 333,
-          "rank_ave": 204.75,
-          "rank_std": 22.26,
+          "rank_ave": 202.63,
+          "rank_std": 21.79,
           "tier": 11
         }
       }
@@ -1664,7 +1747,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927114503
+      "updated_at": 1756972252197
     },
     "fantasypros": null
   },
@@ -1692,7 +1775,7 @@
         "injury_start_date": null,
         "injury_status": "Questionable"
       },
-      "updated_at": 1756927114526
+      "updated_at": 1756972252214
     },
     "fantasypros": null
   },
@@ -1720,7 +1803,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927114584
+      "updated_at": 1756972252258
     },
     "fantasypros": null
   },
@@ -1748,7 +1831,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927114598
+      "updated_at": 1756972252283
     },
     "fantasypros": null
   },
@@ -1788,12 +1871,12 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927114976
+      "updated_at": 1756972252586
     },
     "fantasypros": {
       "player_id": "16540",
-      "player_owned_avg": 72.1,
-      "pos_rank": "K11",
+      "player_owned_avg": 73.1,
+      "pos_rank": "K10",
       "stats": {
         "standard": {
           "FG_FG_AVG": "29.3",
@@ -1849,27 +1932,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 230,
-          "rank_min": 168,
-          "rank_max": 324,
-          "rank_ave": 227.08,
-          "rank_std": 18.66,
+          "rank_ecr": 227,
+          "rank_min": 167,
+          "rank_max": 332,
+          "rank_ave": 227.63,
+          "rank_std": 20.27,
           "tier": 11
         },
         "half": {
-          "rank_ecr": 243,
-          "rank_min": 193,
-          "rank_max": 321,
-          "rank_ave": 229.31,
-          "rank_std": 19.26,
+          "rank_ecr": 236,
+          "rank_min": 166,
+          "rank_max": 332,
+          "rank_ave": 229.14,
+          "rank_std": 20.54,
           "tier": 10
         },
         "ppr": {
-          "rank_ecr": 228,
-          "rank_min": 155,
-          "rank_max": 327,
-          "rank_ave": 221.54,
-          "rank_std": 20.15,
+          "rank_ecr": 221,
+          "rank_min": 115,
+          "rank_max": 333,
+          "rank_ave": 221.62,
+          "rank_std": 22.57,
           "tier": 11
         }
       }
@@ -1911,12 +1994,12 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927115032
+      "updated_at": 1756972252630
     },
     "fantasypros": {
       "player_id": "16712",
-      "player_owned_avg": 78.4,
-      "pos_rank": "K8",
+      "player_owned_avg": 78.8,
+      "pos_rank": "K7",
       "stats": {
         "standard": {
           "FG_FG_AVG": "28.7",
@@ -1972,27 +2055,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 219,
-          "rank_min": 177,
+          "rank_ecr": 215,
+          "rank_min": 140,
           "rank_max": 332,
-          "rank_ave": 217.39,
-          "rank_std": 20.18,
+          "rank_ave": 215.33,
+          "rank_std": 19.33,
           "tier": 11
         },
         "half": {
-          "rank_ecr": 228,
-          "rank_min": 186,
+          "rank_ecr": 223,
+          "rank_min": 171,
           "rank_max": 316,
-          "rank_ave": 219.43,
-          "rank_std": 19.29,
+          "rank_ave": 216.81,
+          "rank_std": 18.33,
           "tier": 10
         },
         "ppr": {
-          "rank_ecr": 215,
-          "rank_min": 150,
+          "rank_ecr": 211,
+          "rank_min": 85,
           "rank_max": 333,
-          "rank_ave": 215.3,
-          "rank_std": 20.81,
+          "rank_ave": 212.5,
+          "rank_std": 21.52,
           "tier": 11
         }
       }
@@ -2025,7 +2108,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927115040
+      "updated_at": 1756972252637
     },
     "fantasypros": null
   },
@@ -2053,7 +2136,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927115557
+      "updated_at": 1756972253049
     },
     "fantasypros": null
   },
@@ -2093,11 +2176,11 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927115735
+      "updated_at": 1756972253196
     },
     "fantasypros": {
       "player_id": "16910",
-      "player_owned_avg": 29.8,
+      "player_owned_avg": 29.7,
       "pos_rank": "K13",
       "stats": {
         "standard": {
@@ -2154,28 +2237,28 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 252,
-          "rank_min": 176,
-          "rank_max": 325,
-          "rank_ave": 237.28,
-          "rank_std": 19.44,
-          "tier": 12
+          "rank_ecr": 250,
+          "rank_min": 158,
+          "rank_max": 332,
+          "rank_ave": 239.46,
+          "rank_std": 22.32,
+          "tier": 11
         },
         "half": {
-          "rank_ecr": 257,
-          "rank_min": 199,
-          "rank_max": 317,
-          "rank_ave": 243.52,
-          "rank_std": 23.79,
+          "rank_ecr": 256,
+          "rank_min": 197,
+          "rank_max": 316,
+          "rank_ave": 242.79,
+          "rank_std": 23.27,
           "tier": 10
         },
         "ppr": {
-          "rank_ecr": 252,
-          "rank_min": 179,
-          "rank_max": 329,
-          "rank_ave": 235.99,
-          "rank_std": 23.38,
-          "tier": 12
+          "rank_ecr": 250,
+          "rank_min": 118,
+          "rank_max": 333,
+          "rank_ave": 237.9,
+          "rank_std": 26.32,
+          "tier": 11
         }
       }
     }
@@ -2204,7 +2287,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927116188
+      "updated_at": 1756972253585
     },
     "fantasypros": null
   },
@@ -2235,11 +2318,11 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927116456
+      "updated_at": 1756972253805
     },
     "fantasypros": {
       "player_id": "17420",
-      "player_owned_avg": 11,
+      "player_owned_avg": 10.5,
       "pos_rank": "K17",
       "stats": {
         "standard": {
@@ -2296,27 +2379,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 294,
+          "rank_ecr": 295,
           "rank_min": 176,
           "rank_max": 332,
-          "rank_ave": 267.83,
-          "rank_std": 38.44,
+          "rank_ave": 271.26,
+          "rank_std": 38.56,
           "tier": 12
         },
         "half": {
-          "rank_ecr": 294,
-          "rank_min": 197,
-          "rank_max": 386,
-          "rank_ave": 274.34,
-          "rank_std": 41.03,
+          "rank_ecr": 296,
+          "rank_min": 199,
+          "rank_max": 385,
+          "rank_ave": 274.22,
+          "rank_std": 39.33,
           "tier": 11
         },
         "ppr": {
-          "rank_ecr": 294,
+          "rank_ecr": 297,
           "rank_min": 70,
           "rank_max": 338,
-          "rank_ave": 267.6,
-          "rank_std": 43.47,
+          "rank_ave": 271.06,
+          "rank_std": 42.61,
           "tier": 12
         }
       }
@@ -2349,11 +2432,11 @@
         "injury_start_date": null,
         "injury_status": "IR"
       },
-      "updated_at": 1756927116495
+      "updated_at": 1756972253835
     },
     "fantasypros": {
       "player_id": "17533",
-      "player_owned_avg": 17.3,
+      "player_owned_avg": 15.4,
       "pos_rank": "K18",
       "stats": {
         "standard": {
@@ -2410,27 +2493,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 295,
+          "rank_ecr": 297,
           "rank_min": 206,
           "rank_max": 332,
-          "rank_ave": 240.92,
-          "rank_std": 26.02,
+          "rank_ave": 239.76,
+          "rank_std": 22.99,
           "tier": 12
         },
         "half": {
-          "rank_ecr": 301,
-          "rank_min": 202,
-          "rank_max": 452,
-          "rank_ave": 246.39,
-          "rank_std": 40.62,
+          "rank_ecr": 305,
+          "rank_min": 199,
+          "rank_max": 463,
+          "rank_ave": 246.76,
+          "rank_std": 42.72,
           "tier": 11
         },
         "ppr": {
-          "rank_ecr": 293,
-          "rank_min": 171,
+          "rank_ecr": 298,
+          "rank_min": 200,
           "rank_max": 333,
-          "rank_ave": 239.54,
-          "rank_std": 26.55,
+          "rank_ave": 239.37,
+          "rank_std": 23.81,
           "tier": 12
         }
       }
@@ -2463,7 +2546,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927116634
+      "updated_at": 1756972253938
     },
     "fantasypros": null
   },
@@ -2494,7 +2577,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927116702
+      "updated_at": 1756972253994
     },
     "fantasypros": null
   },
@@ -2522,7 +2605,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927116735
+      "updated_at": 1756972254020
     },
     "fantasypros": null
   },
@@ -2553,7 +2636,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927116746
+      "updated_at": 1756972254027
     },
     "fantasypros": null
   },
@@ -2584,7 +2667,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927116774
+      "updated_at": 1756972254048
     },
     "fantasypros": null
   },
@@ -2612,7 +2695,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927116969
+      "updated_at": 1756972254208
     },
     "fantasypros": null
   },
@@ -2640,7 +2723,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927116984
+      "updated_at": 1756972254220
     },
     "fantasypros": null
   },
@@ -2668,7 +2751,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927117102
+      "updated_at": 1756972254317
     },
     "fantasypros": null
   },
@@ -2696,7 +2779,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927117534
+      "updated_at": 1756972254672
     },
     "fantasypros": null
   },
@@ -2724,7 +2807,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927117775
+      "updated_at": 1756972254853
     },
     "fantasypros": null
   },
@@ -2752,7 +2835,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927117796
+      "updated_at": 1756972254872
     },
     "fantasypros": null
   },
@@ -2780,7 +2863,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927117799
+      "updated_at": 1756972254874
     },
     "fantasypros": null
   },
@@ -2820,11 +2903,11 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927118307
+      "updated_at": 1756972255271
     },
     "fantasypros": {
       "player_id": "18545",
-      "player_owned_avg": 24.5,
+      "player_owned_avg": 25.6,
       "pos_rank": "K12",
       "stats": {
         "standard": {
@@ -2881,27 +2964,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 249,
-          "rank_min": 164,
+          "rank_ecr": 242,
+          "rank_min": 126,
           "rank_max": 332,
-          "rank_ave": 235.72,
-          "rank_std": 27.72,
+          "rank_ave": 231.95,
+          "rank_std": 27.96,
           "tier": 11
         },
         "half": {
-          "rank_ecr": 260,
-          "rank_min": 160,
+          "rank_ecr": 248,
+          "rank_min": 163,
           "rank_max": 351,
-          "rank_ave": 239.34,
-          "rank_std": 31.88,
+          "rank_ave": 234.76,
+          "rank_std": 29.48,
           "tier": 10
         },
         "ppr": {
-          "rank_ecr": 248,
-          "rank_min": 156,
+          "rank_ecr": 237,
+          "rank_min": 86,
           "rank_max": 361,
-          "rank_ave": 234.14,
-          "rank_std": 32.57,
+          "rank_ave": 228.59,
+          "rank_std": 32.5,
           "tier": 11
         }
       }
@@ -2931,7 +3014,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927118503
+      "updated_at": 1756972255437
     },
     "fantasypros": null
   },
@@ -2959,7 +3042,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927118505
+      "updated_at": 1756972255438
     },
     "fantasypros": null
   },
@@ -2987,7 +3070,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927118528
+      "updated_at": 1756972255456
     },
     "fantasypros": null
   },
@@ -3018,7 +3101,7 @@
         "injury_start_date": null,
         "injury_status": "Questionable"
       },
-      "updated_at": 1756927118546
+      "updated_at": 1756972255477
     },
     "fantasypros": null
   },
@@ -3049,7 +3132,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927118637
+      "updated_at": 1756972255550
     },
     "fantasypros": null
   },
@@ -3077,7 +3160,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927119050
+      "updated_at": 1756972255900
     },
     "fantasypros": null
   },
@@ -3108,7 +3191,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927119100
+      "updated_at": 1756972255940
     },
     "fantasypros": {
       "player_id": "19028",
@@ -3169,11 +3252,11 @@
       },
       "rankings": {
         "half": {
-          "rank_ecr": 500,
-          "rank_min": 278,
-          "rank_max": 454,
-          "rank_ave": 347.33,
-          "rank_std": 76.55,
+          "rank_ecr": 473,
+          "rank_min": 309,
+          "rank_max": 464,
+          "rank_ave": 357.17,
+          "rank_std": 52.45,
           "tier": 14
         }
       }
@@ -3203,7 +3286,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927119282
+      "updated_at": 1756972256081
     },
     "fantasypros": null
   },
@@ -3231,7 +3314,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927119289
+      "updated_at": 1756972256090
     },
     "fantasypros": null
   },
@@ -3271,7 +3354,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927119337
+      "updated_at": 1756972256124
     },
     "fantasypros": {
       "player_id": "19058",
@@ -3332,27 +3415,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 206,
-          "rank_min": 164,
+          "rank_ecr": 205,
+          "rank_min": 130,
           "rank_max": 252,
-          "rank_ave": 205.45,
-          "rank_std": 11.57,
+          "rank_ave": 204.72,
+          "rank_std": 12.89,
           "tier": 11
         },
         "half": {
-          "rank_ecr": 219,
-          "rank_min": 183,
-          "rank_max": 316,
-          "rank_ave": 209.37,
-          "rank_std": 17.13,
+          "rank_ecr": 217,
+          "rank_min": 180,
+          "rank_max": 313,
+          "rank_ave": 207.83,
+          "rank_std": 16.2,
           "tier": 10
         },
         "ppr": {
-          "rank_ecr": 204,
-          "rank_min": 140,
+          "rank_ecr": 202,
+          "rank_min": 81,
           "rank_max": 253,
-          "rank_ave": 204.74,
-          "rank_std": 11.43,
+          "rank_ave": 203.6,
+          "rank_std": 14.86,
           "tier": 11
         }
       }
@@ -3394,12 +3477,12 @@
         "injury_start_date": null,
         "injury_status": "Questionable"
       },
-      "updated_at": 1756927120084
+      "updated_at": 1756972256697
     },
     "fantasypros": {
       "player_id": "19760",
-      "player_owned_avg": 64.4,
-      "pos_rank": "K10",
+      "player_owned_avg": 63.9,
+      "pos_rank": "K11",
       "stats": {
         "standard": {
           "FG_FG_AVG": "27.4",
@@ -3455,27 +3538,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 225,
-          "rank_min": 185,
+          "rank_ecr": 229,
+          "rank_min": 150,
           "rank_max": 281,
-          "rank_ave": 221.9,
-          "rank_std": 17.38,
+          "rank_ave": 222.83,
+          "rank_std": 18.21,
           "tier": 11
         },
         "half": {
-          "rank_ecr": 235,
+          "rank_ecr": 240,
           "rank_min": 197,
-          "rank_max": 313,
-          "rank_ave": 224.63,
-          "rank_std": 18.84,
+          "rank_max": 289,
+          "rank_ave": 225.14,
+          "rank_std": 17.86,
           "tier": 10
         },
         "ppr": {
-          "rank_ecr": 224,
-          "rank_min": 154,
+          "rank_ecr": 227,
+          "rank_min": 98,
           "rank_max": 282,
-          "rank_ave": 219.11,
-          "rank_std": 18.41,
+          "rank_ave": 218.95,
+          "rank_std": 20.78,
           "tier": 11
         }
       }
@@ -3505,7 +3588,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927120119
+      "updated_at": 1756972256728
     },
     "fantasypros": null
   },
@@ -3533,7 +3616,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927120137
+      "updated_at": 1756972256745
     },
     "fantasypros": null
   },
@@ -3561,7 +3644,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927120178
+      "updated_at": 1756972256778
     },
     "fantasypros": null
   },
@@ -3589,7 +3672,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927120179
+      "updated_at": 1756972256778
     },
     "fantasypros": null
   },
@@ -3617,7 +3700,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927120190
+      "updated_at": 1756972256786
     },
     "fantasypros": null
   },
@@ -3645,7 +3728,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927120217
+      "updated_at": 1756972256809
     },
     "fantasypros": null
   },
@@ -3673,7 +3756,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927120277
+      "updated_at": 1756972256862
     },
     "fantasypros": null
   },
@@ -3701,7 +3784,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927120374
+      "updated_at": 1756972256937
     },
     "fantasypros": null
   },
@@ -3729,7 +3812,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927120601
+      "updated_at": 1756972257140
     },
     "fantasypros": null
   },
@@ -3757,7 +3840,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927120850
+      "updated_at": 1756972257340
     },
     "fantasypros": null
   },
@@ -3785,7 +3868,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927120962
+      "updated_at": 1756972257429
     },
     "fantasypros": null
   },
@@ -3813,7 +3896,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927120965
+      "updated_at": 1756972257433
     },
     "fantasypros": null
   },
@@ -3841,7 +3924,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927121165
+      "updated_at": 1756972257577
     },
     "fantasypros": null
   },
@@ -3881,11 +3964,11 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927121600
+      "updated_at": 1756972257938
     },
     "fantasypros": {
       "player_id": "23297",
-      "player_owned_avg": 48.6,
+      "player_owned_avg": 48.8,
       "pos_rank": "K9",
       "stats": {
         "standard": {
@@ -3942,27 +4025,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 223,
-          "rank_min": 177,
-          "rank_max": 332,
-          "rank_ave": 216.97,
-          "rank_std": 20.23,
+          "rank_ecr": 222,
+          "rank_min": 151,
+          "rank_max": 327,
+          "rank_ave": 215.86,
+          "rank_std": 17.37,
           "tier": 11
         },
         "half": {
-          "rank_ecr": 229,
-          "rank_min": 183,
-          "rank_max": 332,
-          "rank_ave": 219.12,
-          "rank_std": 23.75,
+          "rank_ecr": 232,
+          "rank_min": 182,
+          "rank_max": 316,
+          "rank_ave": 218.25,
+          "rank_std": 19.32,
           "tier": 10
         },
         "ppr": {
           "rank_ecr": 218,
-          "rank_min": 152,
-          "rank_max": 333,
-          "rank_ave": 215.06,
-          "rank_std": 21.44,
+          "rank_min": 84,
+          "rank_max": 308,
+          "rank_ave": 213.31,
+          "rank_std": 20.11,
           "tier": 11
         }
       }
@@ -3992,7 +4075,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927121635
+      "updated_at": 1756972257967
     },
     "fantasypros": null
   },
@@ -4023,12 +4106,12 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927121766
+      "updated_at": 1756972258082
     },
     "fantasypros": {
       "player_id": "23370",
-      "player_owned_avg": 1,
-      "pos_rank": "K36",
+      "player_owned_avg": 0.7,
+      "pos_rank": "K35",
       "stats": {
         "standard": {
           "FG_FG_AVG": "7.1",
@@ -4084,11 +4167,11 @@
       },
       "rankings": {
         "half": {
-          "rank_ecr": 540,
+          "rank_ecr": 493,
           "rank_min": 205,
-          "rank_max": 493,
-          "rank_ave": 349,
-          "rank_std": 144,
+          "rank_max": 519,
+          "rank_ave": 362.25,
+          "rank_std": 112.05,
           "tier": 14
         }
       }
@@ -4118,7 +4201,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927121810
+      "updated_at": 1756972258098
     },
     "fantasypros": null
   },
@@ -4146,7 +4229,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927121865
+      "updated_at": 1756972258141
     },
     "fantasypros": null
   },
@@ -4174,7 +4257,7 @@
         "injury_start_date": null,
         "injury_status": "Questionable"
       },
-      "updated_at": 1756927122029
+      "updated_at": 1756972258275
     },
     "fantasypros": null
   },
@@ -4202,7 +4285,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927122033
+      "updated_at": 1756972258278
     },
     "fantasypros": null
   },
@@ -4230,7 +4313,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927122055
+      "updated_at": 1756972258297
     },
     "fantasypros": null
   },
@@ -4258,7 +4341,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927122057
+      "updated_at": 1756972258298
     },
     "fantasypros": null
   },
@@ -4289,7 +4372,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927122462
+      "updated_at": 1756972258612
     },
     "fantasypros": null
   },
@@ -4329,11 +4412,11 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927122464
+      "updated_at": 1756972258614
     },
     "fantasypros": {
       "player_id": "23901",
-      "player_owned_avg": 97.8,
+      "player_owned_avg": 97.9,
       "pos_rank": "K2",
       "stats": {
         "standard": {
@@ -4390,27 +4473,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 190,
-          "rank_min": 149,
+          "rank_ecr": 192,
+          "rank_min": 122,
           "rank_max": 233,
-          "rank_ave": 193.12,
-          "rank_std": 7.96,
+          "rank_ave": 192.87,
+          "rank_std": 9.44,
           "tier": 10
         },
         "half": {
           "rank_ecr": 203,
-          "rank_min": 153,
-          "rank_max": 308,
-          "rank_ave": 195.97,
-          "rank_std": 16.32,
+          "rank_min": 148,
+          "rank_max": 307,
+          "rank_ave": 194.92,
+          "rank_std": 15.02,
           "tier": 9
         },
         "ppr": {
-          "rank_ecr": 189,
-          "rank_min": 132,
+          "rank_ecr": 188,
+          "rank_min": 77,
           "rank_max": 217,
-          "rank_ave": 193.81,
-          "rank_std": 7.79,
+          "rank_ave": 193.06,
+          "rank_std": 12,
           "tier": 10
         }
       }
@@ -4440,7 +4523,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927122465
+      "updated_at": 1756972258615
     },
     "fantasypros": null
   },
@@ -4468,7 +4551,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927122999
+      "updated_at": 1756972259065
     },
     "fantasypros": null
   },
@@ -4496,7 +4579,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927123074
+      "updated_at": 1756972259134
     },
     "fantasypros": null
   },
@@ -4527,7 +4610,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927123230
+      "updated_at": 1756972259247
     },
     "fantasypros": null
   },
@@ -4555,7 +4638,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927123438
+      "updated_at": 1756972259425
     },
     "fantasypros": null
   },
@@ -4583,7 +4666,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927123521
+      "updated_at": 1756972259505
     },
     "fantasypros": null
   },
@@ -4611,7 +4694,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927123690
+      "updated_at": 1756972259642
     },
     "fantasypros": null
   },
@@ -4639,7 +4722,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927123771
+      "updated_at": 1756972259703
     },
     "fantasypros": null
   },
@@ -4667,7 +4750,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927123780
+      "updated_at": 1756972259711
     },
     "fantasypros": null
   },
@@ -4695,7 +4778,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927107041
+      "updated_at": 1756972246222
     },
     "fantasypros": null
   },
@@ -4726,7 +4809,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927107210
+      "updated_at": 1756972246353
     },
     "fantasypros": {
       "player_id": "24009",
@@ -4787,28 +4870,28 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 351,
-          "rank_min": 192,
+          "rank_ecr": 349,
+          "rank_min": 138,
           "rank_max": 332,
-          "rank_ave": 264.96,
-          "rank_std": 35.02,
+          "rank_ave": 254.69,
+          "rank_std": 40.54,
           "tier": 13
         },
         "half": {
-          "rank_ecr": 350,
+          "rank_ecr": 348,
           "rank_min": 192,
-          "rank_max": 369,
-          "rank_ave": 272.46,
-          "rank_std": 38.37,
+          "rank_max": 380,
+          "rank_ave": 271.41,
+          "rank_std": 41.68,
           "tier": 12
         },
         "ppr": {
-          "rank_ecr": 352,
-          "rank_min": 193,
+          "rank_ecr": 348,
+          "rank_min": 136,
           "rank_max": 370,
-          "rank_ave": 269.61,
-          "rank_std": 42.05,
-          "tier": 14
+          "rank_ave": 258.67,
+          "rank_std": 45.97,
+          "tier": 13
         }
       }
     }
@@ -4849,7 +4932,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927107248
+      "updated_at": 1756972246382
     },
     "fantasypros": {
       "player_id": "25354",
@@ -4911,26 +4994,26 @@
       "rankings": {
         "standard": {
           "rank_ecr": 372,
-          "rank_min": 162,
+          "rank_min": 96,
           "rank_max": 332,
-          "rank_ave": 253.94,
-          "rank_std": 45.53,
+          "rank_ave": 250.14,
+          "rank_std": 54.34,
           "tier": 14
         },
         "half": {
-          "rank_ecr": 383,
+          "rank_ecr": 380,
           "rank_min": 176,
-          "rank_max": 413,
-          "rank_ave": 285.95,
-          "rank_std": 64.54,
+          "rank_max": 412,
+          "rank_ave": 281.79,
+          "rank_std": 61.15,
           "tier": 12
         },
         "ppr": {
-          "rank_ecr": 376,
-          "rank_min": 213,
+          "rank_ecr": 371,
+          "rank_min": 87,
           "rank_max": 333,
-          "rank_ave": 261.56,
-          "rank_std": 36.08,
+          "rank_ave": 252.23,
+          "rank_std": 51.89,
           "tier": 14
         }
       }
@@ -4963,7 +5046,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927107358
+      "updated_at": 1756972246465
     },
     "fantasypros": null
   },
@@ -4994,12 +5077,12 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927107460
+      "updated_at": 1756972246546
     },
     "fantasypros": {
       "player_id": "25533",
       "player_owned_avg": 0.9,
-      "pos_rank": "K27",
+      "pos_rank": "K26",
       "stats": {
         "standard": {
           "FG_FG_AVG": "26.5",
@@ -5055,27 +5138,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 409,
-          "rank_min": 207,
-          "rank_max": 289,
-          "rank_ave": 247.5,
-          "rank_std": 31.79,
+          "rank_ecr": 405,
+          "rank_min": 206,
+          "rank_max": 329,
+          "rank_ave": 254.67,
+          "rank_std": 39.72,
           "tier": 14
         },
         "half": {
-          "rank_ecr": 415,
+          "rank_ecr": 413,
           "rank_min": 211,
-          "rank_max": 429,
-          "rank_ave": 310,
-          "rank_std": 62.22,
+          "rank_max": 428,
+          "rank_ave": 318.71,
+          "rank_std": 57.52,
           "tier": 13
         },
         "ppr": {
-          "rank_ecr": 406,
+          "rank_ecr": 405,
           "rank_min": 69,
           "rank_max": 372,
-          "rank_ave": 231.67,
-          "rank_std": 91.62,
+          "rank_ave": 244.56,
+          "rank_std": 82.63,
           "tier": 14
         }
       }
@@ -5105,7 +5188,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927107496
+      "updated_at": 1756972246577
     },
     "fantasypros": null
   },
@@ -5133,7 +5216,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927107522
+      "updated_at": 1756972246599
     },
     "fantasypros": null
   },
@@ -5161,7 +5244,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927107623
+      "updated_at": 1756972246679
     },
     "fantasypros": null
   },
@@ -5189,7 +5272,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927107624
+      "updated_at": 1756972246680
     },
     "fantasypros": null
   },
@@ -5198,7 +5281,7 @@
     "name": "andre szmyt",
     "position": "K",
     "team": "CLE",
-    "bye_week": null,
+    "bye_week": 9,
     "borischen": {
       "std": null,
       "ppr": null,
@@ -5220,9 +5303,76 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927107850
+      "updated_at": 1756972246861
     },
-    "fantasypros": null
+    "fantasypros": {
+      "player_id": "25713",
+      "player_owned_avg": 0.6,
+      "pos_rank": "K37",
+      "stats": {
+        "standard": {
+          "FG_FG_AVG": "22.9",
+          "FG_FG_HIGH": "27.8",
+          "FG_FG_LOW": "20.0",
+          "FGA_FGA_AVG": "27.8",
+          "FGA_FGA_HIGH": "33.5",
+          "FGA_FGA_LOW": "24.0",
+          "XPT_XPT_AVG": "25.7",
+          "XPT_XPT_HIGH": "26.0",
+          "XPT_XPT_LOW": "25.5",
+          "FPTS_FPTS_AVG": "94.5",
+          "FPTS_FPTS_HIGH": "119.9",
+          "FPTS_FPTS_LOW": "86.0",
+          "FPTS_AVG": "94.5",
+          "FPTS_HIGH": "119.9",
+          "FPTS_LOW": "86.0"
+        },
+        "half": {
+          "FG_FG_AVG": "22.9",
+          "FG_FG_HIGH": "27.8",
+          "FG_FG_LOW": "20.0",
+          "FGA_FGA_AVG": "27.8",
+          "FGA_FGA_HIGH": "33.5",
+          "FGA_FGA_LOW": "24.0",
+          "XPT_XPT_AVG": "25.7",
+          "XPT_XPT_HIGH": "26.0",
+          "XPT_XPT_LOW": "25.5",
+          "FPTS_FPTS_AVG": "94.5",
+          "FPTS_FPTS_HIGH": "119.9",
+          "FPTS_FPTS_LOW": "86.0",
+          "FPTS_AVG": "94.5",
+          "FPTS_HIGH": "119.9",
+          "FPTS_LOW": "86.0"
+        },
+        "ppr": {
+          "FG_FG_AVG": "22.9",
+          "FG_FG_HIGH": "27.8",
+          "FG_FG_LOW": "20.0",
+          "FGA_FGA_AVG": "27.8",
+          "FGA_FGA_HIGH": "33.5",
+          "FGA_FGA_LOW": "24.0",
+          "XPT_XPT_AVG": "25.7",
+          "XPT_XPT_HIGH": "26.0",
+          "XPT_XPT_LOW": "25.5",
+          "FPTS_FPTS_AVG": "94.5",
+          "FPTS_FPTS_HIGH": "119.9",
+          "FPTS_FPTS_LOW": "86.0",
+          "FPTS_AVG": "94.5",
+          "FPTS_HIGH": "119.9",
+          "FPTS_LOW": "86.0"
+        }
+      },
+      "rankings": {
+        "half": {
+          "rank_ecr": 538,
+          "rank_min": 324,
+          "rank_max": 360,
+          "rank_ave": 342,
+          "rank_std": 18,
+          "tier": 14
+        }
+      }
+    }
   },
   "11457": {
     "player_id": "11457",
@@ -5248,7 +5398,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927108240
+      "updated_at": 1756972247209
     },
     "fantasypros": null
   },
@@ -5276,7 +5426,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927108390
+      "updated_at": 1756972247329
     },
     "fantasypros": null
   },
@@ -5316,7 +5466,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927108392
+      "updated_at": 1756972247331
     },
     "fantasypros": {
       "player_id": "26068",
@@ -5377,27 +5527,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 183,
-          "rank_min": 130,
+          "rank_ecr": 184,
+          "rank_min": 124,
           "rank_max": 239,
-          "rank_ave": 186.26,
-          "rank_std": 7.42,
+          "rank_ave": 186.5,
+          "rank_std": 8.71,
           "tier": 10
         },
         "half": {
-          "rank_ecr": 196,
-          "rank_min": 141,
-          "rank_max": 307,
-          "rank_ave": 188.82,
-          "rank_std": 16.03,
+          "rank_ecr": 195,
+          "rank_min": 129,
+          "rank_max": 306,
+          "rank_ave": 188.03,
+          "rank_std": 15.6,
           "tier": 9
         },
         "ppr": {
-          "rank_ecr": 182,
-          "rank_min": 128,
+          "rank_ecr": 183,
+          "rank_min": 74,
           "rank_max": 240,
-          "rank_ave": 187.36,
-          "rank_std": 8.21,
+          "rank_ave": 187.13,
+          "rank_std": 11.85,
           "tier": 10
         }
       }
@@ -5439,7 +5589,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927108404
+      "updated_at": 1756972247340
     },
     "fantasypros": {
       "player_id": "26075",
@@ -5500,27 +5650,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 197,
-          "rank_min": 151,
+          "rank_ecr": 196,
+          "rank_min": 128,
           "rank_max": 249,
-          "rank_ave": 194.31,
-          "rank_std": 10.89,
+          "rank_ave": 194.94,
+          "rank_std": 11.93,
           "tier": 10
         },
         "half": {
           "rank_ecr": 206,
-          "rank_min": 162,
+          "rank_min": 166,
           "rank_max": 310,
-          "rank_ave": 196.95,
-          "rank_std": 16.77,
+          "rank_ave": 196.85,
+          "rank_std": 15.42,
           "tier": 9
         },
         "ppr": {
-          "rank_ecr": 191,
-          "rank_min": 133,
+          "rank_ecr": 193,
+          "rank_min": 73,
           "rank_max": 250,
-          "rank_ave": 194.75,
-          "rank_std": 10.79,
+          "rank_ave": 194.63,
+          "rank_std": 14.07,
           "tier": 10
         }
       }
@@ -5550,7 +5700,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927108603
+      "updated_at": 1756972247503
     },
     "fantasypros": null
   },
@@ -5590,11 +5740,11 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927108902
+      "updated_at": 1756972247742
     },
     "fantasypros": {
       "player_id": "26475",
-      "player_owned_avg": 49.1,
+      "player_owned_avg": 49.5,
       "pos_rank": "K19",
       "stats": {
         "standard": {
@@ -5651,27 +5801,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 318,
-          "rank_min": 191,
+          "rank_ecr": 311,
+          "rank_min": 107,
           "rank_max": 332,
-          "rank_ave": 260.24,
-          "rank_std": 39.84,
+          "rank_ave": 258.75,
+          "rank_std": 42.61,
           "tier": 13
         },
         "half": {
-          "rank_ecr": 326,
+          "rank_ecr": 317,
           "rank_min": 180,
-          "rank_max": 384,
-          "rank_ave": 267.43,
-          "rank_std": 43.47,
+          "rank_max": 375,
+          "rank_ave": 264.71,
+          "rank_std": 41.79,
           "tier": 12
         },
         "ppr": {
-          "rank_ecr": 321,
-          "rank_min": 202,
+          "rank_ecr": 312,
+          "rank_min": 105,
           "rank_max": 371,
-          "rank_ave": 263.62,
-          "rank_std": 42.09,
+          "rank_ave": 259.7,
+          "rank_std": 44.78,
           "tier": 13
         }
       }
@@ -5713,12 +5863,12 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927108907
+      "updated_at": 1756972247746
     },
     "fantasypros": {
       "player_id": "26478",
       "player_owned_avg": 6,
-      "pos_rank": "K14",
+      "pos_rank": "K15",
       "stats": {
         "standard": {
           "FG_FG_AVG": "28.0",
@@ -5774,27 +5924,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 267,
-          "rank_min": 186,
+          "rank_ecr": 275,
+          "rank_min": 116,
           "rank_max": 332,
-          "rank_ave": 255.61,
-          "rank_std": 23.24,
+          "rank_ave": 254.22,
+          "rank_std": 26.18,
           "tier": 12
         },
         "half": {
-          "rank_ecr": 274,
-          "rank_min": 210,
-          "rank_max": 325,
-          "rank_ave": 258.18,
-          "rank_std": 25.03,
-          "tier": 10
+          "rank_ecr": 283,
+          "rank_min": 206,
+          "rank_max": 327,
+          "rank_ave": 257.35,
+          "rank_std": 25.41,
+          "tier": 11
         },
         "ppr": {
-          "rank_ecr": 274,
-          "rank_min": 197,
+          "rank_ecr": 276,
+          "rank_min": 120,
           "rank_max": 327,
-          "rank_ave": 257.34,
-          "rank_std": 24.12,
+          "rank_ave": 254.54,
+          "rank_std": 27.17,
           "tier": 12
         }
       }
@@ -5836,11 +5986,11 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927108913
+      "updated_at": 1756972247752
     },
     "fantasypros": {
       "player_id": "26341",
-      "player_owned_avg": 6.7,
+      "player_owned_avg": 6.8,
       "pos_rank": "K16",
       "stats": {
         "standard": {
@@ -5897,27 +6047,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 293,
-          "rank_min": 177,
+          "rank_ecr": 280,
+          "rank_min": 161,
           "rank_max": 332,
-          "rank_ave": 259.49,
-          "rank_std": 37.89,
+          "rank_ave": 253.46,
+          "rank_std": 35.44,
           "tier": 12
         },
         "half": {
-          "rank_ecr": 295,
-          "rank_min": 192,
-          "rank_max": 365,
-          "rank_ave": 262.66,
-          "rank_std": 37.1,
+          "rank_ecr": 288,
+          "rank_min": 175,
+          "rank_max": 332,
+          "rank_ave": 254.79,
+          "rank_std": 34.1,
           "tier": 11
         },
         "ppr": {
-          "rank_ecr": 296,
+          "rank_ecr": 283,
           "rank_min": 193,
           "rank_max": 333,
-          "rank_ave": 259.44,
-          "rank_std": 38.58,
+          "rank_ave": 253.48,
+          "rank_std": 35.5,
           "tier": 12
         }
       }
@@ -5950,7 +6100,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927109228
+      "updated_at": 1756972248027
     },
     "fantasypros": null
   },
@@ -5981,7 +6131,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927109354
+      "updated_at": 1756972248150
     },
     "fantasypros": null
   },
@@ -6009,7 +6159,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927109550
+      "updated_at": 1756972248302
     },
     "fantasypros": null
   },
@@ -6037,7 +6187,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927109647
+      "updated_at": 1756972248371
     },
     "fantasypros": null
   },
@@ -6065,7 +6215,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927109689
+      "updated_at": 1756972248414
     },
     "fantasypros": null
   },
@@ -6096,7 +6246,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927109698
+      "updated_at": 1756972248421
     },
     "fantasypros": {
       "player_id": "26763",
@@ -6157,27 +6307,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 414,
+          "rank_ecr": 416,
           "rank_min": 22,
           "rank_max": 280,
-          "rank_ave": 193.5,
-          "rank_std": 101.27,
+          "rank_ave": 203.4,
+          "rank_std": 92.71,
           "tier": 15
         },
         "half": {
-          "rank_ecr": 448,
-          "rank_min": 230,
+          "rank_ecr": 435,
+          "rank_min": 227,
           "rank_max": 417,
-          "rank_ave": 302.83,
-          "rank_std": 62.59,
+          "rank_ave": 297.56,
+          "rank_std": 56.07,
           "tier": 13
         },
         "ppr": {
-          "rank_ecr": 433,
+          "rank_ecr": 425,
           "rank_min": 22,
           "rank_max": 382,
-          "rank_ave": 219,
-          "rank_std": 148.92,
+          "rank_ave": 225.25,
+          "rank_std": 129.42,
           "tier": 15
         }
       }
@@ -6207,7 +6357,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927109957
+      "updated_at": 1756972248619
     },
     "fantasypros": null
   },
@@ -6235,7 +6385,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927110078
+      "updated_at": 1756972248717
     },
     "fantasypros": null
   },
@@ -6263,7 +6413,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927110108
+      "updated_at": 1756972248740
     },
     "fantasypros": null
   },
@@ -6291,7 +6441,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927110146
+      "updated_at": 1756972248768
     },
     "fantasypros": null
   },
@@ -6319,7 +6469,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927110148
+      "updated_at": 1756972248770
     },
     "fantasypros": null
   },
@@ -6347,7 +6497,7 @@
         "injury_start_date": null,
         "injury_status": "Questionable"
       },
-      "updated_at": 1756927110213
+      "updated_at": 1756972248830
     },
     "fantasypros": null
   },
@@ -6375,7 +6525,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927110420
+      "updated_at": 1756972249001
     },
     "fantasypros": null
   },
@@ -6415,12 +6565,12 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927110749
+      "updated_at": 1756972249274
     },
     "fantasypros": {
       "player_id": "27534",
-      "player_owned_avg": 39.5,
-      "pos_rank": "K15",
+      "player_owned_avg": 40.1,
+      "pos_rank": "K14",
       "stats": {
         "standard": {
           "FG_FG_AVG": "27.4",
@@ -6476,27 +6626,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 280,
-          "rank_min": 179,
-          "rank_max": 281,
-          "rank_ave": 232.44,
-          "rank_std": 20.57,
+          "rank_ecr": 268,
+          "rank_min": 144,
+          "rank_max": 327,
+          "rank_ave": 233.25,
+          "rank_std": 24.3,
           "tier": 12
         },
         "half": {
-          "rank_ecr": 291,
-          "rank_min": 184,
-          "rank_max": 344,
-          "rank_ave": 243.63,
-          "rank_std": 31.01,
+          "rank_ecr": 286,
+          "rank_min": 191,
+          "rank_max": 343,
+          "rank_ave": 240.83,
+          "rank_std": 28.88,
           "tier": 11
         },
         "ppr": {
-          "rank_ecr": 282,
-          "rank_min": 192,
-          "rank_max": 282,
-          "rank_ave": 233.21,
-          "rank_std": 21.78,
+          "rank_ecr": 269,
+          "rank_min": 146,
+          "rank_max": 323,
+          "rank_ave": 233.09,
+          "rank_std": 25.23,
           "tier": 12
         }
       }
@@ -6529,12 +6679,12 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927110753
+      "updated_at": 1756972249276
     },
     "fantasypros": {
       "player_id": "27291",
       "player_owned_avg": 1,
-      "pos_rank": "K28",
+      "pos_rank": "K30",
       "stats": {
         "standard": {
           "FG_FG_AVG": "24.8",
@@ -6590,27 +6740,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 412,
+          "rank_ecr": 418,
           "rank_min": 21,
           "rank_max": 281,
-          "rank_ave": 192.5,
-          "rank_std": 101.57,
-          "tier": 14
+          "rank_ave": 210.2,
+          "rank_std": 97.5,
+          "tier": 15
         },
         "half": {
-          "rank_ecr": 431,
+          "rank_ecr": 423,
           "rank_min": 227,
           "rank_max": 416,
-          "rank_ave": 299.63,
-          "rank_std": 54.11,
+          "rank_ave": 315.62,
+          "rank_std": 55.8,
           "tier": 13
         },
         "ppr": {
-          "rank_ecr": 422,
+          "rank_ecr": 419,
           "rank_min": 21,
           "rank_max": 282,
-          "rank_ave": 185,
-          "rank_std": 116.61,
+          "rank_ave": 209.25,
+          "rank_std": 109.37,
           "tier": 15
         }
       }
@@ -6640,7 +6790,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927110828
+      "updated_at": 1756972249337
     },
     "fantasypros": null
   },
@@ -6668,7 +6818,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927110908
+      "updated_at": 1756972249398
     },
     "fantasypros": null
   },
@@ -6696,7 +6846,7 @@
         "injury_start_date": null,
         "injury_status": "IR"
       },
-      "updated_at": 1756927110982
+      "updated_at": 1756972249451
     },
     "fantasypros": null
   },
@@ -6727,7 +6877,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927111258
+      "updated_at": 1756972249672
     },
     "fantasypros": {
       "player_id": "27261",
@@ -6788,11 +6938,11 @@
       },
       "rankings": {
         "half": {
-          "rank_ecr": 503,
-          "rank_min": 205,
-          "rank_max": 308,
-          "rank_ave": 256.5,
-          "rank_std": 51.5,
+          "rank_ecr": 479,
+          "rank_min": 233,
+          "rank_max": 347,
+          "rank_ave": 292.75,
+          "rank_std": 41.21,
           "tier": 14
         }
       }
@@ -6822,7 +6972,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927111465
+      "updated_at": 1756972249847
     },
     "fantasypros": null
   },
@@ -6850,7 +7000,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927111633
+      "updated_at": 1756972249986
     },
     "fantasypros": null
   },
@@ -6881,7 +7031,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927111764
+      "updated_at": 1756972250085
     },
     "fantasypros": null
   },
@@ -6909,7 +7059,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1756927111818
+      "updated_at": 1756972250124
     },
     "fantasypros": null
   }
