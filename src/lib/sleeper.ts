@@ -88,6 +88,32 @@ export async function fetchDraftsForUserYear(
   return z.array(SleeperDraftSummarySchema).parse(await res.json());
 }
 
+// Leagues for user/year
+export const SleeperLeagueSchema = z.object({
+  // Keep only absolutely-required fields as required; relax others
+  league_id: z.string(),
+  name: z.string(),
+});
+export type SleeperLeague = z.infer<typeof SleeperLeagueSchema>;
+
+export async function fetchLeaguesForUserYear(
+  userId: string,
+  year: string
+): Promise<SleeperLeague[]> {
+  const url = `https://api.sleeper.app/v1/user/${encodeURIComponent(
+    userId
+  )}/leagues/nfl/${encodeURIComponent(year)}`;
+  console.log("fetching leagues for user: ", url);
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(
+      `Failed to fetch leagues for user: ${userId} in nfl/${year}`
+    );
+  }
+  const json = await res.json();
+  return z.array(SleeperLeagueSchema).parse(json);
+}
+
 // Projections
 // Response example (trimmed) from https://api.sleeper.com/projections/nfl/2025
 // [{

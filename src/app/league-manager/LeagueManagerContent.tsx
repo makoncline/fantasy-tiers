@@ -22,21 +22,16 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from "@/components/ui/table";
-
-const formSchema = z.object({
-  leagueId: z.string().min(1, "League ID is required"),
-  userId: z.string().min(1, "User ID is required"),
-});
-
-type FormData = z.infer<typeof formSchema>;
+  useSleeperUserByUsername,
+  useSleeperLeaguesForYear,
+  useSleeperUserById,
+} from "@/hooks/useSleeper";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useQuery } from "@tanstack/react-query";
+import { borischenSourceUrl } from "@/lib/borischen";
 
 const LeagueManagerContent: React.FC = () => {
   const searchParams = useSearchParams();
@@ -44,13 +39,25 @@ const LeagueManagerContent: React.FC = () => {
   const leagueId = searchParams.get("leagueId") || "";
   const userId = searchParams.get("userId") || "";
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      leagueId,
-      userId,
-    },
-  });
+  // Username lookup flow via submit
+  const [submittedUsername, setSubmittedUsername] = React.useState<string>("");
+  const currentYear = String(new Date().getFullYear());
+  const userLookup = useSleeperUserByUsername(
+    submittedUsername || undefined,
+    Boolean(submittedUsername)
+  );
+
+  // Keep URL as source of truth for userId once we have a user result
+  React.useEffect(() => {
+    const newUserId = userLookup.data?.user_id;
+    if (!newUserId) return;
+    if (newUserId && newUserId !== userId) {
+      const p = new URLSearchParams(Array.from(searchParams.entries()));
+      p.set("userId", newUserId);
+      router.push(`/league-manager?${p.toString()}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userLookup.data?.user_id]);
 
   const {
     rosters,
@@ -64,12 +71,6 @@ const LeagueManagerContent: React.FC = () => {
     isLoading,
     error,
   } = useLeagueData(leagueId, userId);
-
-  const onSubmit = (data: FormData) => {
-    router.push(
-      `/league-manager?leagueId=${data.leagueId}&userId=${data.userId}`
-    );
-  };
 
   if (isLoading)
     return (
@@ -96,46 +97,61 @@ const LeagueManagerContent: React.FC = () => {
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-6">League Manager</h1>
 
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>League Lookup</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 md:grid-cols-3">
-              <FormField
-                control={form.control}
-                name="leagueId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>League ID</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter Sleeper league ID" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="userId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>User ID</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your Sleeper user ID" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex items-end">
-                <Button type="submit" className="w-full">Load</Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+      <LastUpdatedCard scoring={scoringType ?? "std"} />
+
+      {/* User: show either input or selected card */}
+      {!userId ? (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>User Input</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <UsernameCard
+              loading={userLookup.isLoading}
+              onSubmit={(u) => setSubmittedUsername(u)}
+            />
+          </CardContent>
+        </Card>
+      ) : (
+        <SelectedUserCard
+          userId={userId}
+          onClear={() => {
+            const p = new URLSearchParams(Array.from(searchParams.entries()));
+            p.delete("userId");
+            p.delete("leagueId");
+            router.push(`/league-manager?${p.toString()}`);
+            setSubmittedUsername("");
+          }}
+        />
+      )}
+
+      {/* League: show selection or selected card based on URL */}
+      {userId && !leagueId && (
+        <LeagueSelectionCard
+          userId={userId}
+          currentYear={currentYear}
+          selectedLeagueId={leagueId}
+          onSelect={(val) => {
+            const p = new URLSearchParams(Array.from(searchParams.entries()));
+            p.set("leagueId", val);
+            p.set("userId", userId);
+            // Update URL without causing a full navigation refresh
+            router.replace(`/league-manager?${p.toString()}`);
+          }}
+        />
+      )}
+      {userId && leagueId && (
+        <SelectedLeagueCard
+          userId={userId}
+          leagueId={leagueId}
+          currentYear={currentYear}
+          onClear={() => {
+            const p = new URLSearchParams(Array.from(searchParams.entries()));
+            p.delete("leagueId");
+            router.push(`/league-manager?${p.toString()}`);
+          }}
+        />
+      )}
 
       <Card className="mb-8">
         <CardHeader>
@@ -286,7 +302,9 @@ const RosterTable: React.FC<{
           return (
             <TableRow
               key={player.player_id}
-              className={shouldHighlight ? "bg-yellow-50 dark:bg-yellow-900/30" : ""}
+              className={
+                shouldHighlight ? "bg-yellow-50 dark:bg-yellow-900/30" : ""
+              }
             >
               <TableCell>{getSlotLabel(player.slot)}</TableCell>
               <TableCell>
@@ -299,10 +317,18 @@ const RosterTable: React.FC<{
               </TableCell>
               <TableCell>{player.isEmpty ? "-" : player.position}</TableCell>
               <TableCell>{player.isEmpty ? "-" : player.team || "-"}</TableCell>
-              <TableCell>{player.isEmpty ? "-" : player.tier || "N/A"}</TableCell>
-              <TableCell>{player.isEmpty ? "-" : player.rank || "N/A"}</TableCell>
-              <TableCell>{player.isEmpty ? "-" : player.flexTier || "N/A"}</TableCell>
-              <TableCell>{player.isEmpty ? "-" : player.flexRank || "N/A"}</TableCell>
+              <TableCell>
+                {player.isEmpty ? "-" : player.tier || "N/A"}
+              </TableCell>
+              <TableCell>
+                {player.isEmpty ? "-" : player.rank || "N/A"}
+              </TableCell>
+              <TableCell>
+                {player.isEmpty ? "-" : player.flexTier || "N/A"}
+              </TableCell>
+              <TableCell>
+                {player.isEmpty ? "-" : player.flexRank || "N/A"}
+              </TableCell>
             </TableRow>
           );
         })}
@@ -336,7 +362,9 @@ const UpgradeOptionDisplay: React.FC<{
         </TableRow>
       </TableBody>
     </Table>
-    <h4 className="text-base font-semibold mt-4 mb-2">Better Players Available</h4>
+    <h4 className="text-base font-semibold mt-4 mb-2">
+      Better Players Available
+    </h4>
     <AvailablePlayersTable players={upgrade.betterPlayers} />
   </div>
 );
@@ -370,8 +398,12 @@ const PlayerTable: React.FC<{
         <TableCell>{player.rank || "N/A"}</TableCell>
         {isFlex && (
           <>
-            <TableCell>{(player as RosteredPlayer).flexTier || "N/A"}</TableCell>
-            <TableCell>{(player as RosteredPlayer).flexRank || "N/A"}</TableCell>
+            <TableCell>
+              {(player as RosteredPlayer).flexTier || "N/A"}
+            </TableCell>
+            <TableCell>
+              {(player as RosteredPlayer).flexRank || "N/A"}
+            </TableCell>
           </>
         )}
       </TableRow>
@@ -416,3 +448,261 @@ const AvailablePlayersTable: React.FC<{
 );
 
 export default LeagueManagerContent;
+
+// --- Local UI helper components ---
+
+function UsernameCard({
+  onSubmit,
+  loading,
+}: {
+  onSubmit: (username: string) => void;
+  loading: boolean;
+}) {
+  const UsernameSchema = z.object({ username: z.string().min(1, "Username is required") });
+  type UsernameForm = z.infer<typeof UsernameSchema>;
+  const form = useForm<UsernameForm>({
+    resolver: zodResolver(UsernameSchema),
+    defaultValues: { username: "" },
+  });
+  return (
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit((data) => onSubmit(data.username.trim()))}
+        className="space-y-3"
+      >
+        <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="sleeper-username">Sleeper Username</FormLabel>
+              <FormControl>
+                <Input id="sleeper-username" placeholder="enter username" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" disabled={loading}>
+          {loading ? "Working..." : "Submit"}
+        </Button>
+      </form>
+    </Form>
+  );
+}
+
+function LastUpdatedCard({ scoring }: { scoring: "std" | "half" | "ppr" }) {
+  const positions = ["QB", "RB", "WR", "TE", "FLEX", "K", "DEF"] as const;
+  type Pos = (typeof positions)[number];
+  const { data, isLoading } = useQuery<Record<Pos, number | null>, Error>({
+    queryKey: ["borischen", "meta", scoring],
+    queryFn: async () => {
+      const entries = await Promise.all(
+        positions.map(async (pos) => {
+          try {
+            // Kickers and DEF don't vary by scoring; fall back to std
+            const metaScoring = pos === "K" || pos === "DEF" ? "std" : scoring;
+            const res = await fetch(
+              `/data/borischen/${pos}-${metaScoring}-metadata.json`,
+              { cache: "no-store" }
+            );
+            if (!res.ok) return [pos, null] as const;
+            const json = (await res.json()) as { lastModified?: string };
+            const lm = json?.lastModified;
+            if (!lm) return [pos, null] as const;
+            const d = new Date(lm);
+            return [pos, isNaN(d.getTime()) ? null : d.getTime()] as const;
+          } catch {
+            return [pos, null] as const;
+          }
+        })
+      );
+      return Object.fromEntries(entries) as Record<Pos, number | null>;
+    },
+    staleTime: 60 * 60 * 1000,
+  });
+
+  // Simple ticker to refresh relative time labels
+  const [, force] = React.useReducer((x) => x + 1, 0);
+  React.useEffect(() => {
+    const id = setInterval(() => force(), 60_000); // 1 minute
+    return () => clearInterval(id);
+  }, []);
+
+  function formatAgo(ts: number | null): string {
+    if (!ts) return "Unknown";
+    const now = Date.now();
+    const diffMs = Math.max(0, now - ts);
+    const sec = Math.floor(diffMs / 1000);
+    const min = Math.floor(sec / 60);
+    const hr = Math.floor(min / 60);
+    const day = Math.floor(hr / 24);
+    const wk = Math.floor(day / 7);
+    if (wk >= 1) return wk === 1 ? "1 week ago" : `${wk} weeks ago`;
+    if (day >= 1) return day === 1 ? "1 day ago" : `${day} days ago`;
+    if (hr >= 1) return hr === 1 ? "1 hour ago" : `${hr} hours ago`;
+    if (min >= 1) return min === 1 ? "1 minute ago" : `${min} minutes ago`;
+    return sec <= 1 ? "just now" : `${sec} seconds ago`;
+  }
+
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>Last Updated</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="text-sm space-y-1">
+          <div className="font-medium">Boris Chen</div>
+          {isLoading || !data ? (
+            <div className="text-muted-foreground">Loading…</div>
+          ) : (
+            <div className="grid grid-cols-2 gap-y-1 gap-x-4 md:grid-cols-7">
+              {positions.map((pos) => {
+                const metaScoring = pos === "K" || pos === "DEF" ? "std" : scoring;
+                const href = borischenSourceUrl(pos, metaScoring);
+                return (
+                  <div key={pos} className="flex items-center justify-between gap-3">
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground underline-offset-2 hover:underline"
+                      title={`Open Boris Chen source for ${pos} (${metaScoring})`}
+                    >
+                      {pos}
+                    </a>
+                    <span>{formatAgo(data[pos] ?? null)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SelectedUserCard({
+  userId,
+  onClear,
+}: {
+  userId: string | null | undefined;
+  onClear: () => void;
+}) {
+  const { data: user } = useSleeperUserById(userId || undefined, Boolean(userId));
+  if (!userId) return null;
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>Selected User</CardTitle>
+      </CardHeader>
+      <CardContent className="flex items-start justify-between">
+        <div>
+          <div className="text-lg font-semibold">{user?.username || "—"}</div>
+          <div className="text-sm text-muted-foreground">userId: {userId}</div>
+        </div>
+        <Button variant="default" onClick={onClear}>
+          Clear user
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function LeagueSelectionCard({
+  userId,
+  currentYear,
+  selectedLeagueId,
+  onSelect,
+}: {
+  userId: string;
+  currentYear: string;
+  selectedLeagueId: string | null | undefined;
+  onSelect: (leagueId: string) => void;
+}) {
+  const { data: leagues, isLoading } = useSleeperLeaguesForYear(
+    userId,
+    currentYear,
+    true
+  );
+  const [selection, setSelection] = React.useState<string>(selectedLeagueId || "");
+  React.useEffect(() => {
+    setSelection(selectedLeagueId || "");
+  }, [selectedLeagueId]);
+  return (
+    <Card className="mb-8">
+      <CardHeader>
+        <CardTitle>League Selection</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <Label>Select League</Label>
+        </div>
+        <RadioGroup
+          value={selection}
+          onValueChange={(val) => {
+            setSelection(val);
+            onSelect(val);
+          }}
+          className="space-y-3"
+        >
+          {(leagues || []).map((lg) => (
+            <label
+              key={lg.league_id}
+              className="flex gap-3 rounded-md border p-3"
+            >
+              <RadioGroupItem value={lg.league_id} />
+              <div className="flex flex-col">
+                <div className="font-medium">{lg.name}</div>
+                <div className="text-sm text-muted-foreground">
+                  leagueId: {lg.league_id} • {lg.season ?? currentYear} • {lg.status ?? ""}
+                </div>
+              </div>
+            </label>
+          ))}
+          {!isLoading && (leagues || []).length === 0 && (
+            <div className="text-sm text-muted-foreground">No leagues found.</div>
+          )}
+        </RadioGroup>
+        {/* No clear button in selection card; clear exists in SelectedLeagueCard */}
+      </CardContent>
+    </Card>
+  );
+}
+
+function SelectedLeagueCard({
+  userId,
+  leagueId,
+  currentYear,
+  onClear,
+}: {
+  userId: string;
+  leagueId: string;
+  currentYear: string;
+  onClear: () => void;
+}) {
+  // Reuse leagues query to get display info and find selected league
+  const { data: leagues } = useSleeperLeaguesForYear(userId, currentYear, true);
+  const lg = (leagues || []).find((l) => l.league_id === leagueId);
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>Selected League</CardTitle>
+      </CardHeader>
+      <CardContent className="flex items-start justify-between">
+        <div>
+          <div className="text-lg font-semibold">{lg?.name || "—"}</div>
+          <div className="text-sm text-muted-foreground">
+            leagueId: {leagueId}
+            {lg?.season ? ` • ${lg.season}` : ""}
+            {lg?.status ? ` • ${lg.status}` : ""}
+          </div>
+        </div>
+        <Button variant="default" onClick={onClear}>
+          Clear league
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
