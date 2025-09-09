@@ -67,6 +67,3 @@ export const CombinedEntry = z.object({
 export const CombinedShard = z.record(z.string(), CombinedEntry);
 export type CombinedEntryT = z.infer<typeof CombinedEntry>;
 export type CombinedShardT = z.infer<typeof CombinedShard>;
-
-// Re-export Position type for use in filters and other modules
-export type Position = z.infer<typeof PositionEnum>;

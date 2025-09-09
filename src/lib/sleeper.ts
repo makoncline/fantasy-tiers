@@ -47,18 +47,6 @@ export async function fetchSleeperUserByUsername(
   return SleeperUserSchema.parse(await res.json());
 }
 
-export async function fetchDraftsForUser(
-  userId: string
-): Promise<SleeperDraftSummary[]> {
-  const res = await fetch(
-    `https://api.sleeper.app/v1/user/${encodeURIComponent(userId)}/drafts`
-  );
-  if (!res.ok) {
-    throw new Error(`Failed to fetch drafts for user: ${userId}`);
-  }
-  return z.array(SleeperDraftSummarySchema).parse(await res.json());
-}
-
 export async function fetchSleeperUserById(
   userId: string
 ): Promise<SleeperUser> {
@@ -113,27 +101,6 @@ export async function fetchLeaguesForUserYear(
   const json = await res.json();
   return z.array(SleeperLeagueSchema).parse(json);
 }
-
-// Projections
-// Response example (trimmed) from https://api.sleeper.com/projections/nfl/2025
-// [{
-//   status: null,
-//   date: null,
-//   stats: { adp_half_ppr: 1.6, pts_ppr: 328.3, ... },
-//   category: "proj",
-//   last_modified: 1756367439893,
-//   week: null,
-//   sport: "nfl",
-//   season_type: "regular",
-//   season: "2025",
-//   player: { first_name: "Ja'Marr", last_name: "Chase", position: "WR", team: "CIN", ... },
-//   team: "CIN",
-//   player_id: "7564",
-//   updated_at: 1756367439893,
-//   game_id: "season",
-//   company: "rotowire",
-//   opponent: null
-// }]
 
 const SleeperProjectionPlayerSchema = z.object({
   fantasy_positions: z.array(z.string()).optional(),

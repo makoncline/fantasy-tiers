@@ -69,4 +69,3 @@ export function useSleeperNflState(opts?: { enabled?: boolean }) {
     refetchOnMount: false,
   });
 }
-

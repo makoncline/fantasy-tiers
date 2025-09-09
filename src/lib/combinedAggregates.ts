@@ -9,30 +9,6 @@ export function resetAggregatesCache() {
   _cache = null;
 }
 
-export function getAggregatesLastModified(): number | null {
-  if (_cache) return _cache.ts;
-
-  // Check file system for last modified time
-  const fs = require("fs");
-  const path = require("path");
-  const dir = path.resolve(process.cwd(), "public/data/aggregate");
-
-  try {
-    let latest = 0;
-    const files = fs.readdirSync(dir);
-    for (const file of files) {
-      if (file.endsWith("-combined-aggregate.json")) {
-        const filePath = path.join(dir, file);
-        const stats = fs.statSync(filePath);
-        latest = Math.max(latest, stats.mtime.getTime());
-      }
-    }
-    return latest || null;
-  } catch {
-    return null;
-  }
-}
-
 // Server-only version for API routes
 export function getAggregatesLastModifiedServer(): number | null {
   if (_cache) return _cache.ts;

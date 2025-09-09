@@ -575,7 +575,8 @@ function LastUpdatedCard({ scoring }: { scoring: "std" | "half" | "ppr" }) {
           ) : (
             <div className="flex flex-wrap gap-x-6 gap-y-2">
               {positions.map((pos) => {
-                const metaScoring = pos === "K" || pos === "DEF" ? "std" : scoring;
+                const metaScoring =
+                  pos === "K" || pos === "DEF" ? "std" : scoring;
                 const href = borischenSourceUrl(pos, metaScoring);
                 const ts = data[pos] ?? null;
                 const label = formatAgo(ts);

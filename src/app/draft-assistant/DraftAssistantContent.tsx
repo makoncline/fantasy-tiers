@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import DraftAssistantForm from "@/app/draft-assistant/_components/DraftAssistantForm";
 import DraftAssistantContentComponent from "@/app/draft-assistant/_components/DraftAssistantContent";
 import {
@@ -14,7 +14,6 @@ import DraftInfo from "@/app/draft-assistant/_components/DraftInfo";
 
 const DraftAssistantShell: React.FC = () => {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const userId = searchParams.get("userId") || "";
   const draftId = searchParams.get("draftId") || "";
   const hasUser = Boolean(userId);
