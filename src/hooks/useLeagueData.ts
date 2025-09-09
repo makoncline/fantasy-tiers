@@ -8,6 +8,8 @@ import type {
 import { RosterSlotEnum } from "@/lib/schemas";
 import { ROSTER_SLOTS } from "@/lib/schemas";
 import { z } from "zod";
+import { CombinedShard } from "@/lib/schemas-aggregates";
+import { buildPlayersMapFromCombined } from "@/lib/playersFromCombined";
 
 const RosterSchema = z.object({
   roster_id: z.number(),
@@ -331,6 +333,7 @@ export function useLeagueData(leagueId: string, userId: string) {
     ? determineScoringType(leagueData.leagueDetails.scoring_settings)
     : null;
 
+  // Load ALL shard (merged) and map to DraftedPlayer using Borischen tiers
   const playersQuery = useQuery<Record<string, DraftedPlayer>, Error>({
     queryKey: ["players", leagueScoringType],
     queryFn: async () => {
@@ -339,7 +342,12 @@ export function useLeagueData(leagueId: string, userId: string) {
         `/api/players?scoring=${encodeURIComponent(leagueScoringType)}`
       );
       if (!res.ok) throw new Error("failed to load players map");
-      return (await res.json()) as Record<string, DraftedPlayer>;
+      const json = await res.json();
+      const combined = CombinedShard.parse(json);
+      return buildPlayersMapFromCombined(combined, leagueScoringType) as Record<
+        string,
+        DraftedPlayer
+      >;
     },
     enabled: !!leagueScoringType,
     staleTime: 0,
@@ -352,9 +360,32 @@ export function useLeagueData(leagueId: string, userId: string) {
 
   const allPlayers = playersQuery.data ? Object.values(playersQuery.data) : [];
   const positionPlayers = allPlayers;
-  const flexPlayers = allPlayers
-    .filter((p) => ["RB", "WR", "TE"].includes(p.position))
-    .sort((a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity));
+
+  // Load FLEX shard separately to compute flexRank/flexTier from Borischen FLEX data
+  const flexQuery = useQuery<Record<string, DraftedPlayer>, Error>({
+    queryKey: ["players-flex", leagueScoringType],
+    queryFn: async () => {
+      if (!leagueScoringType) return {} as Record<string, DraftedPlayer>;
+      const res = await fetch(`/api/aggregates/shard?pos=FLEX`);
+      if (!res.ok) throw new Error("failed to load FLEX shard");
+      const json = await res.json();
+      const combined = CombinedShard.parse(json);
+      return buildPlayersMapFromCombined(combined, leagueScoringType) as Record<
+        string,
+        DraftedPlayer
+      >;
+    },
+    enabled: !!leagueScoringType,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
+  });
+
+  const flexPlayers = flexQuery.data
+    ? Object.values(flexQuery.data)
+        .filter((p) => ["RB", "WR", "TE"].includes(p.position))
+        .sort((a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity))
+    : [];
 
   const rosters = leagueData?.rosters || [];
   const userRoster =
@@ -516,8 +547,9 @@ export function useLeagueData(leagueId: string, userId: string) {
       ? findUpgradeOptions(currentRoster, availablePositionPlayers)
       : null;
 
-  const isLoading = isLoadingLeagueData || isLoadingPlayerData;
-  const error = leagueError || playerDataError;
+  const isLoading =
+    isLoadingLeagueData || isLoadingPlayerData || flexQuery.isLoading;
+  const error = leagueError || playerDataError || (flexQuery.error as Error | null);
 
   return {
     rosters,
