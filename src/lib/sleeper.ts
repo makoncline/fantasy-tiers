@@ -281,6 +281,30 @@ export async function fetchSleeperProjections(
   });
 }
 
+// NFL state (season/week)
+export const SleeperNflStateSchema = z.object({
+  week: z.number(),
+  leg: z.number().optional(),
+  season: z.string(),
+  season_type: z.string(),
+  league_season: z.string().optional(),
+  previous_season: z.string().optional(),
+  season_start_date: z.string().optional(),
+  display_week: z.number().optional(),
+  league_create_season: z.string().optional(),
+  season_has_scores: z.boolean().optional(),
+});
+export type SleeperNflState = z.infer<typeof SleeperNflStateSchema>;
+
+export async function fetchSleeperNflState(): Promise<SleeperNflState> {
+  const res = await fetch("https://api.sleeper.app/v1/state/nfl");
+  if (!res.ok) {
+    throw new Error(`Failed to fetch Sleeper NFL state: ${res.status}`);
+  }
+  const json = await res.json();
+  return SleeperNflStateSchema.parse(json);
+}
+
 // Sleeper players meta (team, bye_week, etc.) from /v1/players/nfl
 // Used to derive tm_bw column by joining on player_id
 export const SleeperPlayersMetaSchema = z.record(

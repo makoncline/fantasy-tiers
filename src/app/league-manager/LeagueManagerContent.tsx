@@ -34,6 +34,7 @@ import {
   useSleeperUserByUsername,
   useSleeperLeaguesForYear,
   useSleeperUserById,
+  useSleeperNflState,
 } from "@/hooks/useSleeper";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -48,7 +49,8 @@ const LeagueManagerContent: React.FC = () => {
 
   // Username lookup flow via submit
   const [submittedUsername, setSubmittedUsername] = React.useState<string>("");
-  const currentYear = String(new Date().getFullYear());
+  const nflState = useSleeperNflState();
+  const currentYear = nflState.data?.season ?? String(new Date().getFullYear());
   const userLookup = useSleeperUserByUsername(
     submittedUsername || undefined,
     Boolean(submittedUsername)
@@ -169,6 +171,8 @@ const LeagueManagerContent: React.FC = () => {
             <p>Total rosters: {rosters.length}</p>
             <p>Total rostered players: {rosteredPlayerIds.length}</p>
             {scoringType && <p>Scoring Type: {scoringType.toUpperCase()}</p>}
+            <p>Season: {currentYear}</p>
+            <p>Week: {nflState.data?.week ?? "—"}</p>
           </div>
           {leagueDetails?.roster_positions && (
             <div className="mt-4">
@@ -564,31 +568,33 @@ function LastUpdatedCard({ scoring }: { scoring: "std" | "half" | "ppr" }) {
         <CardTitle>Last Updated</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="text-sm space-y-1">
+        <div className="text-sm space-y-2">
           <div className="font-medium">Boris Chen</div>
           {isLoading || !data ? (
             <div className="text-muted-foreground">Loading…</div>
           ) : (
-            <div className="grid grid-cols-2 gap-y-1 gap-x-4 md:grid-cols-7">
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
               {positions.map((pos) => {
-                const metaScoring =
-                  pos === "K" || pos === "DEF" ? "std" : scoring;
+                const metaScoring = pos === "K" || pos === "DEF" ? "std" : scoring;
                 const href = borischenSourceUrl(pos, metaScoring);
+                const ts = data[pos] ?? null;
+                const label = formatAgo(ts);
+                const isUnknown = ts == null;
                 return (
-                  <div
-                    key={pos}
-                    className="flex items-center justify-between gap-3"
-                  >
+                  <div key={pos} className="flex items-center gap-2">
                     <a
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-muted-foreground underline-offset-2 hover:underline"
+                      className="underline-offset-2 hover:underline"
                       title={`Open Boris Chen source for ${pos} (${metaScoring})`}
                     >
                       {pos}
                     </a>
-                    <span>{formatAgo(data[pos] ?? null)}</span>
+                    <span className="text-muted-foreground">:</span>
+                    <span className={isUnknown ? "text-muted-foreground" : ""}>
+                      {label}
+                    </span>
                   </div>
                 );
               })}

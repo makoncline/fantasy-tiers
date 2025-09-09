@@ -5,6 +5,8 @@ import {
   fetchLeaguesForUserYear,
   type SleeperUser,
   type SleeperLeague,
+  fetchSleeperNflState,
+  type SleeperNflState,
 } from "@/lib/sleeper";
 
 export function useSleeperUserByUsername(
@@ -50,6 +52,21 @@ export function useSleeperLeaguesForYear(
     },
     enabled: Boolean(userId) && enabled,
     staleTime: 60 * 1000,
+  });
+}
+
+// NFL state (season + week). Only fetch on initial load.
+export function useSleeperNflState(opts?: { enabled?: boolean }) {
+  const enabled = opts?.enabled ?? true;
+  return useQuery<SleeperNflState, Error>({
+    queryKey: ["sleeper:state", "nfl"],
+    queryFn: fetchSleeperNflState,
+    enabled,
+    staleTime: Infinity,
+    gcTime: 6 * 60 * 60 * 1000, // keep around for 6h
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
   });
 }
 
