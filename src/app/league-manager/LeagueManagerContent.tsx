@@ -22,7 +22,14 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from "@/components/ui/table";
 import {
   useSleeperUserByUsername,
   useSleeperLeaguesForYear,
@@ -458,7 +465,9 @@ function UsernameCard({
   onSubmit: (username: string) => void;
   loading: boolean;
 }) {
-  const UsernameSchema = z.object({ username: z.string().min(1, "Username is required") });
+  const UsernameSchema = z.object({
+    username: z.string().min(1, "Username is required"),
+  });
   type UsernameForm = z.infer<typeof UsernameSchema>;
   const form = useForm<UsernameForm>({
     resolver: zodResolver(UsernameSchema),
@@ -477,7 +486,11 @@ function UsernameCard({
             <FormItem>
               <FormLabel htmlFor="sleeper-username">Sleeper Username</FormLabel>
               <FormControl>
-                <Input id="sleeper-username" placeholder="enter username" {...field} />
+                <Input
+                  id="sleeper-username"
+                  placeholder="enter username"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -558,10 +571,14 @@ function LastUpdatedCard({ scoring }: { scoring: "std" | "half" | "ppr" }) {
           ) : (
             <div className="grid grid-cols-2 gap-y-1 gap-x-4 md:grid-cols-7">
               {positions.map((pos) => {
-                const metaScoring = pos === "K" || pos === "DEF" ? "std" : scoring;
+                const metaScoring =
+                  pos === "K" || pos === "DEF" ? "std" : scoring;
                 const href = borischenSourceUrl(pos, metaScoring);
                 return (
-                  <div key={pos} className="flex items-center justify-between gap-3">
+                  <div
+                    key={pos}
+                    className="flex items-center justify-between gap-3"
+                  >
                     <a
                       href={href}
                       target="_blank"
@@ -590,7 +607,10 @@ function SelectedUserCard({
   userId: string | null | undefined;
   onClear: () => void;
 }) {
-  const { data: user } = useSleeperUserById(userId || undefined, Boolean(userId));
+  const { data: user } = useSleeperUserById(
+    userId || undefined,
+    Boolean(userId)
+  );
   if (!userId) return null;
   return (
     <Card className="mb-6">
@@ -626,7 +646,9 @@ function LeagueSelectionCard({
     currentYear,
     true
   );
-  const [selection, setSelection] = React.useState<string>(selectedLeagueId || "");
+  const [selection, setSelection] = React.useState<string>(
+    selectedLeagueId || ""
+  );
   React.useEffect(() => {
     setSelection(selectedLeagueId || "");
   }, [selectedLeagueId]);
@@ -656,13 +678,15 @@ function LeagueSelectionCard({
               <div className="flex flex-col">
                 <div className="font-medium">{lg.name}</div>
                 <div className="text-sm text-muted-foreground">
-                  leagueId: {lg.league_id} • {lg.season ?? currentYear} • {lg.status ?? ""}
+                  leagueId: {lg.league_id}
                 </div>
               </div>
             </label>
           ))}
           {!isLoading && (leagues || []).length === 0 && (
-            <div className="text-sm text-muted-foreground">No leagues found.</div>
+            <div className="text-sm text-muted-foreground">
+              No leagues found.
+            </div>
           )}
         </RadioGroup>
         {/* No clear button in selection card; clear exists in SelectedLeagueCard */}
@@ -695,8 +719,6 @@ function SelectedLeagueCard({
           <div className="text-lg font-semibold">{lg?.name || "—"}</div>
           <div className="text-sm text-muted-foreground">
             leagueId: {leagueId}
-            {lg?.season ? ` • ${lg.season}` : ""}
-            {lg?.status ? ` • ${lg.status}` : ""}
           </div>
         </div>
         <Button variant="default" onClick={onClear}>
