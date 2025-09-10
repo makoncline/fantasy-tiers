@@ -8,7 +8,6 @@ import type {
 } from "./schemas";
 import {
   calculateTeamNeedsAndCountsForSingleTeam,
-  ZERO_POSITION_COUNTS,
   calculateTotalRemainingNeeds,
   getDraftRecommendations,
 } from "./draftHelpers";
@@ -110,8 +109,6 @@ export function topAvailableByPosition(
   }
   return out;
 }
-
-export type DraftViewModel = ReturnType<typeof buildDraftViewModel>;
 
 export function buildDraftViewModel(args: {
   playersMap: Record<string, DraftedPlayer>;

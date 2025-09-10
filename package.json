@@ -11,9 +11,7 @@
     "e2e:headed": "playwright test --headed --config e2e.config.ts",
     "e2e:ci": "playwright test --reporter=line --config e2e.config.ts",
     "fetch:fp": "node --import=tsx scripts/fp/fetch-fantasypros-all.ts",
-    "fetch:sleeper:projections": "npx tsx scripts/sleeper/fetchProjections.ts",
-    "fetch:sleeper:players-meta": "npx tsx scripts/sleeper/fetchPlayersMeta.ts",
-    "fetch:sleeper": "pnpm run fetch:sleeper:projections && pnpm run fetch:sleeper:players-meta",
+    "fetch:sleeper": "npx tsx scripts/sleeper/fetchProjections.ts",
     "fetch:borischen": "npx tsx src/lib/fetchRankingData.ts",
     "agg:fp": "node --import=tsx scripts/fp/aggregate-fantasypros.ts",
     "agg:sleeper": "node -e \"process.exit(0)\"",
@@ -28,7 +26,8 @@
     "temp:check-name-coverage": "npx tsx scripts/temp/checkNameCoverage.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "knip": "knip"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -96,7 +95,9 @@
     "dayjs": "^1.11.16",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
+    "glob": "^11.0.3",
     "jsdom": "^26.1.0",
+    "knip": "^5.63.1",
     "playwright": "^1.55.0",
     "postcss": "^8",
     "start-server-and-test": "^2.0.13",
@@ -105,7 +106,7 @@
     "typescript": "^5",
     "vitest": "^3.2.4"
   },
-  "packageManager": "pnpm@10.15.0",
+  "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22.18.0"
   }

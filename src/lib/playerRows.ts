@@ -1,6 +1,5 @@
 // src/lib/playerRows.ts
 import { z } from "zod";
-import type { PositionEnum } from "./schemas";
 import type { EnrichedPlayer } from "./enrichPlayers";
 import { normalizePlayerName, ecrToRoundPick, normalizePosition } from "./util";
 
@@ -34,7 +33,6 @@ export type PlayerRow = {
   ps?: number | null;
 };
 
-// Extras from BeerSheets for VAL/PS if available
 export type Extras = Record<
   string,
   { val?: number; ps?: number; ecr_round_pick?: string }

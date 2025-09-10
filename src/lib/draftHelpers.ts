@@ -398,8 +398,6 @@ export function getDraftRecommendations(
   return recommendations;
 }
 
-export type Recommendations = ReturnType<typeof getDraftRecommendations>;
-
 function limitPositionRecommendations(recommendations: RankedPlayer[]) {
   const limitedRecommendations: RankedPlayer[] = [];
   const positionCount = { ...ZERO_POSITION_COUNTS };

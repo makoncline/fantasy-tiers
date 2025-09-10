@@ -49,6 +49,7 @@ export const FantasyProsCombined = z.object({
   player_id: z.string().min(1), // Require non-empty player_id
   player_owned_avg: z.union([z.number(), z.null()]),
   pos_rank: z.union([z.string(), z.number(), z.null()]),
+  start_sit_grade: z.union([z.string(), z.null()]).optional(),
   stats: FantasyProsStatsByScoring,
   rankings: z.record(z.string(), z.unknown()),
 });
@@ -67,6 +68,3 @@ export const CombinedEntry = z.object({
 export const CombinedShard = z.record(z.string(), CombinedEntry);
 export type CombinedEntryT = z.infer<typeof CombinedEntry>;
 export type CombinedShardT = z.infer<typeof CombinedShard>;
-
-// Re-export Position type for use in filters and other modules
-export type Position = z.infer<typeof PositionEnum>;

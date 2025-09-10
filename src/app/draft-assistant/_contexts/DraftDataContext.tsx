@@ -30,14 +30,12 @@ import { scoringTypeSchema } from "@/lib/schemas";
 import type { SleeperUser, SleeperDraftSummary } from "@/lib/sleeper";
 import type { DraftDetails } from "@/lib/draftDetails";
 import type { Position } from "../_lib/types";
-import type { BeerRow } from "@/lib/beersheets";
 import type { AggregatesBundleResponseT } from "@/lib/schemas-bundle";
 import type { PlayerRow } from "@/lib/playerRows";
 import { toPlayerRowsFromBundle } from "@/lib/playerRows";
 import type { PlayerWithPick } from "@/lib/types.draft";
 import { normalizePick } from "@/lib/normalizePick";
 import type { PickMeta } from "@/lib/types.draft";
-// BeerSheets removed from client; calculations moved server-side
 
 interface Recommendation {
   keyPositions: RankedPlayer[];
@@ -63,7 +61,6 @@ interface ProcessedData {
   draftWideNeeds: Partial<Record<Position, number>>;
   userRoster: DraftedPlayer[] | null;
   userRosterSlots: { slot: RosterSlot; player: DraftedPlayer | null }[];
-  beerSheetsBoard?: BeerRow[]; // Beer sheets board data
   positionRows?: {
     QB: PlayerRow[];
     RB: PlayerRow[];
@@ -227,7 +224,6 @@ const EMPTY_PROCESSED: ProcessedData = {
   draftWideNeeds: {},
   userRoster: null,
   userRosterSlots: [],
-  beerSheetsBoard: [],
   positionRows: null,
 };
 
@@ -718,7 +714,6 @@ export function DraftDataProvider({
           }
           return rows;
         })(),
-        beerSheetsBoard: [], // TODO: Implement beer sheets
         positionRows, // expose to tables to avoid recomputing
       };
 

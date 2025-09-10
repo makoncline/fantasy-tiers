@@ -50,8 +50,6 @@ export const RosterSlotsSchema = z.object({
   BENCH: z.number(),
 });
 
-export type RosterSlotsT = z.infer<typeof RosterSlotsSchema>;
-
 // Shards schema
 export const AggregatesBundleShards = z.object({
   ALL: z.array(AggregatesBundlePlayer),
@@ -63,8 +61,6 @@ export const AggregatesBundleShards = z.object({
   DEF: z.array(AggregatesBundlePlayer),
   FLEX: z.array(AggregatesBundlePlayer),
 });
-
-export type AggregatesBundleShardsT = z.infer<typeof AggregatesBundleShards>;
 
 // Full response schema
 export const AggregatesBundleResponse = z.object({
@@ -115,7 +111,3 @@ export const AggregatesBundleQueryParams = z.object({
     .transform((val) => parseInt(val, 10))
     .optional(),
 });
-
-export type AggregatesBundleQueryParamsT = z.infer<
-  typeof AggregatesBundleQueryParams
->;

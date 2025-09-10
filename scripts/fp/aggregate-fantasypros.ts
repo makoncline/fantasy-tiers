@@ -20,6 +20,8 @@ type EcrRow = {
   player_owned_avg: number | null;
   pos_rank: string | null;
   tier: number | null;
+  start_sit_grade?: string | null;
+  player_page_url?: string | null;
 };
 
 type RawJson<T> = { meta: any; rows: T[] };
@@ -75,26 +77,84 @@ async function collectEcr(scoring: Scoring): Promise<{
   byName: Map<string, EcrRow>;
 }> {
   const dir = path.resolve("public", "data", "fantasypros", "raw");
-  const file = path.join(
+  const draftFile = path.join(
     dir,
     `ECR-ADP-${scoring.toLowerCase()}-draft_raw.json`
   );
   const byId = new Map<number, EcrRow>();
   const byKey = new Map<string, EcrRow>();
   const byName = new Map<string, EcrRow>();
-  try {
-    const raw = await readJson<RawJson<EcrRow>>(file);
-    for (const row of raw.rows) {
-      byId.set(row.player_id, row);
+  const better = (prev?: EcrRow, next?: EcrRow): boolean => {
+    if (!prev) return true;
+    if (!next) return false;
+    const prevIsFlex =
+      /(^|,)\s*FLX\s*(,|$)/.test(prev.player_positions || "") ||
+      (prev as any).player_position_id === "FLX";
+    const nextIsFlex =
+      /(^|,)\s*FLX\s*(,|$)/.test(next.player_positions || "") ||
+      (next as any).player_position_id === "FLX";
+    // Prefer non-FLEX over FLEX
+    if (prevIsFlex && !nextIsFlex) return true;
+    if (!prevIsFlex && nextIsFlex) return false;
+    // Prefer row that has a start_sit_grade
+    const prevGrade = (prev as any).start_sit_grade ?? null;
+    const nextGrade = (next as any).start_sit_grade ?? null;
+    if (!prevGrade && nextGrade) return true;
+    if (prevGrade && !nextGrade) return false;
+    // Otherwise keep existing
+    return false;
+  };
+  const ingest = (rows: EcrRow[]) => {
+    for (const row of rows) {
+      const existingById = byId.get(row.player_id);
+      if (better(existingById, row)) byId.set(row.player_id, row);
       const nameOnly = (row.player_name || "")
         .toLowerCase()
         .replace(/[^a-z0-9]/g, "");
       const key = `${nameOnly}|${(row.player_team_id || "").toLowerCase()}`;
-      byKey.set(key, row);
-      byName.set(nameOnly, row);
+      const existingByKey = byKey.get(key);
+      if (better(existingByKey, row)) byKey.set(key, row);
+      const existingByName = byName.get(nameOnly);
+      if (better(existingByName, row)) byName.set(nameOnly, row);
     }
-  } catch {
-    // ignore
+  };
+  // Prefer weekly files if present (across supported positions)
+  const weeklyGlobs = [
+    `ECR-weekly-${scoring.toLowerCase()}-rb-week-*_raw.json`,
+    `ECR-weekly-${scoring.toLowerCase()}-wr-week-*_raw.json`,
+    `ECR-weekly-${scoring.toLowerCase()}-te-week-*_raw.json`,
+    `ECR-weekly-${scoring.toLowerCase()}-flex-week-*_raw.json`,
+    `ECR-weekly-std-qb-week-*_raw.json`,
+    `ECR-weekly-std-k-week-*_raw.json`,
+    `ECR-weekly-std-dst-week-*_raw.json`,
+  ];
+  let weeklyFound = false;
+  try {
+    const files = require("glob").sync(`{${weeklyGlobs.join(",")}}`, {
+      cwd: dir,
+      nodir: true,
+      absolute: true,
+    });
+    for (const f of files) {
+      try {
+        const raw = await readJson<RawJson<EcrRow>>(f);
+        if (Array.isArray(raw?.rows) && raw.rows.length) {
+          ingest(raw.rows);
+          weeklyFound = true;
+        }
+      } catch {
+        // ignore
+      }
+    }
+  } catch {}
+
+  if (!weeklyFound) {
+    try {
+      const raw = await readJson<RawJson<EcrRow>>(draftFile);
+      if (Array.isArray(raw?.rows)) ingest(raw.rows);
+    } catch {
+      // ignore
+    }
   }
   return { byId, byKey, byName };
 }
@@ -112,8 +172,13 @@ async function main() {
   // Merge by filename when possible; also attach ecr by matching player name/team if available via ECR rows
   const aggregate: any[] = [];
   const keys = new Set<string>();
+  // Keys from projections (if present)
   for (const map of perScoringProjections) {
     for (const key of map.keys()) keys.add(key);
+  }
+  // Also include keys from ECR (normalized name|team) so we can build entries even without projections
+  for (const ecr of perScoringEcr) {
+    for (const key of ecr.byKey.keys()) keys.add(key);
   }
 
   const pickStatsRow = (bucket: any, primaryPos?: string) => {
@@ -155,10 +220,10 @@ async function main() {
       ecrByScoring[s.toLowerCase()] = matched;
     });
 
-    const primaryEcr =
-      ecrByScoring["std"] || ecrByScoring["half"] || ecrByScoring["ppr"];
-    if (!primaryEcr) continue;
-    const primaryPos = (primaryEcr.player_positions || "").split(
+    const primaryEcrCandidate =
+      ecrByScoring["ppr"] || ecrByScoring["half"] || ecrByScoring["std"];
+    if (!primaryEcrCandidate) continue;
+    const primaryPos = (primaryEcrCandidate.player_positions || "").split(
       /\s*,\s*/
     )[0] as Position | undefined;
 
@@ -210,18 +275,20 @@ async function main() {
     if (pprRank) rankings["ppr"] = pprRank;
 
     const entry = {
-      player_id: primaryEcr.player_id,
-      player_name: primaryEcr.player_name,
-      player_short_name: primaryEcr.player_short_name,
-      player_positions: primaryEcr.player_positions,
-      player_team_id: primaryEcr.player_team_id,
-      player_bye_week: primaryEcr.player_bye_week ?? null,
-      player_owned_avg: primaryEcr.player_owned_avg,
-      pos_rank: primaryEcr.pos_rank,
+      player_id: primaryEcrCandidate.player_id,
+      player_name: primaryEcrCandidate.player_name,
+      player_short_name: primaryEcrCandidate.player_short_name,
+      player_positions: primaryEcrCandidate.player_positions,
+      player_team_id: primaryEcrCandidate.player_team_id,
+      player_bye_week: primaryEcrCandidate.player_bye_week ?? null,
+      player_owned_avg: primaryEcrCandidate.player_owned_avg,
+      pos_rank: primaryEcrCandidate.pos_rank,
+      player_page_url: (primaryEcrCandidate as any).player_page_url ?? null,
+      start_sit_grade: (primaryEcrCandidate as any).start_sit_grade ?? null,
       stats: {
-        ...(stats["std"] ? { standard: stats["std"] } : {}),
-        ...(stats["half"] ? { half: stats["half"] } : {}),
-        ...(stats["ppr"] ? { ppr: stats["ppr"] } : {}),
+        standard: stats["std"] ?? {},
+        half: stats["half"] ?? {},
+        ppr: stats["ppr"] ?? {},
       },
       rankings,
     };

@@ -13,15 +13,6 @@ export const DraftPickSchema = z.object({
   round: z.number(),
   pick_no: z.number(),
   player_id: z.string(),
-  // draft_id: z.string(),
-  // metadata: z.object({
-  //   first_name: z.string(),
-  //   last_name: z.string(),
-  //   position: PositionEnum,
-  //   team: z.string().nullable(),
-  // }),
-  // normalized_name: z.string().optional(), // We add this manually later, so it’s optional
-  // bye_week: z.string().optional(),
 });
 
 export type DraftPick = z.infer<typeof DraftPickSchema>;
@@ -47,7 +38,6 @@ export const PlayerSchema = z.object({
   team: z.string().nullable(),
   bye_week: z.string().nullable(),
 });
-export type Player = z.infer<typeof PlayerSchema>;
 
 export const PlayerWithRankingsSchema = PlayerSchema.extend({
   rankingsByScoringType: RankingsByScoringTypeSchema,

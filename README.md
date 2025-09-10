@@ -46,6 +46,57 @@ pnpm run agg:all
 pnpm run validate:aggregates:ci
 ```
 
+### FantasyPros data modes: Draft vs Weekly
+
+You can build two flavors of FantasyPros data:
+
+- Draft (preseason cheat sheets) — used before Week 1
+- Weekly (current-week ECR by position) — used in-season
+
+#### Build the Draft dataset (preseason)
+
+```bash
+# 1) Fetch FantasyPros in Draft mode only
+DRAFT=true pnpm run fetch:fp
+
+# 2) Build FantasyPros aggregate and combined shards
+pnpm run agg:all
+```
+
+What this does:
+
+- Scrapes FantasyPros draft projections and draft ECR for STD/HALF/PPR
+- Writes raw files under `public/data/fantasypros/raw/`
+- Writes `public/data/fantasypros/fantasypros_aggregate.json`
+- Rebuilds per-position combined shards under `public/data/aggregate/`
+
+#### Build the Weekly dataset (in-season, current week)
+
+```bash
+# 1) Fetch FantasyPros weekly data (current week only)
+pnpm run fetch:fp
+
+# 2) Build FantasyPros aggregate and combined shards
+pnpm run agg:all
+```
+
+Notes:
+
+- Weekly fetch scrapes current-week ECR per position/scoring from FantasyPros URLs (no `?week=` query).
+- Sidecar metadata JSONs include `accessed` (as `last_scraped`) and `url`.
+- A summary `public/data/aggregate/metadata.json` is produced during combine with per-scoring/per-position metadata:
+  - `last_updated`, `total_experts`, `scoring`, `position_id`, `week`, `year`, `last_scraped`, `url`.
+
+Optional (advanced): Fetch a specific week for ad‑hoc checks
+
+```bash
+# Example: RB PPR Week 2 (writes raw weekly files only)
+node --import=tsx scripts/fp/scrape-ecr-adp.ts weekly RB PPR 2
+
+# Then rebuild aggregates if desired
+pnpm run agg:fp && pnpm run agg:combine
+```
+
 #### GitHub Actions Workflow
 
 The automated workflow (`.github/workflows/fetch-data.yml`) runs nightly at 2 AM UTC and:

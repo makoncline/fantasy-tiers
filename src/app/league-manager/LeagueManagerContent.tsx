@@ -35,11 +35,19 @@ import {
   useSleeperLeaguesForYear,
   useSleeperUserById,
   useSleeperNflState,
+  useSleeperLeagueUsers,
 } from "@/hooks/useSleeper";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useQuery } from "@tanstack/react-query";
 import { borischenSourceUrl } from "@/lib/borischen";
+import { Badge } from "@/components/ui/badge";
+
+// Toggle: always include the app user's own players in the All Players table
+const ALWAYS_SHOW_MY_PLAYERS = true;
+// Default number of rows to show per position table before expanding
+const DEFAULT_VISIBLE_ROWS = 10;
 
 const LeagueManagerContent: React.FC = () => {
   const searchParams = useSearchParams();
@@ -54,6 +62,31 @@ const LeagueManagerContent: React.FC = () => {
   const userLookup = useSleeperUserByUsername(
     submittedUsername || undefined,
     Boolean(submittedUsername)
+  );
+  // Toggle to include rostered/unavailable players in the All Players table
+  const [showUnavailable, setShowUnavailable] = React.useState<boolean>(false);
+  // Toggle to show all rows by default in the All Players table
+  const [showAll, setShowAll] = React.useState<boolean>(false);
+
+  // Global sort state for all players tables
+  const [globalSortKey, setGlobalSortKey] =
+    React.useState<TableSortKey>("bc_rank");
+  const [globalSortDir, setGlobalSortDir] = React.useState<"asc" | "desc">(
+    "asc"
+  );
+  const onGlobalSort = React.useCallback(
+    (key: TableSortKey) => {
+      if (globalSortKey === key) {
+        setGlobalSortDir((d) => (d === "asc" ? "desc" : "asc"));
+      } else {
+        setGlobalSortKey(key);
+        // Default to descending for % owned and grade; ascending otherwise
+        const initialDir: "asc" | "desc" =
+          key === "fp_owned" || key === "fp_grade" ? "desc" : "asc";
+        setGlobalSortDir(initialDir);
+      }
+    },
+    [globalSortKey]
   );
 
   // Keep URL as source of truth for userId once we have a user result
@@ -81,6 +114,12 @@ const LeagueManagerContent: React.FC = () => {
     error,
   } = useLeagueData(leagueId, userId);
 
+  // League users for owner display/team names
+  const leagueUsers = useSleeperLeagueUsers(
+    leagueId || undefined,
+    Boolean(leagueId)
+  );
+
   if (isLoading)
     return (
       <div className="space-y-4 p-6">
@@ -101,6 +140,49 @@ const LeagueManagerContent: React.FC = () => {
         </Alert>
       </div>
     );
+
+  type SleeperRoster = {
+    owner_id?: string;
+    owner?: { user_id?: string };
+    metadata?: { team_name?: string };
+    players?: string[];
+  };
+
+  function buildOwnerMap(
+    rostersIn: SleeperRoster[],
+    users: Array<{
+      user_id: string;
+      display_name: string | undefined;
+      metadata: { team_name: string | undefined } | undefined;
+    }>
+  ): Map<string, { name: string; userId: string }> {
+    const map = new Map<string, { name: string; userId: string }>();
+    const userName: Record<string, string> = {};
+    for (const u of users || []) {
+      const uid = String(u?.user_id || "");
+      const tn =
+        (u?.metadata?.team_name as string | undefined) ||
+        (u?.display_name as string | undefined) ||
+        uid ||
+        "Unknown";
+      if (uid) userName[uid] = tn;
+    }
+    for (const r of rostersIn || []) {
+      const ownerUserId = String(r?.owner_id || r?.owner?.user_id || "");
+      const ownerName =
+        (r?.metadata?.team_name as string | undefined) ||
+        userName[ownerUserId] ||
+        ownerUserId ||
+        "Unknown";
+      const playerIds: string[] = Array.isArray(r?.players) ? r.players : [];
+      for (const pid of playerIds) {
+        const key = String(pid);
+        if (!map.has(key))
+          map.set(key, { name: ownerName, userId: ownerUserId });
+      }
+    }
+    return map;
+  }
 
   return (
     <div className="p-6">
@@ -238,49 +320,57 @@ const LeagueManagerContent: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Ranked Available Players</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {ROSTER_SLOTS.filter((position) => position !== "BN").map(
-            (position) => (
-              <div key={position} className="mb-8">
-                <h3 className="text-lg font-semibold mb-2">
-                  {position === "FLEX" ? "FLEX (RB/WR/TE)" : position}
-                </h3>
-                {["RB", "WR", "TE", "QB", "K", "DEF", "FLEX"].includes(
-                  position
-                ) &&
-                  worstRankedUserPlayersByPosition[position] && (
-                    <div className="mb-4">
-                      <p className="font-semibold mb-2">
-                        Your worst ranked {position}:
-                      </p>
-                      <PlayerTable
-                        player={worstRankedUserPlayersByPosition[position]}
-                        isFlex={position === "FLEX"}
-                      />
-                    </div>
-                  )}
-                <p className="font-semibold mb-2">
-                  Available {position} Players:
-                </p>
-                {rankedAvailablePlayersByPosition[position]?.length > 0 ? (
-                  <AvailablePlayersTable
-                    players={rankedAvailablePlayersByPosition[position] || []}
-                    isFlex={position === "FLEX"}
-                  />
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No available players for this position.
-                  </p>
-                )}
-              </div>
-            )
-          )}
-        </CardContent>
-      </Card>
+      {/* Players by position controls and anchors */}
+      <div className="sticky top-0 z-20 mb-2 border-b bg-background/95 pb-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <h2 className="text-2xl font-semibold mb-2">Players by position</h2>
+        <div className="mb-3 flex flex-wrap gap-2">
+          {["RB", "WR", "TE", "FLEX", "QB", "K", "DEF"].map((p) => (
+            <a key={p} href={`#players-${p}`}>
+              <Badge variant="secondary">{p}</Badge>
+            </a>
+          ))}
+        </div>
+        <div className="flex items-center gap-3">
+          <Switch
+            id="show-unavailable"
+            checked={showUnavailable}
+            onCheckedChange={(v) => setShowUnavailable(Boolean(v))}
+          />
+          <Label htmlFor="show-unavailable">Show unavailable</Label>
+          <Switch
+            id="show-all"
+            checked={showAll}
+            onCheckedChange={(v) => setShowAll(Boolean(v))}
+          />
+          <Label htmlFor="show-all">Show all ranked</Label>
+        </div>
+      </div>
+
+      {/* All Players by Position tables */}
+      {(["RB", "WR", "TE", "FLEX", "QB", "K", "DEF"] as const).map((p) => (
+        <div key={p} id={`players-${p}`} className="scroll-mt-24">
+          <AllPlayersPositionTable
+            pos={p}
+            scoring={scoringType ?? "std"}
+            rosteredIds={new Set(rosteredPlayerIds)}
+            showUnavailable={showUnavailable}
+            showAll={showAll}
+            sortKey={globalSortKey}
+            sortDir={globalSortDir}
+            onSort={onGlobalSort}
+            currentWeek={(nflState.data?.week as number | undefined) ?? null}
+            ownerByPlayerId={buildOwnerMap(
+              rosters,
+              (leagueUsers.data || []).map((u) => ({
+                user_id: String(u.user_id),
+                display_name: u.display_name ?? undefined,
+                metadata: { team_name: u.metadata?.team_name ?? undefined },
+              }))
+            )}
+            currentUserId={userId}
+          />
+        </div>
+      ))}
     </div>
   );
 };
@@ -539,6 +629,59 @@ function LastUpdatedCard({ scoring }: { scoring: "std" | "half" | "ppr" }) {
     staleTime: 60 * 60 * 1000,
   });
 
+  // FantasyPros aggregated metadata (from combine step)
+  const { data: fpData } = useQuery<
+    Record<Pos, { last_scraped: number | null; url: string | null }>,
+    Error
+  >({
+    queryKey: ["fantasypros", "meta", scoring],
+    queryFn: async () => {
+      try {
+        const res = await fetch(`/data/aggregate/metadata.json`, {
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error("failed to load metadata");
+        type FantasyProsMetadata = {
+          last_scraped?: string;
+          url?: string;
+          last_updated?: string;
+          total_experts?: number;
+          scoring?: string;
+          position_id?: string;
+          week?: number;
+          year?: number;
+        };
+
+        const meta = (await res.json()) as {
+          fp?: Record<
+            "STD" | "PPR" | "HALF",
+            Record<string, FantasyProsMetadata>
+          >;
+        };
+        const upper = scoring.toUpperCase() as "STD" | "PPR" | "HALF";
+        const out = Object.fromEntries(
+          positions.map((pos) => {
+            const key = pos === "K" || pos === "DEF" ? "STD" : upper;
+            const posKey = pos === "DEF" ? "DST" : pos;
+            const bucket = meta?.fp?.[key] ?? {};
+            const rec = bucket[posKey] as FantasyProsMetadata | undefined;
+            const ls = rec?.last_scraped
+              ? new Date(rec.last_scraped).getTime()
+              : null;
+            const url = (rec?.url as string | undefined) ?? null;
+            return [pos, { last_scraped: ls, url }];
+          })
+        ) as Record<Pos, { last_scraped: number | null; url: string | null }>;
+        return out;
+      } catch {
+        return Object.fromEntries(
+          positions.map((p) => [p, { last_scraped: null, url: null }])
+        ) as Record<Pos, { last_scraped: number | null; url: string | null }>;
+      }
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+
   // Simple ticker to refresh relative time labels
   const [, force] = React.useReducer((x) => x + 1, 0);
   React.useEffect(() => {
@@ -568,39 +711,439 @@ function LastUpdatedCard({ scoring }: { scoring: "std" | "half" | "ppr" }) {
         <CardTitle>Last Updated</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="text-sm space-y-2">
-          <div className="font-medium">Boris Chen</div>
-          {isLoading || !data ? (
-            <div className="text-muted-foreground">Loading…</div>
-          ) : (
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
-              {positions.map((pos) => {
-                const metaScoring = pos === "K" || pos === "DEF" ? "std" : scoring;
-                const href = borischenSourceUrl(pos, metaScoring);
-                const ts = data[pos] ?? null;
-                const label = formatAgo(ts);
-                const isUnknown = ts == null;
-                return (
-                  <div key={pos} className="flex items-center gap-2">
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline-offset-2 hover:underline"
-                      title={`Open Boris Chen source for ${pos} (${metaScoring})`}
-                    >
-                      {pos}
-                    </a>
-                    <span className="text-muted-foreground">:</span>
-                    <span className={isUnknown ? "text-muted-foreground" : ""}>
-                      {label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+        <div className="text-sm space-y-4">
+          <div>
+            <div className="font-medium">Boris Chen</div>
+            {isLoading || !data ? (
+              <div className="text-muted-foreground">Loading…</div>
+            ) : (
+              <div className="flex flex-wrap gap-x-6 gap-y-2">
+                {positions.map((pos) => {
+                  const metaScoring =
+                    pos === "K" || pos === "DEF" ? "std" : scoring;
+                  const href = borischenSourceUrl(pos, metaScoring);
+                  const ts = data[pos] ?? null;
+                  const label = formatAgo(ts);
+                  const isUnknown = ts == null;
+                  return (
+                    <div key={pos} className="flex items-center gap-2">
+                      <a
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline-offset-2 hover:underline"
+                        title={`Open Boris Chen source for ${pos} (${metaScoring})`}
+                      >
+                        {pos}
+                      </a>
+                      <span className="text-muted-foreground">:</span>
+                      <span
+                        className={isUnknown ? "text-muted-foreground" : ""}
+                      >
+                        {label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <div className="font-medium">FantasyPros</div>
+            {!fpData ? (
+              <div className="text-muted-foreground">Loading…</div>
+            ) : (
+              <div className="flex flex-wrap gap-x-6 gap-y-2">
+                {positions.map((pos) => {
+                  const rec = fpData[pos];
+                  const label = formatAgo(rec?.last_scraped ?? null);
+                  const href = rec?.url ?? undefined;
+                  const isUnknown = !rec?.last_scraped;
+                  return (
+                    <div key={pos} className="flex items-center gap-2">
+                      {href ? (
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline-offset-2 hover:underline"
+                          title={`Open FantasyPros source for ${pos}`}
+                        >
+                          {pos}
+                        </a>
+                      ) : (
+                        <span>{pos}</span>
+                      )}
+                      <span className="text-muted-foreground">:</span>
+                      <span
+                        className={isUnknown ? "text-muted-foreground" : ""}
+                      >
+                        {label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// --- All Players Table (by Position) ---
+type ScoringKey = "std" | "half" | "ppr";
+type FpRankKey = "standard" | "half" | "ppr";
+type TableSortKey =
+  | "bc_rank"
+  | "fp_ecr"
+  | "fp_pos_rank"
+  | "fp_owned"
+  | "fp_grade";
+
+function AllPlayersPositionTable({
+  pos,
+  scoring,
+  rosteredIds,
+  showUnavailable,
+  showAll,
+  sortKey,
+  sortDir,
+  onSort,
+  currentWeek,
+  ownerByPlayerId,
+  currentUserId,
+}: {
+  pos: "RB" | "WR" | "TE" | "QB" | "K" | "DEF" | "FLEX";
+  scoring: ScoringKey;
+  rosteredIds: Set<string>;
+  showUnavailable: boolean;
+  showAll: boolean;
+  sortKey: TableSortKey;
+  sortDir: "asc" | "desc";
+  onSort: (key: TableSortKey) => void;
+  currentWeek: number | null;
+  ownerByPlayerId: Map<string, { name: string; userId: string }>;
+  currentUserId: string;
+}) {
+  const [visibleCount, setVisibleCount] =
+    React.useState<number>(DEFAULT_VISIBLE_ROWS);
+  type AggregatePlayerData = {
+    name?: string;
+    position?: string;
+    team?: string;
+    bye_week?: number;
+    borischen?: Record<string, { rank?: number; tier?: number }>;
+    fantasypros?: {
+      rankings?: Record<string, { rank_ecr?: number }>;
+      pos_rank?: string;
+      player_owned_avg?: number;
+      start_sit_grade?: string;
+    };
+  };
+
+  const { data, isLoading } = useQuery<
+    Record<string, AggregatePlayerData>,
+    Error
+  >({
+    queryKey: ["aggregates", "shard", pos],
+    queryFn: async () => {
+      const res = await fetch(
+        `/api/aggregates/shard?pos=${encodeURIComponent(pos)}`,
+        {
+          cache: "no-store",
+        }
+      );
+      if (!res.ok) throw new Error(`Failed to load ${pos} shard`);
+      return (await res.json()) as Record<string, AggregatePlayerData>;
+    },
+    staleTime: 60 * 1000,
+  });
+
+  const rows = React.useMemo(() => {
+    if (!data)
+      return [] as Array<{
+        id: string;
+        name: string;
+        position: string;
+        team: string | null;
+        bye_week: number | null;
+        bc_rank: number | null;
+        bc_tier: number | null;
+        fp_ecr: number | null;
+        fp_pos_rank: string | number | null;
+        fp_owned: number | null;
+        fp_grade: string | null;
+        isUnavailable: boolean;
+        ownerName: string | null;
+        ownedByYou: boolean;
+      }>;
+    const fpRankKey: FpRankKey = scoring === "std" ? "standard" : scoring;
+    const mapped = Object.entries(data).map(([id, e]) => {
+      const bc = e?.borischen?.[scoring] ?? null;
+      const fpr = e?.fantasypros ?? null;
+      const fr = fpr?.rankings?.[fpRankKey] ?? null;
+      const owner = ownerByPlayerId.get(String(id));
+      return {
+        id,
+        name: String(e?.name ?? ""),
+        position: String(e?.position ?? ""),
+        team: (e?.team as string | null) ?? null,
+        bye_week: (e?.bye_week as number | null) ?? null,
+        bc_rank: bc?.rank ?? null,
+        bc_tier: bc?.tier ?? null,
+        fp_ecr: fr?.rank_ecr ?? null,
+        fp_pos_rank: fpr?.pos_rank ?? null,
+        fp_owned: fpr?.player_owned_avg ?? null,
+        fp_grade: fpr?.start_sit_grade ?? null,
+        isUnavailable: rosteredIds.has(String(id)),
+        ownerName: owner?.name ?? null,
+        ownedByYou: owner?.userId
+          ? String(owner.userId) === String(currentUserId)
+          : false,
+      };
+    });
+    // Filter out any players without an FP positional rank
+    const withFp = mapped.filter(
+      (r) => r.fp_pos_rank !== null && r.fp_pos_rank !== ""
+    );
+    // Optionally filter unavailable players unless toggled on
+    if (showUnavailable) return withFp;
+    // When off, keep only available OR owned by the current user (if enabled)
+    return withFp.filter(
+      (r) => !r.isUnavailable || (ALWAYS_SHOW_MY_PLAYERS && r.ownedByYou)
+    );
+  }, [
+    data,
+    scoring,
+    rosteredIds,
+    showUnavailable,
+    currentUserId,
+    ownerByPlayerId,
+  ]);
+
+  const sorted = React.useMemo(() => {
+    const gradeScore = (g: string | null) => {
+      if (!g) return -1;
+      const order = ["C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+"];
+      const idx = order.indexOf(g);
+      return idx >= 0 ? idx : -1;
+    };
+    const posRankNum = (pr: string | number | null) => {
+      if (pr == null) return Number.POSITIVE_INFINITY;
+      if (typeof pr === "number") return pr;
+      const m = String(pr).match(/(\d+)/);
+      return m ? Number(m[1]) : Number.POSITIVE_INFINITY;
+    };
+    const keyVal = (r: (typeof rows)[number]) => {
+      switch (sortKey) {
+        case "bc_rank":
+          return r.bc_rank ?? Number.POSITIVE_INFINITY;
+        case "fp_ecr":
+          return r.fp_ecr ?? Number.POSITIVE_INFINITY;
+        case "fp_pos_rank":
+          return posRankNum(r.fp_pos_rank);
+        case "fp_owned":
+          return r.fp_owned != null ? r.fp_owned : -1;
+        case "fp_grade":
+          return gradeScore(r.fp_grade);
+      }
+    };
+    const dir = sortDir === "asc" ? 1 : -1;
+    return [...rows].sort((a, b) => {
+      const av = keyVal(a);
+      const bv = keyVal(b);
+      if (av === bv) return 0;
+      return av > bv ? dir : -dir;
+    });
+  }, [rows, sortKey, sortDir]);
+
+  // Clamp visible rows when the data set size changes
+  React.useEffect(() => {
+    setVisibleCount((c) => Math.min(c, sorted.length));
+  }, [sorted.length]);
+
+  // Respond to external showAll toggle
+  React.useEffect(() => {
+    setVisibleCount(showAll ? sorted.length : DEFAULT_VISIBLE_ROWS);
+  }, [showAll, sorted.length]);
+
+  const title = `${pos} (${scoring.toUpperCase()})`;
+
+  function prettyName(n: string) {
+    if (!n) return n;
+    return n
+      .split(" ")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  }
+
+  return (
+    <Card className="mb-8">
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <Skeleton className="h-40 w-full" />
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead colSpan={2} className="w-[40%]">
+                  Player
+                </TableHead>
+                <TableHead colSpan={2} className="w-[24%]">
+                  Boris Chen
+                </TableHead>
+                <TableHead colSpan={4} className="w-[36%]">
+                  FantasyPros
+                </TableHead>
+              </TableRow>
+              <TableRow>
+                <TableHead className="w-[28%] border-l border-border">
+                  Player
+                </TableHead>
+                <TableHead className="w-[12%] border-r border-border">
+                  Tm/Bye
+                </TableHead>
+                <TableHead
+                  className="w-[12%] cursor-pointer select-none border-l border-border"
+                  onClick={() => onSort("bc_rank")}
+                  title="Sort by Boris Chen rank"
+                >
+                  Rnk{" "}
+                  {sortKey === "bc_rank" ? (sortDir === "asc" ? "▲" : "▼") : ""}
+                </TableHead>
+                <TableHead className="w-[12%] border-r border-border">
+                  Tier
+                </TableHead>
+                <TableHead
+                  className="w-[12%] cursor-pointer select-none border-l border-border"
+                  onClick={() => onSort("fp_ecr")}
+                  title="Sort by FantasyPros ECR"
+                >
+                  ECR{" "}
+                  {sortKey === "fp_ecr" ? (sortDir === "asc" ? "▲" : "▼") : ""}
+                </TableHead>
+                <TableHead
+                  className="w-[12%] cursor-pointer select-none"
+                  onClick={() => onSort("fp_pos_rank")}
+                  title="Sort by FP position rank"
+                >
+                  Pos Rnk{" "}
+                  {sortKey === "fp_pos_rank"
+                    ? sortDir === "asc"
+                      ? "▲"
+                      : "▼"
+                    : ""}
+                </TableHead>
+                <TableHead
+                  className="w-[12%] cursor-pointer select-none"
+                  onClick={() => onSort("fp_owned")}
+                  title="Sort by FP % owned"
+                >
+                  %Own{" "}
+                  {sortKey === "fp_owned"
+                    ? sortDir === "asc"
+                      ? "▲"
+                      : "▼"
+                    : ""}
+                </TableHead>
+                <TableHead
+                  className="w-[8%] cursor-pointer select-none border-r border-border"
+                  onClick={() => onSort("fp_grade")}
+                  title="Sort by FP grade"
+                >
+                  Grade{" "}
+                  {sortKey === "fp_grade"
+                    ? sortDir === "asc"
+                      ? "▲"
+                      : "▼"
+                    : ""}
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sorted.slice(0, visibleCount).map((r) => (
+                <TableRow
+                  key={r.id}
+                  className={
+                    r.ownedByYou
+                      ? "bg-green-50 dark:bg-green-900/20"
+                      : r.isUnavailable
+                      ? "bg-muted/40 text-muted-foreground"
+                      : ""
+                  }
+                >
+                  <TableCell className="border-l border-border">
+                    <div className="font-medium">
+                      {prettyName(r.name)}{" "}
+                      <span className="text-muted-foreground">
+                        ({r.position})
+                      </span>
+                    </div>
+                    {r.ownerName && (
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        {r.ownerName}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell className="border-r border-border">
+                    <div className="text-sm">
+                      {r.team || "-"} /{" "}
+                      {r.bye_week == null ? (
+                        "-"
+                      ) : (
+                        <span
+                          className={
+                            currentWeek != null && r.bye_week === currentWeek
+                              ? "text-red-600 font-semibold"
+                              : ""
+                          }
+                        >
+                          {r.bye_week}
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="border-l border-border">
+                    {r.bc_rank ?? "-"}
+                  </TableCell>
+                  <TableCell className="border-r border-border">
+                    {r.bc_tier ?? "-"}
+                  </TableCell>
+                  <TableCell className="border-l border-border">
+                    {r.fp_ecr ?? "-"}
+                  </TableCell>
+                  <TableCell>{r.fp_pos_rank ?? "-"}</TableCell>
+                  <TableCell>
+                    {r.fp_owned != null ? `${r.fp_owned.toFixed(1)}%` : "-"}
+                  </TableCell>
+                  <TableCell className="border-r border-border">
+                    {r.fp_grade ?? "-"}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+        {!isLoading && sorted.length > DEFAULT_VISIBLE_ROWS && (
+          <div className="mt-3 flex justify-center">
+            <Button
+              variant="outline"
+              onClick={() =>
+                setVisibleCount((c) =>
+                  c >= sorted.length ? DEFAULT_VISIBLE_ROWS : sorted.length
+                )
+              }
+            >
+              {visibleCount >= sorted.length ? "Show less" : "Show more"}
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
