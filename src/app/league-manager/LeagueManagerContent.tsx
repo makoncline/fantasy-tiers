@@ -40,7 +40,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueries } from "@tanstack/react-query";
+import { determineRecommendedRoster } from "@/lib/rosterOptimizer";
 import { borischenSourceUrl } from "@/lib/borischen";
 import { Badge } from "@/components/ui/badge";
 
@@ -48,6 +49,109 @@ import { Badge } from "@/components/ui/badge";
 const ALWAYS_SHOW_MY_PLAYERS = true;
 // Default number of rows to show per position table before expanding
 const DEFAULT_VISIBLE_ROWS = 10;
+
+// Lightweight local aggregate lookup using existing shard API
+type PosForAgg = "QB" | "RB" | "WR" | "TE" | "K" | "DEF";
+type AggregatePlayerData = {
+  name?: string;
+  position?: string;
+  team?: string;
+  bye_week?: number;
+  borischen?: Record<"std" | "half" | "ppr", { rank?: number; tier?: number }>;
+  fantasypros?: {
+    rankings?: Record<"standard" | "half" | "ppr", { rank_ecr?: number }>;
+    pos_rank?: string;
+    player_owned_avg?: number;
+    start_sit_grade?: string;
+  };
+};
+
+function useAggregatesLookup() {
+  const positions: PosForAgg[] = ["QB", "RB", "WR", "TE", "K", "DEF"];
+  const results = useQueries({
+    queries: positions.map((pos) => ({
+      queryKey: ["aggregates", "shard", pos],
+      staleTime: 60 * 1000,
+      queryFn: async () => {
+        const res = await fetch(`/api/aggregates/shard?pos=${pos}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error(`Failed to load ${pos} shard`);
+        return (await res.json()) as Record<string, AggregatePlayerData>;
+      },
+    })),
+  });
+
+  const dataByPos = positions.reduce<
+    Record<PosForAgg, Record<string, AggregatePlayerData>>
+  >(
+    (acc, pos, i) => {
+      acc[pos] = (results[i]?.data ?? {}) as Record<
+        string,
+        AggregatePlayerData
+      >;
+      return acc;
+    },
+    { QB: {}, RB: {}, WR: {}, TE: {}, K: {}, DEF: {} }
+  );
+
+  const isLoading = results.some((r) => r.isLoading);
+  const get = (id: string, pos: PosForAgg) => dataByPos[pos]?.[id];
+
+  return { get, isLoading };
+}
+
+// Build minimal allPlayers map (by position) for the optimizer using roster + shard lookups
+function buildAllPlayersFromRoster(
+  roster: Array<{ player_id: string; position: string }>,
+  scoring: "std" | "half" | "ppr",
+  lookupAgg: (
+    id: string,
+    pos: "QB" | "RB" | "WR" | "TE" | "K" | "DEF"
+  ) =>
+    | {
+        borischen?: Record<string, { rank?: number }>;
+        fantasypros?: {
+          rankings?: Record<"standard" | "half" | "ppr", { rank_ecr?: number }>;
+        };
+      }
+    | undefined
+) {
+  const map: Record<
+    string,
+    Record<
+      string,
+      {
+        player_id: string;
+        position: any;
+        borisChenRank: number | null;
+        fantasyProsEcr: number | null;
+      }
+    >
+  > = {
+    QB: {},
+    RB: {},
+    WR: {},
+    TE: {},
+    K: {},
+    DEF: {},
+  };
+  const fpKey = scoring === "std" ? "standard" : scoring;
+  for (const p of roster) {
+    const pos = p.position as keyof typeof map;
+    if (!map[pos]) continue;
+    const agg = lookupAgg(p.player_id, pos as any);
+    const bc = (agg?.borischen as any)?.[scoring]?.rank ?? null;
+    const ecr = agg?.fantasypros?.rankings?.[fpKey]?.rank_ecr ?? null;
+    map[pos][p.player_id] = {
+      player_id: p.player_id,
+      position: pos as any,
+      borisChenRank: bc,
+      fantasyProsEcr: ecr,
+    };
+  }
+  return map;
+}
 
 const LeagueManagerContent: React.FC = () => {
   const searchParams = useSearchParams();
@@ -89,6 +193,9 @@ const LeagueManagerContent: React.FC = () => {
     [globalSortKey]
   );
 
+  // Aggregates lookup for BC/FP details
+  const { get: getAgg, isLoading: aggLoading } = useAggregatesLookup();
+
   // Keep URL as source of truth for userId once we have a user result
   React.useEffect(() => {
     const newUserId = userLookup.data?.user_id;
@@ -113,6 +220,43 @@ const LeagueManagerContent: React.FC = () => {
     isLoading,
     error,
   } = useLeagueData(leagueId, userId);
+
+  // Optimizer inputs and outputs (computed from roster + shard lookups)
+  const scoringKey = (scoringType ?? "std") as "std" | "half" | "ppr";
+  const userPlayerIds = React.useMemo(
+    () =>
+      currentRoster.filter((p) => !p.isEmpty).map((p) => String(p.player_id)),
+    [currentRoster]
+  );
+  const slotOrder = React.useMemo(
+    () => (leagueDetails?.roster_positions ?? []).filter((s) => s !== "BN"),
+    [leagueDetails?.roster_positions]
+  );
+  const allPlayers = React.useMemo(
+    () => buildAllPlayersFromRoster(currentRoster as any, scoringKey, getAgg),
+    [currentRoster, scoringKey, getAgg]
+  );
+  const optimized = React.useMemo(
+    () =>
+      determineRecommendedRoster(userPlayerIds, allPlayers, slotOrder as any),
+    [userPlayerIds, allPlayers, slotOrder]
+  );
+  const recBC = React.useMemo(
+    () => new Map(optimized.borisChen.map((s) => [s.playerId, s.slot])),
+    [optimized]
+  );
+  const recFP = React.useMemo(
+    () => new Map(optimized.fantasyPros.map((s) => [s.playerId, s.slot])),
+    [optimized]
+  );
+  const recBCSet = React.useMemo(
+    () => new Set(optimized.borisChen.map((s) => String(s.playerId))),
+    [optimized]
+  );
+  const recFPSet = React.useMemo(
+    () => new Set(optimized.fantasyPros.map((s) => String(s.playerId))),
+    [optimized]
+  );
 
   // League users for owner display/team names
   const leagueUsers = useSleeperLeagueUsers(
@@ -282,12 +426,19 @@ const LeagueManagerContent: React.FC = () => {
             <CardTitle>Who should I start?</CardTitle>
           </CardHeader>
           <CardContent>
-            <RosterTable
-              currentRoster={currentRoster}
-              {...(leagueDetails?.roster_positions && {
-                rosterPositions: leagueDetails.roster_positions,
-              })}
-            />
+            {aggLoading ? (
+              <Skeleton className="h-40 w-full" />
+            ) : (
+              <RosterTable
+                currentRoster={currentRoster}
+                scoring={scoringKey as ScoringKey}
+                lookupAgg={getAgg}
+                recommendedSlotsBC={recBC}
+                recommendedSlotsFP={recFP}
+                recommendedStarterIdsBC={recBCSet}
+                recommendedStarterIdsFP={recFPSet}
+              />
+            )}
           </CardContent>
         </Card>
       )}
@@ -377,64 +528,160 @@ const LeagueManagerContent: React.FC = () => {
 
 const RosterTable: React.FC<{
   currentRoster: RosteredPlayer[];
-  rosterPositions?: RosterSlot[];
-}> = ({ currentRoster }) => {
-  const getSlotLabel = (slot: string) => slot;
+  scoring: ScoringKey;
+  lookupAgg: (id: string, pos: PosForAgg) => AggregatePlayerData | undefined;
+  recommendedSlotsBC: Map<string, string>;
+  recommendedSlotsFP: Map<string, string>;
+  recommendedStarterIdsBC: Set<string>;
+  recommendedStarterIdsFP: Set<string>;
+}> = ({
+  currentRoster,
+  scoring,
+  lookupAgg,
+  recommendedSlotsBC,
+  recommendedSlotsFP,
+  recommendedStarterIdsBC,
+  recommendedStarterIdsFP,
+}) => {
+  const fpRankKey: "standard" | "half" | "ppr" =
+    scoring === "std" ? "standard" : scoring;
+
+  const starters = currentRoster.filter((p) => p.slot !== "BN");
+  const bench = currentRoster.filter((p) => p.slot === "BN");
+
+  const renderRow = (player: RosteredPlayer) => {
+    const isStarter = player.slot !== "BN";
+
+    const pos = (player.position as PosForAgg | undefined) ?? "WR";
+    const agg =
+      !player.isEmpty && player.player_id && pos
+        ? lookupAgg(String(player.player_id), pos)
+        : undefined;
+    const bc =
+      (agg?.borischen as AggregatePlayerData["borischen"])?.[scoring] ?? null;
+    const fpr = agg?.fantasypros ?? null;
+    const fr = fpr?.rankings?.[fpRankKey] ?? null;
+    const id = String(player.player_id);
+    const bcRecStarter = recommendedStarterIdsBC.has(id);
+    const fpRecStarter = recommendedStarterIdsFP.has(id);
+    const bcRecSlot = player.isEmpty
+      ? undefined
+      : bcRecStarter
+      ? recommendedSlotsBC.get(id) ?? player.slot
+      : "BN";
+    const fpRecSlot = player.isEmpty
+      ? undefined
+      : fpRecStarter
+      ? recommendedSlotsFP.get(id) ?? player.slot
+      : "BN";
+    const bcMoveUp = !player.isEmpty && !isStarter && bcRecStarter;
+    const bcMoveDown = !player.isEmpty && isStarter && !bcRecStarter;
+    const fpMoveUp = !player.isEmpty && !isStarter && fpRecStarter;
+    const fpMoveDown = !player.isEmpty && isStarter && !fpRecStarter;
+
+    const bcRecClass =
+      bcMoveUp || bcMoveDown
+        ? bcMoveUp
+          ? "bg-yellow-50 dark:bg-yellow-900/30 text-green-700"
+          : "bg-yellow-50 dark:bg-yellow-900/30 text-red-700"
+        : undefined;
+    const fpRecClass =
+      fpMoveUp || fpMoveDown
+        ? fpMoveUp
+          ? "bg-yellow-50 dark:bg-yellow-900/30 text-green-700"
+          : "bg-yellow-50 dark:bg-yellow-900/30 text-red-700"
+        : undefined;
+    const bcArrow = bcMoveUp ? "▲" : bcMoveDown ? "▼" : "";
+    const fpArrow = fpMoveUp ? "▲" : fpMoveDown ? "▼" : "";
+
+    const teamStr = player.team || "-";
+    const byeStr = player.bye_week == null ? "-" : String(player.bye_week);
+
+    return (
+      <TableRow key={player.player_id}>
+        {/* Player group */}
+        <TableCell className="border-l border-border font-medium">
+          {player.isEmpty
+            ? "Empty Slot"
+            : `${player.name} (${player.position})`}
+        </TableCell>
+        <TableCell className="border-r border-border">
+          <div className="text-sm">
+            {teamStr} / {byeStr}
+          </div>
+        </TableCell>
+
+        {/* Boris Chen group: Rec, Rnk, Tier */}
+        <TableCell className={`border-l border-border ${bcRecClass ?? ""}`}>
+          {player.isEmpty ? "-" : `${bcRecSlot ?? "-"} ${bcArrow}`}
+        </TableCell>
+        <TableCell>{player.isEmpty ? "-" : bc?.rank ?? "N/A"}</TableCell>
+        <TableCell className="border-r border-border">
+          {player.isEmpty ? "-" : bc?.tier ?? "N/A"}
+        </TableCell>
+
+        {/* FantasyPros group: Rec, ECR, Pos Rnk, %Own, Grade */}
+        <TableCell className={`border-l border-border ${fpRecClass ?? ""}`}>
+          {player.isEmpty ? "-" : `${fpRecSlot ?? "-"} ${fpArrow}`}
+        </TableCell>
+        <TableCell>{player.isEmpty ? "-" : fr?.rank_ecr ?? "N/A"}</TableCell>
+        <TableCell>{player.isEmpty ? "-" : fpr?.pos_rank ?? "N/A"}</TableCell>
+        <TableCell>
+          {player.isEmpty
+            ? "-"
+            : fpr?.player_owned_avg != null
+            ? `${fpr.player_owned_avg.toFixed(1)}%`
+            : "N/A"}
+        </TableCell>
+        <TableCell className="border-r border-border">
+          {player.isEmpty ? "-" : fpr?.start_sit_grade ?? "N/A"}
+        </TableCell>
+      </TableRow>
+    );
+  };
+
+  const renderHeader = () => (
+    <>
+      <TableRow>
+        <TableHead colSpan={2} className="w-[40%]">
+          Player
+        </TableHead>
+        <TableHead colSpan={3} className="w-[24%]">
+          Boris Chen
+        </TableHead>
+        <TableHead colSpan={5} className="w-[36%]">
+          FantasyPros
+        </TableHead>
+      </TableRow>
+      <TableRow>
+        <TableHead className="w-[28%] border-l border-border">Player</TableHead>
+        <TableHead className="w-[12%] border-r border-border">Tm/Bye</TableHead>
+        <TableHead className="w-[12%] border-l border-border">Rec</TableHead>
+        <TableHead className="w-[12%]">Rnk</TableHead>
+        <TableHead className="w-[12%] border-r border-border">Tier</TableHead>
+        <TableHead className="w-[12%] border-l border-border">Rec</TableHead>
+        <TableHead className="w-[12%]">ECR</TableHead>
+        <TableHead className="w-[12%]">Pos Rnk</TableHead>
+        <TableHead className="w-[12%]">%Own</TableHead>
+        <TableHead className="w-[8%] border-r border-border">Grade</TableHead>
+      </TableRow>
+    </>
+  );
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Current Slot</TableHead>
-          <TableHead>Recommended Slot</TableHead>
-          <TableHead>Name</TableHead>
-          <TableHead>Position</TableHead>
-          <TableHead>Team</TableHead>
-          <TableHead>Tier</TableHead>
-          <TableHead>Rank</TableHead>
-          <TableHead>FLEX Tier</TableHead>
-          <TableHead>FLEX Rank</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {currentRoster.map((player) => {
-          const shouldHighlight =
-            player.slot !== player.recommendedSlot || player.isEmpty;
-          return (
-            <TableRow
-              key={player.player_id}
-              className={
-                shouldHighlight ? "bg-yellow-50 dark:bg-yellow-900/30" : ""
-              }
-            >
-              <TableCell>{getSlotLabel(player.slot)}</TableCell>
-              <TableCell>
-                {player.isEmpty
-                  ? "-"
-                  : getSlotLabel(player.recommendedSlot || player.slot)}
-              </TableCell>
-              <TableCell className="font-medium">
-                {player.isEmpty ? "Empty Slot" : player.name}
-              </TableCell>
-              <TableCell>{player.isEmpty ? "-" : player.position}</TableCell>
-              <TableCell>{player.isEmpty ? "-" : player.team || "-"}</TableCell>
-              <TableCell>
-                {player.isEmpty ? "-" : player.tier || "N/A"}
-              </TableCell>
-              <TableCell>
-                {player.isEmpty ? "-" : player.rank || "N/A"}
-              </TableCell>
-              <TableCell>
-                {player.isEmpty ? "-" : player.flexTier || "N/A"}
-              </TableCell>
-              <TableCell>
-                {player.isEmpty ? "-" : player.flexRank || "N/A"}
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+    <>
+      <div className="mb-2 font-medium">Starters</div>
+      <Table className="mb-6">
+        <TableHeader>{renderHeader()}</TableHeader>
+        <TableBody>{starters.map(renderRow)}</TableBody>
+      </Table>
+
+      <div className="mb-2 font-medium">Bench</div>
+      <Table>
+        <TableHeader>{renderHeader()}</TableHeader>
+        <TableBody>{bench.map(renderRow)}</TableBody>
+      </Table>
+    </>
   );
 };
 
