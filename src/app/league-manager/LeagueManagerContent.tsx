@@ -123,7 +123,7 @@ function buildAllPlayersFromRoster(
       string,
       {
         player_id: string;
-        position: any;
+        position: "QB" | "RB" | "WR" | "TE" | "K" | "DEF";
         borisChenRank: number | null;
         fantasyProsEcr: number | null;
       }
@@ -140,12 +140,17 @@ function buildAllPlayersFromRoster(
   for (const p of roster) {
     const pos = p.position as keyof typeof map;
     if (!map[pos]) continue;
-    const agg = lookupAgg(p.player_id, pos as any);
-    const bc = (agg?.borischen as any)?.[scoring]?.rank ?? null;
+    const agg = lookupAgg(
+      p.player_id,
+      pos as "QB" | "RB" | "WR" | "TE" | "K" | "DEF"
+    );
+    const bc =
+      (agg?.borischen as Record<string, { rank?: number }>)?.[scoring]?.rank ??
+      null;
     const ecr = agg?.fantasypros?.rankings?.[fpKey]?.rank_ecr ?? null;
     map[pos][p.player_id] = {
       player_id: p.player_id,
-      position: pos as any,
+      position: pos as "QB" | "RB" | "WR" | "TE" | "K" | "DEF",
       borisChenRank: bc,
       fantasyProsEcr: ecr,
     };
@@ -233,12 +238,21 @@ const LeagueManagerContent: React.FC = () => {
     [leagueDetails?.roster_positions]
   );
   const allPlayers = React.useMemo(
-    () => buildAllPlayersFromRoster(currentRoster as any, scoringKey, getAgg),
+    () =>
+      buildAllPlayersFromRoster(
+        currentRoster as Array<{ player_id: string; position: string }>,
+        scoringKey,
+        getAgg
+      ),
     [currentRoster, scoringKey, getAgg]
   );
   const optimized = React.useMemo(
     () =>
-      determineRecommendedRoster(userPlayerIds, allPlayers, slotOrder as any),
+      determineRecommendedRoster(
+        userPlayerIds,
+        allPlayers,
+        slotOrder as string[]
+      ),
     [userPlayerIds, allPlayers, slotOrder]
   );
   const recBC = React.useMemo(
