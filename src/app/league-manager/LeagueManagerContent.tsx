@@ -848,30 +848,47 @@ function UsernameCard({
 function LastUpdatedCard({ scoring }: { scoring: "std" | "half" | "ppr" }) {
   const positions = ["QB", "RB", "WR", "TE", "FLEX", "K", "DEF"] as const;
   type Pos = (typeof positions)[number];
+  // Borischen aggregated metadata (from combine step)
   const { data, isLoading } = useQuery<Record<Pos, number | null>, Error>({
     queryKey: ["borischen", "meta", scoring],
     queryFn: async () => {
-      const entries = await Promise.all(
-        positions.map(async (pos) => {
-          try {
-            // Kickers and DEF don't vary by scoring; fall back to std
-            const metaScoring = pos === "K" || pos === "DEF" ? "std" : scoring;
-            const res = await fetch(
-              `/data/borischen/${pos}-${metaScoring}-metadata.json`,
-              { cache: "no-store" }
-            );
-            if (!res.ok) return [pos, null] as const;
-            const json = (await res.json()) as { lastModified?: string };
-            const lm = json?.lastModified;
+      try {
+        const res = await fetch(`/data/aggregate/metadata.json`, {
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error("failed to load metadata");
+
+        type BorischenMetadata = {
+          last_modified?: string;
+        };
+
+        const meta = (await res.json()) as {
+          borischen?: Record<
+            "STD" | "PPR" | "HALF",
+            Record<string, BorischenMetadata>
+          >;
+        };
+
+        const upper = scoring.toUpperCase() as "STD" | "PPR" | "HALF";
+        const out = Object.fromEntries(
+          positions.map((pos) => {
+            const key = pos === "K" || pos === "DEF" ? "STD" : upper;
+            const posKey = pos === "DEF" ? "DST" : pos;
+            const bucket = meta?.borischen?.[key] ?? {};
+            const rec = bucket[posKey] as BorischenMetadata | undefined;
+            const lm = rec?.last_modified;
             if (!lm) return [pos, null] as const;
             const d = new Date(lm);
             return [pos, isNaN(d.getTime()) ? null : d.getTime()] as const;
-          } catch {
-            return [pos, null] as const;
-          }
-        })
-      );
-      return Object.fromEntries(entries) as Record<Pos, number | null>;
+          })
+        ) as Record<Pos, number | null>;
+        return out;
+      } catch {
+        return Object.fromEntries(positions.map((p) => [p, null])) as Record<
+          Pos,
+          number | null
+        >;
+      }
     },
     staleTime: 60 * 60 * 1000,
   });

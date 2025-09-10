@@ -28,28 +28,38 @@ export interface SourceUpdateInfo {
 }
 
 /**
- * Get Borischen source update date from metadata files
+ * Get Borischen source update date from aggregated metadata
  * Uses the Last-Modified HTTP header from S3
  */
 export function getBorischenUpdateDate(
   position: string,
   scoring: string
 ): SourceUpdateInfo {
-  const metadataPath = path.join(
+  const aggregateMetadataPath = path.join(
     process.cwd(),
-    "public/data/borischen",
-    `${position}-${scoring}-metadata.json`
+    "public/data/aggregate/metadata.json"
   );
 
   try {
-    const metadata = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
-    const lastModified = metadata.lastModified;
+    const aggregateMetadata = JSON.parse(
+      fs.readFileSync(aggregateMetadataPath, "utf8")
+    );
+
+    // Map position and scoring to match metadata structure
+    const scoringKey = scoring.toUpperCase() as "STD" | "PPR" | "HALF";
+    const positionKey = position === "DEF" ? "DST" : position;
+    const actualScoringKey =
+      position === "K" || position === "DEF" ? "STD" : scoringKey;
+
+    const borischenData =
+      aggregateMetadata?.borischen?.[actualScoringKey]?.[positionKey];
+    const lastModified = borischenData?.last_modified;
 
     return {
       source: "Borischen",
       lastUpdated: lastModified ? new Date(lastModified) : null,
       fetchedAt: null, // Not stored separately
-      details: { position, scoring, metadata },
+      details: { position, scoring, borischenData },
     };
   } catch (error) {
     return {

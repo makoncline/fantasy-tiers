@@ -484,7 +484,47 @@ async function main() {
         }
       }
     }
-    const aggregatesMetadata = { fp: fpMeta } as const;
+
+    // Build Borischen metadata
+    const borischenRawDir = path.join(root, "public", "data", "borischen");
+    const borischenMeta: Record<string, Record<string, any>> = {};
+
+    for (const scoring of scorings) {
+      const scoringKey = scoring;
+      borischenMeta[scoringKey] = {};
+      const positions = positionsForScoring[scoring];
+
+      for (const pos of positions) {
+        // Borischen uses DEF for defense, not DST like FantasyPros
+        const borischenPos = pos === "DST" ? "DEF" : pos;
+        const metadataFile = path.join(
+          borischenRawDir,
+          `${borischenPos}-${scoring.toLowerCase()}-metadata.json`
+        );
+
+        try {
+          if (fs.existsSync(metadataFile)) {
+            const metaTxt = fs.readFileSync(metadataFile, "utf8");
+            const metaJson = JSON.parse(metaTxt) as {
+              lastModified?: string;
+            };
+            borischenMeta[scoringKey][pos] = {
+              last_modified: metaJson?.lastModified ?? null,
+            };
+          } else {
+            borischenMeta[scoringKey][pos] = {
+              last_modified: null,
+            };
+          }
+        } catch {
+          borischenMeta[scoringKey][pos] = {
+            last_modified: null,
+          };
+        }
+      }
+    }
+
+    const aggregatesMetadata = { fp: fpMeta, borischen: borischenMeta };
     fs.writeFileSync(metaOutFile, JSON.stringify(aggregatesMetadata, null, 2));
   } catch (e) {
     // eslint-disable-next-line no-console
