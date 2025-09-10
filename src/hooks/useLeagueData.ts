@@ -133,6 +133,8 @@ const determineCurrentRoster = (
       }
     } else {
       // Add empty slot for unfilled positions
+      positionCounts[slot] = (positionCounts[slot] || 0) + 1;
+      const slotName = getSlotLabel(slot, positionCounts[slot]);
       rosterPlayers.push({
         player_id: `empty-${slot}-${index}`,
         name: `Empty ${slot} Slot`,
@@ -141,7 +143,7 @@ const determineCurrentRoster = (
         bye_week: null,
         rank: null,
         tier: null,
-        slot: slot,
+        slot: slotName,
         recommendedSlot: "-",
         rosterOrder: index,
         isEmpty: true,
@@ -268,10 +270,9 @@ const determineRecommendedRoster = (
 
 // Helper function to get the correct slot label
 const getSlotLabel = (slot: string, count: number): string => {
-  if (slot === "FLEX" || slot === "BN") {
-    return slot;
-  }
-  return count > 1 ? `${slot} ${count}` : slot;
+  if (slot === "BN") return "BN";
+  // Always append index for non-bench slots, including FLEX
+  return `${slot}${count}`;
 };
 
 // Update other functions to work with this simplified RosteredPlayer type
@@ -549,7 +550,8 @@ export function useLeagueData(leagueId: string, userId: string) {
 
   const isLoading =
     isLoadingLeagueData || isLoadingPlayerData || flexQuery.isLoading;
-  const error = leagueError || playerDataError || (flexQuery.error as Error | null);
+  const error =
+    leagueError || playerDataError || (flexQuery.error as Error | null);
 
   return {
     rosters,
