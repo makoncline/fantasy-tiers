@@ -49,6 +49,7 @@ export const FantasyProsCombined = z.object({
   player_id: z.string().min(1), // Require non-empty player_id
   player_owned_avg: z.union([z.number(), z.null()]),
   pos_rank: z.union([z.string(), z.number(), z.null()]),
+  start_sit_grade: z.union([z.string(), z.null()]).optional(),
   stats: FantasyProsStatsByScoring,
   rankings: z.record(z.string(), z.unknown()),
 });

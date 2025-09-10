@@ -271,6 +271,32 @@ export async function fetchSleeperNflState(): Promise<SleeperNflState> {
   const json = await res.json();
   return SleeperNflStateSchema.parse(json);
 }
+// League users (for display/team names)
+export const SleeperLeagueUserSchema = z.object({
+  user_id: z.string(),
+  display_name: z.string().optional(),
+  avatar: z.string().optional(),
+  metadata: z
+    .object({
+      team_name: z.string().optional(),
+    })
+    .optional(),
+});
+export type SleeperLeagueUser = z.infer<typeof SleeperLeagueUserSchema>;
+
+export async function fetchSleeperLeagueUsers(
+  leagueId: string
+): Promise<SleeperLeagueUser[]> {
+  const url = `https://api.sleeper.app/v1/league/${encodeURIComponent(
+    leagueId
+  )}/users`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch league users: ${res.status}`);
+  }
+  const json = await res.json();
+  return z.array(SleeperLeagueUserSchema).parse(json);
+}
 
 // Sleeper players meta (team, bye_week, etc.) from /v1/players/nfl
 // Used to derive tm_bw column by joining on player_id

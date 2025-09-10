@@ -7,6 +7,8 @@ import {
   type SleeperLeague,
   fetchSleeperNflState,
   type SleeperNflState,
+  fetchSleeperLeagueUsers,
+  type SleeperLeagueUser,
 } from "@/lib/sleeper";
 
 export function useSleeperUserByUsername(
@@ -67,5 +69,20 @@ export function useSleeperNflState(opts?: { enabled?: boolean }) {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchOnMount: false,
+  });
+}
+
+export function useSleeperLeagueUsers(
+  leagueId: string | undefined,
+  enabled: boolean
+) {
+  return useQuery<SleeperLeagueUser[], Error>({
+    queryKey: ["sleeper:league:users", leagueId],
+    queryFn: async () => {
+      if (!leagueId) throw new Error("leagueId is required");
+      return fetchSleeperLeagueUsers(leagueId);
+    },
+    enabled: Boolean(leagueId) && enabled,
+    staleTime: 5 * 60 * 1000,
   });
 }

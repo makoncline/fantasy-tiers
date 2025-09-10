@@ -1,0 +1,37 @@
+{
+  "provider": "sleeper",
+  "type": "projections",
+  "positions": [
+    "DEF",
+    "K",
+    "QB",
+    "RB",
+    "TE",
+    "WR"
+  ],
+  "orderBy": "adp_half_ppr",
+  "season": "2025",
+  "seasonType": "regular",
+  "week": 2,
+  "recordCount": 3011,
+  "updatedAt": "2025-09-09T05:05:23.982Z",
+  "source": "https://api.sleeper.com/projections/nfl",
+  "state": {
+    "week": 2,
+    "leg": 2,
+    "season": "2025",
+    "season_type": "regular",
+    "league_season": "2025",
+    "previous_season": "2024",
+    "season_start_date": "2025-09-04",
+    "display_week": 1,
+    "league_create_season": "2025",
+    "season_has_scores": true
+  },
+  "lastModifiedMax": 1757365277984,
+  "files": {
+    "raw": "public/data/sleeper/raw/projections-2025-w2-2025-09-09T05-05-23-246Z.json",
+    "week": "public/data/sleeper/projections/2025/week-2.json",
+    "latest": "public/data/sleeper/projections-latest.json"
+  }
+}
