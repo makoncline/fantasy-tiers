@@ -128,7 +128,7 @@ export function parseEcrRows(raw: FantasyProsEcrItem[]): ParsedEcrRow[] {
       rank_max: toNumberSafe(e.rank_max),
       rank_ave: toNumberSafe(e.rank_ave),
       rank_std: toNumberSafe(e.rank_std),
-      player_owned_avg: toNumberSafe(e.player_owned_avg as any),
+      player_owned_avg: toNumberSafe(e.player_owned_avg),
       pos_rank: e.pos_rank ?? "",
       tier: e.tier ?? null,
       start_sit_grade: e.start_sit_grade ?? null,

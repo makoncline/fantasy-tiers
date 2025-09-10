@@ -141,8 +141,15 @@ const LeagueManagerContent: React.FC = () => {
       </div>
     );
 
+  type SleeperRoster = {
+    owner_id?: string;
+    owner?: { user_id?: string };
+    metadata?: { team_name?: string };
+    players?: string[];
+  };
+
   function buildOwnerMap(
-    rostersIn: any[],
+    rostersIn: SleeperRoster[],
     users: Array<{
       user_id: string;
       display_name: string | undefined;
@@ -340,10 +347,10 @@ const LeagueManagerContent: React.FC = () => {
       </div>
 
       {/* All Players by Position tables */}
-      {["RB", "WR", "TE", "FLEX", "QB", "K", "DEF"].map((p) => (
+      {(["RB", "WR", "TE", "FLEX", "QB", "K", "DEF"] as const).map((p) => (
         <div key={p} id={`players-${p}`} className="scroll-mt-24">
           <AllPlayersPositionTable
-            pos={p as any}
+            pos={p}
             scoring={scoringType ?? "std"}
             rosteredIds={new Set(rosteredPlayerIds)}
             showUnavailable={showUnavailable}
@@ -634,18 +641,30 @@ function LastUpdatedCard({ scoring }: { scoring: "std" | "half" | "ppr" }) {
           cache: "no-store",
         });
         if (!res.ok) throw new Error("failed to load metadata");
+        type FantasyProsMetadata = {
+          last_scraped?: string;
+          url?: string;
+          last_updated?: string;
+          total_experts?: number;
+          scoring?: string;
+          position_id?: string;
+          week?: number;
+          year?: number;
+        };
+
         const meta = (await res.json()) as {
-          fp?: Record<"STD" | "PPR" | "HALF", Record<string, any>>;
+          fp?: Record<
+            "STD" | "PPR" | "HALF",
+            Record<string, FantasyProsMetadata>
+          >;
         };
         const upper = scoring.toUpperCase() as "STD" | "PPR" | "HALF";
         const out = Object.fromEntries(
           positions.map((pos) => {
             const key = pos === "K" || pos === "DEF" ? "STD" : upper;
             const posKey = pos === "DEF" ? "DST" : pos;
-            const bucket = (meta?.fp?.[key] ?? {}) as Record<string, any>;
-            const rec = bucket[posKey] as
-              | { last_scraped?: string; url?: string }
-              | undefined;
+            const bucket = meta?.fp?.[key] ?? {};
+            const rec = bucket[posKey] as FantasyProsMetadata | undefined;
             const ls = rec?.last_scraped
               ? new Date(rec.last_scraped).getTime()
               : null;
@@ -811,7 +830,24 @@ function AllPlayersPositionTable({
 }) {
   const [visibleCount, setVisibleCount] =
     React.useState<number>(DEFAULT_VISIBLE_ROWS);
-  const { data, isLoading } = useQuery<Record<string, any>, Error>({
+  type AggregatePlayerData = {
+    name?: string;
+    position?: string;
+    team?: string;
+    bye_week?: number;
+    borischen?: Record<string, { rank?: number; tier?: number }>;
+    fantasypros?: {
+      rankings?: Record<string, { rank_ecr?: number }>;
+      pos_rank?: string;
+      player_owned_avg?: number;
+      start_sit_grade?: string;
+    };
+  };
+
+  const { data, isLoading } = useQuery<
+    Record<string, AggregatePlayerData>,
+    Error
+  >({
     queryKey: ["aggregates", "shard", pos],
     queryFn: async () => {
       const res = await fetch(
@@ -821,7 +857,7 @@ function AllPlayersPositionTable({
         }
       );
       if (!res.ok) throw new Error(`Failed to load ${pos} shard`);
-      return (await res.json()) as Record<string, any>;
+      return (await res.json()) as Record<string, AggregatePlayerData>;
     },
     staleTime: 60 * 1000,
   });
@@ -879,7 +915,14 @@ function AllPlayersPositionTable({
     return withFp.filter(
       (r) => !r.isUnavailable || (ALWAYS_SHOW_MY_PLAYERS && r.ownedByYou)
     );
-  }, [data, scoring, rosteredIds, showUnavailable]);
+  }, [
+    data,
+    scoring,
+    rosteredIds,
+    showUnavailable,
+    currentUserId,
+    ownerByPlayerId,
+  ]);
 
   const sorted = React.useMemo(() => {
     const gradeScore = (g: string | null) => {

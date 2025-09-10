@@ -421,7 +421,8 @@ async function main() {
   try {
     const fpRawDir = path.join(root, "public", "data", "fantasypros", "raw");
     const scorings = ["STD", "HALF", "PPR"] as const;
-    const positionsForScoring: Record<string, string[]> = {
+    type ScoringType = (typeof scorings)[number];
+    const positionsForScoring: Record<ScoringType, string[]> = {
       STD: ["QB", "RB", "WR", "TE", "FLEX", "K", "DST"],
       HALF: ["RB", "WR", "TE", "FLEX"],
       PPR: ["RB", "WR", "TE", "FLEX"],
@@ -448,6 +449,7 @@ async function main() {
             best = { file: f, week: wk };
         }
         const file = best?.file || files[0];
+        if (!file) continue; // Skip if no file found
         try {
           const txt = fs.readFileSync(file, "utf8");
           const json = JSON.parse(txt) as { raw?: any };
