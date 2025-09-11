@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import useQueryParam from "@/hooks/useQueryParam";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -159,10 +159,8 @@ function buildAllPlayersFromRoster(
 }
 
 const LeagueManagerContent: React.FC = () => {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const leagueId = searchParams.get("leagueId") || "";
-  const userId = searchParams.get("userId") || "";
+  const [leagueId, setLeagueId] = useQueryParam("leagueId");
+  const [userId, setUserId] = useQueryParam("userId");
 
   // Username lookup flow via submit
   const [submittedUsername, setSubmittedUsername] = React.useState<string>("");
@@ -206,9 +204,7 @@ const LeagueManagerContent: React.FC = () => {
     const newUserId = userLookup.data?.user_id;
     if (!newUserId) return;
     if (newUserId && newUserId !== userId) {
-      const p = new URLSearchParams(Array.from(searchParams.entries()));
-      p.set("userId", newUserId);
-      router.push(`/league-manager?${p.toString()}`);
+      setUserId(newUserId, { history: "replace" });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userLookup.data?.user_id]);
@@ -278,26 +274,7 @@ const LeagueManagerContent: React.FC = () => {
     Boolean(leagueId)
   );
 
-  if (isLoading)
-    return (
-      <div className="space-y-4 p-6">
-        <Skeleton className="h-7 w-60" />
-        <Skeleton className="h-28 w-full" />
-        <Skeleton className="h-7 w-60" />
-        <Skeleton className="h-40 w-full" />
-      </div>
-    );
-  if (error)
-    return (
-      <div className="p-6">
-        <Alert variant="destructive">
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>
-            {error.message || "There was a problem loading league data."}
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
+  // Do not block-render the entire page on loading; render inline states below
 
   type SleeperRoster = {
     owner_id?: string;
@@ -346,6 +323,17 @@ const LeagueManagerContent: React.FC = () => {
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-6">League Manager</h1>
 
+      {error && (
+        <div className="mb-4">
+          <Alert variant="destructive">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              {error.message || "There was a problem loading league data."}
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
       <LastUpdatedCard scoring={scoringType ?? "std"} />
 
       {/* User: show either input or selected card */}
@@ -365,10 +353,8 @@ const LeagueManagerContent: React.FC = () => {
         <SelectedUserCard
           userId={userId}
           onClear={() => {
-            const p = new URLSearchParams(Array.from(searchParams.entries()));
-            p.delete("userId");
-            p.delete("leagueId");
-            router.push(`/league-manager?${p.toString()}`);
+            setUserId(null, { history: "replace" });
+            setLeagueId(null, { history: "replace" });
             setSubmittedUsername("");
           }}
         />
@@ -381,11 +367,7 @@ const LeagueManagerContent: React.FC = () => {
           currentYear={currentYear}
           selectedLeagueId={leagueId}
           onSelect={(val) => {
-            const p = new URLSearchParams(Array.from(searchParams.entries()));
-            p.set("leagueId", val);
-            p.set("userId", userId);
-            // Update URL without causing a full navigation refresh
-            router.replace(`/league-manager?${p.toString()}`);
+            setLeagueId(val, { history: "replace" });
           }}
         />
       )}
@@ -395,9 +377,7 @@ const LeagueManagerContent: React.FC = () => {
           leagueId={leagueId}
           currentYear={currentYear}
           onClear={() => {
-            const p = new URLSearchParams(Array.from(searchParams.entries()));
-            p.delete("leagueId");
-            router.push(`/league-manager?${p.toString()}`);
+            setLeagueId(null, { history: "replace" });
           }}
         />
       )}
@@ -407,13 +387,23 @@ const LeagueManagerContent: React.FC = () => {
           <CardTitle>League Information</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-1">
-            <p>Total rosters: {rosters.length}</p>
-            <p>Total rostered players: {rosteredPlayerIds.length}</p>
-            {scoringType && <p>Scoring Type: {scoringType.toUpperCase()}</p>}
-            <p>Season: {currentYear}</p>
-            <p>Week: {nflState.data?.week ?? "—"}</p>
-          </div>
+          {isLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-4 w-52" />
+              <Skeleton className="h-4 w-36" />
+              <Skeleton className="h-4 w-28" />
+            </div>
+          ) : (
+            <div className="space-y-1">
+              <p>Total rosters: {rosters.length}</p>
+              <p>Total rostered players: {rosteredPlayerIds.length}</p>
+              {scoringType && <p>Scoring Type: {scoringType.toUpperCase()}</p>}
+              <p>Season: {currentYear}</p>
+              <p>Week: {nflState.data?.week ?? "—"}</p>
+            </div>
+          )}
           {leagueDetails?.roster_positions && (
             <div className="mt-4">
               <p className="font-medium mb-2">Roster Positions</p>
