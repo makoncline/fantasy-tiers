@@ -44,6 +44,11 @@ import { useQuery, useQueries } from "@tanstack/react-query";
 import { determineRecommendedRoster } from "@/lib/rosterOptimizer";
 import { borischenSourceUrl } from "@/lib/borischen";
 import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
 
 // Toggle: always include the app user's own players in the All Players table
 const ALWAYS_SHOW_MY_PLAYERS = true;
@@ -572,9 +577,22 @@ const RosterTable: React.FC<{
       <TableRow key={player.player_id}>
         {/* Player group */}
         <TableCell className="border-l border-border font-medium">
-          {player.isEmpty
-            ? "Empty Slot"
-            : `${player.name} (${player.position})`}
+          {player.isEmpty ? (
+            "Empty Slot"
+          ) : (
+            <>
+              <a
+                href={`https://sleeper.com/sports/nfl/players/${player.player_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline-offset-2 hover:underline"
+                title={`Open Sleeper page for ${player.name}`}
+              >
+                {player.name}
+              </a>{" "}
+              <span className="text-muted-foreground">({player.position})</span>
+            </>
+          )}
         </TableCell>
         <TableCell className="border-r border-border">
           <div className="text-sm">
@@ -673,7 +691,17 @@ const UpgradeOptionDisplay: React.FC<{
       </TableHeader>
       <TableBody>
         <TableRow>
-          <TableCell>{upgrade.currentPlayer.name}</TableCell>
+          <TableCell>
+            <a
+              href={`https://sleeper.com/sports/nfl/players/${upgrade.currentPlayer.player_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline-offset-2 hover:underline"
+              title={`Open Sleeper page for ${upgrade.currentPlayer.name}`}
+            >
+              {upgrade.currentPlayer.name}
+            </a>
+          </TableCell>
           <TableCell>{upgrade.currentPlayer.position}</TableCell>
           <TableCell>{upgrade.currentPlayer.team || "FA"}</TableCell>
           <TableCell>{upgrade.currentPlayer.tier || "N/A"}</TableCell>
@@ -710,7 +738,17 @@ const PlayerTable: React.FC<{
     </TableHeader>
     <TableBody>
       <TableRow>
-        <TableCell>{player.name}</TableCell>
+        <TableCell>
+          <a
+            href={`https://sleeper.com/sports/nfl/players/${player.player_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline-offset-2 hover:underline"
+            title={`Open Sleeper page for ${player.name}`}
+          >
+            {player.name}
+          </a>
+        </TableCell>
         <TableCell>{player.position}</TableCell>
         <TableCell>{player.team || "FA"}</TableCell>
         <TableCell>{player.tier || "N/A"}</TableCell>
@@ -748,7 +786,17 @@ const AvailablePlayersTable: React.FC<{
       {players.length > 0 ? (
         players.map((player) => (
           <TableRow key={player.player_id}>
-            <TableCell>{player.name}</TableCell>
+            <TableCell>
+              <a
+                href={`https://sleeper.com/sports/nfl/players/${player.player_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline-offset-2 hover:underline"
+                title={`Open Sleeper page for ${player.name}`}
+              >
+                {player.name}
+              </a>
+            </TableCell>
             <TableCell>{player.position}</TableCell>
             <TableCell>{player.team || "FA"}</TableCell>
             <TableCell>{player.tier || "N/A"}</TableCell>
@@ -825,6 +873,7 @@ function LastUpdatedCard({
   season: string;
   week: number | null;
 }) {
+  const [open, setOpen] = React.useState(false);
   const positions = ["QB", "RB", "WR", "TE", "FLEX", "K", "DEF"] as const;
   type Pos = (typeof positions)[number];
   // Borischen aggregated metadata (from combine step)
@@ -950,20 +999,31 @@ function LastUpdatedCard({
 
   return (
     <Card className="mb-6">
-      <CardHeader>
-        <CardTitle>Last Updated</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="mb-2 text-sm">
-          {season} season - week {week ?? "—"}
-        </div>
-        <div className="text-sm space-y-4">
-          <div>
-            <div className="font-medium">Boris Chen</div>
-            {isLoading || !data ? (
-              <div className="text-muted-foreground">Loading…</div>
-            ) : (
-              <div className="flex flex-wrap gap-x-6 gap-y-2">
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <CardHeader className="py-3">
+          <CollapsibleTrigger asChild>
+            <button className="flex w-full items-center justify-between text-left">
+              <div className="flex items-baseline gap-2">
+                <CardTitle>Last Updated</CardTitle>
+                <span className="text-sm text-muted-foreground">
+                  {season} • week {week ?? "—"}
+                </span>
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {open ? "Hide" : "Show"}
+              </span>
+            </button>
+          </CollapsibleTrigger>
+        </CardHeader>
+        <CollapsibleContent>
+          <CardContent>
+            <div className="text-sm space-y-4">
+              <div>
+                <div className="font-medium">Boris Chen</div>
+                {isLoading || !data ? (
+                  <div className="text-muted-foreground">Loading…</div>
+                ) : (
+                  <div className="flex flex-wrap gap-x-6 gap-y-2">
                 {positions.map((pos) => {
                   const metaScoring =
                     pos === "K" || pos === "DEF" ? "std" : scoring;
@@ -1033,8 +1093,10 @@ function LastUpdatedCard({
               </div>
             )}
           </div>
-        </div>
-      </CardContent>
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 }
@@ -1464,19 +1526,27 @@ function AllPlayersPositionTable({
                         : ""
                     }
                   >
-                    <TableCell className="border-l border-border">
-                      <div className="font-medium">
-                        {prettyName(r.name)}{" "}
-                        <span className="text-muted-foreground">
-                          ({r.position})
-                        </span>
+                  <TableCell className="border-l border-border">
+                    <div className="font-medium">
+                      <a
+                        href={`https://sleeper.com/sports/nfl/players/${r.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline-offset-2 hover:underline"
+                        title={`Open Sleeper page for ${prettyName(r.name)}`}
+                      >
+                        {prettyName(r.name)}
+                      </a>{" "}
+                      <span className="text-muted-foreground">
+                        ({r.position})
+                      </span>
+                    </div>
+                    {r.ownerName && (
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        {r.ownerName}
                       </div>
-                      {r.ownerName && (
-                        <div className="text-xs text-muted-foreground mt-0.5">
-                          {r.ownerName}
-                        </div>
-                      )}
-                    </TableCell>
+                    )}
+                  </TableCell>
                     <TableCell className="border-r border-border">
                       <div className="text-sm">
                         {r.team || "-"} /{" "}
