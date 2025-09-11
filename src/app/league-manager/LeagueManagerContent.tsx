@@ -1383,6 +1383,8 @@ function AllPlayersPositionTable({
 }) {
   const [visibleCount, setVisibleCount] =
     React.useState<number>(DEFAULT_VISIBLE_ROWS);
+  // For FLEX fallback, reuse global aggregates lookup to pull primary-pos BC rank
+  const { get: getAggForFallback } = useAggregatesLookup();
   type AggregatePlayerData = {
     name?: string;
     position?: string;
@@ -1425,6 +1427,7 @@ function AllPlayersPositionTable({
         bye_week: number | null;
         bc_rank: number | null;
         bc_tier: number | null;
+        bc_is_fallback?: boolean;
         fp_ecr: number | null;
         fp_pos_rank: string | number | null;
         fp_owned: number | null;
@@ -1435,10 +1438,37 @@ function AllPlayersPositionTable({
       }>;
     const fpRankKey: FpRankKey = scoring === "std" ? "standard" : scoring;
     const mapped = Object.entries(data).map(([id, e]) => {
-      const bc = e?.borischen?.[scoring] ?? null;
+      const owner = ownerByPlayerId.get(String(id));
+      const ownedByYou = owner?.userId
+        ? String(owner.userId) === String(currentUserId)
+        : false;
+      let bc = e?.borischen?.[scoring] ?? null;
+      let bc_is_fallback = false;
+      // FLEX-specific fallback: only for user's roster; if FLEX has no BC rank, pull from primary position
+      if (
+        (pos as string) === "FLEX" &&
+        ownedByYou &&
+        (!bc || (bc.rank == null && bc.tier == null))
+      ) {
+        const primaryPos = e?.position as string | undefined as
+          | "RB"
+          | "WR"
+          | "TE"
+          | "QB"
+          | "K"
+          | "DEF"
+          | undefined;
+        if (primaryPos) {
+          const rec = getAggForFallback(String(id), primaryPos);
+          const bcPrimary = rec?.borischen?.[scoring] ?? null;
+          if (bcPrimary && (bcPrimary.rank != null || bcPrimary.tier != null)) {
+            bc = bcPrimary;
+            bc_is_fallback = true;
+          }
+        }
+      }
       const fpr = e?.fantasypros ?? null;
       const fr = fpr?.rankings?.[fpRankKey] ?? null;
-      const owner = ownerByPlayerId.get(String(id));
       return {
         id,
         name: String(e?.name ?? ""),
@@ -1447,15 +1477,14 @@ function AllPlayersPositionTable({
         bye_week: (e?.bye_week as number | null) ?? null,
         bc_rank: bc?.rank ?? null,
         bc_tier: bc?.tier ?? null,
+        bc_is_fallback,
         fp_ecr: fr?.rank_ecr ?? null,
         fp_pos_rank: fpr?.pos_rank ?? null,
         fp_owned: fpr?.player_owned_avg ?? null,
         fp_grade: fpr?.start_sit_grade ?? null,
         isUnavailable: rosteredIds.has(String(id)),
         ownerName: owner?.name ?? null,
-        ownedByYou: owner?.userId
-          ? String(owner.userId) === String(currentUserId)
-          : false,
+        ownedByYou,
       };
     });
     // Filter out any players without an FP positional rank
@@ -1475,6 +1504,7 @@ function AllPlayersPositionTable({
     showUnavailable,
     currentUserId,
     ownerByPlayerId,
+    getAggForFallback,
   ]);
 
   // Build the dynamic subset per requirements when showAll is off:
@@ -1683,9 +1713,9 @@ function AllPlayersPositionTable({
       <CardContent>
         {pos === "FLEX" ? (
           <p className="text-xs text-muted-foreground mb-2">
-            Note: Boris Chen FLEX rankings do not rank the top players for FLEX.
-            Some of the best players may show no Boris Chen ranking for the FLEX
-            position.
+            Note: Boris Chen FLEX rankings may omit top players. For your
+            roster, missing FLEX ranks fall back to the player's primary
+            position rank/tier and are highlighted in yellow.
           </p>
         ) : null}
         {isLoading ? (
@@ -1821,10 +1851,32 @@ function AllPlayersPositionTable({
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="border-l border-border">
+                    <TableCell
+                      className={`border-l border-border ${
+                        r.bc_is_fallback
+                          ? "bg-yellow-50 dark:bg-yellow-900/30"
+                          : ""
+                      }`}
+                      title={
+                        r.bc_is_fallback
+                          ? "Using primary-position Boris Chen rank/tier"
+                          : undefined
+                      }
+                    >
                       {r.bc_rank ?? "-"}
                     </TableCell>
-                    <TableCell className="border-r border-border">
+                    <TableCell
+                      className={`border-r border-border ${
+                        r.bc_is_fallback
+                          ? "bg-yellow-50 dark:bg-yellow-900/30"
+                          : ""
+                      }`}
+                      title={
+                        r.bc_is_fallback
+                          ? "Using primary-position Boris Chen rank/tier"
+                          : undefined
+                      }
+                    >
                       {r.bc_tier ?? "-"}
                     </TableCell>
                     <TableCell className="border-l border-border">
