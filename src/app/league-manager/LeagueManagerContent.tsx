@@ -382,51 +382,14 @@ const LeagueManagerContent: React.FC = () => {
           userId={userId}
           leagueId={leagueId}
           currentYear={currentYear}
+          teamCount={rosters.length}
+          scoringType={scoringType ?? null}
+          rosterPositions={leagueDetails?.roster_positions}
           onClear={() => {
             setLeagueId(null, { history: "replace" });
           }}
         />
       )}
-
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>League Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-4 w-48" />
-              <Skeleton className="h-4 w-52" />
-              <Skeleton className="h-4 w-36" />
-              <Skeleton className="h-4 w-28" />
-            </div>
-          ) : (
-            <div className="space-y-1">
-              <p>Total rosters: {rosters.length}</p>
-              <p>Total rostered players: {rosteredPlayerIds.length}</p>
-              {scoringType && <p>Scoring Type: {scoringType.toUpperCase()}</p>}
-            </div>
-          )}
-          {leagueDetails?.roster_positions && (
-            <div className="mt-4">
-              <p className="font-medium mb-2">Roster Positions</p>
-              <ul className="list-disc pl-5">
-                {Object.entries(
-                  leagueDetails.roster_positions.reduce((acc, pos) => {
-                    acc[pos] = (acc[pos] || 0) + 1;
-                    return acc as Record<RosterSlot, number>;
-                  }, {} as Record<RosterSlot, number>)
-                ).map(([position, count]) => (
-                  <li key={position}>
-                    {position}: {count}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       {currentRoster.length > 0 && (
         <Card className="mb-8">
@@ -1671,16 +1634,35 @@ function SelectedLeagueCard({
   userId,
   leagueId,
   currentYear,
+  teamCount,
+  scoringType,
+  rosterPositions,
   onClear,
 }: {
   userId: string;
   leagueId: string;
   currentYear: string;
+  teamCount: number;
+  scoringType: "std" | "half" | "ppr" | null;
+  rosterPositions: RosterSlot[] | undefined;
   onClear: () => void;
 }) {
   // Reuse leagues query to get display info and find selected league
   const { data: leagues } = useSleeperLeaguesForYear(userId, currentYear, true);
   const lg = (leagues || []).find((l) => l.league_id === leagueId);
+  const rosterSummary = React.useMemo(() => {
+    const slots = (rosterPositions || []).filter((s) => s !== "BN");
+    if (slots.length === 0) return null;
+    const counts = slots.reduce((acc, pos) => {
+      acc[pos] = (acc[pos] || 0) + 1;
+      return acc as Record<RosterSlot, number>;
+    }, {} as Record<RosterSlot, number>);
+    const ordered = ROSTER_SLOTS.filter((s) => s !== "BN").filter(
+      (s) => counts[s]
+    );
+    const parts = ordered.map((s) => `${s} x ${counts[s]}`);
+    return parts.join(", ");
+  }, [rosterPositions]);
   return (
     <Card className="mb-6">
       <CardHeader>
@@ -1692,6 +1674,15 @@ function SelectedLeagueCard({
           <div className="text-sm text-muted-foreground">
             leagueId: {leagueId}
           </div>
+          <div className="text-sm mt-1">
+            {teamCount} {teamCount === 1 ? "team" : "teams"} -{" "}
+            {scoringType ? scoringType.toUpperCase() : "—"} scoring
+          </div>
+          {rosterSummary && (
+            <div className="text-sm text-muted-foreground mt-0.5">
+              {rosterSummary}
+            </div>
+          )}
         </div>
         <Button variant="default" onClick={onClear}>
           Clear league
