@@ -49,6 +49,8 @@ import { Badge } from "@/components/ui/badge";
 const ALWAYS_SHOW_MY_PLAYERS = true;
 // Default number of rows to show per position table before expanding
 const DEFAULT_VISIBLE_ROWS = 10;
+// Number of additional players to include past the user's last player
+const ADDITIONAL_PLAYERS_AFTER_LAST = 3;
 
 // Lightweight local aggregate lookup using existing shard API
 type PosForAgg = "QB" | "RB" | "WR" | "TE" | "K" | "DEF";
@@ -447,7 +449,7 @@ const LeagueManagerContent: React.FC = () => {
         </Card>
       )}
 
-      <Card className="mb-8">
+      {/* <Card className="mb-8">
         <CardHeader>
           <CardTitle>Who should I pick up?</CardTitle>
         </CardHeader>
@@ -473,7 +475,7 @@ const LeagueManagerContent: React.FC = () => {
             </p>
           )}
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Players by position controls and anchors */}
       <div className="sticky top-0 z-20 mb-2 border-b bg-background/95 pb-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -1192,7 +1194,134 @@ function AllPlayersPositionTable({
     ownerByPlayerId,
   ]);
 
+  // Build the dynamic subset per requirements when showAll is off:
+  // - Always include all of the user's players for this position (ownedByYou)
+  // - Include any available players ranked higher than the user's last player by the current sort metric
+  // - Include 5 additional players past the user's last player
+  const subset = React.useMemo(() => {
+    // When "show all ranked" is enabled, skip subset logic entirely
+    if (showAll) return rows;
+
+    // Identify user's players for this position within the already-filtered rows
+    const userRows = rows.filter((r) => r.ownedByYou);
+    if (userRows.length === 0) {
+      // Fallback: no user players at this position yet.
+      // Keep a small, stable list to avoid empty UI.
+      return rows.slice(0, DEFAULT_VISIBLE_ROWS);
+    }
+
+    // Normalized metric access (independent of current sortDir)
+    const gradeScore = (g: string | null) => {
+      if (!g) return -1;
+      const order = ["C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+"];
+      const idx = order.indexOf(g);
+      return idx >= 0 ? idx : -1;
+    };
+    const posRankNum = (pr: string | number | null) => {
+      if (pr == null) return Number.POSITIVE_INFINITY;
+      if (typeof pr === "number") return pr;
+      const m = String(pr).match(/(\d+)/);
+      return m ? Number(m[1]) : Number.POSITIVE_INFINITY;
+    };
+    const metricValue = (r: (typeof rows)[number]) => {
+      switch (sortKey) {
+        case "bc_rank":
+          return r.bc_rank ?? Number.POSITIVE_INFINITY; // lower is better
+        case "fp_ecr":
+          return r.fp_ecr ?? Number.POSITIVE_INFINITY; // lower is better
+        case "fp_pos_rank":
+          return posRankNum(r.fp_pos_rank); // lower is better
+        case "fp_owned":
+          return r.fp_owned != null ? r.fp_owned : -1; // higher is better
+        case "fp_grade":
+          return gradeScore(r.fp_grade); // higher index is better
+      }
+    };
+    const higherIsBetter = (k: TableSortKey) =>
+      k === "fp_owned" || k === "fp_grade";
+    const betterFirstCompare = (
+      a: (typeof rows)[number],
+      b: (typeof rows)[number]
+    ) => {
+      const av = metricValue(a);
+      const bv = metricValue(b);
+      const dir = higherIsBetter(sortKey) ? -1 : 1; // if higher is better, sort desc; else asc
+      if (av === bv) return 0;
+      return av > bv ? dir : -dir;
+    };
+
+    // Sort user's players by "better first" to find their last (worst) according to metric
+    const userSorted = [...userRows].sort(betterFirstCompare);
+    const lastUser = userSorted[userSorted.length - 1];
+
+    // Build base selection: include all user's players
+    const selectedMap = new Map<string, (typeof rows)[number]>(
+      userSorted.map((r) => [r.id, r])
+    );
+
+    // Include any available players better than the user's last player (by metric)
+    const allSortedByBetter = [...rows].sort(betterFirstCompare);
+    for (const r of allSortedByBetter) {
+      if (selectedMap.has(r.id)) continue;
+      // r is better than lastUser if it comes before lastUser in this order
+      if (betterFirstCompare(r, lastUser) < 0) {
+        selectedMap.set(r.id, r);
+      }
+    }
+
+    // Add a constant of 5 players past the user's last player
+    const lastIdx = allSortedByBetter.findIndex((r) => r.id === lastUser.id);
+    if (lastIdx >= 0) {
+      const tail = allSortedByBetter.slice(
+        lastIdx + 1,
+        lastIdx + 1 + ADDITIONAL_PLAYERS_AFTER_LAST
+      );
+      for (const r of tail) {
+        if (!selectedMap.has(r.id)) selectedMap.set(r.id, r);
+      }
+    }
+
+    return Array.from(selectedMap.values());
+  }, [rows, sortKey, showAll]);
+
   const sorted = React.useMemo(() => {
+    const gradeScore = (g: string | null) => {
+      if (!g) return -1;
+      const order = ["C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+"];
+      const idx = order.indexOf(g);
+      return idx >= 0 ? idx : -1;
+    };
+    const posRankNum = (pr: string | number | null) => {
+      if (pr == null) return Number.POSITIVE_INFINITY;
+      if (typeof pr === "number") return pr;
+      const m = String(pr).match(/(\d+)/);
+      return m ? Number(m[1]) : Number.POSITIVE_INFINITY;
+    };
+    const keyVal = (r: (typeof rows)[number]) => {
+      switch (sortKey) {
+        case "bc_rank":
+          return r.bc_rank ?? Number.POSITIVE_INFINITY;
+        case "fp_ecr":
+          return r.fp_ecr ?? Number.POSITIVE_INFINITY;
+        case "fp_pos_rank":
+          return posRankNum(r.fp_pos_rank);
+        case "fp_owned":
+          return r.fp_owned != null ? r.fp_owned : -1;
+        case "fp_grade":
+          return gradeScore(r.fp_grade);
+      }
+    };
+    const dir = sortDir === "asc" ? 1 : -1;
+    return [...subset].sort((a, b) => {
+      const av = keyVal(a);
+      const bv = keyVal(b);
+      if (av === bv) return 0;
+      return av > bv ? dir : -dir;
+    });
+  }, [subset, sortKey, sortDir]);
+
+  // Also maintain a full sorted list (ignoring subset) for "Show more" behavior
+  const fullSorted = React.useMemo(() => {
     const gradeScore = (g: string | null) => {
       if (!g) return -1;
       const order = ["C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+"];
@@ -1228,15 +1357,16 @@ function AllPlayersPositionTable({
     });
   }, [rows, sortKey, sortDir]);
 
-  // Clamp visible rows when the data set size changes
+  // Clamp visible rows when the subset size changes
   React.useEffect(() => {
-    setVisibleCount((c) => Math.min(c, sorted.length));
-  }, [sorted.length]);
-
-  // Respond to external showAll toggle
-  React.useEffect(() => {
-    setVisibleCount(showAll ? sorted.length : DEFAULT_VISIBLE_ROWS);
-  }, [showAll, sorted.length]);
+    // If showAll is on, show the full list
+    if (showAll) {
+      setVisibleCount(fullSorted.length);
+      return;
+    }
+    // Otherwise, default to the subset size
+    setVisibleCount(sorted.length);
+  }, [showAll, sorted.length, fullSorted.length]);
 
   const title = `${pos} (${scoring.toUpperCase()})`;
 
@@ -1254,6 +1384,13 @@ function AllPlayersPositionTable({
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
+        {pos === "FLEX" ? (
+          <p className="text-xs text-muted-foreground mb-2">
+            Note: Boris Chen FLEX rankings do not rank the top players for FLEX.
+            Some of the best players may show no Boris Chen ranking for the FLEX
+            position.
+          </p>
+        ) : null}
         {isLoading ? (
           <Skeleton className="h-40 w-full" />
         ) : (
@@ -1335,80 +1472,82 @@ function AllPlayersPositionTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sorted.slice(0, visibleCount).map((r) => (
-                <TableRow
-                  key={r.id}
-                  className={
-                    r.ownedByYou
-                      ? "bg-green-50 dark:bg-green-900/20"
-                      : r.isUnavailable
-                      ? "bg-muted/40 text-muted-foreground"
-                      : ""
-                  }
-                >
-                  <TableCell className="border-l border-border">
-                    <div className="font-medium">
-                      {prettyName(r.name)}{" "}
-                      <span className="text-muted-foreground">
-                        ({r.position})
-                      </span>
-                    </div>
-                    {r.ownerName && (
-                      <div className="text-xs text-muted-foreground mt-0.5">
-                        {r.ownerName}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell className="border-r border-border">
-                    <div className="text-sm">
-                      {r.team || "-"} /{" "}
-                      {r.bye_week == null ? (
-                        "-"
-                      ) : (
-                        <span
-                          className={
-                            currentWeek != null && r.bye_week === currentWeek
-                              ? "text-red-600 font-semibold"
-                              : ""
-                          }
-                        >
-                          {r.bye_week}
+              {(visibleCount > sorted.length ? fullSorted : sorted)
+                .slice(0, visibleCount)
+                .map((r) => (
+                  <TableRow
+                    key={r.id}
+                    className={
+                      r.ownedByYou
+                        ? "bg-green-50 dark:bg-green-900/20"
+                        : r.isUnavailable
+                        ? "bg-muted/40 text-muted-foreground"
+                        : ""
+                    }
+                  >
+                    <TableCell className="border-l border-border">
+                      <div className="font-medium">
+                        {prettyName(r.name)}{" "}
+                        <span className="text-muted-foreground">
+                          ({r.position})
                         </span>
+                      </div>
+                      {r.ownerName && (
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          {r.ownerName}
+                        </div>
                       )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="border-l border-border">
-                    {r.bc_rank ?? "-"}
-                  </TableCell>
-                  <TableCell className="border-r border-border">
-                    {r.bc_tier ?? "-"}
-                  </TableCell>
-                  <TableCell className="border-l border-border">
-                    {r.fp_ecr ?? "-"}
-                  </TableCell>
-                  <TableCell>{r.fp_pos_rank ?? "-"}</TableCell>
-                  <TableCell>
-                    {r.fp_owned != null ? `${r.fp_owned.toFixed(1)}%` : "-"}
-                  </TableCell>
-                  <TableCell className="border-r border-border">
-                    {r.fp_grade ?? "-"}
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell className="border-r border-border">
+                      <div className="text-sm">
+                        {r.team || "-"} /{" "}
+                        {r.bye_week == null ? (
+                          "-"
+                        ) : (
+                          <span
+                            className={
+                              currentWeek != null && r.bye_week === currentWeek
+                                ? "text-red-600 font-semibold"
+                                : ""
+                            }
+                          >
+                            {r.bye_week}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="border-l border-border">
+                      {r.bc_rank ?? "-"}
+                    </TableCell>
+                    <TableCell className="border-r border-border">
+                      {r.bc_tier ?? "-"}
+                    </TableCell>
+                    <TableCell className="border-l border-border">
+                      {r.fp_ecr ?? "-"}
+                    </TableCell>
+                    <TableCell>{r.fp_pos_rank ?? "-"}</TableCell>
+                    <TableCell>
+                      {r.fp_owned != null ? `${r.fp_owned.toFixed(1)}%` : "-"}
+                    </TableCell>
+                    <TableCell className="border-r border-border">
+                      {r.fp_grade ?? "-"}
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         )}
-        {!isLoading && sorted.length > DEFAULT_VISIBLE_ROWS && (
+        {!isLoading && fullSorted.length > sorted.length && (
           <div className="mt-3 flex justify-center">
             <Button
               variant="outline"
               onClick={() =>
                 setVisibleCount((c) =>
-                  c >= sorted.length ? DEFAULT_VISIBLE_ROWS : sorted.length
+                  c > sorted.length ? sorted.length : fullSorted.length
                 )
               }
             >
-              {visibleCount >= sorted.length ? "Show less" : "Show more"}
+              {visibleCount > sorted.length ? "Show less" : "Show more"}
             </Button>
           </div>
         )}
