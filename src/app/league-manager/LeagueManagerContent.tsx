@@ -364,7 +364,8 @@ const LeagueManagerContent: React.FC = () => {
     for (const p of currentRoster) {
       const id = String(p?.player_id || "");
       const pos = String(p?.position || "");
-      if (!id || !pos || !allowed.includes(pos as any)) continue;
+      if (!id || !pos || !allowed.includes(pos as (typeof allowed)[number]))
+        continue;
       const agg = getAgg(
         id,
         pos === "FLEX" ? ("RB" as PosForAgg) : (pos as PosForAgg)
@@ -374,10 +375,10 @@ const LeagueManagerContent: React.FC = () => {
       const fr = fpr?.rankings?.[fpRankKey] ?? null;
       out.push({
         id,
-        name: String((agg as any)?.name ?? ""),
+        name: String(agg?.name ?? ""),
         position: pos,
-        team: ((agg as any)?.team as string | null) ?? null,
-        bye_week: ((agg as any)?.bye_week as number | null) ?? null,
+        team: (agg?.team as string | null) ?? null,
+        bye_week: (agg?.bye_week as number | null) ?? null,
         bc_rank: bc?.rank ?? null,
         bc_tier: bc?.tier ?? null,
         fp_ecr: fr?.rank_ecr ?? null,
@@ -787,7 +788,7 @@ const RosterTable: React.FC<{
       (agg?.borischen as AggregatePlayerData["borischen"])?.[scoring] ?? null;
     const fpr = agg?.fantasypros ?? null;
     const fr = fpr?.rankings?.[fpRankKey] ?? null;
-    const inj = (agg as any)?.sleeper?.player?.injury_status ?? null;
+    const inj = agg?.sleeper?.player?.injury_status ?? null;
     const id = String(player.player_id);
     const bcRecStarter = recommendedStarterIdsBC.has(id);
     const fpRecStarter = recommendedStarterIdsFP.has(id);
@@ -1506,7 +1507,7 @@ function AllPlayersPositionTable({
         isUnavailable: rosteredIds.has(String(id)),
         ownerName: owner?.name ?? null,
         ownedByYou,
-        injury_status: (e?.sleeper as any)?.player?.injury_status ?? null,
+        injury_status: e?.sleeper?.player?.injury_status ?? null,
       };
     });
     // Filter out any players without an FP positional rank
@@ -1521,6 +1522,7 @@ function AllPlayersPositionTable({
     );
   }, [
     data,
+    pos,
     scoring,
     rosteredIds,
     showUnavailable,
@@ -1736,7 +1738,7 @@ function AllPlayersPositionTable({
         {pos === "FLEX" ? (
           <p className="text-xs text-muted-foreground mb-2">
             Note: Boris Chen FLEX rankings may omit top players. For your
-            roster, missing FLEX ranks fall back to the player's primary
+            roster, missing FLEX ranks fall back to the player&apos;s primary
             position rank/tier and are highlighted in yellow.
           </p>
         ) : null}
