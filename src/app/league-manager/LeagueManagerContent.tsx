@@ -336,7 +336,11 @@ const LeagueManagerContent: React.FC = () => {
         </div>
       )}
 
-      <LastUpdatedCard scoring={scoringType ?? "std"} />
+      <LastUpdatedCard
+        scoring={scoringType ?? "std"}
+        season={currentYear}
+        week={(nflState.data?.week as number | undefined) ?? null}
+      />
 
       {/* User: show either input or selected card */}
       {!userId ? (
@@ -402,8 +406,6 @@ const LeagueManagerContent: React.FC = () => {
               <p>Total rosters: {rosters.length}</p>
               <p>Total rostered players: {rosteredPlayerIds.length}</p>
               {scoringType && <p>Scoring Type: {scoringType.toUpperCase()}</p>}
-              <p>Season: {currentYear}</p>
-              <p>Week: {nflState.data?.week ?? "—"}</p>
             </div>
           )}
           {leagueDetails?.roster_positions && (
@@ -851,7 +853,15 @@ function UsernameCard({
   );
 }
 
-function LastUpdatedCard({ scoring }: { scoring: "std" | "half" | "ppr" }) {
+function LastUpdatedCard({
+  scoring,
+  season,
+  week,
+}: {
+  scoring: "std" | "half" | "ppr";
+  season: string;
+  week: number | null;
+}) {
   const positions = ["QB", "RB", "WR", "TE", "FLEX", "K", "DEF"] as const;
   type Pos = (typeof positions)[number];
   // Borischen aggregated metadata (from combine step)
@@ -981,6 +991,9 @@ function LastUpdatedCard({ scoring }: { scoring: "std" | "half" | "ppr" }) {
         <CardTitle>Last Updated</CardTitle>
       </CardHeader>
       <CardContent>
+        <div className="mb-2 text-sm">
+          {season} season - week {week ?? "—"}
+        </div>
         <div className="text-sm space-y-4">
           <div>
             <div className="font-medium">Boris Chen</div>
@@ -1253,6 +1266,9 @@ function AllPlayersPositionTable({
     // Sort user's players by "better first" to find their last (worst) according to metric
     const userSorted = [...userRows].sort(betterFirstCompare);
     const lastUser = userSorted[userSorted.length - 1];
+    if (!lastUser) {
+      return Array.from(new Map(userSorted.map((r) => [r.id, r])).values());
+    }
 
     // Build base selection: include all user's players
     const selectedMap = new Map<string, (typeof rows)[number]>(
