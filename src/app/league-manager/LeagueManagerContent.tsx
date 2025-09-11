@@ -65,6 +65,11 @@ type AggregatePlayerData = {
   team?: string;
   bye_week?: number;
   borischen?: Record<"std" | "half" | "ppr", { rank?: number; tier?: number }>;
+  sleeper?: {
+    player?: {
+      injury_status?: string | null;
+    };
+  };
   fantasypros?: {
     rankings?: Record<"standard" | "half" | "ppr", { rank_ecr?: number }>;
     pos_rank?: string;
@@ -782,6 +787,7 @@ const RosterTable: React.FC<{
       (agg?.borischen as AggregatePlayerData["borischen"])?.[scoring] ?? null;
     const fpr = agg?.fantasypros ?? null;
     const fr = fpr?.rankings?.[fpRankKey] ?? null;
+    const inj = (agg as any)?.sleeper?.player?.injury_status ?? null;
     const id = String(player.player_id);
     const bcRecStarter = recommendedStarterIdsBC.has(id);
     const fpRecStarter = recommendedStarterIdsFP.has(id);
@@ -825,7 +831,7 @@ const RosterTable: React.FC<{
           {player.isEmpty ? (
             "Empty Slot"
           ) : (
-            <>
+            <span className="inline-flex items-center gap-1 whitespace-nowrap">
               <a
                 href={`https://sleeper.com/sports/nfl/players/${player.player_id}`}
                 target="_blank"
@@ -835,8 +841,17 @@ const RosterTable: React.FC<{
               >
                 {player.name}
               </a>{" "}
-              <span className="text-muted-foreground">({player.position})</span>
-            </>
+              <span className="text-muted-foreground">({player.position})</span>{" "}
+              {inj ? (
+                <Badge
+                  variant="secondary"
+                  className="h-5 px-1.5 text-[10px] font-semibold bg-yellow-200 text-yellow-900 dark:bg-yellow-900/30 dark:text-yellow-200 align-middle"
+                  title={String(inj)}
+                >
+                  {String(inj).slice(0, 3).toUpperCase()}
+                </Badge>
+              ) : null}
+            </span>
           )}
         </TableCell>
         <TableCell className="border-r border-border">
@@ -1391,6 +1406,11 @@ function AllPlayersPositionTable({
     team?: string;
     bye_week?: number;
     borischen?: Record<string, { rank?: number; tier?: number }>;
+    sleeper?: {
+      player?: {
+        injury_status?: string | null;
+      };
+    };
     fantasypros?: {
       rankings?: Record<string, { rank_ecr?: number }>;
       pos_rank?: string;
@@ -1435,6 +1455,7 @@ function AllPlayersPositionTable({
         isUnavailable: boolean;
         ownerName: string | null;
         ownedByYou: boolean;
+        injury_status: string | null;
       }>;
     const fpRankKey: FpRankKey = scoring === "std" ? "standard" : scoring;
     const mapped = Object.entries(data).map(([id, e]) => {
@@ -1485,6 +1506,7 @@ function AllPlayersPositionTable({
         isUnavailable: rosteredIds.has(String(id)),
         ownerName: owner?.name ?? null,
         ownedByYou,
+        injury_status: (e?.sleeper as any)?.player?.injury_status ?? null,
       };
     });
     // Filter out any players without an FP positional rank
@@ -1813,7 +1835,7 @@ function AllPlayersPositionTable({
                     }
                   >
                     <TableCell className="border-l border-border">
-                      <div className="font-medium">
+                      <div className="font-medium inline-flex items-center gap-1 whitespace-nowrap">
                         <a
                           href={`https://sleeper.com/sports/nfl/players/${r.id}`}
                           target="_blank"
@@ -1825,7 +1847,16 @@ function AllPlayersPositionTable({
                         </a>{" "}
                         <span className="text-muted-foreground">
                           ({r.position})
-                        </span>
+                        </span>{" "}
+                        {r.injury_status ? (
+                          <Badge
+                            variant="secondary"
+                            className="h-5 px-1.5 text-[10px] font-semibold bg-yellow-200 text-yellow-900 dark:bg-yellow-900/30 dark:text-yellow-200 align-middle"
+                            title={String(r.injury_status)}
+                          >
+                            {String(r.injury_status).slice(0, 3).toUpperCase()}
+                          </Badge>
+                        ) : null}
                       </div>
                       {r.ownerName && (
                         <div className="text-xs text-muted-foreground mt-0.5">
