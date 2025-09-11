@@ -2,8 +2,9 @@ name: Fetch Fantasy Football Data
 
 on:
   schedule:
-    # Run every night at 2 AM UTC (adjust timezone as needed)
-    - cron: "0 2 * * *"
+    # Run at 7am and 4pm Eastern (12pm and 9pm UTC)
+    - cron: "0 12 * * *" # 7am Eastern (12pm UTC)
+    - cron: "0 21 * * *" # 4pm Eastern (9pm UTC)
   workflow_dispatch: # Allow manual triggering
 
 jobs:
@@ -78,7 +79,7 @@ jobs:
 
           Raw provider data cached locally (not committed to git)
 
-          Triggered by nightly cron job"
+          Triggered by scheduled job (7am/4pm Eastern)"
 
           git commit -m "$COMMIT_MSG"
 
@@ -92,9 +93,9 @@ jobs:
         if: always()
         run: |
           if [ "${{ steps.verify-changed-files.outputs.changes }}" == "true" ]; then
-            echo "🎯 Workflow completed successfully with data updates"
+            echo "🎯 Workflow completed successfully with data updates (7am/4pm Eastern schedule)"
           else
-            echo "📋 Workflow completed - no data changes detected"
+            echo "📋 Workflow completed - no data changes detected (7am/4pm Eastern schedule)"
           fi
 
       - name: Notify on failure

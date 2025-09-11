@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import useQueryParam from "@/hooks/useQueryParam";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -44,11 +44,18 @@ import { useQuery, useQueries } from "@tanstack/react-query";
 import { determineRecommendedRoster } from "@/lib/rosterOptimizer";
 import { borischenSourceUrl } from "@/lib/borischen";
 import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
 
 // Toggle: always include the app user's own players in the All Players table
 const ALWAYS_SHOW_MY_PLAYERS = true;
 // Default number of rows to show per position table before expanding
 const DEFAULT_VISIBLE_ROWS = 10;
+// Number of additional players to include past the user's last player
+const ADDITIONAL_PLAYERS_AFTER_LAST = 3;
 
 // Lightweight local aggregate lookup using existing shard API
 type PosForAgg = "QB" | "RB" | "WR" | "TE" | "K" | "DEF";
@@ -58,6 +65,11 @@ type AggregatePlayerData = {
   team?: string;
   bye_week?: number;
   borischen?: Record<"std" | "half" | "ppr", { rank?: number; tier?: number }>;
+  sleeper?: {
+    player?: {
+      injury_status?: string | null;
+    };
+  };
   fantasypros?: {
     rankings?: Record<"standard" | "half" | "ppr", { rank_ecr?: number }>;
     pos_rank?: string;
@@ -159,10 +171,8 @@ function buildAllPlayersFromRoster(
 }
 
 const LeagueManagerContent: React.FC = () => {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const leagueId = searchParams.get("leagueId") || "";
-  const userId = searchParams.get("userId") || "";
+  const [leagueId, setLeagueId] = useQueryParam("leagueId");
+  const [userId, setUserId] = useQueryParam("userId");
 
   // Username lookup flow via submit
   const [submittedUsername, setSubmittedUsername] = React.useState<string>("");
@@ -183,6 +193,9 @@ const LeagueManagerContent: React.FC = () => {
   const [globalSortDir, setGlobalSortDir] = React.useState<"asc" | "desc">(
     "asc"
   );
+  // Worst players sort state (metric to determine "worst")
+  const [worstSortKey, setWorstSortKey] =
+    React.useState<TableSortKey>("bc_rank");
   const onGlobalSort = React.useCallback(
     (key: TableSortKey) => {
       if (globalSortKey === key) {
@@ -206,9 +219,7 @@ const LeagueManagerContent: React.FC = () => {
     const newUserId = userLookup.data?.user_id;
     if (!newUserId) return;
     if (newUserId && newUserId !== userId) {
-      const p = new URLSearchParams(Array.from(searchParams.entries()));
-      p.set("userId", newUserId);
-      router.push(`/league-manager?${p.toString()}`);
+      setUserId(newUserId, { history: "replace" });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userLookup.data?.user_id]);
@@ -278,26 +289,7 @@ const LeagueManagerContent: React.FC = () => {
     Boolean(leagueId)
   );
 
-  if (isLoading)
-    return (
-      <div className="space-y-4 p-6">
-        <Skeleton className="h-7 w-60" />
-        <Skeleton className="h-28 w-full" />
-        <Skeleton className="h-7 w-60" />
-        <Skeleton className="h-40 w-full" />
-      </div>
-    );
-  if (error)
-    return (
-      <div className="p-6">
-        <Alert variant="destructive">
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>
-            {error.message || "There was a problem loading league data."}
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
+  // Do not block-render the entire page on loading; render inline states below
 
   type SleeperRoster = {
     owner_id?: string;
@@ -342,122 +334,368 @@ const LeagueManagerContent: React.FC = () => {
     return map;
   }
 
+  // Build user's players enriched with aggregate data for worst-players card
+  type WorstRow = {
+    id: string;
+    name: string;
+    position: string;
+    team: string | null;
+    bye_week: number | null;
+    bc_rank: number | null;
+    bc_tier: number | null;
+    fp_ecr: number | null;
+    fp_pos_rank: string | number | null;
+    fp_owned: number | null;
+    fp_grade: string | null;
+  };
+
+  const myRows: WorstRow[] = React.useMemo(() => {
+    const allowed: ReadonlyArray<PosForAgg | "FLEX"> = [
+      "QB",
+      "RB",
+      "WR",
+      "TE",
+      "K",
+      "DEF",
+      "FLEX",
+    ];
+    const fpRankKey: FpRankKey = scoringKey === "std" ? "standard" : scoringKey;
+    const out: WorstRow[] = [];
+    for (const p of currentRoster) {
+      const id = String(p?.player_id || "");
+      const pos = String(p?.position || "");
+      if (!id || !pos || !allowed.includes(pos as (typeof allowed)[number]))
+        continue;
+      const agg = getAgg(
+        id,
+        pos === "FLEX" ? ("RB" as PosForAgg) : (pos as PosForAgg)
+      );
+      const bc = agg?.borischen?.[scoringKey] ?? null;
+      const fpr = agg?.fantasypros ?? null;
+      const fr = fpr?.rankings?.[fpRankKey] ?? null;
+      out.push({
+        id,
+        name: String(agg?.name ?? ""),
+        position: pos,
+        team: (agg?.team as string | null) ?? null,
+        bye_week: (agg?.bye_week as number | null) ?? null,
+        bc_rank: bc?.rank ?? null,
+        bc_tier: bc?.tier ?? null,
+        fp_ecr: fr?.rank_ecr ?? null,
+        fp_pos_rank: fpr?.pos_rank ?? null,
+        fp_owned: fpr?.player_owned_avg ?? null,
+        fp_grade: fpr?.start_sit_grade ?? null,
+      });
+    }
+    // Filter only those that have at least some FP positional ranking; if absent, keep but they'll sink in sort
+    return out;
+  }, [currentRoster, scoringKey, getAgg]);
+
+  const worstFive: WorstRow[] = React.useMemo(() => {
+    // helpers copied to match semantics
+    const gradeScore = (g: string | null) => {
+      if (!g) return -1;
+      const order = ["C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+"];
+      const idx = order.indexOf(g);
+      return idx >= 0 ? idx : -1;
+    };
+    const posRankNum = (pr: string | number | null) => {
+      if (pr == null) return Number.POSITIVE_INFINITY;
+      if (typeof pr === "number") return pr;
+      const m = String(pr).match(/(\d+)/);
+      return m ? Number(m[1]) : Number.POSITIVE_INFINITY;
+    };
+    const keyVal = (r: WorstRow) => {
+      switch (worstSortKey) {
+        case "bc_rank":
+          return r.bc_rank ?? Number.POSITIVE_INFINITY; // higher is worse
+        case "fp_ecr":
+          return r.fp_ecr ?? Number.POSITIVE_INFINITY; // higher is worse
+        case "fp_pos_rank":
+          return posRankNum(r.fp_pos_rank); // higher is worse
+        case "fp_owned":
+          return r.fp_owned != null ? -r.fp_owned : Number.POSITIVE_INFINITY; // lower owned is worse -> use negative to sort desc
+        case "fp_grade":
+          return gradeScore(r.fp_grade) >= 0
+            ? -gradeScore(r.fp_grade)
+            : Number.NEGATIVE_INFINITY; // lower grade index is worse -> use negative
+      }
+    };
+    // Sort by worst first
+    const sorted = [...myRows].sort((a, b) => {
+      const av = keyVal(a);
+      const bv = keyVal(b);
+      if (av === bv) return 0;
+      return av > bv ? -1 : 1; // worse first
+    });
+    return sorted.slice(0, 5);
+  }, [myRows, worstSortKey]);
+
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-6">League Manager</h1>
 
-      <LastUpdatedCard scoring={scoringType ?? "std"} />
-
-      {/* User: show either input or selected card */}
-      {!userId ? (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>User Input</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <UsernameCard
-              loading={userLookup.isLoading}
-              onSubmit={(u) => setSubmittedUsername(u)}
-            />
-          </CardContent>
-        </Card>
-      ) : (
-        <SelectedUserCard
-          userId={userId}
-          onClear={() => {
-            const p = new URLSearchParams(Array.from(searchParams.entries()));
-            p.delete("userId");
-            p.delete("leagueId");
-            router.push(`/league-manager?${p.toString()}`);
-            setSubmittedUsername("");
-          }}
-        />
+      {error && (
+        <div className="mb-4">
+          <Alert variant="destructive">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              {error.message || "There was a problem loading league data."}
+            </AlertDescription>
+          </Alert>
+        </div>
       )}
 
-      {/* League: show selection or selected card based on URL */}
-      {userId && !leagueId && (
-        <LeagueSelectionCard
-          userId={userId}
-          currentYear={currentYear}
-          selectedLeagueId={leagueId}
-          onSelect={(val) => {
-            const p = new URLSearchParams(Array.from(searchParams.entries()));
-            p.set("leagueId", val);
-            p.set("userId", userId);
-            // Update URL without causing a full navigation refresh
-            router.replace(`/league-manager?${p.toString()}`);
-          }}
-        />
-      )}
-      {userId && leagueId && (
-        <SelectedLeagueCard
-          userId={userId}
-          leagueId={leagueId}
-          currentYear={currentYear}
-          onClear={() => {
-            const p = new URLSearchParams(Array.from(searchParams.entries()));
-            p.delete("leagueId");
-            router.push(`/league-manager?${p.toString()}`);
-          }}
-        />
-      )}
+      <div id="user-league" className="scroll-mt-24">
+        {/* User: show either input or selected card */}
+        {!userId ? (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>User Input</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <UsernameCard
+                loading={userLookup.isLoading}
+                onSubmit={(u) => setSubmittedUsername(u)}
+              />
+            </CardContent>
+          </Card>
+        ) : (
+          <SelectedUserCard
+            userId={userId}
+            onClear={() => {
+              setUserId(null, { history: "replace" });
+              setLeagueId(null, { history: "replace" });
+              setSubmittedUsername("");
+            }}
+          />
+        )}
 
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>League Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-1">
-            <p>Total rosters: {rosters.length}</p>
-            <p>Total rostered players: {rosteredPlayerIds.length}</p>
-            {scoringType && <p>Scoring Type: {scoringType.toUpperCase()}</p>}
-            <p>Season: {currentYear}</p>
-            <p>Week: {nflState.data?.week ?? "—"}</p>
-          </div>
-          {leagueDetails?.roster_positions && (
-            <div className="mt-4">
-              <p className="font-medium mb-2">Roster Positions</p>
-              <ul className="list-disc pl-5">
-                {Object.entries(
-                  leagueDetails.roster_positions.reduce((acc, pos) => {
-                    acc[pos] = (acc[pos] || 0) + 1;
-                    return acc as Record<RosterSlot, number>;
-                  }, {} as Record<RosterSlot, number>)
-                ).map(([position, count]) => (
-                  <li key={position}>
-                    {position}: {count}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        {/* League: show selection or selected card based on URL */}
+        {userId && !leagueId && (
+          <LeagueSelectionCard
+            userId={userId}
+            currentYear={currentYear}
+            selectedLeagueId={leagueId}
+            onSelect={(val) => {
+              setLeagueId(val, { history: "replace" });
+            }}
+          />
+        )}
+        {userId && leagueId && (
+          <SelectedLeagueCard
+            userId={userId}
+            leagueId={leagueId}
+            currentYear={currentYear}
+            teamCount={rosters.length}
+            scoringType={scoringType ?? null}
+            rosterPositions={leagueDetails?.roster_positions}
+            onClear={() => {
+              setLeagueId(null, { history: "replace" });
+            }}
+          />
+        )}
+      </div>
+
+      <LastUpdatedCard
+        scoring={scoringType ?? "std"}
+        season={currentYear}
+        week={(nflState.data?.week as number | undefined) ?? null}
+      />
+
+      <div className="sticky top-0 z-20 mb-2 border-b bg-background/95 pb-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="mb-3 flex flex-wrap gap-2">
+          <a href="#user-league">
+            <Badge variant="secondary">User/League</Badge>
+          </a>
+          <a href="#who-should-i-start">
+            <Badge variant="secondary">Who should I start?</Badge>
+          </a>
+          <a href="#worst-players">
+            <Badge variant="secondary">Your worst players</Badge>
+          </a>
+        </div>
+        <div className="mb-3 flex flex-wrap gap-2">
+          {["RB", "WR", "TE", "FLEX", "QB", "K", "DEF"].map((p) => (
+            <a key={p} href={`#players-${p}`}>
+              <Badge variant="secondary">{p}</Badge>
+            </a>
+          ))}
+        </div>
+        <div className="flex items-center gap-3">
+          <Switch
+            id="show-unavailable"
+            checked={showUnavailable}
+            onCheckedChange={(v) => setShowUnavailable(Boolean(v))}
+          />
+          <Label htmlFor="show-unavailable">Show unavailable</Label>
+          <Switch
+            id="show-all"
+            checked={showAll}
+            onCheckedChange={(v) => setShowAll(Boolean(v))}
+          />
+          <Label htmlFor="show-all">Show all ranked</Label>
+        </div>
+      </div>
 
       {currentRoster.length > 0 && (
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Who should I start?</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {aggLoading ? (
-              <Skeleton className="h-40 w-full" />
-            ) : (
-              <RosterTable
-                currentRoster={currentRoster}
-                scoring={scoringKey as ScoringKey}
-                lookupAgg={getAgg}
-                recommendedSlotsBC={recBC}
-                recommendedSlotsFP={recFP}
-                recommendedStarterIdsBC={recBCSet}
-                recommendedStarterIdsFP={recFPSet}
-              />
-            )}
-          </CardContent>
-        </Card>
+        <div id="who-should-i-start" className="scroll-mt-24">
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Who should I start?</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {aggLoading ? (
+                <Skeleton className="h-40 w-full" />
+              ) : (
+                <RosterTable
+                  currentRoster={currentRoster}
+                  scoring={scoringKey as ScoringKey}
+                  lookupAgg={getAgg}
+                  recommendedSlotsBC={recBC}
+                  recommendedSlotsFP={recFP}
+                  recommendedStarterIdsBC={recBCSet}
+                  recommendedStarterIdsFP={recFPSet}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </div>
       )}
 
-      <Card className="mb-8">
+      {/* Worst players section */}
+      {currentRoster.length > 0 && (
+        <div id="worst-players" className="scroll-mt-24">
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Your worst players</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead colSpan={2} className="w-[40%]">
+                      Player
+                    </TableHead>
+                    <TableHead colSpan={2} className="w-[24%]">
+                      Boris Chen
+                    </TableHead>
+                    <TableHead colSpan={4} className="w-[36%]">
+                      FantasyPros
+                    </TableHead>
+                  </TableRow>
+                  <TableRow>
+                    <TableHead className="w-[28%] border-l border-border">
+                      Player
+                    </TableHead>
+                    <TableHead className="w-[12%] border-r border-border">
+                      Tm/Bye
+                    </TableHead>
+                    <TableHead
+                      className="w-[12%] cursor-pointer select-none border-l border-border"
+                      onClick={() => setWorstSortKey("bc_rank")}
+                      title="Sort worst by Boris Chen rank"
+                    >
+                      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                        <span>Rnk</span>
+                        <span>{worstSortKey === "bc_rank" ? "▼" : ""}</span>
+                      </span>
+                    </TableHead>
+                    <TableHead className="w-[12%] border-r border-border">
+                      Tier
+                    </TableHead>
+                    <TableHead
+                      className="w-[12%] cursor-pointer select-none border-l border-border"
+                      onClick={() => setWorstSortKey("fp_ecr")}
+                      title="Sort worst by FantasyPros ECR"
+                    >
+                      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                        <span>ECR</span>
+                        <span>{worstSortKey === "fp_ecr" ? "▼" : ""}</span>
+                      </span>
+                    </TableHead>
+                    <TableHead
+                      className="w-[12%] cursor-pointer select-none"
+                      onClick={() => setWorstSortKey("fp_pos_rank")}
+                      title="Sort worst by FP position rank"
+                    >
+                      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                        <span>Pos Rnk</span>
+                        <span>{worstSortKey === "fp_pos_rank" ? "▼" : ""}</span>
+                      </span>
+                    </TableHead>
+                    <TableHead
+                      className="w-[12%] cursor-pointer select-none"
+                      onClick={() => setWorstSortKey("fp_owned")}
+                      title="Sort worst by FP % owned"
+                    >
+                      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                        <span>%Own</span>
+                        <span>{worstSortKey === "fp_owned" ? "▼" : ""}</span>
+                      </span>
+                    </TableHead>
+                    <TableHead
+                      className="w-[8%] cursor-pointer select-none border-r border-border"
+                      onClick={() => setWorstSortKey("fp_grade")}
+                      title="Sort worst by FP grade"
+                    >
+                      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                        <span>Grade</span>
+                        <span>{worstSortKey === "fp_grade" ? "▼" : ""}</span>
+                      </span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {worstFive.map((r) => (
+                    <TableRow key={r.id}>
+                      <TableCell className="border-l border-border">
+                        <div className="font-medium">
+                          <a
+                            href={`https://sleeper.com/sports/nfl/players/${r.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline-offset-2 hover:underline"
+                          >
+                            {r.name}
+                          </a>{" "}
+                          <span className="text-muted-foreground">
+                            ({r.position})
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="border-r border-border">
+                        <div className="text-sm">
+                          {r.team || "-"} /{" "}
+                          {r.bye_week == null ? "-" : r.bye_week}
+                        </div>
+                      </TableCell>
+                      <TableCell className="border-l border-border">
+                        {r.bc_rank ?? "-"}
+                      </TableCell>
+                      <TableCell className="border-r border-border">
+                        {r.bc_tier ?? "-"}
+                      </TableCell>
+                      <TableCell className="border-l border-border">
+                        {r.fp_ecr ?? "-"}
+                      </TableCell>
+                      <TableCell>{r.fp_pos_rank ?? "-"}</TableCell>
+                      <TableCell>
+                        {r.fp_owned != null ? `${r.fp_owned.toFixed(1)}%` : "-"}
+                      </TableCell>
+                      <TableCell className="border-r border-border">
+                        {r.fp_grade ?? "-"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* <Card className="mb-8">
         <CardHeader>
           <CardTitle>Who should I pick up?</CardTitle>
         </CardHeader>
@@ -483,34 +721,9 @@ const LeagueManagerContent: React.FC = () => {
             </p>
           )}
         </CardContent>
-      </Card>
+      </Card> */}
 
-      {/* Players by position controls and anchors */}
-      <div className="sticky top-0 z-20 mb-2 border-b bg-background/95 pb-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <h2 className="text-2xl font-semibold mb-2">Players by position</h2>
-        <div className="mb-3 flex flex-wrap gap-2">
-          {["RB", "WR", "TE", "FLEX", "QB", "K", "DEF"].map((p) => (
-            <a key={p} href={`#players-${p}`}>
-              <Badge variant="secondary">{p}</Badge>
-            </a>
-          ))}
-        </div>
-        <div className="flex items-center gap-3">
-          <Switch
-            id="show-unavailable"
-            checked={showUnavailable}
-            onCheckedChange={(v) => setShowUnavailable(Boolean(v))}
-          />
-          <Label htmlFor="show-unavailable">Show unavailable</Label>
-          <Switch
-            id="show-all"
-            checked={showAll}
-            onCheckedChange={(v) => setShowAll(Boolean(v))}
-          />
-          <Label htmlFor="show-all">Show all ranked</Label>
-        </div>
-      </div>
-
+      <h2 className="text-2xl font-semibold mb-2">Players by position</h2>
       {/* All Players by Position tables */}
       {(["RB", "WR", "TE", "FLEX", "QB", "K", "DEF"] as const).map((p) => (
         <div key={p} id={`players-${p}`} className="scroll-mt-24">
@@ -575,6 +788,7 @@ const RosterTable: React.FC<{
       (agg?.borischen as AggregatePlayerData["borischen"])?.[scoring] ?? null;
     const fpr = agg?.fantasypros ?? null;
     const fr = fpr?.rankings?.[fpRankKey] ?? null;
+    const inj = agg?.sleeper?.player?.injury_status ?? null;
     const id = String(player.player_id);
     const bcRecStarter = recommendedStarterIdsBC.has(id);
     const fpRecStarter = recommendedStarterIdsFP.has(id);
@@ -615,9 +829,31 @@ const RosterTable: React.FC<{
       <TableRow key={player.player_id}>
         {/* Player group */}
         <TableCell className="border-l border-border font-medium">
-          {player.isEmpty
-            ? "Empty Slot"
-            : `${player.name} (${player.position})`}
+          {player.isEmpty ? (
+            "Empty Slot"
+          ) : (
+            <span className="inline-flex items-center gap-1 whitespace-nowrap">
+              <a
+                href={`https://sleeper.com/sports/nfl/players/${player.player_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline-offset-2 hover:underline"
+                title={`Open Sleeper page for ${player.name}`}
+              >
+                {player.name}
+              </a>{" "}
+              <span className="text-muted-foreground">({player.position})</span>{" "}
+              {inj ? (
+                <Badge
+                  variant="secondary"
+                  className="h-5 px-1.5 text-[10px] font-semibold bg-yellow-200 text-yellow-900 dark:bg-yellow-900/30 dark:text-yellow-200 align-middle"
+                  title={String(inj)}
+                >
+                  {String(inj).slice(0, 3).toUpperCase()}
+                </Badge>
+              ) : null}
+            </span>
+          )}
         </TableCell>
         <TableCell className="border-r border-border">
           <div className="text-sm">
@@ -716,7 +952,17 @@ const UpgradeOptionDisplay: React.FC<{
       </TableHeader>
       <TableBody>
         <TableRow>
-          <TableCell>{upgrade.currentPlayer.name}</TableCell>
+          <TableCell>
+            <a
+              href={`https://sleeper.com/sports/nfl/players/${upgrade.currentPlayer.player_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline-offset-2 hover:underline"
+              title={`Open Sleeper page for ${upgrade.currentPlayer.name}`}
+            >
+              {upgrade.currentPlayer.name}
+            </a>
+          </TableCell>
           <TableCell>{upgrade.currentPlayer.position}</TableCell>
           <TableCell>{upgrade.currentPlayer.team || "FA"}</TableCell>
           <TableCell>{upgrade.currentPlayer.tier || "N/A"}</TableCell>
@@ -753,7 +999,17 @@ const PlayerTable: React.FC<{
     </TableHeader>
     <TableBody>
       <TableRow>
-        <TableCell>{player.name}</TableCell>
+        <TableCell>
+          <a
+            href={`https://sleeper.com/sports/nfl/players/${player.player_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline-offset-2 hover:underline"
+            title={`Open Sleeper page for ${player.name}`}
+          >
+            {player.name}
+          </a>
+        </TableCell>
         <TableCell>{player.position}</TableCell>
         <TableCell>{player.team || "FA"}</TableCell>
         <TableCell>{player.tier || "N/A"}</TableCell>
@@ -791,7 +1047,17 @@ const AvailablePlayersTable: React.FC<{
       {players.length > 0 ? (
         players.map((player) => (
           <TableRow key={player.player_id}>
-            <TableCell>{player.name}</TableCell>
+            <TableCell>
+              <a
+                href={`https://sleeper.com/sports/nfl/players/${player.player_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline-offset-2 hover:underline"
+                title={`Open Sleeper page for ${player.name}`}
+              >
+                {player.name}
+              </a>
+            </TableCell>
             <TableCell>{player.position}</TableCell>
             <TableCell>{player.team || "FA"}</TableCell>
             <TableCell>{player.tier || "N/A"}</TableCell>
@@ -859,7 +1125,16 @@ function UsernameCard({
   );
 }
 
-function LastUpdatedCard({ scoring }: { scoring: "std" | "half" | "ppr" }) {
+function LastUpdatedCard({
+  scoring,
+  season,
+  week,
+}: {
+  scoring: "std" | "half" | "ppr";
+  season: string;
+  week: number | null;
+}) {
+  const [open, setOpen] = React.useState(false);
   const positions = ["QB", "RB", "WR", "TE", "FLEX", "K", "DEF"] as const;
   type Pos = (typeof positions)[number];
   // Borischen aggregated metadata (from combine step)
@@ -985,88 +1260,104 @@ function LastUpdatedCard({ scoring }: { scoring: "std" | "half" | "ppr" }) {
 
   return (
     <Card className="mb-6">
-      <CardHeader>
-        <CardTitle>Last Updated</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-sm space-y-4">
-          <div>
-            <div className="font-medium">Boris Chen</div>
-            {isLoading || !data ? (
-              <div className="text-muted-foreground">Loading…</div>
-            ) : (
-              <div className="flex flex-wrap gap-x-6 gap-y-2">
-                {positions.map((pos) => {
-                  const metaScoring =
-                    pos === "K" || pos === "DEF" ? "std" : scoring;
-                  const href = borischenSourceUrl(pos, metaScoring);
-                  const ts = data[pos] ?? null;
-                  const label = formatAgo(ts);
-                  const isUnknown = ts == null;
-                  return (
-                    <div key={pos} className="flex items-center gap-2">
-                      <a
-                        href={href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline-offset-2 hover:underline"
-                        title={`Open Boris Chen source for ${pos} (${metaScoring})`}
-                      >
-                        {pos}
-                      </a>
-                      <span className="text-muted-foreground">:</span>
-                      <span
-                        className={isUnknown ? "text-muted-foreground" : ""}
-                      >
-                        {label}
-                      </span>
-                    </div>
-                  );
-                })}
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <CardHeader className="py-3">
+          <CollapsibleTrigger asChild>
+            <button className="flex w-full items-center justify-between text-left">
+              <div className="flex items-baseline gap-2">
+                <CardTitle>Last Updated</CardTitle>
+                <span className="text-sm text-muted-foreground">
+                  {season} • week {week ?? "—"}
+                </span>
               </div>
-            )}
-          </div>
+              <span className="text-xs text-muted-foreground">
+                {open ? "Hide" : "Show"}
+              </span>
+            </button>
+          </CollapsibleTrigger>
+        </CardHeader>
+        <CollapsibleContent>
+          <CardContent>
+            <div className="text-sm space-y-4">
+              <div>
+                <div className="font-medium">Boris Chen</div>
+                {isLoading || !data ? (
+                  <div className="text-muted-foreground">Loading…</div>
+                ) : (
+                  <div className="flex flex-wrap gap-x-6 gap-y-2">
+                    {positions.map((pos) => {
+                      const metaScoring =
+                        pos === "K" || pos === "DEF" ? "std" : scoring;
+                      const href = borischenSourceUrl(pos, metaScoring);
+                      const ts = data[pos] ?? null;
+                      const label = formatAgo(ts);
+                      const isUnknown = ts == null;
+                      return (
+                        <div key={pos} className="flex items-center gap-2">
+                          <a
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline-offset-2 hover:underline"
+                            title={`Open Boris Chen source for ${pos} (${metaScoring})`}
+                          >
+                            {pos}
+                          </a>
+                          <span className="text-muted-foreground">:</span>
+                          <span
+                            className={isUnknown ? "text-muted-foreground" : ""}
+                          >
+                            {label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
 
-          <div>
-            <div className="font-medium">FantasyPros</div>
-            {!fpData ? (
-              <div className="text-muted-foreground">Loading…</div>
-            ) : (
-              <div className="flex flex-wrap gap-x-6 gap-y-2">
-                {positions.map((pos) => {
-                  const rec = fpData[pos];
-                  const label = formatAgo(rec?.last_scraped ?? null);
-                  const href = rec?.url ?? undefined;
-                  const isUnknown = !rec?.last_scraped;
-                  return (
-                    <div key={pos} className="flex items-center gap-2">
-                      {href ? (
-                        <a
-                          href={href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline-offset-2 hover:underline"
-                          title={`Open FantasyPros source for ${pos}`}
-                        >
-                          {pos}
-                        </a>
-                      ) : (
-                        <span>{pos}</span>
-                      )}
-                      <span className="text-muted-foreground">:</span>
-                      <span
-                        className={isUnknown ? "text-muted-foreground" : ""}
-                      >
-                        {label}
-                      </span>
-                    </div>
-                  );
-                })}
+              <div>
+                <div className="font-medium">FantasyPros</div>
+                {!fpData ? (
+                  <div className="text-muted-foreground">Loading…</div>
+                ) : (
+                  <div className="flex flex-wrap gap-x-6 gap-y-2">
+                    {positions.map((pos) => {
+                      const rec = fpData[pos];
+                      const label = formatAgo(rec?.last_scraped ?? null);
+                      const href = rec?.url ?? undefined;
+                      const isUnknown = !rec?.last_scraped;
+                      return (
+                        <div key={pos} className="flex items-center gap-2">
+                          {href ? (
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline-offset-2 hover:underline"
+                              title={`Open FantasyPros source for ${pos}`}
+                            >
+                              {pos}
+                            </a>
+                          ) : (
+                            <span>{pos}</span>
+                          )}
+                          <span className="text-muted-foreground">:</span>
+                          <span
+                            className={isUnknown ? "text-muted-foreground" : ""}
+                          >
+                            {label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </div>
-      </CardContent>
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 }
@@ -1108,12 +1399,19 @@ function AllPlayersPositionTable({
 }) {
   const [visibleCount, setVisibleCount] =
     React.useState<number>(DEFAULT_VISIBLE_ROWS);
+  // For FLEX fallback, reuse global aggregates lookup to pull primary-pos BC rank
+  const { get: getAggForFallback } = useAggregatesLookup();
   type AggregatePlayerData = {
     name?: string;
     position?: string;
     team?: string;
     bye_week?: number;
     borischen?: Record<string, { rank?: number; tier?: number }>;
+    sleeper?: {
+      player?: {
+        injury_status?: string | null;
+      };
+    };
     fantasypros?: {
       rankings?: Record<string, { rank_ecr?: number }>;
       pos_rank?: string;
@@ -1150,6 +1448,7 @@ function AllPlayersPositionTable({
         bye_week: number | null;
         bc_rank: number | null;
         bc_tier: number | null;
+        bc_is_fallback?: boolean;
         fp_ecr: number | null;
         fp_pos_rank: string | number | null;
         fp_owned: number | null;
@@ -1157,13 +1456,41 @@ function AllPlayersPositionTable({
         isUnavailable: boolean;
         ownerName: string | null;
         ownedByYou: boolean;
+        injury_status: string | null;
       }>;
     const fpRankKey: FpRankKey = scoring === "std" ? "standard" : scoring;
     const mapped = Object.entries(data).map(([id, e]) => {
-      const bc = e?.borischen?.[scoring] ?? null;
+      const owner = ownerByPlayerId.get(String(id));
+      const ownedByYou = owner?.userId
+        ? String(owner.userId) === String(currentUserId)
+        : false;
+      let bc = e?.borischen?.[scoring] ?? null;
+      let bc_is_fallback = false;
+      // FLEX-specific fallback: only for user's roster; if FLEX has no BC rank, pull from primary position
+      if (
+        (pos as string) === "FLEX" &&
+        ownedByYou &&
+        (!bc || (bc.rank == null && bc.tier == null))
+      ) {
+        const primaryPos = e?.position as string | undefined as
+          | "RB"
+          | "WR"
+          | "TE"
+          | "QB"
+          | "K"
+          | "DEF"
+          | undefined;
+        if (primaryPos) {
+          const rec = getAggForFallback(String(id), primaryPos);
+          const bcPrimary = rec?.borischen?.[scoring] ?? null;
+          if (bcPrimary && (bcPrimary.rank != null || bcPrimary.tier != null)) {
+            bc = bcPrimary;
+            bc_is_fallback = true;
+          }
+        }
+      }
       const fpr = e?.fantasypros ?? null;
       const fr = fpr?.rankings?.[fpRankKey] ?? null;
-      const owner = ownerByPlayerId.get(String(id));
       return {
         id,
         name: String(e?.name ?? ""),
@@ -1172,15 +1499,15 @@ function AllPlayersPositionTable({
         bye_week: (e?.bye_week as number | null) ?? null,
         bc_rank: bc?.rank ?? null,
         bc_tier: bc?.tier ?? null,
+        bc_is_fallback,
         fp_ecr: fr?.rank_ecr ?? null,
         fp_pos_rank: fpr?.pos_rank ?? null,
         fp_owned: fpr?.player_owned_avg ?? null,
         fp_grade: fpr?.start_sit_grade ?? null,
         isUnavailable: rosteredIds.has(String(id)),
         ownerName: owner?.name ?? null,
-        ownedByYou: owner?.userId
-          ? String(owner.userId) === String(currentUserId)
-          : false,
+        ownedByYou,
+        injury_status: e?.sleeper?.player?.injury_status ?? null,
       };
     });
     // Filter out any players without an FP positional rank
@@ -1195,14 +1522,146 @@ function AllPlayersPositionTable({
     );
   }, [
     data,
+    pos,
     scoring,
     rosteredIds,
     showUnavailable,
     currentUserId,
     ownerByPlayerId,
+    getAggForFallback,
   ]);
 
+  // Build the dynamic subset per requirements when showAll is off:
+  // - Always include all of the user's players for this position (ownedByYou)
+  // - Include any available players ranked higher than the user's last player by the current sort metric
+  // - Include 5 additional players past the user's last player
+  const subset = React.useMemo(() => {
+    // When "show all ranked" is enabled, skip subset logic entirely
+    if (showAll) return rows;
+
+    // Identify user's players for this position within the already-filtered rows
+    const userRows = rows.filter((r) => r.ownedByYou);
+    if (userRows.length === 0) {
+      // Fallback: no user players at this position yet.
+      // Keep a small, stable list to avoid empty UI.
+      return rows.slice(0, DEFAULT_VISIBLE_ROWS);
+    }
+
+    // Normalized metric access (independent of current sortDir)
+    const gradeScore = (g: string | null) => {
+      if (!g) return -1;
+      const order = ["C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+"];
+      const idx = order.indexOf(g);
+      return idx >= 0 ? idx : -1;
+    };
+    const posRankNum = (pr: string | number | null) => {
+      if (pr == null) return Number.POSITIVE_INFINITY;
+      if (typeof pr === "number") return pr;
+      const m = String(pr).match(/(\d+)/);
+      return m ? Number(m[1]) : Number.POSITIVE_INFINITY;
+    };
+    const metricValue = (r: (typeof rows)[number]) => {
+      switch (sortKey) {
+        case "bc_rank":
+          return r.bc_rank ?? Number.POSITIVE_INFINITY; // lower is better
+        case "fp_ecr":
+          return r.fp_ecr ?? Number.POSITIVE_INFINITY; // lower is better
+        case "fp_pos_rank":
+          return posRankNum(r.fp_pos_rank); // lower is better
+        case "fp_owned":
+          return r.fp_owned != null ? r.fp_owned : -1; // higher is better
+        case "fp_grade":
+          return gradeScore(r.fp_grade); // higher index is better
+      }
+    };
+    const higherIsBetter = (k: TableSortKey) =>
+      k === "fp_owned" || k === "fp_grade";
+    const betterFirstCompare = (
+      a: (typeof rows)[number],
+      b: (typeof rows)[number]
+    ) => {
+      const av = metricValue(a);
+      const bv = metricValue(b);
+      const dir = higherIsBetter(sortKey) ? -1 : 1; // if higher is better, sort desc; else asc
+      if (av === bv) return 0;
+      return av > bv ? dir : -dir;
+    };
+
+    // Sort user's players by "better first" to find their last (worst) according to metric
+    const userSorted = [...userRows].sort(betterFirstCompare);
+    const lastUser = userSorted[userSorted.length - 1];
+    if (!lastUser) {
+      return Array.from(new Map(userSorted.map((r) => [r.id, r])).values());
+    }
+
+    // Build base selection: include all user's players
+    const selectedMap = new Map<string, (typeof rows)[number]>(
+      userSorted.map((r) => [r.id, r])
+    );
+
+    // Include any available players better than the user's last player (by metric)
+    const allSortedByBetter = [...rows].sort(betterFirstCompare);
+    for (const r of allSortedByBetter) {
+      if (selectedMap.has(r.id)) continue;
+      // r is better than lastUser if it comes before lastUser in this order
+      if (betterFirstCompare(r, lastUser) < 0) {
+        selectedMap.set(r.id, r);
+      }
+    }
+
+    // Add a constant of 5 players past the user's last player
+    const lastIdx = allSortedByBetter.findIndex((r) => r.id === lastUser.id);
+    if (lastIdx >= 0) {
+      const tail = allSortedByBetter.slice(
+        lastIdx + 1,
+        lastIdx + 1 + ADDITIONAL_PLAYERS_AFTER_LAST
+      );
+      for (const r of tail) {
+        if (!selectedMap.has(r.id)) selectedMap.set(r.id, r);
+      }
+    }
+
+    return Array.from(selectedMap.values());
+  }, [rows, sortKey, showAll]);
+
   const sorted = React.useMemo(() => {
+    const gradeScore = (g: string | null) => {
+      if (!g) return -1;
+      const order = ["C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+"];
+      const idx = order.indexOf(g);
+      return idx >= 0 ? idx : -1;
+    };
+    const posRankNum = (pr: string | number | null) => {
+      if (pr == null) return Number.POSITIVE_INFINITY;
+      if (typeof pr === "number") return pr;
+      const m = String(pr).match(/(\d+)/);
+      return m ? Number(m[1]) : Number.POSITIVE_INFINITY;
+    };
+    const keyVal = (r: (typeof rows)[number]) => {
+      switch (sortKey) {
+        case "bc_rank":
+          return r.bc_rank ?? Number.POSITIVE_INFINITY;
+        case "fp_ecr":
+          return r.fp_ecr ?? Number.POSITIVE_INFINITY;
+        case "fp_pos_rank":
+          return posRankNum(r.fp_pos_rank);
+        case "fp_owned":
+          return r.fp_owned != null ? r.fp_owned : -1;
+        case "fp_grade":
+          return gradeScore(r.fp_grade);
+      }
+    };
+    const dir = sortDir === "asc" ? 1 : -1;
+    return [...subset].sort((a, b) => {
+      const av = keyVal(a);
+      const bv = keyVal(b);
+      if (av === bv) return 0;
+      return av > bv ? dir : -dir;
+    });
+  }, [subset, sortKey, sortDir]);
+
+  // Also maintain a full sorted list (ignoring subset) for "Show more" behavior
+  const fullSorted = React.useMemo(() => {
     const gradeScore = (g: string | null) => {
       if (!g) return -1;
       const order = ["C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+"];
@@ -1238,15 +1697,16 @@ function AllPlayersPositionTable({
     });
   }, [rows, sortKey, sortDir]);
 
-  // Clamp visible rows when the data set size changes
+  // Clamp visible rows when the subset size changes
   React.useEffect(() => {
-    setVisibleCount((c) => Math.min(c, sorted.length));
-  }, [sorted.length]);
-
-  // Respond to external showAll toggle
-  React.useEffect(() => {
-    setVisibleCount(showAll ? sorted.length : DEFAULT_VISIBLE_ROWS);
-  }, [showAll, sorted.length]);
+    // If showAll is on, show the full list
+    if (showAll) {
+      setVisibleCount(fullSorted.length);
+      return;
+    }
+    // Otherwise, default to the subset size
+    setVisibleCount(sorted.length);
+  }, [showAll, sorted.length, fullSorted.length]);
 
   const title = `${pos} (${scoring.toUpperCase()})`;
 
@@ -1260,10 +1720,28 @@ function AllPlayersPositionTable({
 
   return (
     <Card className="mb-8">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle>{title}</CardTitle>
+        {!isLoading &&
+          fullSorted.length > sorted.length &&
+          visibleCount > sorted.length && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setVisibleCount(sorted.length)}
+            >
+              Show less
+            </Button>
+          )}
       </CardHeader>
       <CardContent>
+        {pos === "FLEX" ? (
+          <p className="text-xs text-muted-foreground mb-2">
+            Note: Boris Chen FLEX rankings may omit top players. For your
+            roster, missing FLEX ranks fall back to the player&apos;s primary
+            position rank/tier and are highlighted in yellow.
+          </p>
+        ) : null}
         {isLoading ? (
           <Skeleton className="h-40 w-full" />
         ) : (
@@ -1345,80 +1823,121 @@ function AllPlayersPositionTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sorted.slice(0, visibleCount).map((r) => (
-                <TableRow
-                  key={r.id}
-                  className={
-                    r.ownedByYou
-                      ? "bg-green-50 dark:bg-green-900/20"
-                      : r.isUnavailable
-                      ? "bg-muted/40 text-muted-foreground"
-                      : ""
-                  }
-                >
-                  <TableCell className="border-l border-border">
-                    <div className="font-medium">
-                      {prettyName(r.name)}{" "}
-                      <span className="text-muted-foreground">
-                        ({r.position})
-                      </span>
-                    </div>
-                    {r.ownerName && (
-                      <div className="text-xs text-muted-foreground mt-0.5">
-                        {r.ownerName}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell className="border-r border-border">
-                    <div className="text-sm">
-                      {r.team || "-"} /{" "}
-                      {r.bye_week == null ? (
-                        "-"
-                      ) : (
-                        <span
-                          className={
-                            currentWeek != null && r.bye_week === currentWeek
-                              ? "text-red-600 font-semibold"
-                              : ""
-                          }
+              {(visibleCount > sorted.length ? fullSorted : sorted)
+                .slice(0, visibleCount)
+                .map((r) => (
+                  <TableRow
+                    key={r.id}
+                    className={
+                      r.ownedByYou
+                        ? "bg-green-50 dark:bg-green-900/20"
+                        : r.isUnavailable
+                        ? "bg-muted/40 text-muted-foreground"
+                        : ""
+                    }
+                  >
+                    <TableCell className="border-l border-border">
+                      <div className="font-medium inline-flex items-center gap-1 whitespace-nowrap">
+                        <a
+                          href={`https://sleeper.com/sports/nfl/players/${r.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline-offset-2 hover:underline"
+                          title={`Open Sleeper page for ${prettyName(r.name)}`}
                         >
-                          {r.bye_week}
-                        </span>
+                          {prettyName(r.name)}
+                        </a>{" "}
+                        <span className="text-muted-foreground">
+                          ({r.position})
+                        </span>{" "}
+                        {r.injury_status ? (
+                          <Badge
+                            variant="secondary"
+                            className="h-5 px-1.5 text-[10px] font-semibold bg-yellow-200 text-yellow-900 dark:bg-yellow-900/30 dark:text-yellow-200 align-middle"
+                            title={String(r.injury_status)}
+                          >
+                            {String(r.injury_status).slice(0, 3).toUpperCase()}
+                          </Badge>
+                        ) : null}
+                      </div>
+                      {r.ownerName && (
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          {r.ownerName}
+                        </div>
                       )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="border-l border-border">
-                    {r.bc_rank ?? "-"}
-                  </TableCell>
-                  <TableCell className="border-r border-border">
-                    {r.bc_tier ?? "-"}
-                  </TableCell>
-                  <TableCell className="border-l border-border">
-                    {r.fp_ecr ?? "-"}
-                  </TableCell>
-                  <TableCell>{r.fp_pos_rank ?? "-"}</TableCell>
-                  <TableCell>
-                    {r.fp_owned != null ? `${r.fp_owned.toFixed(1)}%` : "-"}
-                  </TableCell>
-                  <TableCell className="border-r border-border">
-                    {r.fp_grade ?? "-"}
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell className="border-r border-border">
+                      <div className="text-sm">
+                        {r.team || "-"} /{" "}
+                        {r.bye_week == null ? (
+                          "-"
+                        ) : (
+                          <span
+                            className={
+                              currentWeek != null && r.bye_week === currentWeek
+                                ? "text-red-600 font-semibold"
+                                : ""
+                            }
+                          >
+                            {r.bye_week}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell
+                      className={`border-l border-border ${
+                        r.bc_is_fallback
+                          ? "bg-yellow-50 dark:bg-yellow-900/30"
+                          : ""
+                      }`}
+                      title={
+                        r.bc_is_fallback
+                          ? "Using primary-position Boris Chen rank/tier"
+                          : undefined
+                      }
+                    >
+                      {r.bc_rank ?? "-"}
+                    </TableCell>
+                    <TableCell
+                      className={`border-r border-border ${
+                        r.bc_is_fallback
+                          ? "bg-yellow-50 dark:bg-yellow-900/30"
+                          : ""
+                      }`}
+                      title={
+                        r.bc_is_fallback
+                          ? "Using primary-position Boris Chen rank/tier"
+                          : undefined
+                      }
+                    >
+                      {r.bc_tier ?? "-"}
+                    </TableCell>
+                    <TableCell className="border-l border-border">
+                      {r.fp_ecr ?? "-"}
+                    </TableCell>
+                    <TableCell>{r.fp_pos_rank ?? "-"}</TableCell>
+                    <TableCell>
+                      {r.fp_owned != null ? `${r.fp_owned.toFixed(1)}%` : "-"}
+                    </TableCell>
+                    <TableCell className="border-r border-border">
+                      {r.fp_grade ?? "-"}
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         )}
-        {!isLoading && sorted.length > DEFAULT_VISIBLE_ROWS && (
+        {!isLoading && fullSorted.length > sorted.length && (
           <div className="mt-3 flex justify-center">
             <Button
               variant="outline"
               onClick={() =>
                 setVisibleCount((c) =>
-                  c >= sorted.length ? DEFAULT_VISIBLE_ROWS : sorted.length
+                  c > sorted.length ? sorted.length : fullSorted.length
                 )
               }
             >
-              {visibleCount >= sorted.length ? "Show less" : "Show more"}
+              {visibleCount > sorted.length ? "Show less" : "Show more"}
             </Button>
           </div>
         )}
@@ -1526,16 +2045,35 @@ function SelectedLeagueCard({
   userId,
   leagueId,
   currentYear,
+  teamCount,
+  scoringType,
+  rosterPositions,
   onClear,
 }: {
   userId: string;
   leagueId: string;
   currentYear: string;
+  teamCount: number;
+  scoringType: "std" | "half" | "ppr" | null;
+  rosterPositions: RosterSlot[] | undefined;
   onClear: () => void;
 }) {
   // Reuse leagues query to get display info and find selected league
   const { data: leagues } = useSleeperLeaguesForYear(userId, currentYear, true);
   const lg = (leagues || []).find((l) => l.league_id === leagueId);
+  const rosterSummary = React.useMemo(() => {
+    const slots = (rosterPositions || []).filter((s) => s !== "BN");
+    if (slots.length === 0) return null;
+    const counts = slots.reduce((acc, pos) => {
+      acc[pos] = (acc[pos] || 0) + 1;
+      return acc as Record<RosterSlot, number>;
+    }, {} as Record<RosterSlot, number>);
+    const ordered = ROSTER_SLOTS.filter((s) => s !== "BN").filter(
+      (s) => counts[s]
+    );
+    const parts = ordered.map((s) => `${s} x ${counts[s]}`);
+    return parts.join(", ");
+  }, [rosterPositions]);
   return (
     <Card className="mb-6">
       <CardHeader>
@@ -1547,6 +2085,15 @@ function SelectedLeagueCard({
           <div className="text-sm text-muted-foreground">
             leagueId: {leagueId}
           </div>
+          <div className="text-sm mt-1">
+            {teamCount} {teamCount === 1 ? "team" : "teams"} -{" "}
+            {scoringType ? scoringType.toUpperCase() : "—"} scoring
+          </div>
+          {rosterSummary && (
+            <div className="text-sm text-muted-foreground mt-0.5">
+              {rosterSummary}
+            </div>
+          )}
         </div>
         <Button variant="default" onClick={onClear}>
           Clear league
