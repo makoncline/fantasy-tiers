@@ -455,7 +455,7 @@ async function main() {
           const json = JSON.parse(txt) as { raw?: any };
           const r = json?.raw ?? {};
           // Try to read sidecar metadata file for last_scraped and url
-          let last_scraped: string | null = null;
+          let fetched_at: string | null = null;
           let url: string | null = null;
           try {
             const metaPath = file.replace(/_raw\.json$/, "-metadata.json");
@@ -465,18 +465,20 @@ async function main() {
                 accessed?: string;
                 url?: string;
               };
-              last_scraped = (metaJson?.accessed as string | undefined) ?? null;
+              fetched_at = (metaJson?.accessed as string | undefined) ?? null;
               url = (metaJson?.url as string | undefined) ?? null;
             }
           } catch {}
+
           fpMeta[scoringKey][pos] = {
-            last_updated: r.last_updated ?? null,
+            fetched_at: new Date(fetched_at!).toISOString() ?? null,
+            last_updated:
+              new Date(r.last_updated_ts * 1000).toISOString() ?? null,
             total_experts: r.total_experts ?? null,
             scoring: r.scoring ?? scoring,
             position_id: r.position_id ?? pos,
             week: r.week ?? best?.week ?? null,
             year: r.year ?? null,
-            last_scraped,
             url,
           };
         } catch {
@@ -506,19 +508,21 @@ async function main() {
           if (fs.existsSync(metadataFile)) {
             const metaTxt = fs.readFileSync(metadataFile, "utf8");
             const metaJson = JSON.parse(metaTxt) as {
-              lastModified?: string;
+              lastUpdated?: string;
+              fetchedAt?: string;
             };
             borischenMeta[scoringKey][pos] = {
-              last_modified: metaJson?.lastModified ?? null,
+              last_updated: new Date(metaJson?.lastUpdated!).toISOString(),
+              fetched_at: metaJson?.fetchedAt,
             };
           } else {
             borischenMeta[scoringKey][pos] = {
-              last_modified: null,
+              last_updated: null,
             };
           }
         } catch {
           borischenMeta[scoringKey][pos] = {
-            last_modified: null,
+            last_updated: null,
           };
         }
       }

@@ -1138,7 +1138,10 @@ function LastUpdatedCard({
   const positions = ["QB", "RB", "WR", "TE", "FLEX", "K", "DEF"] as const;
   type Pos = (typeof positions)[number];
   // Borischen aggregated metadata (from combine step)
-  const { data, isLoading } = useQuery<Record<Pos, number | null>, Error>({
+  const { data, isLoading } = useQuery<
+    Record<Pos, { last_updated: number | null; fetched_at: number | null }>,
+    Error
+  >({
     queryKey: ["borischen", "meta", scoring],
     queryFn: async () => {
       try {
@@ -1148,7 +1151,8 @@ function LastUpdatedCard({
         if (!res.ok) throw new Error("failed to load metadata");
 
         type BorischenMetadata = {
-          last_modified?: string;
+          last_updated?: string;
+          fetched_at?: string;
         };
 
         const meta = (await res.json()) as {
@@ -1165,17 +1169,33 @@ function LastUpdatedCard({
             const posKey = pos === "DEF" ? "DST" : pos;
             const bucket = meta?.borischen?.[key] ?? {};
             const rec = bucket[posKey] as BorischenMetadata | undefined;
-            const lm = rec?.last_modified;
-            if (!lm) return [pos, null] as const;
-            const d = new Date(lm);
-            return [pos, isNaN(d.getTime()) ? null : d.getTime()] as const;
+
+            const lastUpdated = rec?.last_updated
+              ? new Date(rec.last_updated).getTime()
+              : null;
+            const fetchedAt = rec?.fetched_at
+              ? new Date(rec.fetched_at).getTime()
+              : null;
+
+            return [
+              pos,
+              {
+                last_updated: isNaN(lastUpdated || 0) ? null : lastUpdated,
+                fetched_at: isNaN(fetchedAt || 0) ? null : fetchedAt,
+              },
+            ] as const;
           })
-        ) as Record<Pos, number | null>;
+        ) as Record<
+          Pos,
+          { last_updated: number | null; fetched_at: number | null }
+        >;
         return out;
       } catch {
-        return Object.fromEntries(positions.map((p) => [p, null])) as Record<
+        return Object.fromEntries(
+          positions.map((p) => [p, { last_updated: null, fetched_at: null }])
+        ) as Record<
           Pos,
-          number | null
+          { last_updated: number | null; fetched_at: number | null }
         >;
       }
     },
@@ -1184,7 +1204,14 @@ function LastUpdatedCard({
 
   // FantasyPros aggregated metadata (from combine step)
   const { data: fpData } = useQuery<
-    Record<Pos, { last_scraped: number | null; url: string | null }>,
+    Record<
+      Pos,
+      {
+        last_updated: number | null;
+        fetched_at: number | null;
+        url: string | null;
+      }
+    >,
     Error
   >({
     queryKey: ["fantasypros", "meta", scoring],
@@ -1195,9 +1222,9 @@ function LastUpdatedCard({
         });
         if (!res.ok) throw new Error("failed to load metadata");
         type FantasyProsMetadata = {
-          last_scraped?: string;
-          url?: string;
           last_updated?: string;
+          fetched_at?: string;
+          url?: string;
           total_experts?: number;
           scoring?: string;
           position_id?: string;
@@ -1218,18 +1245,47 @@ function LastUpdatedCard({
             const posKey = pos === "DEF" ? "DST" : pos;
             const bucket = meta?.fp?.[key] ?? {};
             const rec = bucket[posKey] as FantasyProsMetadata | undefined;
-            const ls = rec?.last_scraped
-              ? new Date(rec.last_scraped).getTime()
+
+            const lastUpdated = rec?.last_updated
+              ? new Date(rec.last_updated).getTime()
+              : null;
+            const fetchedAt = rec?.fetched_at
+              ? new Date(rec.fetched_at).getTime()
               : null;
             const url = (rec?.url as string | undefined) ?? null;
-            return [pos, { last_scraped: ls, url }];
+
+            return [
+              pos,
+              {
+                last_updated: isNaN(lastUpdated || 0) ? null : lastUpdated,
+                fetched_at: isNaN(fetchedAt || 0) ? null : fetchedAt,
+                url,
+              },
+            ];
           })
-        ) as Record<Pos, { last_scraped: number | null; url: string | null }>;
+        ) as Record<
+          Pos,
+          {
+            last_updated: number | null;
+            fetched_at: number | null;
+            url: string | null;
+          }
+        >;
         return out;
       } catch {
         return Object.fromEntries(
-          positions.map((p) => [p, { last_scraped: null, url: null }])
-        ) as Record<Pos, { last_scraped: number | null; url: string | null }>;
+          positions.map((p) => [
+            p,
+            { last_updated: null, fetched_at: null, url: null },
+          ])
+        ) as Record<
+          Pos,
+          {
+            last_updated: number | null;
+            fetched_at: number | null;
+            url: string | null;
+          }
+        >;
       }
     },
     staleTime: 10 * 60 * 1000,
@@ -1267,7 +1323,7 @@ function LastUpdatedCard({
               <div className="flex items-baseline gap-2">
                 <CardTitle>Last Updated</CardTitle>
                 <span className="text-sm text-muted-foreground">
-                  {season} • week {week ?? "—"}
+                  {season} season • week {week ?? "—"}
                 </span>
               </div>
               <span className="text-xs text-muted-foreground">
@@ -1289,9 +1345,13 @@ function LastUpdatedCard({
                       const metaScoring =
                         pos === "K" || pos === "DEF" ? "std" : scoring;
                       const href = borischenSourceUrl(pos, metaScoring);
-                      const ts = data[pos] ?? null;
-                      const label = formatAgo(ts);
-                      const isUnknown = ts == null;
+                      const rec = data[pos];
+                      const lastUpdated = rec?.last_updated;
+                      const fetchedAt = rec?.fetched_at;
+                      const lastUpdatedLabel = formatAgo(lastUpdated);
+                      const fetchedAtLabel = formatAgo(fetchedAt);
+                      const isUnknown = lastUpdated == null;
+
                       return (
                         <div key={pos} className="flex items-center gap-2">
                           <a
@@ -1307,8 +1367,13 @@ function LastUpdatedCard({
                           <span
                             className={isUnknown ? "text-muted-foreground" : ""}
                           >
-                            {label}
+                            {lastUpdatedLabel}
                           </span>
+                          {fetchedAt && (
+                            <span className="text-xs text-muted-foreground">
+                              (fetched {fetchedAtLabel})
+                            </span>
+                          )}
                         </div>
                       );
                     })}
@@ -1324,9 +1389,13 @@ function LastUpdatedCard({
                   <div className="flex flex-wrap gap-x-6 gap-y-2">
                     {positions.map((pos) => {
                       const rec = fpData[pos];
-                      const label = formatAgo(rec?.last_scraped ?? null);
+                      const lastUpdated = rec?.last_updated;
+                      const fetchedAt = rec?.fetched_at;
+                      const lastUpdatedLabel = formatAgo(lastUpdated);
+                      const fetchedAtLabel = formatAgo(fetchedAt);
                       const href = rec?.url ?? undefined;
-                      const isUnknown = !rec?.last_scraped;
+                      const isUnknown = lastUpdated == null;
+
                       return (
                         <div key={pos} className="flex items-center gap-2">
                           {href ? (
@@ -1346,8 +1415,13 @@ function LastUpdatedCard({
                           <span
                             className={isUnknown ? "text-muted-foreground" : ""}
                           >
-                            {label}
+                            {lastUpdatedLabel}
                           </span>
+                          {fetchedAt && (
+                            <span className="text-xs text-muted-foreground">
+                              (fetched {fetchedAtLabel})
+                            </span>
+                          )}
                         </div>
                       );
                     })}

@@ -58,12 +58,13 @@ async function fetchAndSaveRankings(
     const csvText = await response.text();
     const lastModified =
       response.headers.get("Last-Modified") || new Date().toISOString();
+    const fetchedAt = new Date().toISOString();
 
     // Save the raw CSV data
     fs.writeFileSync(filePath, csvText);
 
     // Save metadata with the last modified date
-    const metadata = { lastModified };
+    const metadata = { lastUpdated: lastModified, fetchedAt };
     fs.writeFileSync(metadataFilePath, JSON.stringify(metadata, null, 2));
 
     console.log(
