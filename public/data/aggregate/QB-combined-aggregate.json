@@ -43,8 +43,8 @@
           "rank_ecr": 32,
           "rank_min": 30,
           "rank_max": 33,
-          "rank_ave": 31.8,
-          "rank_std": 0.69,
+          "rank_ave": 31.76,
+          "rank_std": 0.58,
           "tier": null
         }
       }
@@ -114,16 +114,16 @@
     "bye_week": 5,
     "borischen": {
       "std": {
-        "rank": 26,
-        "tier": 7
+        "rank": 24,
+        "tier": 8
       },
       "ppr": {
-        "rank": 26,
-        "tier": 7
+        "rank": 24,
+        "tier": 8
       },
       "half": {
-        "rank": 26,
-        "tier": 7
+        "rank": 24,
+        "tier": 8
       }
     },
     "sleeper": {
@@ -159,8 +159,8 @@
           "rank_ecr": 24,
           "rank_min": 18,
           "rank_max": 29,
-          "rank_ave": 24.41,
-          "rank_std": 1.92,
+          "rank_ave": 24.02,
+          "rank_std": 2.01,
           "tier": null
         }
       }
@@ -510,16 +510,16 @@
     "bye_week": 8,
     "borischen": {
       "std": {
-        "rank": 24,
-        "tier": 7
+        "rank": 25,
+        "tier": 8
       },
       "ppr": {
-        "rank": 24,
-        "tier": 7
+        "rank": 25,
+        "tier": 8
       },
       "half": {
-        "rank": 24,
-        "tier": 7
+        "rank": 25,
+        "tier": 8
       }
     },
     "sleeper": {
@@ -555,8 +555,8 @@
           "rank_ecr": 25,
           "rank_min": 16,
           "rank_max": 29,
-          "rank_ave": 25.45,
-          "rank_std": 2.67,
+          "rank_ave": 25.61,
+          "rank_std": 2.72,
           "tier": null
         }
       }
@@ -678,7 +678,7 @@
     "fantasypros": {
       "player_id": "10007",
       "player_owned_avg": 1.4,
-      "pos_rank": "QB28",
+      "pos_rank": "QB29",
       "start_sit_grade": "F",
       "stats": {
         "standard": {},
@@ -687,11 +687,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 28,
+          "rank_ecr": 29,
           "rank_min": 22,
-          "rank_max": 33,
-          "rank_ave": 27.95,
-          "rank_std": 2.32,
+          "rank_max": 31,
+          "rank_ave": 27.58,
+          "rank_std": 2.3,
           "tier": null
         }
       }
@@ -872,7 +872,7 @@
     "fantasypros": {
       "player_id": "11177",
       "player_owned_avg": 1.3,
-      "pos_rank": "QB41",
+      "pos_rank": "QB42",
       "start_sit_grade": "F",
       "stats": {
         "standard": {},
@@ -881,11 +881,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 41,
+          "rank_ecr": 42,
           "rank_min": 37,
           "rank_max": 59,
-          "rank_ave": 43.2,
-          "rank_std": 8.06,
+          "rank_ave": 44.25,
+          "rank_std": 8.7,
           "tier": null
         }
       }
@@ -927,15 +927,15 @@
     "bye_week": 14,
     "borischen": {
       "std": {
-        "rank": 25,
+        "rank": 22,
         "tier": 7
       },
       "ppr": {
-        "rank": 25,
+        "rank": 22,
         "tier": 7
       },
       "half": {
-        "rank": 25,
+        "rank": 22,
         "tier": 7
       }
     },
@@ -970,10 +970,10 @@
       "rankings": {
         "standard": {
           "rank_ecr": 22,
-          "rank_min": 16,
+          "rank_min": 17,
           "rank_max": 27,
-          "rank_ave": 22.45,
-          "rank_std": 2.53,
+          "rank_ave": 22.59,
+          "rank_std": 2.52,
           "tier": null
         }
       }
@@ -1043,16 +1043,16 @@
     "bye_week": 8,
     "borischen": {
       "std": {
-        "rank": 19,
-        "tier": 6
+        "rank": 18,
+        "tier": 5
       },
       "ppr": {
-        "rank": 19,
-        "tier": 6
+        "rank": 18,
+        "tier": 5
       },
       "half": {
-        "rank": 19,
-        "tier": 6
+        "rank": 18,
+        "tier": 5
       }
     },
     "sleeper": {
@@ -1086,9 +1086,9 @@
       "rankings": {
         "standard": {
           "rank_ecr": 18,
-          "rank_min": 14,
+          "rank_min": 15,
           "rank_max": 24,
-          "rank_ave": 18.48,
+          "rank_ave": 18.61,
           "rank_std": 2.02,
           "tier": null
         }
@@ -1263,7 +1263,7 @@
           "rank_min": 37,
           "rank_max": 40,
           "rank_ave": 38,
-          "rank_std": 1.15,
+          "rank_std": 1.1,
           "tier": null
         }
       }
@@ -1534,9 +1534,18 @@
     "team": "WAS",
     "bye_week": 12,
     "borischen": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 26,
+        "tier": 8
+      },
+      "ppr": {
+        "rank": 26,
+        "tier": 8
+      },
+      "half": {
+        "rank": 26,
+        "tier": 8
+      }
     },
     "sleeper": {
       "stats": {
@@ -1559,7 +1568,7 @@
     "fantasypros": {
       "player_id": "13890",
       "player_owned_avg": 2.6,
-      "pos_rank": "QB29",
+      "pos_rank": "QB27",
       "start_sit_grade": "F",
       "stats": {
         "standard": {},
@@ -1568,11 +1577,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 29,
+          "rank_ecr": 27,
           "rank_min": 10,
           "rank_max": 53,
-          "rank_ave": 27.82,
-          "rank_std": 8.8,
+          "rank_ave": 25.11,
+          "rank_std": 9.46,
           "tier": null
         }
       }
@@ -1949,9 +1958,18 @@
     "team": "MIN",
     "bye_week": 6,
     "borischen": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 23,
+        "tier": 7
+      },
+      "ppr": {
+        "rank": 23,
+        "tier": 7
+      },
+      "half": {
+        "rank": 23,
+        "tier": 7
+      }
     },
     "sleeper": {
       "stats": {
@@ -1972,7 +1990,7 @@
       "player_id": "15520",
       "player_owned_avg": 2.1,
       "pos_rank": "QB23",
-      "start_sit_grade": "F",
+      "start_sit_grade": "D-",
       "stats": {
         "standard": {},
         "ppr": {},
@@ -1982,9 +2000,9 @@
         "standard": {
           "rank_ecr": 23,
           "rank_min": 16,
-          "rank_max": 29,
-          "rank_ave": 23.18,
-          "rank_std": 3.23,
+          "rank_max": 28,
+          "rank_ave": 22.8,
+          "rank_std": 3.13,
           "tier": null
         }
       }
@@ -1998,15 +2016,15 @@
     "bye_week": 8,
     "borischen": {
       "std": {
-        "rank": 15,
+        "rank": 13,
         "tier": 4
       },
       "ppr": {
-        "rank": 15,
+        "rank": 13,
         "tier": 4
       },
       "half": {
-        "rank": 15,
+        "rank": 13,
         "tier": 4
       }
     },
@@ -2031,7 +2049,7 @@
     "fantasypros": {
       "player_id": "15501",
       "player_owned_avg": 83.7,
-      "pos_rank": "QB14",
+      "pos_rank": "QB13",
       "start_sit_grade": "C+",
       "stats": {
         "standard": {},
@@ -2040,11 +2058,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 14,
-          "rank_min": 9,
+          "rank_ecr": 13,
+          "rank_min": 10,
           "rank_max": 18,
-          "rank_ave": 13.98,
-          "rank_std": 1.84,
+          "rank_ave": 13.85,
+          "rank_std": 1.76,
           "tier": null
         }
       }
@@ -2145,15 +2163,15 @@
     "bye_week": 10,
     "borischen": {
       "std": {
-        "rank": 4,
+        "rank": 5,
         "tier": 2
       },
       "ppr": {
-        "rank": 4,
+        "rank": 5,
         "tier": 2
       },
       "half": {
-        "rank": 4,
+        "rank": 5,
         "tier": 2
       }
     },
@@ -2190,8 +2208,8 @@
           "rank_ecr": 5,
           "rank_min": 3,
           "rank_max": 12,
-          "rank_ave": 5.82,
-          "rank_std": 2.35,
+          "rank_ave": 5.93,
+          "rank_std": 2.38,
           "tier": null
         }
       }
@@ -2662,15 +2680,15 @@
     "bye_week": 10,
     "borischen": {
       "std": {
-        "rank": 5,
+        "rank": 4,
         "tier": 2
       },
       "ppr": {
-        "rank": 5,
+        "rank": 4,
         "tier": 2
       },
       "half": {
-        "rank": 5,
+        "rank": 4,
         "tier": 2
       }
     },
@@ -2705,10 +2723,10 @@
       "rankings": {
         "standard": {
           "rank_ecr": 4,
-          "rank_min": 4,
-          "rank_max": 7,
-          "rank_ave": 4.86,
-          "rank_std": 0.92,
+          "rank_min": 3,
+          "rank_max": 8,
+          "rank_ave": 4.8,
+          "rank_std": 1.04,
           "tier": null
         }
       }
@@ -3380,7 +3398,7 @@
     "fantasypros": {
       "player_id": "17233",
       "player_owned_avg": 99.8,
-      "pos_rank": "QB1",
+      "pos_rank": "QB2",
       "start_sit_grade": "A+",
       "stats": {
         "standard": {},
@@ -3389,10 +3407,10 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 1,
+          "rank_ecr": 2,
           "rank_min": 1,
           "rank_max": 2,
-          "rank_ave": 1.45,
+          "rank_ave": 1.51,
           "rank_std": 0.5,
           "tier": null
         }
@@ -3407,15 +3425,15 @@
     "bye_week": 9,
     "borischen": {
       "std": {
-        "rank": 6,
+        "rank": 7,
         "tier": 2
       },
       "ppr": {
-        "rank": 6,
+        "rank": 7,
         "tier": 2
       },
       "half": {
-        "rank": 6,
+        "rank": 7,
         "tier": 2
       }
     },
@@ -3440,7 +3458,7 @@
     "fantasypros": {
       "player_id": "17237",
       "player_owned_avg": 97.6,
-      "pos_rank": "QB6",
+      "pos_rank": "QB7",
       "start_sit_grade": "B+",
       "stats": {
         "standard": {},
@@ -3449,11 +3467,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 6,
+          "rank_ecr": 7,
           "rank_min": 5,
           "rank_max": 10,
-          "rank_ave": 6.95,
-          "rank_std": 1.36,
+          "rank_ave": 7,
+          "rank_std": 1.33,
           "tier": null
         }
       }
@@ -3579,15 +3597,15 @@
     "bye_week": 8,
     "borischen": {
       "std": {
-        "rank": 23,
+        "rank": 21,
         "tier": 7
       },
       "ppr": {
-        "rank": 23,
+        "rank": 21,
         "tier": 7
       },
       "half": {
-        "rank": 23,
+        "rank": 21,
         "tier": 7
       }
     },
@@ -3622,10 +3640,10 @@
       "rankings": {
         "standard": {
           "rank_ecr": 21,
-          "rank_min": 17,
+          "rank_min": 16,
           "rank_max": 27,
-          "rank_ave": 22.25,
-          "rank_std": 2.21,
+          "rank_ave": 22.34,
+          "rank_std": 2.3,
           "tier": null
         }
       }
@@ -3703,7 +3721,7 @@
     "fantasypros": {
       "player_id": "17298",
       "player_owned_avg": 99.8,
-      "pos_rank": "QB2",
+      "pos_rank": "QB1",
       "start_sit_grade": "A+",
       "stats": {
         "standard": {},
@@ -3712,10 +3730,10 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 2,
+          "rank_ecr": 1,
           "rank_min": 1,
           "rank_max": 2,
-          "rank_ave": 1.55,
+          "rank_ave": 1.49,
           "rank_std": 0.5,
           "tier": null
         }
@@ -4346,15 +4364,15 @@
     "bye_week": 8,
     "borischen": {
       "std": {
-        "rank": 11,
+        "rank": 10,
         "tier": 3
       },
       "ppr": {
-        "rank": 11,
+        "rank": 10,
         "tier": 3
       },
       "half": {
-        "rank": 11,
+        "rank": 10,
         "tier": 3
       }
     },
@@ -4389,10 +4407,10 @@
       "rankings": {
         "standard": {
           "rank_ecr": 10,
-          "rank_min": 5,
-          "rank_max": 15,
-          "rank_ave": 10.68,
-          "rank_std": 1.68,
+          "rank_min": 7,
+          "rank_max": 14,
+          "rank_ave": 10.76,
+          "rank_std": 1.41,
           "tier": null
         }
       }
@@ -4437,16 +4455,16 @@
     "bye_week": 11,
     "borischen": {
       "std": {
-        "rank": 14,
-        "tier": 4
+        "rank": 11,
+        "tier": 3
       },
       "ppr": {
-        "rank": 14,
-        "tier": 4
+        "rank": 11,
+        "tier": 3
       },
       "half": {
-        "rank": 14,
-        "tier": 4
+        "rank": 11,
+        "tier": 3
       }
     },
     "sleeper": {
@@ -4482,8 +4500,8 @@
           "rank_ecr": 11,
           "rank_min": 7,
           "rank_max": 15,
-          "rank_ave": 10.91,
-          "rank_std": 1.82,
+          "rank_ave": 10.98,
+          "rank_std": 1.83,
           "tier": null
         }
       }
@@ -4640,15 +4658,15 @@
     "bye_week": 10,
     "borischen": {
       "std": {
-        "rank": 22,
+        "rank": 20,
         "tier": 6
       },
       "ppr": {
-        "rank": 22,
+        "rank": 20,
         "tier": 6
       },
       "half": {
-        "rank": 22,
+        "rank": 20,
         "tier": 6
       }
     },
@@ -4685,8 +4703,8 @@
           "rank_ecr": 20,
           "rank_min": 15,
           "rank_max": 26,
-          "rank_ave": 20.48,
-          "rank_std": 2.59,
+          "rank_ave": 20.29,
+          "rank_std": 2.74,
           "tier": null
         }
       }
@@ -5271,8 +5289,8 @@
           "rank_ecr": 26,
           "rank_min": 21,
           "rank_max": 31,
-          "rank_ave": 26.73,
-          "rank_std": 2.1,
+          "rank_ave": 26.78,
+          "rank_std": 2.18,
           "tier": null
         }
       }
@@ -5345,16 +5363,16 @@
     "bye_week": 12,
     "borischen": {
       "std": {
-        "rank": 9,
-        "tier": 3
+        "rank": 6,
+        "tier": 2
       },
       "ppr": {
-        "rank": 9,
-        "tier": 3
+        "rank": 6,
+        "tier": 2
       },
       "half": {
-        "rank": 9,
-        "tier": 3
+        "rank": 6,
+        "tier": 2
       }
     },
     "sleeper": {
@@ -5378,8 +5396,8 @@
     "fantasypros": {
       "player_id": "18635",
       "player_owned_avg": 90.3,
-      "pos_rank": "QB7",
-      "start_sit_grade": "B",
+      "pos_rank": "QB6",
+      "start_sit_grade": "B+",
       "stats": {
         "standard": {},
         "ppr": {},
@@ -5387,11 +5405,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 7,
+          "rank_ecr": 6,
           "rank_min": 4,
           "rank_max": 10,
-          "rank_ave": 7.16,
-          "rank_std": 1.41,
+          "rank_ave": 6.9,
+          "rank_std": 1.43,
           "tier": null
         }
       }
@@ -5405,15 +5423,15 @@
     "bye_week": 5,
     "borischen": {
       "std": {
-        "rank": 12,
+        "rank": 14,
         "tier": 4
       },
       "ppr": {
-        "rank": 12,
+        "rank": 14,
         "tier": 4
       },
       "half": {
-        "rank": 12,
+        "rank": 14,
         "tier": 4
       }
     },
@@ -5438,8 +5456,8 @@
     "fantasypros": {
       "player_id": "19246",
       "player_owned_avg": 73.9,
-      "pos_rank": "QB13",
-      "start_sit_grade": "C",
+      "pos_rank": "QB14",
+      "start_sit_grade": "C+",
       "stats": {
         "standard": {},
         "ppr": {},
@@ -5447,11 +5465,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 13,
+          "rank_ecr": 14,
           "rank_min": 10,
           "rank_max": 20,
-          "rank_ave": 13.95,
-          "rank_std": 2.09,
+          "rank_ave": 13.98,
+          "rank_std": 2.15,
           "tier": null
         }
       }
@@ -5622,8 +5640,8 @@
           "rank_ecr": 3,
           "rank_min": 3,
           "rank_max": 7,
-          "rank_ave": 3.25,
-          "rank_std": 0.86,
+          "rank_ave": 3.27,
+          "rank_std": 0.83,
           "tier": null
         }
       }
@@ -6141,15 +6159,15 @@
     "bye_week": 8,
     "borischen": {
       "std": {
-        "rank": 16,
+        "rank": 15,
         "tier": 5
       },
       "ppr": {
-        "rank": 16,
+        "rank": 15,
         "tier": 5
       },
       "half": {
-        "rank": 16,
+        "rank": 15,
         "tier": 5
       }
     },
@@ -6186,8 +6204,8 @@
           "rank_ecr": 15,
           "rank_min": 14,
           "rank_max": 24,
-          "rank_ave": 17.05,
-          "rank_std": 2.34,
+          "rank_ave": 16.98,
+          "rank_std": 2.35,
           "tier": null
         }
       }
@@ -6201,15 +6219,15 @@
     "bye_week": 14,
     "borischen": {
       "std": {
-        "rank": 21,
+        "rank": 19,
         "tier": 6
       },
       "ppr": {
-        "rank": 21,
+        "rank": 19,
         "tier": 6
       },
       "half": {
-        "rank": 21,
+        "rank": 19,
         "tier": 6
       }
     },
@@ -6246,8 +6264,8 @@
           "rank_ecr": 19,
           "rank_min": 16,
           "rank_max": 26,
-          "rank_ave": 20.2,
-          "rank_std": 2.31,
+          "rank_ave": 19.95,
+          "rank_std": 2.51,
           "tier": null
         }
       }
@@ -6285,7 +6303,7 @@
     "fantasypros": {
       "player_id": "22679",
       "player_owned_avg": 0.6,
-      "pos_rank": "QB38",
+      "pos_rank": "QB36",
       "start_sit_grade": "F",
       "stats": {
         "standard": {},
@@ -6294,11 +6312,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 38,
-          "rank_min": 34,
+          "rank_ecr": 36,
+          "rank_min": 33,
           "rank_max": 39,
-          "rank_ave": 37.4,
-          "rank_std": 1.74,
+          "rank_ave": 36.4,
+          "rank_std": 2.42,
           "tier": null
         }
       }
@@ -6454,18 +6472,9 @@
     "team": "NYJ",
     "bye_week": null,
     "borischen": {
-      "std": {
-        "rank": 20,
-        "tier": 6
-      },
-      "ppr": {
-        "rank": 20,
-        "tier": 6
-      },
-      "half": {
-        "rank": 20,
-        "tier": 6
-      }
+      "std": null,
+      "ppr": null,
+      "half": null
     },
     "sleeper": {
       "stats": {
@@ -6830,7 +6839,7 @@
     "fantasypros": {
       "player_id": "22722",
       "player_owned_avg": 1.2,
-      "pos_rank": "QB43",
+      "pos_rank": "QB44",
       "start_sit_grade": "F",
       "stats": {
         "standard": {},
@@ -6839,11 +6848,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 43,
+          "rank_ecr": 44,
           "rank_min": 41,
           "rank_max": 44,
-          "rank_ave": 42.25,
-          "rank_std": 1.09,
+          "rank_ave": 42.33,
+          "rank_std": 1.25,
           "tier": null
         }
       }
@@ -6983,8 +6992,8 @@
           "rank_ecr": 40,
           "rank_min": 33,
           "rank_max": 68,
-          "rank_ave": 43.75,
-          "rank_std": 14.11,
+          "rank_ave": 43.5,
+          "rank_std": 14.22,
           "tier": null
         }
       }
@@ -7498,7 +7507,7 @@
     "fantasypros": {
       "player_id": "22900",
       "player_owned_avg": 22.4,
-      "pos_rank": "QB27",
+      "pos_rank": "QB28",
       "start_sit_grade": "F",
       "stats": {
         "standard": {},
@@ -7507,11 +7516,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 27,
+          "rank_ecr": 28,
           "rank_min": 16,
           "rank_max": 31,
-          "rank_ave": 27.23,
-          "rank_std": 2.59,
+          "rank_ave": 27.29,
+          "rank_std": 2.56,
           "tier": null
         }
       }
@@ -7549,7 +7558,7 @@
     "fantasypros": {
       "player_id": "24347",
       "player_owned_avg": 6.5,
-      "pos_rank": "QB34",
+      "pos_rank": "QB35",
       "start_sit_grade": "F",
       "stats": {
         "standard": {},
@@ -7558,11 +7567,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 34,
+          "rank_ecr": 35,
           "rank_min": 34,
           "rank_max": 37,
-          "rank_ave": 35.33,
-          "rank_std": 0.75,
+          "rank_ave": 35.38,
+          "rank_std": 0.86,
           "tier": null
         }
       }
@@ -7635,16 +7644,16 @@
     "bye_week": 6,
     "borischen": {
       "std": {
-        "rank": 18,
-        "tier": 6
+        "rank": 16,
+        "tier": 5
       },
       "ppr": {
-        "rank": 18,
-        "tier": 6
+        "rank": 16,
+        "tier": 5
       },
       "half": {
-        "rank": 18,
-        "tier": 6
+        "rank": 16,
+        "tier": 5
       }
     },
     "sleeper": {
@@ -7668,7 +7677,7 @@
     "fantasypros": {
       "player_id": "23071",
       "player_owned_avg": 71,
-      "pos_rank": "QB17",
+      "pos_rank": "QB16",
       "start_sit_grade": "C-",
       "stats": {
         "standard": {},
@@ -7677,11 +7686,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 17,
+          "rank_ecr": 16,
           "rank_min": 14,
           "rank_max": 24,
-          "rank_ave": 18.16,
-          "rank_std": 2.5,
+          "rank_ave": 18.12,
+          "rank_std": 2.8,
           "tier": null
         }
       }
@@ -8285,7 +8294,7 @@
     "fantasypros": {
       "player_id": "25967",
       "player_owned_avg": 0.8,
-      "pos_rank": "QB42",
+      "pos_rank": "QB41",
       "start_sit_grade": "F",
       "stats": {
         "standard": {},
@@ -8294,11 +8303,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 42,
+          "rank_ecr": 41,
           "rank_min": 38,
           "rank_max": 43,
-          "rank_ave": 40.6,
-          "rank_std": 1.62,
+          "rank_ave": 40.5,
+          "rank_std": 1.8,
           "tier": null
         }
       }
@@ -8373,7 +8382,7 @@
     "fantasypros": {
       "player_id": "22973",
       "player_owned_avg": 31.8,
-      "pos_rank": "QB16",
+      "pos_rank": "QB17",
       "start_sit_grade": "C-",
       "stats": {
         "standard": {},
@@ -8382,11 +8391,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 16,
-          "rank_min": 14,
+          "rank_ecr": 17,
+          "rank_min": 15,
           "rank_max": 26,
-          "rank_ave": 18.07,
-          "rank_std": 2.3,
+          "rank_ave": 18.12,
+          "rank_std": 2.34,
           "tier": null
         }
       }
@@ -8400,16 +8409,16 @@
     "bye_week": 5,
     "borischen": {
       "std": {
-        "rank": 10,
-        "tier": 3
+        "rank": 8,
+        "tier": 2
       },
       "ppr": {
-        "rank": 10,
-        "tier": 3
+        "rank": 8,
+        "tier": 2
       },
       "half": {
-        "rank": 10,
-        "tier": 3
+        "rank": 8,
+        "tier": 2
       }
     },
     "sleeper": {
@@ -8444,9 +8453,9 @@
         "standard": {
           "rank_ecr": 8,
           "rank_min": 5,
-          "rank_max": 11,
-          "rank_ave": 7.39,
-          "rank_std": 1.72,
+          "rank_max": 10,
+          "rank_ave": 7.17,
+          "rank_std": 1.59,
           "tier": null
         }
       }
@@ -8524,8 +8533,8 @@
           "rank_ecr": 31,
           "rank_min": 26,
           "rank_max": 32,
-          "rank_ave": 30.11,
-          "rank_std": 1.37,
+          "rank_ave": 29.95,
+          "rank_std": 1.27,
           "tier": null
         }
       }
@@ -8539,15 +8548,15 @@
     "bye_week": 12,
     "borischen": {
       "std": {
-        "rank": 13,
+        "rank": 12,
         "tier": 4
       },
       "ppr": {
-        "rank": 13,
+        "rank": 12,
         "tier": 4
       },
       "half": {
-        "rank": 13,
+        "rank": 12,
         "tier": 4
       }
     },
@@ -8573,7 +8582,7 @@
       "player_id": "22910",
       "player_owned_avg": 94,
       "pos_rank": "QB12",
-      "start_sit_grade": "C+",
+      "start_sit_grade": "B-",
       "stats": {
         "standard": {},
         "ppr": {},
@@ -8584,7 +8593,7 @@
           "rank_ecr": 12,
           "rank_min": 10,
           "rank_max": 17,
-          "rank_ave": 12.75,
+          "rank_ave": 12.61,
           "rank_std": 1.38,
           "tier": null
         }
@@ -8599,15 +8608,15 @@
     "bye_week": 14,
     "borischen": {
       "std": {
-        "rank": 8,
+        "rank": 9,
         "tier": 3
       },
       "ppr": {
-        "rank": 8,
+        "rank": 9,
         "tier": 3
       },
       "half": {
-        "rank": 8,
+        "rank": 9,
         "tier": 3
       }
     },
@@ -8644,8 +8653,8 @@
           "rank_ecr": 9,
           "rank_min": 6,
           "rank_max": 11,
-          "rank_ave": 8.86,
-          "rank_std": 1.31,
+          "rank_ave": 8.88,
+          "rank_std": 1.27,
           "tier": null
         }
       }
@@ -8689,18 +8698,9 @@
     "team": "WAS",
     "bye_week": null,
     "borischen": {
-      "std": {
-        "rank": 7,
-        "tier": 3
-      },
-      "ppr": {
-        "rank": 7,
-        "tier": 3
-      },
-      "half": {
-        "rank": 7,
-        "tier": 3
-      }
+      "std": null,
+      "ppr": null,
+      "half": null
     },
     "sleeper": {
       "stats": {
@@ -9662,8 +9662,8 @@
           "rank_ecr": 39,
           "rank_min": 36,
           "rank_max": 62,
-          "rank_ave": 42.57,
-          "rank_std": 8.07,
+          "rank_ave": 42.83,
+          "rank_std": 8.71,
           "tier": null
         }
       }
@@ -9772,8 +9772,8 @@
           "rank_ecr": 33,
           "rank_min": 33,
           "rank_max": 37,
-          "rank_ave": 34.17,
-          "rank_std": 0.8,
+          "rank_ave": 34,
+          "rank_std": 0.95,
           "tier": null
         }
       }
@@ -9811,7 +9811,7 @@
     "fantasypros": {
       "player_id": "22884",
       "player_owned_avg": 1.7,
-      "pos_rank": "QB35",
+      "pos_rank": "QB34",
       "start_sit_grade": "F",
       "stats": {
         "standard": {},
@@ -9820,11 +9820,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 35,
+          "rank_ecr": 34,
           "rank_min": 33,
           "rank_max": 35,
-          "rank_ave": 33.89,
-          "rank_std": 0.87,
+          "rank_ave": 33.56,
+          "rank_std": 0.68,
           "tier": null
         }
       }
@@ -9902,8 +9902,8 @@
           "rank_ecr": 30,
           "rank_min": 23,
           "rank_max": 32,
-          "rank_ave": 29.8,
-          "rank_std": 1.79,
+          "rank_ave": 29.78,
+          "rank_std": 1.85,
           "tier": null
         }
       }
@@ -10000,7 +10000,7 @@
     "fantasypros": {
       "player_id": "23096",
       "player_owned_avg": 1.7,
-      "pos_rank": "QB36",
+      "pos_rank": "QB38",
       "start_sit_grade": "F",
       "stats": {
         "standard": {},
@@ -10009,11 +10009,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 36,
+          "rank_ecr": 38,
           "rank_min": 35,
           "rank_max": 56,
-          "rank_ave": 39.67,
-          "rank_std": 7.36,
+          "rank_ave": 40.2,
+          "rank_std": 7.96,
           "tier": null
         }
       }
@@ -10160,7 +10160,7 @@
     "fantasypros": {
       "player_id": "27580",
       "player_owned_avg": 0,
-      "pos_rank": "QB44",
+      "pos_rank": "QB43",
       "start_sit_grade": "F",
       "stats": {
         "standard": {},
@@ -10169,7 +10169,7 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 44,
+          "rank_ecr": 43,
           "rank_min": 35,
           "rank_max": 73,
           "rank_ave": 54,
