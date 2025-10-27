@@ -33,7 +33,7 @@
         "injury_body_part": null,
         "injury_notes": null,
         "injury_start_date": null,
-        "injury_status": null
+        "injury_status": "Questionable"
       },
       "updated_at": 1761551459421
     },
@@ -52,8 +52,8 @@
           "rank_ecr": 13,
           "rank_min": 9,
           "rank_max": 14,
-          "rank_ave": 12.42,
-          "rank_std": 1.21,
+          "rank_ave": 12.4,
+          "rank_std": 1.22,
           "tier": null
         }
       }
@@ -168,8 +168,8 @@
           "rank_ecr": 15,
           "rank_min": 14,
           "rank_max": 21,
-          "rank_ave": 16.23,
-          "rank_std": 1.76,
+          "rank_ave": 16.29,
+          "rank_std": 1.75,
           "tier": null
         }
       }
@@ -710,8 +710,8 @@
           "rank_ecr": 23,
           "rank_min": 19,
           "rank_max": 24,
-          "rank_ave": 22.72,
-          "rank_std": 1.19,
+          "rank_ave": 22.74,
+          "rank_std": 1.2,
           "tier": null
         }
       }
@@ -882,8 +882,8 @@
           "rank_ecr": 20,
           "rank_min": 16,
           "rank_max": 25,
-          "rank_ave": 19.51,
-          "rank_std": 1.83,
+          "rank_ave": 19.55,
+          "rank_std": 1.84,
           "tier": null
         }
       }
@@ -1509,8 +1509,8 @@
           "rank_ecr": 17,
           "rank_min": 14,
           "rank_max": 21,
-          "rank_ave": 17.21,
-          "rank_std": 2.04,
+          "rank_ave": 17.24,
+          "rank_std": 2.06,
           "tier": null
         }
       }
@@ -1930,7 +1930,7 @@
           "rank_ecr": 19,
           "rank_min": 17,
           "rank_max": 23,
-          "rank_ave": 18.58,
+          "rank_ave": 18.55,
           "rank_std": 1.48,
           "tier": null
         }
@@ -2108,7 +2108,7 @@
           "rank_ecr": 8,
           "rank_min": 4,
           "rank_max": 11,
-          "rank_ave": 8.14,
+          "rank_ave": 8.17,
           "rank_std": 1.21,
           "tier": null
         }
@@ -2665,8 +2665,8 @@
           "rank_ecr": 1,
           "rank_min": 1,
           "rank_max": 2,
-          "rank_ave": 1.16,
-          "rank_std": 0.37,
+          "rank_ave": 1.14,
+          "rank_std": 0.35,
           "tier": null
         }
       }
@@ -3421,8 +3421,8 @@
           "rank_ecr": 5,
           "rank_min": 4,
           "rank_max": 8,
-          "rank_ave": 5.58,
-          "rank_std": 1.02,
+          "rank_ave": 5.62,
+          "rank_std": 1,
           "tier": null
         }
       }
@@ -3675,8 +3675,8 @@
           "rank_ecr": 2,
           "rank_min": 1,
           "rank_max": 2,
-          "rank_ave": 1.84,
-          "rank_std": 0.37,
+          "rank_ave": 1.86,
+          "rank_std": 0.35,
           "tier": null
         }
       }
@@ -4414,7 +4414,7 @@
           "rank_min": 4,
           "rank_max": 9,
           "rank_ave": 6.19,
-          "rank_std": 1.06,
+          "rank_std": 1.07,
           "tier": null
         }
       }
@@ -5222,8 +5222,8 @@
           "rank_ecr": 24,
           "rank_min": 22,
           "rank_max": 26,
-          "rank_ave": 24.16,
-          "rank_std": 0.94,
+          "rank_ave": 24.17,
+          "rank_std": 0.95,
           "tier": null
         }
       }
@@ -5341,8 +5341,8 @@
           "rank_ecr": 9,
           "rank_min": 6,
           "rank_max": 12,
-          "rank_ave": 8.81,
-          "rank_std": 1.5,
+          "rank_ave": 8.76,
+          "rank_std": 1.48,
           "tier": null
         }
       }
@@ -5401,7 +5401,7 @@
           "rank_ecr": 11,
           "rank_min": 9,
           "rank_max": 14,
-          "rank_ave": 10.93,
+          "rank_ave": 10.9,
           "rank_std": 1.11,
           "tier": null
         }
@@ -5573,8 +5573,8 @@
           "rank_ecr": 3,
           "rank_min": 2,
           "rank_max": 4,
-          "rank_ave": 3.09,
-          "rank_std": 0.36,
+          "rank_ave": 3.1,
+          "rank_std": 0.37,
           "tier": null
         }
       }
@@ -5773,8 +5773,8 @@
           "rank_ecr": 21,
           "rank_min": 17,
           "rank_max": 26,
-          "rank_ave": 20.52,
-          "rank_std": 2.11,
+          "rank_ave": 20.41,
+          "rank_std": 2.01,
           "tier": null
         }
       }
@@ -6200,8 +6200,8 @@
           "rank_ecr": 22,
           "rank_min": 17,
           "rank_max": 23,
-          "rank_ave": 21.12,
-          "rank_std": 1.66,
+          "rank_ave": 21.21,
+          "rank_std": 1.55,
           "tier": null
         }
       }
@@ -6474,7 +6474,7 @@
           "rank_ecr": 14,
           "rank_min": 11,
           "rank_max": 17,
-          "rank_ave": 13.81,
+          "rank_ave": 13.79,
           "rank_std": 1.28,
           "tier": null
         }
@@ -7634,7 +7634,7 @@
           "rank_ecr": 16,
           "rank_min": 14,
           "rank_max": 22,
-          "rank_ave": 17.05,
+          "rank_ave": 17,
           "rank_std": 1.88,
           "tier": null
         }
@@ -8390,8 +8390,8 @@
           "rank_ecr": 10,
           "rank_min": 8,
           "rank_max": 14,
-          "rank_ave": 10.81,
-          "rank_std": 1.26,
+          "rank_ave": 10.83,
+          "rank_std": 1.27,
           "tier": null
         }
       }
@@ -8478,8 +8478,8 @@
           "rank_ecr": 18,
           "rank_min": 15,
           "rank_max": 21,
-          "rank_ave": 18.3,
-          "rank_std": 1.87,
+          "rank_ave": 18.24,
+          "rank_std": 1.85,
           "tier": null
         }
       }
@@ -8538,7 +8538,7 @@
           "rank_ecr": 4,
           "rank_min": 3,
           "rank_max": 7,
-          "rank_ave": 4.26,
+          "rank_ave": 4.24,
           "rank_std": 0.75,
           "tier": null
         }
@@ -8598,8 +8598,8 @@
           "rank_ecr": 7,
           "rank_min": 4,
           "rank_max": 9,
-          "rank_ave": 6.63,
-          "rank_std": 1.12,
+          "rank_ave": 6.57,
+          "rank_std": 1.07,
           "tier": null
         }
       }
@@ -9636,8 +9636,8 @@
           "rank_ecr": 26,
           "rank_min": 23,
           "rank_max": 26,
-          "rank_ave": 25.42,
-          "rank_std": 0.92,
+          "rank_ave": 25.48,
+          "rank_std": 0.85,
           "tier": null
         }
       }
@@ -9753,10 +9753,10 @@
       "rankings": {
         "standard": {
           "rank_ecr": 12,
-          "rank_min": 8,
+          "rank_min": 9,
           "rank_max": 14,
-          "rank_ave": 11.74,
-          "rank_std": 1.45,
+          "rank_ave": 11.83,
+          "rank_std": 1.34,
           "tier": null
         }
       }
@@ -9874,8 +9874,8 @@
           "rank_ecr": 25,
           "rank_min": 23,
           "rank_max": 26,
-          "rank_ave": 25,
-          "rank_std": 0.65,
+          "rank_ave": 24.98,
+          "rank_std": 0.64,
           "tier": null
         }
       }
