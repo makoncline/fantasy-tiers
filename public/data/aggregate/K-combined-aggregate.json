@@ -4,7 +4,7 @@
     "name": "matt prater",
     "position": "K",
     "team": "BUF",
-    "bye_week": 7,
+    "bye_week": null,
     "borischen": {
       "std": null,
       "ppr": null,
@@ -24,31 +24,11 @@
         "injury_body_part": null,
         "injury_notes": null,
         "injury_start_date": null,
-        "injury_status": "Questionable"
+        "injury_status": "Out"
       },
       "updated_at": 1766740851182
     },
-    "fantasypros": {
-      "player_id": "9443",
-      "player_owned_avg": 32.1,
-      "pos_rank": "K33",
-      "start_sit_grade": "F",
-      "stats": {
-        "standard": {},
-        "ppr": {},
-        "half": {}
-      },
-      "rankings": {
-        "standard": {
-          "rank_ecr": 33,
-          "rank_min": 29,
-          "rank_max": 33,
-          "rank_ave": 31,
-          "rank_std": 2,
-          "tier": null
-        }
-      }
-    }
+    "fantasypros": null
   },
   "49": {
     "player_id": "49",
@@ -540,9 +520,18 @@
     "team": "GB",
     "bye_week": 5,
     "borischen": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 17,
+        "tier": 5
+      },
+      "ppr": {
+        "rank": 17,
+        "tier": 5
+      },
+      "half": {
+        "rank": 17,
+        "tier": 5
+      }
     },
     "sleeper": {
       "stats": {
@@ -593,15 +582,15 @@
     "borischen": {
       "std": {
         "rank": 14,
-        "tier": 3
+        "tier": 4
       },
       "ppr": {
         "rank": 14,
-        "tier": 3
+        "tier": 4
       },
       "half": {
         "rank": 14,
-        "tier": 3
+        "tier": 4
       }
     },
     "sleeper": {
@@ -680,16 +669,16 @@
     "bye_week": 5,
     "borischen": {
       "std": {
-        "rank": 20,
-        "tier": 5
+        "rank": 13,
+        "tier": 3
       },
       "ppr": {
-        "rank": 20,
-        "tier": 5
+        "rank": 13,
+        "tier": 3
       },
       "half": {
-        "rank": 20,
-        "tier": 5
+        "rank": 13,
+        "tier": 3
       }
     },
     "sleeper": {
@@ -768,15 +757,15 @@
     "bye_week": 8,
     "borischen": {
       "std": {
-        "rank": 7,
+        "rank": 8,
         "tier": 2
       },
       "ppr": {
-        "rank": 7,
+        "rank": 8,
         "tier": 2
       },
       "half": {
-        "rank": 7,
+        "rank": 8,
         "tier": 2
       }
     },
@@ -912,16 +901,16 @@
     "bye_week": 6,
     "borischen": {
       "std": {
-        "rank": 2,
-        "tier": 1
+        "rank": 7,
+        "tier": 2
       },
       "ppr": {
-        "rank": 2,
-        "tier": 1
+        "rank": 7,
+        "tier": 2
       },
       "half": {
-        "rank": 2,
-        "tier": 1
+        "rank": 7,
+        "tier": 2
       }
     },
     "sleeper": {
@@ -1084,16 +1073,16 @@
     "bye_week": 12,
     "borischen": {
       "std": {
-        "rank": 18,
-        "tier": 5
+        "rank": 15,
+        "tier": 4
       },
       "ppr": {
-        "rank": 18,
-        "tier": 5
+        "rank": 15,
+        "tier": 4
       },
       "half": {
-        "rank": 18,
-        "tier": 5
+        "rank": 15,
+        "tier": 4
       }
     },
     "sleeper": {
@@ -1255,18 +1244,9 @@
     "team": "PHI",
     "bye_week": 9,
     "borischen": {
-      "std": {
-        "rank": 12,
-        "tier": 3
-      },
-      "ppr": {
-        "rank": 12,
-        "tier": 3
-      },
-      "half": {
-        "rank": 12,
-        "tier": 3
-      }
+      "std": null,
+      "ppr": null,
+      "half": null
     },
     "sleeper": {
       "stats": {
@@ -1367,16 +1347,16 @@
     "bye_week": 5,
     "borischen": {
       "std": {
-        "rank": 13,
-        "tier": 3
+        "rank": 19,
+        "tier": 5
       },
       "ppr": {
-        "rank": 13,
-        "tier": 3
+        "rank": 19,
+        "tier": 5
       },
       "half": {
-        "rank": 13,
-        "tier": 3
+        "rank": 19,
+        "tier": 5
       }
     },
     "sleeper": {
@@ -1596,15 +1576,15 @@
     "bye_week": 14,
     "borischen": {
       "std": {
-        "rank": 5,
+        "rank": 3,
         "tier": 1
       },
       "ppr": {
-        "rank": 5,
+        "rank": 3,
         "tier": 1
       },
       "half": {
-        "rank": 5,
+        "rank": 3,
         "tier": 1
       }
     },
@@ -2274,15 +2254,15 @@
     "bye_week": 9,
     "borischen": {
       "std": {
-        "rank": 6,
+        "rank": 9,
         "tier": 2
       },
       "ppr": {
-        "rank": 6,
+        "rank": 9,
         "tier": 2
       },
       "half": {
-        "rank": 6,
+        "rank": 9,
         "tier": 2
       }
     },
@@ -2729,15 +2709,15 @@
     "bye_week": 10,
     "borischen": {
       "std": {
-        "rank": 8,
+        "rank": 4,
         "tier": 2
       },
       "ppr": {
-        "rank": 8,
+        "rank": 4,
         "tier": 2
       },
       "half": {
-        "rank": 8,
+        "rank": 4,
         "tier": 2
       }
     },
@@ -2816,18 +2796,9 @@
     "team": "MIA",
     "bye_week": 12,
     "borischen": {
-      "std": {
-        "rank": 17,
-        "tier": 5
-      },
-      "ppr": {
-        "rank": 17,
-        "tier": 5
-      },
-      "half": {
-        "rank": 17,
-        "tier": 5
-      }
+      "std": null,
+      "ppr": null,
+      "half": null
     },
     "sleeper": {
       "stats": {
@@ -3076,16 +3047,16 @@
     "bye_week": 12,
     "borischen": {
       "std": {
-        "rank": 3,
-        "tier": 1
+        "rank": 11,
+        "tier": 3
       },
       "ppr": {
-        "rank": 3,
-        "tier": 1
+        "rank": 11,
+        "tier": 3
       },
       "half": {
-        "rank": 3,
-        "tier": 1
+        "rank": 11,
+        "tier": 3
       }
     },
     "sleeper": {
@@ -3472,9 +3443,18 @@
     "team": "ARI",
     "bye_week": 8,
     "borischen": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 16,
+        "tier": 5
+      },
+      "ppr": {
+        "rank": 16,
+        "tier": 5
+      },
+      "half": {
+        "rank": 16,
+        "tier": 5
+      }
     },
     "sleeper": {
       "stats": {
@@ -3885,16 +3865,16 @@
     "bye_week": 8,
     "borischen": {
       "std": {
-        "rank": 4,
-        "tier": 1
+        "rank": 10,
+        "tier": 3
       },
       "ppr": {
-        "rank": 4,
-        "tier": 1
+        "rank": 10,
+        "tier": 3
       },
       "half": {
-        "rank": 4,
-        "tier": 1
+        "rank": 10,
+        "tier": 3
       }
     },
     "sleeper": {
@@ -3945,16 +3925,16 @@
     "bye_week": 11,
     "borischen": {
       "std": {
-        "rank": 16,
-        "tier": 5
+        "rank": 12,
+        "tier": 3
       },
       "ppr": {
-        "rank": 16,
-        "tier": 5
+        "rank": 12,
+        "tier": 3
       },
       "half": {
-        "rank": 16,
-        "tier": 5
+        "rank": 12,
+        "tier": 3
       }
     },
     "sleeper": {
@@ -4005,16 +3985,16 @@
     "bye_week": 8,
     "borischen": {
       "std": {
-        "rank": 15,
-        "tier": 4
+        "rank": 2,
+        "tier": 1
       },
       "ppr": {
-        "rank": 15,
-        "tier": 4
+        "rank": 2,
+        "tier": 1
       },
       "half": {
-        "rank": 15,
-        "tier": 4
+        "rank": 2,
+        "tier": 1
       }
     },
     "sleeper": {
@@ -4096,16 +4076,16 @@
     "bye_week": 6,
     "borischen": {
       "std": {
-        "rank": 10,
-        "tier": 3
+        "rank": 18,
+        "tier": 5
       },
       "ppr": {
-        "rank": 10,
-        "tier": 3
+        "rank": 18,
+        "tier": 5
       },
       "half": {
-        "rank": 10,
-        "tier": 3
+        "rank": 18,
+        "tier": 5
       }
     },
     "sleeper": {
@@ -4187,16 +4167,16 @@
     "bye_week": 8,
     "borischen": {
       "std": {
-        "rank": 19,
-        "tier": 5
+        "rank": 6,
+        "tier": 2
       },
       "ppr": {
-        "rank": 19,
-        "tier": 5
+        "rank": 6,
+        "tier": 2
       },
       "half": {
-        "rank": 19,
-        "tier": 5
+        "rank": 6,
+        "tier": 2
       }
     },
     "sleeper": {
@@ -4561,16 +4541,16 @@
     "bye_week": 7,
     "borischen": {
       "std": {
-        "rank": 9,
-        "tier": 2
+        "rank": 20,
+        "tier": 5
       },
       "ppr": {
-        "rank": 9,
-        "tier": 2
+        "rank": 20,
+        "tier": 5
       },
       "half": {
-        "rank": 9,
-        "tier": 2
+        "rank": 20,
+        "tier": 5
       }
     },
     "sleeper": {
@@ -4621,16 +4601,16 @@
     "bye_week": 14,
     "borischen": {
       "std": {
-        "rank": 11,
-        "tier": 3
+        "rank": 5,
+        "tier": 2
       },
       "ppr": {
-        "rank": 11,
-        "tier": 3
+        "rank": 5,
+        "tier": 2
       },
       "half": {
-        "rank": 11,
-        "tier": 3
+        "rank": 5,
+        "tier": 2
       }
     },
     "sleeper": {

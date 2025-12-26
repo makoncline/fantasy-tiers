@@ -114,16 +114,16 @@
     "bye_week": 5,
     "borischen": {
       "std": {
-        "rank": 21,
-        "tier": 7
+        "rank": 25,
+        "tier": 8
       },
       "ppr": {
-        "rank": 21,
-        "tier": 7
+        "rank": 25,
+        "tier": 8
       },
       "half": {
-        "rank": 21,
-        "tier": 7
+        "rank": 25,
+        "tier": 8
       }
     },
     "sleeper": {
@@ -159,8 +159,8 @@
           "rank_ecr": 25,
           "rank_min": 22,
           "rank_max": 28,
-          "rank_ave": 25.56,
-          "rank_std": 1.78,
+          "rank_ave": 25.6,
+          "rank_std": 1.77,
           "tier": null
         }
       }
@@ -341,9 +341,18 @@
     "team": "WAS",
     "bye_week": 12,
     "borischen": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 23,
+        "tier": 8
+      },
+      "ppr": {
+        "rank": 23,
+        "tier": 8
+      },
+      "half": {
+        "rank": 23,
+        "tier": 8
+      }
     },
     "sleeper": {
       "stats": {
@@ -376,7 +385,7 @@
           "rank_min": 21,
           "rank_max": 29,
           "rank_ave": 24.83,
-          "rank_std": 1.7,
+          "rank_std": 1.72,
           "tier": null
         }
       }
@@ -445,9 +454,18 @@
     "team": "IND",
     "bye_week": 11,
     "borischen": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 22,
+        "tier": 8
+      },
+      "ppr": {
+        "rank": 22,
+        "tier": 8
+      },
+      "half": {
+        "rank": 22,
+        "tier": 8
+      }
     },
     "sleeper": {
       "stats": {
@@ -479,8 +497,8 @@
           "rank_ecr": 22,
           "rank_min": 21,
           "rank_max": 28,
-          "rank_ave": 24.54,
-          "rank_std": 1.95,
+          "rank_ave": 24.4,
+          "rank_std": 1.89,
           "tier": null
         }
       }
@@ -550,16 +568,16 @@
     "bye_week": 8,
     "borischen": {
       "std": {
-        "rank": 17,
-        "tier": 6
+        "rank": 6,
+        "tier": 2
       },
       "ppr": {
-        "rank": 17,
-        "tier": 6
+        "rank": 6,
+        "tier": 2
       },
       "half": {
-        "rank": 17,
-        "tier": 6
+        "rank": 6,
+        "tier": 2
       }
     },
     "sleeper": {
@@ -595,8 +613,8 @@
           "rank_ecr": 6,
           "rank_min": 2,
           "rank_max": 8,
-          "rank_ave": 5.83,
-          "rank_std": 1.1,
+          "rank_ave": 5.85,
+          "rank_std": 1.11,
           "tier": null
         }
       }
@@ -711,7 +729,7 @@
         "injury_body_part": null,
         "injury_notes": null,
         "injury_start_date": null,
-        "injury_status": "Questionable"
+        "injury_status": null
       },
       "updated_at": 1766740857457
     },
@@ -730,8 +748,8 @@
           "rank_ecr": 35,
           "rank_min": 34,
           "rank_max": 63,
-          "rank_ave": 37.5,
-          "rank_std": 8.51,
+          "rank_ave": 38.25,
+          "rank_std": 9.36,
           "tier": null
         }
       }
@@ -908,16 +926,16 @@
     "bye_week": 5,
     "borischen": {
       "std": {
-        "rank": 23,
-        "tier": 8
+        "rank": 19,
+        "tier": 7
       },
       "ppr": {
-        "rank": 23,
-        "tier": 8
+        "rank": 19,
+        "tier": 7
       },
       "half": {
-        "rank": 23,
-        "tier": 8
+        "rank": 19,
+        "tier": 7
       }
     },
     "sleeper": {
@@ -952,9 +970,9 @@
         "standard": {
           "rank_ecr": 19,
           "rank_min": 18,
-          "rank_max": 26,
-          "rank_ave": 20.83,
-          "rank_std": 1.91,
+          "rank_max": 25,
+          "rank_ave": 20.6,
+          "rank_std": 1.66,
           "tier": null
         }
       }
@@ -1102,9 +1120,18 @@
     "team": "LV",
     "bye_week": 8,
     "borischen": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 20,
+        "tier": 7
+      },
+      "ppr": {
+        "rank": 20,
+        "tier": 7
+      },
+      "half": {
+        "rank": 20,
+        "tier": 7
+      }
     },
     "sleeper": {
       "stats": {
@@ -1139,8 +1166,8 @@
           "rank_ecr": 20,
           "rank_min": 20,
           "rank_max": 27,
-          "rank_ave": 21.76,
-          "rank_std": 1.63,
+          "rank_ave": 21.83,
+          "rank_std": 1.69,
           "tier": null
         }
       }
@@ -1634,18 +1661,9 @@
     "team": "WAS",
     "bye_week": null,
     "borischen": {
-      "std": {
-        "rank": 25,
-        "tier": 8
-      },
-      "ppr": {
-        "rank": 25,
-        "tier": 8
-      },
-      "half": {
-        "rank": 25,
-        "tier": 8
-      }
+      "std": null,
+      "ppr": null,
+      "half": null
     },
     "sleeper": {
       "stats": {
@@ -2087,16 +2105,16 @@
     "bye_week": 8,
     "borischen": {
       "std": {
-        "rank": 8,
-        "tier": 3
+        "rank": 14,
+        "tier": 5
       },
       "ppr": {
-        "rank": 8,
-        "tier": 3
+        "rank": 14,
+        "tier": 5
       },
       "half": {
-        "rank": 8,
-        "tier": 3
+        "rank": 14,
+        "tier": 5
       }
     },
     "sleeper": {
@@ -2132,8 +2150,8 @@
           "rank_ecr": 14,
           "rank_min": 12,
           "rank_max": 16,
-          "rank_ave": 14.22,
-          "rank_std": 1,
+          "rank_ave": 14.25,
+          "rank_std": 0.99,
           "tier": null
         }
       }
@@ -2203,15 +2221,15 @@
     "bye_week": 8,
     "borischen": {
       "std": {
-        "rank": 9,
+        "rank": 8,
         "tier": 3
       },
       "ppr": {
-        "rank": 9,
+        "rank": 8,
         "tier": 3
       },
       "half": {
-        "rank": 9,
+        "rank": 8,
         "tier": 3
       }
     },
@@ -2248,8 +2266,8 @@
           "rank_ecr": 8,
           "rank_min": 7,
           "rank_max": 10,
-          "rank_ave": 8.59,
-          "rank_std": 0.83,
+          "rank_ave": 8.48,
+          "rank_std": 0.84,
           "tier": null
         }
       }
@@ -2263,16 +2281,16 @@
     "bye_week": 10,
     "borischen": {
       "std": {
-        "rank": 7,
-        "tier": 3
+        "rank": 4,
+        "tier": 1
       },
       "ppr": {
-        "rank": 7,
-        "tier": 3
+        "rank": 4,
+        "tier": 1
       },
       "half": {
-        "rank": 7,
-        "tier": 3
+        "rank": 4,
+        "tier": 1
       }
     },
     "sleeper": {
@@ -3555,18 +3573,9 @@
     "team": "BAL",
     "bye_week": 7,
     "borischen": {
-      "std": {
-        "rank": 5,
-        "tier": 2
-      },
-      "ppr": {
-        "rank": 5,
-        "tier": 2
-      },
-      "half": {
-        "rank": 5,
-        "tier": 2
-      }
+      "std": null,
+      "ppr": null,
+      "half": null
     },
     "sleeper": {
       "stats": {
@@ -3589,7 +3598,7 @@
     "fantasypros": {
       "player_id": "17233",
       "player_owned_avg": 97.1,
-      "pos_rank": "QB32",
+      "pos_rank": "QB34",
       "start_sit_grade": "F",
       "stats": {
         "standard": {},
@@ -3598,11 +3607,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 32,
+          "rank_ecr": 34,
           "rank_min": 12,
           "rank_max": 36,
-          "rank_ave": 19.79,
-          "rank_std": 6.87,
+          "rank_ave": 20.32,
+          "rank_std": 7.15,
           "tier": null
         }
       }
@@ -3616,16 +3625,16 @@
     "bye_week": 9,
     "borischen": {
       "std": {
-        "rank": 14,
-        "tier": 5
+        "rank": 12,
+        "tier": 4
       },
       "ppr": {
-        "rank": 14,
-        "tier": 5
+        "rank": 12,
+        "tier": 4
       },
       "half": {
-        "rank": 14,
-        "tier": 5
+        "rank": 12,
+        "tier": 4
       }
     },
     "sleeper": {
@@ -3659,10 +3668,10 @@
       "rankings": {
         "standard": {
           "rank_ecr": 12,
-          "rank_min": 8,
+          "rank_min": 9,
           "rank_max": 17,
           "rank_ave": 11.8,
-          "rank_std": 1.45,
+          "rank_std": 1.42,
           "tier": null
         }
       }
@@ -3788,16 +3797,16 @@
     "bye_week": 8,
     "borischen": {
       "std": {
-        "rank": 24,
-        "tier": 8
+        "rank": 16,
+        "tier": 6
       },
       "ppr": {
-        "rank": 24,
-        "tier": 8
+        "rank": 16,
+        "tier": 6
       },
       "half": {
-        "rank": 24,
-        "tier": 8
+        "rank": 16,
+        "tier": 6
       }
     },
     "sleeper": {
@@ -3834,7 +3843,7 @@
           "rank_min": 14,
           "rank_max": 19,
           "rank_ave": 16.63,
-          "rank_std": 1.2,
+          "rank_std": 1.26,
           "tier": null
         }
       }
@@ -3899,15 +3908,15 @@
     "bye_week": 7,
     "borischen": {
       "std": {
-        "rank": 1,
+        "rank": 3,
         "tier": 1
       },
       "ppr": {
-        "rank": 1,
+        "rank": 3,
         "tier": 1
       },
       "half": {
-        "rank": 1,
+        "rank": 3,
         "tier": 1
       }
     },
@@ -3925,7 +3934,7 @@
         "injury_body_part": null,
         "injury_notes": null,
         "injury_start_date": null,
-        "injury_status": "Questionable"
+        "injury_status": null
       },
       "updated_at": 1766740860480
     },
@@ -3944,8 +3953,8 @@
           "rank_ecr": 3,
           "rank_min": 1,
           "rank_max": 7,
-          "rank_ave": 3.24,
-          "rank_std": 1.72,
+          "rank_ave": 3.4,
+          "rank_std": 1.73,
           "tier": null
         }
       }
@@ -4771,18 +4780,9 @@
     "team": "KC",
     "bye_week": null,
     "borischen": {
-      "std": {
-        "rank": 26,
-        "tier": 8
-      },
-      "ppr": {
-        "rank": 26,
-        "tier": 8
-      },
-      "half": {
-        "rank": 26,
-        "tier": 8
-      }
+      "std": null,
+      "ppr": null,
+      "half": null
     },
     "sleeper": {
       "stats": {
@@ -5497,16 +5497,16 @@
     "bye_week": 10,
     "borischen": {
       "std": {
-        "rank": 6,
-        "tier": 3
+        "rank": 1,
+        "tier": 1
       },
       "ppr": {
-        "rank": 6,
-        "tier": 3
+        "rank": 1,
+        "tier": 1
       },
       "half": {
-        "rank": 6,
-        "tier": 3
+        "rank": 1,
+        "tier": 1
       }
     },
     "sleeper": {
@@ -5542,8 +5542,8 @@
           "rank_ecr": 1,
           "rank_min": 1,
           "rank_max": 4,
-          "rank_ave": 1.98,
-          "rank_std": 0.75,
+          "rank_ave": 1.9,
+          "rank_std": 0.77,
           "tier": null
         }
       }
@@ -5585,16 +5585,16 @@
     "bye_week": 12,
     "borischen": {
       "std": {
-        "rank": 11,
-        "tier": 4
+        "rank": 17,
+        "tier": 6
       },
       "ppr": {
-        "rank": 11,
-        "tier": 4
+        "rank": 17,
+        "tier": 6
       },
       "half": {
-        "rank": 11,
-        "tier": 4
+        "rank": 17,
+        "tier": 6
       }
     },
     "sleeper": {
@@ -5630,8 +5630,8 @@
           "rank_ecr": 17,
           "rank_min": 14,
           "rank_max": 20,
-          "rank_ave": 17.24,
-          "rank_std": 1.05,
+          "rank_ave": 17.15,
+          "rank_std": 1.06,
           "tier": null
         }
       }
@@ -5644,18 +5644,9 @@
     "team": "GB",
     "bye_week": 5,
     "borischen": {
-      "std": {
-        "rank": 15,
-        "tier": 5
-      },
-      "ppr": {
-        "rank": 15,
-        "tier": 5
-      },
-      "half": {
-        "rank": 15,
-        "tier": 5
-      }
+      "std": null,
+      "ppr": null,
+      "half": null
     },
     "sleeper": {
       "stats": {
@@ -5678,7 +5669,7 @@
     "fantasypros": {
       "player_id": "19246",
       "player_owned_avg": 75.3,
-      "pos_rank": "QB33",
+      "pos_rank": "QB32",
       "start_sit_grade": "F",
       "stats": {
         "standard": {},
@@ -5687,11 +5678,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 33,
-          "rank_min": 15,
+          "rank_ecr": 32,
+          "rank_min": 13,
           "rank_max": 58,
-          "rank_ave": 28.47,
-          "rank_std": 8.55,
+          "rank_ave": 27.58,
+          "rank_std": 8.85,
           "tier": null
         }
       }
@@ -5817,16 +5808,16 @@
     "bye_week": 9,
     "borischen": {
       "std": {
-        "rank": 2,
-        "tier": 1
+        "rank": 9,
+        "tier": 3
       },
       "ppr": {
-        "rank": 2,
-        "tier": 1
+        "rank": 9,
+        "tier": 3
       },
       "half": {
-        "rank": 2,
-        "tier": 1
+        "rank": 9,
+        "tier": 3
       }
     },
     "sleeper": {
@@ -5862,8 +5853,8 @@
           "rank_ecr": 9,
           "rank_min": 3,
           "rank_max": 12,
-          "rank_ave": 8.76,
-          "rank_std": 1.72,
+          "rank_ave": 8.85,
+          "rank_std": 1.75,
           "tier": null
         }
       }
@@ -6041,7 +6032,7 @@
     "fantasypros": {
       "player_id": "19297",
       "player_owned_avg": 0.7,
-      "pos_rank": "QB34",
+      "pos_rank": "QB33",
       "start_sit_grade": "F",
       "stats": {
         "standard": {},
@@ -6050,11 +6041,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 34,
+          "rank_ecr": 33,
           "rank_min": 21,
           "rank_max": 50,
-          "rank_ave": 29.6,
-          "rank_std": 5.75,
+          "rank_ave": 28.97,
+          "rank_std": 5.73,
           "tier": null
         }
       }
@@ -6404,16 +6395,16 @@
     "bye_week": 8,
     "borischen": {
       "std": {
-        "rank": 16,
-        "tier": 5
+        "rank": 5,
+        "tier": 2
       },
       "ppr": {
-        "rank": 16,
-        "tier": 5
+        "rank": 5,
+        "tier": 2
       },
       "half": {
-        "rank": 16,
-        "tier": 5
+        "rank": 5,
+        "tier": 2
       }
     },
     "sleeper": {
@@ -6449,8 +6440,8 @@
           "rank_ecr": 5,
           "rank_min": 2,
           "rank_max": 7,
-          "rank_ave": 4.76,
-          "rank_std": 1.23,
+          "rank_ave": 4.73,
+          "rank_std": 1.22,
           "tier": null
         }
       }
@@ -7166,7 +7157,7 @@
     "fantasypros": {
       "player_id": "23499",
       "player_owned_avg": 0.9,
-      "pos_rank": "QB30",
+      "pos_rank": "QB31",
       "start_sit_grade": "F",
       "stats": {
         "standard": {},
@@ -7175,11 +7166,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 30,
-          "rank_min": 16,
+          "rank_ecr": 31,
+          "rank_min": 17,
           "rank_max": 34,
-          "rank_ave": 23.18,
-          "rank_std": 5.06,
+          "rank_ave": 23.81,
+          "rank_std": 5.35,
           "tier": null
         }
       }
@@ -7272,15 +7263,15 @@
     "bye_week": 14,
     "borischen": {
       "std": {
-        "rank": 4,
+        "rank": 7,
         "tier": 2
       },
       "ppr": {
-        "rank": 4,
+        "rank": 7,
         "tier": 2
       },
       "half": {
-        "rank": 4,
+        "rank": 7,
         "tier": 2
       }
     },
@@ -7317,8 +7308,8 @@
           "rank_ecr": 7,
           "rank_min": 4,
           "rank_max": 9,
-          "rank_ave": 6.76,
-          "rank_std": 1.12,
+          "rank_ave": 6.68,
+          "rank_std": 1.17,
           "tier": null
         }
       }
@@ -7552,7 +7543,7 @@
     "fantasypros": {
       "player_id": "24575",
       "player_owned_avg": 0.2,
-      "pos_rank": "QB31",
+      "pos_rank": "QB30",
       "start_sit_grade": "F",
       "stats": {
         "standard": {},
@@ -7561,7 +7552,7 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 31,
+          "rank_ecr": 30,
           "rank_min": 30,
           "rank_max": 34,
           "rank_ave": 31.95,
@@ -7831,15 +7822,15 @@
     "bye_week": 14,
     "borischen": {
       "std": {
-        "rank": 22,
+        "rank": 21,
         "tier": 7
       },
       "ppr": {
-        "rank": 22,
+        "rank": 21,
         "tier": 7
       },
       "half": {
-        "rank": 22,
+        "rank": 21,
         "tier": 7
       }
     },
@@ -7876,8 +7867,8 @@
           "rank_ecr": 21,
           "rank_min": 17,
           "rank_max": 29,
-          "rank_ave": 22.44,
-          "rank_std": 2.08,
+          "rank_ave": 22.35,
+          "rank_std": 2.16,
           "tier": null
         }
       }
@@ -8001,16 +7992,16 @@
     "bye_week": 6,
     "borischen": {
       "std": {
-        "rank": 12,
-        "tier": 4
+        "rank": 18,
+        "tier": 6
       },
       "ppr": {
-        "rank": 12,
-        "tier": 4
+        "rank": 18,
+        "tier": 6
       },
       "half": {
-        "rank": 12,
-        "tier": 4
+        "rank": 18,
+        "tier": 6
       }
     },
     "sleeper": {
@@ -8046,7 +8037,7 @@
           "rank_ecr": 18,
           "rank_min": 18,
           "rank_max": 21,
-          "rank_ave": 18.71,
+          "rank_ave": 18.7,
           "rank_std": 0.71,
           "tier": null
         }
@@ -8837,16 +8828,16 @@
     "bye_week": 5,
     "borischen": {
       "std": {
-        "rank": 19,
-        "tier": 6
+        "rank": 10,
+        "tier": 3
       },
       "ppr": {
-        "rank": 19,
-        "tier": 6
+        "rank": 10,
+        "tier": 3
       },
       "half": {
-        "rank": 19,
-        "tier": 6
+        "rank": 10,
+        "tier": 3
       }
     },
     "sleeper": {
@@ -8883,7 +8874,7 @@
           "rank_min": 8,
           "rank_max": 11,
           "rank_ave": 9.9,
-          "rank_std": 0.79,
+          "rank_std": 0.8,
           "tier": null
         }
       }
@@ -8976,16 +8967,16 @@
     "bye_week": 12,
     "borischen": {
       "std": {
-        "rank": 10,
-        "tier": 3
+        "rank": 11,
+        "tier": 4
       },
       "ppr": {
-        "rank": 10,
-        "tier": 3
+        "rank": 11,
+        "tier": 4
       },
       "half": {
-        "rank": 10,
-        "tier": 3
+        "rank": 11,
+        "tier": 4
       }
     },
     "sleeper": {
@@ -9021,8 +9012,8 @@
           "rank_ecr": 11,
           "rank_min": 8,
           "rank_max": 14,
-          "rank_ave": 11.17,
-          "rank_std": 1.5,
+          "rank_ave": 11.15,
+          "rank_std": 1.51,
           "tier": null
         }
       }
@@ -9036,16 +9027,16 @@
     "bye_week": 14,
     "borischen": {
       "std": {
-        "rank": 3,
-        "tier": 2
+        "rank": 2,
+        "tier": 1
       },
       "ppr": {
-        "rank": 3,
-        "tier": 2
+        "rank": 2,
+        "tier": 1
       },
       "half": {
-        "rank": 3,
-        "tier": 2
+        "rank": 2,
+        "tier": 1
       }
     },
     "sleeper": {
@@ -9081,8 +9072,8 @@
           "rank_ecr": 2,
           "rank_min": 1,
           "rank_max": 5,
-          "rank_ave": 2.07,
-          "rank_std": 1.2,
+          "rank_ave": 2.08,
+          "rank_std": 1.19,
           "tier": null
         }
       }
@@ -9095,18 +9086,9 @@
     "team": "MIN",
     "bye_week": null,
     "borischen": {
-      "std": {
-        "rank": 20,
-        "tier": 7
-      },
-      "ppr": {
-        "rank": 20,
-        "tier": 7
-      },
-      "half": {
-        "rank": 20,
-        "tier": 7
-      }
+      "std": null,
+      "ppr": null,
+      "half": null
     },
     "sleeper": {
       "stats": {
@@ -10120,7 +10102,7 @@
         "injury_body_part": null,
         "injury_notes": null,
         "injury_start_date": null,
-        "injury_status": null
+        "injury_status": "Questionable"
       },
       "updated_at": 1766740854420
     },
@@ -10181,9 +10163,18 @@
     "team": "MIA",
     "bye_week": 12,
     "borischen": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 26,
+        "tier": 8
+      },
+      "ppr": {
+        "rank": 26,
+        "tier": 8
+      },
+      "half": {
+        "rank": 26,
+        "tier": 8
+      }
     },
     "sleeper": {
       "stats": {
@@ -10218,8 +10209,8 @@
           "rank_ecr": 26,
           "rank_min": 21,
           "rank_max": 30,
-          "rank_ave": 26.49,
-          "rank_std": 2.14,
+          "rank_ave": 26.55,
+          "rank_std": 2.06,
           "tier": null
         }
       }
@@ -10233,15 +10224,15 @@
     "bye_week": 14,
     "borischen": {
       "std": {
-        "rank": 13,
+        "rank": 15,
         "tier": 5
       },
       "ppr": {
-        "rank": 13,
+        "rank": 15,
         "tier": 5
       },
       "half": {
-        "rank": 13,
+        "rank": 15,
         "tier": 5
       }
     },
@@ -10278,7 +10269,7 @@
           "rank_ecr": 15,
           "rank_min": 12,
           "rank_max": 19,
-          "rank_ave": 14.76,
+          "rank_ave": 14.73,
           "rank_std": 1.34,
           "tier": null
         }
@@ -10391,9 +10382,18 @@
     "team": "TEN",
     "bye_week": 10,
     "borischen": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 24,
+        "tier": 8
+      },
+      "ppr": {
+        "rank": 24,
+        "tier": 8
+      },
+      "half": {
+        "rank": 24,
+        "tier": 8
+      }
     },
     "sleeper": {
       "stats": {
@@ -10428,8 +10428,8 @@
           "rank_ecr": 24,
           "rank_min": 21,
           "rank_max": 28,
-          "rank_ave": 25.34,
-          "rank_std": 1.68,
+          "rank_ave": 25.18,
+          "rank_std": 1.67,
           "tier": null
         }
       }
@@ -10479,8 +10479,8 @@
           "rank_ecr": 27,
           "rank_min": 27,
           "rank_max": 32,
-          "rank_ave": 29.24,
-          "rank_std": 1.14,
+          "rank_ave": 29.25,
+          "rank_std": 1.16,
           "tier": null
         }
       }
@@ -10530,7 +10530,7 @@
           "rank_ecr": 29,
           "rank_min": 29,
           "rank_max": 34,
-          "rank_ave": 30.95,
+          "rank_ave": 30.98,
           "rank_std": 0.91,
           "tier": null
         }
@@ -10545,16 +10545,16 @@
     "bye_week": 11,
     "borischen": {
       "std": {
-        "rank": 18,
-        "tier": 6
+        "rank": 13,
+        "tier": 5
       },
       "ppr": {
-        "rank": 18,
-        "tier": 6
+        "rank": 13,
+        "tier": 5
       },
       "half": {
-        "rank": 18,
-        "tier": 6
+        "rank": 13,
+        "tier": 5
       }
     },
     "sleeper": {
@@ -10590,7 +10590,7 @@
           "rank_ecr": 13,
           "rank_min": 11,
           "rank_max": 15,
-          "rank_ave": 13.32,
+          "rank_ave": 13.3,
           "rank_std": 0.9,
           "tier": null
         }
@@ -10773,7 +10773,7 @@
           "rank_ecr": 28,
           "rank_min": 27,
           "rank_max": 33,
-          "rank_ave": 29.95,
+          "rank_ave": 29.93,
           "rank_std": 1.27,
           "tier": null
         }
