@@ -1,4 +1,785 @@
 {
+  "PHI": {
+    "player_id": "PHI",
+    "name": "philadelphia eagles",
+    "position": "DEF",
+    "team": "PHI",
+    "bye_week": 9,
+    "borischen": {
+      "std": null,
+      "ppr": null,
+      "half": null
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 114.8,
+        "adp_ppr": 95.8,
+        "adp_std": 103.7
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584270
+    },
+    "fantasypros": {
+      "player_id": "8230",
+      "player_owned_avg": 82.3,
+      "pos_rank": "DST6",
+      "start_sit_grade": "A-",
+      "stats": {
+        "standard": {},
+        "ppr": {},
+        "half": {}
+      },
+      "rankings": {
+        "standard": {
+          "rank_ecr": 6,
+          "rank_min": 5,
+          "rank_max": 6,
+          "rank_ave": 5.75,
+          "rank_std": 0.43,
+          "tier": null
+        }
+      }
+    }
+  },
+  "DEN": {
+    "player_id": "DEN",
+    "name": "denver broncos",
+    "position": "DEF",
+    "team": "DEN",
+    "bye_week": null,
+    "borischen": {
+      "std": {
+        "rank": 1,
+        "tier": 1
+      },
+      "ppr": {
+        "rank": 1,
+        "tier": 1
+      },
+      "half": {
+        "rank": 1,
+        "tier": 1
+      }
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 119.8,
+        "adp_ppr": 109.2,
+        "adp_std": 111.7
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584287
+    },
+    "fantasypros": null
+  },
+  "PIT": {
+    "player_id": "PIT",
+    "name": "pittsburgh steelers",
+    "position": "DEF",
+    "team": "PIT",
+    "bye_week": 5,
+    "borischen": {
+      "std": {
+        "rank": 3,
+        "tier": 1
+      },
+      "ppr": {
+        "rank": 3,
+        "tier": 1
+      },
+      "half": {
+        "rank": 3,
+        "tier": 1
+      }
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 131.9,
+        "adp_ppr": 122.9,
+        "adp_std": 127.6
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584269
+    },
+    "fantasypros": {
+      "player_id": "8240",
+      "player_owned_avg": 85.2,
+      "pos_rank": "DST4",
+      "start_sit_grade": "B+",
+      "stats": {
+        "standard": {},
+        "ppr": {},
+        "half": {}
+      },
+      "rankings": {
+        "standard": {
+          "rank_ecr": 4,
+          "rank_min": 3,
+          "rank_max": 8,
+          "rank_ave": 5,
+          "rank_std": 1.87,
+          "tier": null
+        }
+      }
+    }
+  },
+  "BAL": {
+    "player_id": "BAL",
+    "name": "baltimore ravens",
+    "position": "DEF",
+    "team": "BAL",
+    "bye_week": null,
+    "borischen": {
+      "std": {
+        "rank": 20,
+        "tier": 6
+      },
+      "ppr": {
+        "rank": 20,
+        "tier": 6
+      },
+      "half": {
+        "rank": 20,
+        "tier": 6
+      }
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 132.4,
+        "adp_ppr": 106.5,
+        "adp_std": 130.3
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584295
+    },
+    "fantasypros": null
+  },
+  "MIN": {
+    "player_id": "MIN",
+    "name": "minnesota vikings",
+    "position": "DEF",
+    "team": "MIN",
+    "bye_week": null,
+    "borischen": {
+      "std": {
+        "rank": 19,
+        "tier": 6
+      },
+      "ppr": {
+        "rank": 19,
+        "tier": 6
+      },
+      "half": {
+        "rank": 19,
+        "tier": 6
+      }
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 133.1,
+        "adp_ppr": 133.9,
+        "adp_std": 132.6
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584276
+    },
+    "fantasypros": null
+  },
+  "SF": {
+    "player_id": "SF",
+    "name": "san francisco 49ers",
+    "position": "DEF",
+    "team": "SF",
+    "bye_week": 14,
+    "borischen": {
+      "std": null,
+      "ppr": null,
+      "half": null
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 135.6,
+        "adp_ppr": 171.1,
+        "adp_std": 134
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584266
+    },
+    "fantasypros": {
+      "player_id": "8270",
+      "player_owned_avg": 38.1,
+      "pos_rank": "DST12",
+      "start_sit_grade": "B-",
+      "stats": {
+        "standard": {},
+        "ppr": {},
+        "half": {}
+      },
+      "rankings": {
+        "standard": {
+          "rank_ecr": 12,
+          "rank_min": 10,
+          "rank_max": 12,
+          "rank_ave": 11.5,
+          "rank_std": 0.87,
+          "tier": null
+        }
+      }
+    }
+  },
+  "HOU": {
+    "player_id": "HOU",
+    "name": "houston texans",
+    "position": "DEF",
+    "team": "HOU",
+    "bye_week": 6,
+    "borischen": {
+      "std": {
+        "rank": 6,
+        "tier": 2
+      },
+      "ppr": {
+        "rank": 6,
+        "tier": 2
+      },
+      "half": {
+        "rank": 6,
+        "tier": 2
+      }
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 159.7,
+        "adp_ppr": 134,
+        "adp_std": 152
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584284
+    },
+    "fantasypros": {
+      "player_id": "8120",
+      "player_owned_avg": 92.5,
+      "pos_rank": "DST1",
+      "start_sit_grade": "A+",
+      "stats": {
+        "standard": {},
+        "ppr": {},
+        "half": {}
+      },
+      "rankings": {
+        "standard": {
+          "rank_ecr": 1,
+          "rank_min": 1,
+          "rank_max": 2,
+          "rank_ave": 1.5,
+          "rank_std": 0.5,
+          "tier": null
+        }
+      }
+    }
+  },
+  "BUF": {
+    "player_id": "BUF",
+    "name": "buffalo bills",
+    "position": "DEF",
+    "team": "BUF",
+    "bye_week": 7,
+    "borischen": {
+      "std": {
+        "rank": 17,
+        "tier": 6
+      },
+      "ppr": {
+        "rank": 17,
+        "tier": 6
+      },
+      "half": {
+        "rank": 17,
+        "tier": 6
+      }
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 170.1,
+        "adp_ppr": 130.7,
+        "adp_std": 171.5
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584294
+    },
+    "fantasypros": {
+      "player_id": "8030",
+      "player_owned_avg": 64.1,
+      "pos_rank": "DST5",
+      "start_sit_grade": "A-",
+      "stats": {
+        "standard": {},
+        "ppr": {},
+        "half": {}
+      },
+      "rankings": {
+        "standard": {
+          "rank_ecr": 5,
+          "rank_min": 4,
+          "rank_max": 7,
+          "rank_ave": 5,
+          "rank_std": 1.22,
+          "tier": null
+        }
+      }
+    }
+  },
+  "DET": {
+    "player_id": "DET",
+    "name": "detroit lions",
+    "position": "DEF",
+    "team": "DET",
+    "bye_week": null,
+    "borischen": {
+      "std": {
+        "rank": 4,
+        "tier": 1
+      },
+      "ppr": {
+        "rank": 4,
+        "tier": 1
+      },
+      "half": {
+        "rank": 4,
+        "tier": 1
+      }
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 171.3,
+        "adp_ppr": 132,
+        "adp_std": 172.6
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584286
+    },
+    "fantasypros": null
+  },
+  "SEA": {
+    "player_id": "SEA",
+    "name": "seattle seahawks",
+    "position": "DEF",
+    "team": "SEA",
+    "bye_week": null,
+    "borischen": {
+      "std": {
+        "rank": 5,
+        "tier": 2
+      },
+      "ppr": {
+        "rank": 5,
+        "tier": 2
+      },
+      "half": {
+        "rank": 5,
+        "tier": 2
+      }
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 175.7,
+        "adp_ppr": 188.4,
+        "adp_std": 173.9
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584267
+    },
+    "fantasypros": null
+  },
+  "GB": {
+    "player_id": "GB",
+    "name": "green bay packers",
+    "position": "DEF",
+    "team": "GB",
+    "bye_week": 5,
+    "borischen": {
+      "std": {
+        "rank": 15,
+        "tier": 5
+      },
+      "ppr": {
+        "rank": 15,
+        "tier": 5
+      },
+      "half": {
+        "rank": 15,
+        "tier": 5
+      }
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 176,
+        "adp_ppr": 157.8,
+        "adp_std": 175.5
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584285
+    },
+    "fantasypros": {
+      "player_id": "8110",
+      "player_owned_avg": 48.8,
+      "pos_rank": "DST7",
+      "start_sit_grade": "B",
+      "stats": {
+        "standard": {},
+        "ppr": {},
+        "half": {}
+      },
+      "rankings": {
+        "standard": {
+          "rank_ecr": 7,
+          "rank_min": 7,
+          "rank_max": 10,
+          "rank_ave": 7.75,
+          "rank_std": 1.3,
+          "tier": null
+        }
+      }
+    }
+  },
+  "KC": {
+    "player_id": "KC",
+    "name": "kansas city chiefs",
+    "position": "DEF",
+    "team": "KC",
+    "bye_week": null,
+    "borischen": {
+      "std": null,
+      "ppr": null,
+      "half": null
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 196,
+        "adp_ppr": 169.2,
+        "adp_std": 188.7
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584281
+    },
+    "fantasypros": null
+  },
+  "ARI": {
+    "player_id": "ARI",
+    "name": "arizona cardinals",
+    "position": "DEF",
+    "team": "ARI",
+    "bye_week": null,
+    "borischen": {
+      "std": null,
+      "ppr": null,
+      "half": null
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 197.3,
+        "adp_ppr": 195.9,
+        "adp_std": 197.9
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584297
+    },
+    "fantasypros": null
+  },
+  "TB": {
+    "player_id": "TB",
+    "name": "tampa bay buccaneers",
+    "position": "DEF",
+    "team": "TB",
+    "bye_week": null,
+    "borischen": {
+      "std": {
+        "rank": 8,
+        "tier": 2
+      },
+      "ppr": {
+        "rank": 8,
+        "tier": 2
+      },
+      "half": {
+        "rank": 8,
+        "tier": 2
+      }
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 201.2,
+        "adp_ppr": 226.5,
+        "adp_std": 196.9
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584265
+    },
+    "fantasypros": null
+  },
+  "NE": {
+    "player_id": "NE",
+    "name": "new england patriots",
+    "position": "DEF",
+    "team": "NE",
+    "bye_week": 14,
+    "borischen": {
+      "std": {
+        "rank": 2,
+        "tier": 1
+      },
+      "ppr": {
+        "rank": 2,
+        "tier": 1
+      },
+      "half": {
+        "rank": 2,
+        "tier": 1
+      }
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 210,
+        "adp_ppr": 202.1,
+        "adp_std": 207.6
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584274
+    },
+    "fantasypros": {
+      "player_id": "8180",
+      "player_owned_avg": 82.3,
+      "pos_rank": "DST3",
+      "start_sit_grade": "A",
+      "stats": {
+        "standard": {},
+        "ppr": {},
+        "half": {}
+      },
+      "rankings": {
+        "standard": {
+          "rank_ecr": 3,
+          "rank_min": 2,
+          "rank_max": 4,
+          "rank_ave": 2.75,
+          "rank_std": 0.83,
+          "tier": null
+        }
+      }
+    }
+  },
+  "NYG": {
+    "player_id": "NYG",
+    "name": "new york giants",
+    "position": "DEF",
+    "team": "NYG",
+    "bye_week": null,
+    "borischen": {
+      "std": {
+        "rank": 9,
+        "tier": 3
+      },
+      "ppr": {
+        "rank": 9,
+        "tier": 3
+      },
+      "half": {
+        "rank": 9,
+        "tier": 3
+      }
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 222.3,
+        "adp_ppr": 220.7,
+        "adp_std": 229.5
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584272
+    },
+    "fantasypros": null
+  },
+  "LAR": {
+    "player_id": "LAR",
+    "name": "los angeles rams",
+    "position": "DEF",
+    "team": "LAR",
+    "bye_week": 8,
+    "borischen": {
+      "std": {
+        "rank": 10,
+        "tier": 3
+      },
+      "ppr": {
+        "rank": 10,
+        "tier": 3
+      },
+      "half": {
+        "rank": 10,
+        "tier": 3
+      }
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 225,
+        "adp_ppr": 227.2,
+        "adp_std": 234.3
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584279
+    },
+    "fantasypros": {
+      "player_id": "8280",
+      "player_owned_avg": 47.6,
+      "pos_rank": "DST2",
+      "start_sit_grade": "A+",
+      "stats": {
+        "standard": {},
+        "ppr": {},
+        "half": {}
+      },
+      "rankings": {
+        "standard": {
+          "rank_ecr": 2,
+          "rank_min": 1,
+          "rank_max": 3,
+          "rank_ave": 2,
+          "rank_std": 1,
+          "tier": null
+        }
+      }
+    }
+  },
+  "NYJ": {
+    "player_id": "NYJ",
+    "name": "new york jets",
+    "position": "DEF",
+    "team": "NYJ",
+    "bye_week": null,
+    "borischen": {
+      "std": null,
+      "ppr": null,
+      "half": null
+    },
+    "sleeper": {
+      "stats": {
+        "adp_half_ppr": 228.3,
+        "adp_ppr": 999,
+        "adp_std": 210.7
+      },
+      "week": null,
+      "player": {
+        "injury_body_part": null,
+        "injury_notes": null,
+        "injury_start_date": null,
+        "injury_status": null
+      },
+      "updated_at": 1767730584271
+    },
+    "fantasypros": null
+  },
   "WAS": {
     "player_id": "WAS",
     "name": "washington commanders",
@@ -23,7 +804,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1767689426347
+      "updated_at": 1767730584262
     },
     "fantasypros": null
   },
@@ -50,8 +831,8 @@
     "sleeper": {
       "stats": {
         "adp_half_ppr": 999,
-        "adp_ppr": 4.2,
-        "adp_std": 999
+        "adp_ppr": 999,
+        "adp_std": 610
       },
       "week": null,
       "player": {
@@ -60,299 +841,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1767689426348
-    },
-    "fantasypros": null
-  },
-  "TB": {
-    "player_id": "TB",
-    "name": "tampa bay buccaneers",
-    "position": "DEF",
-    "team": "TB",
-    "bye_week": null,
-    "borischen": {
-      "std": {
-        "rank": 8,
-        "tier": 2
-      },
-      "ppr": {
-        "rank": 8,
-        "tier": 2
-      },
-      "half": {
-        "rank": 8,
-        "tier": 2
-      }
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 2,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426350
-    },
-    "fantasypros": null
-  },
-  "SF": {
-    "player_id": "SF",
-    "name": "san francisco 49ers",
-    "position": "DEF",
-    "team": "SF",
-    "bye_week": 14,
-    "borischen": {
-      "std": null,
-      "ppr": null,
-      "half": null
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 5.9,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426353
-    },
-    "fantasypros": {
-      "player_id": "8270",
-      "player_owned_avg": 38.1,
-      "pos_rank": "DST12",
-      "start_sit_grade": "B-",
-      "stats": {
-        "standard": {},
-        "ppr": {},
-        "half": {}
-      },
-      "rankings": {
-        "standard": {
-          "rank_ecr": 12,
-          "rank_min": 10,
-          "rank_max": 12,
-          "rank_ave": 11.5,
-          "rank_std": 0.87,
-          "tier": null
-        }
-      }
-    }
-  },
-  "SEA": {
-    "player_id": "SEA",
-    "name": "seattle seahawks",
-    "position": "DEF",
-    "team": "SEA",
-    "bye_week": null,
-    "borischen": {
-      "std": {
-        "rank": 5,
-        "tier": 2
-      },
-      "ppr": {
-        "rank": 5,
-        "tier": 2
-      },
-      "half": {
-        "rank": 5,
-        "tier": 2
-      }
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 3.1,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426354
-    },
-    "fantasypros": null
-  },
-  "PIT": {
-    "player_id": "PIT",
-    "name": "pittsburgh steelers",
-    "position": "DEF",
-    "team": "PIT",
-    "bye_week": 5,
-    "borischen": {
-      "std": {
-        "rank": 3,
-        "tier": 1
-      },
-      "ppr": {
-        "rank": 3,
-        "tier": 1
-      },
-      "half": {
-        "rank": 3,
-        "tier": 1
-      }
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 6.5,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426356
-    },
-    "fantasypros": {
-      "player_id": "8240",
-      "player_owned_avg": 85.2,
-      "pos_rank": "DST4",
-      "start_sit_grade": "B+",
-      "stats": {
-        "standard": {},
-        "ppr": {},
-        "half": {}
-      },
-      "rankings": {
-        "standard": {
-          "rank_ecr": 4,
-          "rank_min": 3,
-          "rank_max": 8,
-          "rank_ave": 5,
-          "rank_std": 1.87,
-          "tier": null
-        }
-      }
-    }
-  },
-  "PHI": {
-    "player_id": "PHI",
-    "name": "philadelphia eagles",
-    "position": "DEF",
-    "team": "PHI",
-    "bye_week": 9,
-    "borischen": {
-      "std": null,
-      "ppr": null,
-      "half": null
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 9.8,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426357
-    },
-    "fantasypros": {
-      "player_id": "8230",
-      "player_owned_avg": 82.3,
-      "pos_rank": "DST6",
-      "start_sit_grade": "A-",
-      "stats": {
-        "standard": {},
-        "ppr": {},
-        "half": {}
-      },
-      "rankings": {
-        "standard": {
-          "rank_ecr": 6,
-          "rank_min": 5,
-          "rank_max": 6,
-          "rank_ave": 5.75,
-          "rank_std": 0.43,
-          "tier": null
-        }
-      }
-    }
-  },
-  "NYJ": {
-    "player_id": "NYJ",
-    "name": "new york jets",
-    "position": "DEF",
-    "team": "NYJ",
-    "bye_week": null,
-    "borischen": {
-      "std": null,
-      "ppr": null,
-      "half": null
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 7,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426358
-    },
-    "fantasypros": null
-  },
-  "NYG": {
-    "player_id": "NYG",
-    "name": "new york giants",
-    "position": "DEF",
-    "team": "NYG",
-    "bye_week": null,
-    "borischen": {
-      "std": {
-        "rank": 9,
-        "tier": 3
-      },
-      "ppr": {
-        "rank": 9,
-        "tier": 3
-      },
-      "half": {
-        "rank": 9,
-        "tier": 3
-      }
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 7.9,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426360
+      "updated_at": 1767730584264
     },
     "fantasypros": null
   },
@@ -379,8 +868,8 @@
     "sleeper": {
       "stats": {
         "adp_half_ppr": 999,
-        "adp_ppr": 97.8,
-        "adp_std": 999
+        "adp_ppr": 999,
+        "adp_std": 530.7
       },
       "week": null,
       "player": {
@@ -389,101 +878,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1767689426363
-    },
-    "fantasypros": null
-  },
-  "NE": {
-    "player_id": "NE",
-    "name": "new england patriots",
-    "position": "DEF",
-    "team": "NE",
-    "bye_week": 14,
-    "borischen": {
-      "std": {
-        "rank": 2,
-        "tier": 1
-      },
-      "ppr": {
-        "rank": 2,
-        "tier": 1
-      },
-      "half": {
-        "rank": 2,
-        "tier": 1
-      }
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 98.1,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426364
-    },
-    "fantasypros": {
-      "player_id": "8180",
-      "player_owned_avg": 82.3,
-      "pos_rank": "DST3",
-      "start_sit_grade": "A",
-      "stats": {
-        "standard": {},
-        "ppr": {},
-        "half": {}
-      },
-      "rankings": {
-        "standard": {
-          "rank_ecr": 3,
-          "rank_min": 2,
-          "rank_max": 4,
-          "rank_ave": 2.75,
-          "rank_std": 0.83,
-          "tier": null
-        }
-      }
-    }
-  },
-  "MIN": {
-    "player_id": "MIN",
-    "name": "minnesota vikings",
-    "position": "DEF",
-    "team": "MIN",
-    "bye_week": null,
-    "borischen": {
-      "std": {
-        "rank": 19,
-        "tier": 6
-      },
-      "ppr": {
-        "rank": 19,
-        "tier": 6
-      },
-      "half": {
-        "rank": 19,
-        "tier": 6
-      }
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 99.6,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426365
+      "updated_at": 1767730584273
     },
     "fantasypros": null
   },
@@ -501,8 +896,8 @@
     "sleeper": {
       "stats": {
         "adp_half_ppr": 999,
-        "adp_ppr": 169.6,
-        "adp_std": 999
+        "adp_ppr": 999,
+        "adp_std": 599.7
       },
       "week": null,
       "player": {
@@ -511,7 +906,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1767689426367
+      "updated_at": 1767730584277
     },
     "fantasypros": null
   },
@@ -529,8 +924,8 @@
     "sleeper": {
       "stats": {
         "adp_half_ppr": 999,
-        "adp_ppr": 170.7,
-        "adp_std": 999
+        "adp_ppr": 999,
+        "adp_std": 533.1
       },
       "week": null,
       "player": {
@@ -539,66 +934,9 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1767689426369
+      "updated_at": 1767730584278
     },
     "fantasypros": null
-  },
-  "LAR": {
-    "player_id": "LAR",
-    "name": "los angeles rams",
-    "position": "DEF",
-    "team": "LAR",
-    "bye_week": 8,
-    "borischen": {
-      "std": {
-        "rank": 10,
-        "tier": 3
-      },
-      "ppr": {
-        "rank": 10,
-        "tier": 3
-      },
-      "half": {
-        "rank": 10,
-        "tier": 3
-      }
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 171.7,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426372
-    },
-    "fantasypros": {
-      "player_id": "8280",
-      "player_owned_avg": 47.6,
-      "pos_rank": "DST2",
-      "start_sit_grade": "A+",
-      "stats": {
-        "standard": {},
-        "ppr": {},
-        "half": {}
-      },
-      "rankings": {
-        "standard": {
-          "rank_ecr": 2,
-          "rank_min": 1,
-          "rank_max": 3,
-          "rank_ave": 2,
-          "rank_std": 1,
-          "tier": null
-        }
-      }
-    }
   },
   "LAC": {
     "player_id": "LAC",
@@ -623,8 +961,8 @@
     "sleeper": {
       "stats": {
         "adp_half_ppr": 999,
-        "adp_ppr": 195.9,
-        "adp_std": 999
+        "adp_ppr": 999,
+        "adp_std": 235.9
       },
       "week": null,
       "player": {
@@ -633,7 +971,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1767689426374
+      "updated_at": 1767730584280
     },
     "fantasypros": {
       "player_id": "8250",
@@ -656,34 +994,6 @@
         }
       }
     }
-  },
-  "KC": {
-    "player_id": "KC",
-    "name": "kansas city chiefs",
-    "position": "DEF",
-    "team": "KC",
-    "bye_week": null,
-    "borischen": {
-      "std": null,
-      "ppr": null,
-      "half": null
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 261.5,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426376
-    },
-    "fantasypros": null
   },
   "JAX": {
     "player_id": "JAX",
@@ -708,8 +1018,8 @@
     "sleeper": {
       "stats": {
         "adp_half_ppr": 999,
-        "adp_ppr": 383.5,
-        "adp_std": 999
+        "adp_ppr": 999,
+        "adp_std": 497.6
       },
       "week": null,
       "player": {
@@ -718,7 +1028,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1767689426378
+      "updated_at": 1767730584282
     },
     "fantasypros": {
       "player_id": "8140",
@@ -757,7 +1067,7 @@
       "stats": {
         "adp_half_ppr": 999,
         "adp_ppr": 999,
-        "adp_std": 999
+        "adp_std": 505.3
       },
       "week": null,
       "player": {
@@ -766,195 +1076,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1767689426379
-    },
-    "fantasypros": null
-  },
-  "HOU": {
-    "player_id": "HOU",
-    "name": "houston texans",
-    "position": "DEF",
-    "team": "HOU",
-    "bye_week": 6,
-    "borischen": {
-      "std": {
-        "rank": 6,
-        "tier": 2
-      },
-      "ppr": {
-        "rank": 6,
-        "tier": 2
-      },
-      "half": {
-        "rank": 6,
-        "tier": 2
-      }
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 218.2,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426381
-    },
-    "fantasypros": {
-      "player_id": "8120",
-      "player_owned_avg": 92.5,
-      "pos_rank": "DST1",
-      "start_sit_grade": "A+",
-      "stats": {
-        "standard": {},
-        "ppr": {},
-        "half": {}
-      },
-      "rankings": {
-        "standard": {
-          "rank_ecr": 1,
-          "rank_min": 1,
-          "rank_max": 2,
-          "rank_ave": 1.5,
-          "rank_std": 0.5,
-          "tier": null
-        }
-      }
-    }
-  },
-  "GB": {
-    "player_id": "GB",
-    "name": "green bay packers",
-    "position": "DEF",
-    "team": "GB",
-    "bye_week": 5,
-    "borischen": {
-      "std": {
-        "rank": 15,
-        "tier": 5
-      },
-      "ppr": {
-        "rank": 15,
-        "tier": 5
-      },
-      "half": {
-        "rank": 15,
-        "tier": 5
-      }
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 999,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426382
-    },
-    "fantasypros": {
-      "player_id": "8110",
-      "player_owned_avg": 48.8,
-      "pos_rank": "DST7",
-      "start_sit_grade": "B",
-      "stats": {
-        "standard": {},
-        "ppr": {},
-        "half": {}
-      },
-      "rankings": {
-        "standard": {
-          "rank_ecr": 7,
-          "rank_min": 7,
-          "rank_max": 10,
-          "rank_ave": 7.75,
-          "rank_std": 1.3,
-          "tier": null
-        }
-      }
-    }
-  },
-  "DET": {
-    "player_id": "DET",
-    "name": "detroit lions",
-    "position": "DEF",
-    "team": "DET",
-    "bye_week": null,
-    "borischen": {
-      "std": {
-        "rank": 4,
-        "tier": 1
-      },
-      "ppr": {
-        "rank": 4,
-        "tier": 1
-      },
-      "half": {
-        "rank": 4,
-        "tier": 1
-      }
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 999,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426383
-    },
-    "fantasypros": null
-  },
-  "DEN": {
-    "player_id": "DEN",
-    "name": "denver broncos",
-    "position": "DEF",
-    "team": "DEN",
-    "bye_week": null,
-    "borischen": {
-      "std": {
-        "rank": 1,
-        "tier": 1
-      },
-      "ppr": {
-        "rank": 1,
-        "tier": 1
-      },
-      "half": {
-        "rank": 1,
-        "tier": 1
-      }
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 219.3,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426384
+      "updated_at": 1767730584283
     },
     "fantasypros": null
   },
@@ -981,8 +1103,8 @@
     "sleeper": {
       "stats": {
         "adp_half_ppr": 999,
-        "adp_ppr": 305,
-        "adp_std": 999
+        "adp_ppr": 217.7,
+        "adp_std": 522.4
       },
       "week": null,
       "player": {
@@ -991,7 +1113,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1767689426387
+      "updated_at": 1767730584289
     },
     "fantasypros": null
   },
@@ -1019,7 +1141,7 @@
       "stats": {
         "adp_half_ppr": 999,
         "adp_ppr": 999,
-        "adp_std": 999
+        "adp_std": 500.1
       },
       "week": null,
       "player": {
@@ -1028,7 +1150,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1767689426388
+      "updated_at": 1767730584290
     },
     "fantasypros": null
   },
@@ -1056,7 +1178,7 @@
       "stats": {
         "adp_half_ppr": 999,
         "adp_ppr": 999,
-        "adp_std": 999
+        "adp_std": 537.1
       },
       "week": null,
       "player": {
@@ -1065,7 +1187,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1767689426390
+      "updated_at": 1767730584291
     },
     "fantasypros": null
   },
@@ -1084,7 +1206,7 @@
       "stats": {
         "adp_half_ppr": 999,
         "adp_ppr": 999,
-        "adp_std": 999
+        "adp_std": 539.1
       },
       "week": null,
       "player": {
@@ -1093,7 +1215,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1767689426392
+      "updated_at": 1767730584292
     },
     "fantasypros": {
       "player_id": "8050",
@@ -1131,8 +1253,8 @@
     "sleeper": {
       "stats": {
         "adp_half_ppr": 999,
-        "adp_ppr": 999,
-        "adp_std": 999
+        "adp_ppr": 500,
+        "adp_std": 415.6
       },
       "week": null,
       "player": {
@@ -1141,7 +1263,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1767689426394
+      "updated_at": 1767730584293
     },
     "fantasypros": {
       "player_id": "8040",
@@ -1165,100 +1287,6 @@
       }
     }
   },
-  "BUF": {
-    "player_id": "BUF",
-    "name": "buffalo bills",
-    "position": "DEF",
-    "team": "BUF",
-    "bye_week": 7,
-    "borischen": {
-      "std": {
-        "rank": 17,
-        "tier": 6
-      },
-      "ppr": {
-        "rank": 17,
-        "tier": 6
-      },
-      "half": {
-        "rank": 17,
-        "tier": 6
-      }
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 401,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426395
-    },
-    "fantasypros": {
-      "player_id": "8030",
-      "player_owned_avg": 64.1,
-      "pos_rank": "DST5",
-      "start_sit_grade": "A-",
-      "stats": {
-        "standard": {},
-        "ppr": {},
-        "half": {}
-      },
-      "rankings": {
-        "standard": {
-          "rank_ecr": 5,
-          "rank_min": 4,
-          "rank_max": 7,
-          "rank_ave": 5,
-          "rank_std": 1.22,
-          "tier": null
-        }
-      }
-    }
-  },
-  "BAL": {
-    "player_id": "BAL",
-    "name": "baltimore ravens",
-    "position": "DEF",
-    "team": "BAL",
-    "bye_week": null,
-    "borischen": {
-      "std": {
-        "rank": 20,
-        "tier": 6
-      },
-      "ppr": {
-        "rank": 20,
-        "tier": 6
-      },
-      "half": {
-        "rank": 20,
-        "tier": 6
-      }
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 448,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426397
-    },
-    "fantasypros": null
-  },
   "ATL": {
     "player_id": "ATL",
     "name": "atlanta falcons",
@@ -1274,7 +1302,7 @@
       "stats": {
         "adp_half_ppr": 999,
         "adp_ppr": 999,
-        "adp_std": 999
+        "adp_std": 484.1
       },
       "week": null,
       "player": {
@@ -1283,35 +1311,7 @@
         "injury_start_date": null,
         "injury_status": null
       },
-      "updated_at": 1767689426399
-    },
-    "fantasypros": null
-  },
-  "ARI": {
-    "player_id": "ARI",
-    "name": "arizona cardinals",
-    "position": "DEF",
-    "team": "ARI",
-    "bye_week": null,
-    "borischen": {
-      "std": null,
-      "ppr": null,
-      "half": null
-    },
-    "sleeper": {
-      "stats": {
-        "adp_half_ppr": 999,
-        "adp_ppr": 999,
-        "adp_std": 999
-      },
-      "week": null,
-      "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
-        "injury_start_date": null,
-        "injury_status": null
-      },
-      "updated_at": 1767689426400
+      "updated_at": 1767730584296
     },
     "fantasypros": null
   }
