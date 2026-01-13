@@ -512,8 +512,8 @@
     "fantasypros": {
       "player_id": "9451",
       "player_owned_avg": 93.9,
-      "pos_rank": "QB3",
-      "start_sit_grade": "A",
+      "pos_rank": "QB1",
+      "start_sit_grade": "A+",
       "stats": {
         "standard": {},
         "ppr": {},
@@ -521,11 +521,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 3,
-          "rank_min": 3,
+          "rank_ecr": 1,
+          "rank_min": 1,
           "rank_max": 3,
-          "rank_ave": 3,
-          "rank_std": 0,
+          "rank_ave": 1.6,
+          "rank_std": 0.8,
           "tier": null
         }
       }
@@ -1110,8 +1110,8 @@
     "fantasypros": {
       "player_id": "12208",
       "player_owned_avg": 0.9,
-      "pos_rank": "QB7",
-      "start_sit_grade": "B+",
+      "pos_rank": "QB9",
+      "start_sit_grade": "D+",
       "stats": {
         "standard": {},
         "ppr": {},
@@ -1119,11 +1119,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 7,
+          "rank_ecr": 9,
           "rank_min": 7,
-          "rank_max": 7,
-          "rank_ave": 7,
-          "rank_std": 0,
+          "rank_max": 9,
+          "rank_ave": 8,
+          "rank_std": 0.82,
           "tier": null
         }
       }
@@ -1469,7 +1469,7 @@
     "player_id": "2549",
     "name": "trevor siemian",
     "position": "QB",
-    "team": "TEN",
+    "team": null,
     "bye_week": null,
     "borischen": {
       "std": null,
@@ -2333,8 +2333,8 @@
     "fantasypros": {
       "player_id": "16381",
       "player_owned_avg": 0.6,
-      "pos_rank": "QB8",
-      "start_sit_grade": "B",
+      "pos_rank": "QB10",
+      "start_sit_grade": "D",
       "stats": {
         "standard": {},
         "ppr": {},
@@ -2342,11 +2342,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 8,
+          "rank_ecr": 10,
           "rank_min": 8,
-          "rank_max": 8,
-          "rank_ave": 8,
-          "rank_std": 0,
+          "rank_max": 10,
+          "rank_ave": 9.33,
+          "rank_std": 0.94,
           "tier": null
         }
       }
@@ -2524,7 +2524,7 @@
     "player_id": "4127",
     "name": "cj beathard",
     "position": "QB",
-    "team": "DET",
+    "team": null,
     "bye_week": null,
     "borischen": {
       "std": null,
@@ -3296,7 +3296,7 @@
       "player_id": "17236",
       "player_owned_avg": 43.1,
       "pos_rank": "QB4",
-      "start_sit_grade": "A",
+      "start_sit_grade": "A-",
       "stats": {
         "standard": {},
         "ppr": {},
@@ -3305,10 +3305,10 @@
       "rankings": {
         "standard": {
           "rank_ecr": 4,
-          "rank_min": 4,
-          "rank_max": 4,
-          "rank_ave": 4,
-          "rank_std": 0,
+          "rank_min": 3,
+          "rank_max": 7,
+          "rank_ave": 4.4,
+          "rank_std": 1.5,
           "tier": null
         }
       }
@@ -3380,7 +3380,7 @@
     "fantasypros": {
       "player_id": "17298",
       "player_owned_avg": 99.6,
-      "pos_rank": "QB1",
+      "pos_rank": "QB2",
       "start_sit_grade": "A+",
       "stats": {
         "standard": {},
@@ -3389,11 +3389,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 1,
+          "rank_ecr": 2,
           "rank_min": 1,
-          "rank_max": 1,
-          "rank_ave": 1,
-          "rank_std": 0,
+          "rank_max": 3,
+          "rank_ave": 1.8,
+          "rank_std": 0.75,
           "tier": null
         }
       }
@@ -3571,7 +3571,7 @@
     "player_id": "5128",
     "name": "logan woodside",
     "position": "QB",
-    "team": "ARI",
+    "team": null,
     "bye_week": null,
     "borischen": {
       "std": null,
@@ -4131,7 +4131,7 @@
     "player_id": "5903",
     "name": "will grier",
     "position": "QB",
-    "team": "DAL",
+    "team": null,
     "bye_week": null,
     "borischen": {
       "std": null,
@@ -5676,8 +5676,8 @@
     "fantasypros": {
       "player_id": "20156",
       "player_owned_avg": 2.7,
-      "pos_rank": "QB10",
-      "start_sit_grade": "B-",
+      "pos_rank": "QB12",
+      "start_sit_grade": "F",
       "stats": {
         "standard": {},
         "ppr": {},
@@ -5685,11 +5685,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 10,
+          "rank_ecr": 12,
           "rank_min": 10,
-          "rank_max": 10,
-          "rank_ave": 10,
-          "rank_std": 0,
+          "rank_max": 12,
+          "rank_ave": 11,
+          "rank_std": 1,
           "tier": null
         }
       }
@@ -5812,7 +5812,7 @@
     "name": "davis mills",
     "position": "QB",
     "team": "HOU",
-    "bye_week": null,
+    "bye_week": 6,
     "borischen": {
       "std": null,
       "ppr": null,
@@ -5833,7 +5833,27 @@
       },
       "updated_at": 1768294222636
     },
-    "fantasypros": null
+    "fantasypros": {
+      "player_id": "22799",
+      "player_owned_avg": 1.8,
+      "pos_rank": "QB13",
+      "start_sit_grade": "F",
+      "stats": {
+        "standard": {},
+        "ppr": {},
+        "half": {}
+      },
+      "rankings": {
+        "standard": {
+          "rank_ecr": 13,
+          "rank_min": 11,
+          "rank_max": 13,
+          "rank_ave": 12,
+          "rank_std": 1,
+          "tier": null
+        }
+      }
+    }
   },
   "7589": {
     "player_id": "7589",
@@ -5895,7 +5915,7 @@
     "player_id": "7605",
     "name": "kyle trask",
     "position": "QB",
-    "team": "ATL",
+    "team": null,
     "bye_week": null,
     "borischen": {
       "std": null,
@@ -6350,7 +6370,7 @@
       "player_id": "19797",
       "player_owned_avg": 88.2,
       "pos_rank": "QB5",
-      "start_sit_grade": "A",
+      "start_sit_grade": "B+",
       "stats": {
         "standard": {},
         "ppr": {},
@@ -6360,9 +6380,9 @@
         "standard": {
           "rank_ecr": 5,
           "rank_min": 5,
-          "rank_max": 5,
-          "rank_ave": 5,
-          "rank_std": 0,
+          "rank_max": 7,
+          "rank_ave": 5.8,
+          "rank_std": 0.98,
           "tier": null
         }
       }
@@ -6970,7 +6990,7 @@
     "name": "cj stroud",
     "position": "QB",
     "team": "HOU",
-    "bye_week": null,
+    "bye_week": 6,
     "borischen": {
       "std": {
         "rank": 18,
@@ -7000,7 +7020,27 @@
       },
       "updated_at": 1768294229774
     },
-    "fantasypros": null
+    "fantasypros": {
+      "player_id": "23071",
+      "player_owned_avg": 65.8,
+      "pos_rank": "QB8",
+      "start_sit_grade": "C",
+      "stats": {
+        "standard": {},
+        "ppr": {},
+        "half": {}
+      },
+      "rankings": {
+        "standard": {
+          "rank_ecr": 8,
+          "rank_min": 8,
+          "rank_max": 9,
+          "rank_ave": 8.25,
+          "rank_std": 0.43,
+          "tier": null
+        }
+      }
+    }
   },
   "9998": {
     "player_id": "9998",
@@ -7062,7 +7102,7 @@
     "player_id": "10215",
     "name": "jake haener",
     "position": "QB",
-    "team": "NO",
+    "team": null,
     "bye_week": null,
     "borischen": {
       "std": null,
@@ -7423,8 +7463,8 @@
     "fantasypros": {
       "player_id": "25321",
       "player_owned_avg": 0.6,
-      "pos_rank": "QB9",
-      "start_sit_grade": "B",
+      "pos_rank": "QB11",
+      "start_sit_grade": "D-",
       "stats": {
         "standard": {},
         "ppr": {},
@@ -7432,11 +7472,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 9,
+          "rank_ecr": 11,
           "rank_min": 9,
-          "rank_max": 9,
-          "rank_ave": 9,
-          "rank_std": 0,
+          "rank_max": 12,
+          "rank_ave": 10.67,
+          "rank_std": 1.25,
           "tier": null
         }
       }
@@ -7704,7 +7744,7 @@
     "fantasypros": {
       "player_id": "23084",
       "player_owned_avg": 79.4,
-      "pos_rank": "QB2",
+      "pos_rank": "QB3",
       "start_sit_grade": "A",
       "stats": {
         "standard": {},
@@ -7713,11 +7753,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 2,
+          "rank_ecr": 3,
           "rank_min": 2,
-          "rank_max": 2,
-          "rank_ave": 2,
-          "rank_std": 0,
+          "rank_max": 6,
+          "rank_ave": 3.4,
+          "rank_std": 1.5,
           "tier": null
         }
       }
@@ -7817,8 +7857,8 @@
     "fantasypros": {
       "player_id": "22910",
       "player_owned_avg": 89.9,
-      "pos_rank": "QB6",
-      "start_sit_grade": "A",
+      "pos_rank": "QB7",
+      "start_sit_grade": "A-",
       "stats": {
         "standard": {},
         "ppr": {},
@@ -7826,11 +7866,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 6,
+          "rank_ecr": 7,
           "rank_min": 6,
-          "rank_max": 6,
-          "rank_ave": 6,
-          "rank_std": 0,
+          "rank_max": 7,
+          "rank_ave": 6.2,
+          "rank_std": 0.4,
           "tier": null
         }
       }
@@ -7841,7 +7881,7 @@
     "name": "drake maye",
     "position": "QB",
     "team": "NE",
-    "bye_week": null,
+    "bye_week": 14,
     "borischen": {
       "std": {
         "rank": 2,
@@ -7871,7 +7911,27 @@
       },
       "updated_at": 1768294221579
     },
-    "fantasypros": null
+    "fantasypros": {
+      "player_id": "23046",
+      "player_owned_avg": 97.7,
+      "pos_rank": "QB6",
+      "start_sit_grade": "B-",
+      "stats": {
+        "standard": {},
+        "ppr": {},
+        "half": {}
+      },
+      "rankings": {
+        "standard": {
+          "rank_ecr": 6,
+          "rank_min": 4,
+          "rank_max": 5,
+          "rank_ave": 4.25,
+          "rank_std": 0.43,
+          "tier": null
+        }
+      }
+    }
   },
   "11565": {
     "player_id": "11565",
@@ -9005,7 +9065,7 @@
         "injury_body_part": null,
         "injury_notes": null,
         "injury_start_date": null,
-        "injury_status": "Out"
+        "injury_status": null
       },
       "updated_at": 1768294224527
     },
@@ -9191,7 +9251,7 @@
         "injury_body_part": null,
         "injury_notes": null,
         "injury_start_date": null,
-        "injury_status": "Out"
+        "injury_status": null
       },
       "updated_at": 1768294216207
     },
@@ -9537,7 +9597,7 @@
     "player_id": "13217",
     "name": "hunter dekkers",
     "position": "QB",
-    "team": "NO",
+    "team": null,
     "bye_week": null,
     "borischen": {
       "std": null,

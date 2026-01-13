@@ -65,7 +65,7 @@
     "fantasypros": {
       "player_id": "8090",
       "player_owned_avg": 96.3,
-      "pos_rank": "DST3",
+      "pos_rank": "DST5",
       "start_sit_grade": "A",
       "stats": {
         "standard": {},
@@ -74,11 +74,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 3,
+          "rank_ecr": 5,
           "rank_min": 3,
-          "rank_max": 3,
-          "rank_ave": 3,
-          "rank_std": 0,
+          "rank_max": 6,
+          "rank_ave": 4.33,
+          "rank_std": 1.25,
           "tier": null
         }
       }
@@ -224,8 +224,8 @@
     "fantasypros": {
       "player_id": "8270",
       "player_owned_avg": 38.1,
-      "pos_rank": "DST6",
-      "start_sit_grade": "A-",
+      "pos_rank": "DST7",
+      "start_sit_grade": "B+",
       "stats": {
         "standard": {},
         "ppr": {},
@@ -233,11 +233,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 6,
-          "rank_min": 6,
-          "rank_max": 6,
-          "rank_ave": 6,
-          "rank_std": 0,
+          "rank_ecr": 7,
+          "rank_min": 4,
+          "rank_max": 7,
+          "rank_ave": 5.67,
+          "rank_std": 1.25,
           "tier": null
         }
       }
@@ -248,7 +248,7 @@
     "name": "houston texans",
     "position": "DEF",
     "team": "HOU",
-    "bye_week": null,
+    "bye_week": 6,
     "borischen": {
       "std": {
         "rank": 6,
@@ -278,7 +278,27 @@
       },
       "updated_at": 1768294229996
     },
-    "fantasypros": null
+    "fantasypros": {
+      "player_id": "8120",
+      "player_owned_avg": 92.5,
+      "pos_rank": "DST2",
+      "start_sit_grade": "B-",
+      "stats": {
+        "standard": {},
+        "ppr": {},
+        "half": {}
+      },
+      "rankings": {
+        "standard": {
+          "rank_ecr": 2,
+          "rank_min": 1,
+          "rank_max": 1,
+          "rank_ave": 1,
+          "rank_std": 0,
+          "tier": null
+        }
+      }
+    }
   },
   "BUF": {
     "player_id": "BUF",
@@ -318,7 +338,7 @@
     "fantasypros": {
       "player_id": "8030",
       "player_owned_avg": 64.1,
-      "pos_rank": "DST2",
+      "pos_rank": "DST4",
       "start_sit_grade": "A",
       "stats": {
         "standard": {},
@@ -327,11 +347,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 2,
+          "rank_ecr": 4,
           "rank_min": 2,
-          "rank_max": 2,
-          "rank_ave": 2,
-          "rank_std": 0,
+          "rank_max": 6,
+          "rank_ave": 4.33,
+          "rank_std": 1.7,
           "tier": null
         }
       }
@@ -423,9 +443,9 @@
         "standard": {
           "rank_ecr": 1,
           "rank_min": 1,
-          "rank_max": 1,
-          "rank_ave": 1,
-          "rank_std": 0,
+          "rank_max": 5,
+          "rank_ave": 3,
+          "rank_std": 1.63,
           "tier": null
         }
       }
@@ -566,7 +586,7 @@
     "name": "new england patriots",
     "position": "DEF",
     "team": "NE",
-    "bye_week": null,
+    "bye_week": 14,
     "borischen": {
       "std": {
         "rank": 2,
@@ -596,7 +616,27 @@
       },
       "updated_at": 1768294229982
     },
-    "fantasypros": null
+    "fantasypros": {
+      "player_id": "8180",
+      "player_owned_avg": 82.3,
+      "pos_rank": "DST3",
+      "start_sit_grade": "C",
+      "stats": {
+        "standard": {},
+        "ppr": {},
+        "half": {}
+      },
+      "rankings": {
+        "standard": {
+          "rank_ecr": 3,
+          "rank_min": 2,
+          "rank_max": 2,
+          "rank_ave": 2,
+          "rank_std": 0,
+          "tier": null
+        }
+      }
+    }
   },
   "NYG": {
     "player_id": "NYG",
@@ -673,8 +713,8 @@
     "fantasypros": {
       "player_id": "8280",
       "player_owned_avg": 47.6,
-      "pos_rank": "DST4",
-      "start_sit_grade": "A",
+      "pos_rank": "DST6",
+      "start_sit_grade": "A-",
       "stats": {
         "standard": {},
         "ppr": {},
@@ -682,11 +722,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 4,
-          "rank_min": 4,
-          "rank_max": 4,
-          "rank_ave": 4,
-          "rank_std": 0,
+          "rank_ecr": 6,
+          "rank_min": 3,
+          "rank_max": 7,
+          "rank_ave": 4.67,
+          "rank_std": 1.7,
           "tier": null
         }
       }
@@ -1120,8 +1160,8 @@
     "fantasypros": {
       "player_id": "8050",
       "player_owned_avg": 23.9,
-      "pos_rank": "DST5",
-      "start_sit_grade": "A",
+      "pos_rank": "DST8",
+      "start_sit_grade": "B",
       "stats": {
         "standard": {},
         "ppr": {},
@@ -1129,11 +1169,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 5,
+          "rank_ecr": 8,
           "rank_min": 5,
-          "rank_max": 5,
-          "rank_ave": 5,
-          "rank_std": 0,
+          "rank_max": 8,
+          "rank_ave": 7,
+          "rank_std": 1.41,
           "tier": null
         }
       }
