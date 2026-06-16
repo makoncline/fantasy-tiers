@@ -4,7 +4,7 @@
     "name": "washington commanders",
     "position": "DEF",
     "team": "WAS",
-    "bye_week": 7,
+    "bye_week": null,
     "borischen": {
       "std": null,
       "ppr": null,
@@ -28,27 +28,7 @@
       },
       "updated_at": 1781596239048
     },
-    "fantasypros": {
-      "player_id": "8310",
-      "player_owned_avg": 18.4,
-      "pos_rank": "DST30",
-      "start_sit_grade": "F",
-      "stats": {
-        "standard": {},
-        "ppr": {},
-        "half": {}
-      },
-      "rankings": {
-        "standard": {
-          "rank_ecr": 30,
-          "rank_min": 30,
-          "rank_max": 30,
-          "rank_ave": 30,
-          "rank_std": 0,
-          "tier": null
-        }
-      }
-    }
+    "fantasypros": null
   },
   "TEN": {
     "player_id": "TEN",
@@ -103,8 +83,8 @@
           "rank_ecr": 13,
           "rank_min": 12,
           "rank_max": 13,
-          "rank_ave": 12.33,
-          "rank_std": 0.47,
+          "rank_ave": 12.5,
+          "rank_std": 0.5,
           "tier": null
         }
       }
@@ -115,7 +95,7 @@
     "name": "tampa bay buccaneers",
     "position": "DEF",
     "team": "TB",
-    "bye_week": 10,
+    "bye_week": null,
     "borischen": {
       "std": {
         "rank": 8,
@@ -148,27 +128,7 @@
       },
       "updated_at": 1781596239051
     },
-    "fantasypros": {
-      "player_id": "8290",
-      "player_owned_avg": 22.9,
-      "pos_rank": "DST32",
-      "start_sit_grade": "F",
-      "stats": {
-        "standard": {},
-        "ppr": {},
-        "half": {}
-      },
-      "rankings": {
-        "standard": {
-          "rank_ecr": 32,
-          "rank_min": 32,
-          "rank_max": 32,
-          "rank_ave": 32,
-          "rank_std": 0,
-          "tier": null
-        }
-      }
-    }
+    "fantasypros": null
   },
   "SF": {
     "player_id": "SF",
@@ -373,7 +333,7 @@
     "fantasypros": {
       "player_id": "8230",
       "player_owned_avg": 82.1,
-      "pos_rank": "DST11",
+      "pos_rank": "DST12",
       "start_sit_grade": "B-",
       "stats": {
         "standard": {},
@@ -382,11 +342,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 11,
+          "rank_ecr": 12,
           "rank_min": 11,
           "rank_max": 12,
-          "rank_ave": 11.33,
-          "rank_std": 0.47,
+          "rank_ave": 11.5,
+          "rank_std": 0.5,
           "tier": null
         }
       }
@@ -448,7 +408,7 @@
     "name": "new york giants",
     "position": "DEF",
     "team": "NYG",
-    "bye_week": 8,
+    "bye_week": null,
     "borischen": {
       "std": {
         "rank": 9,
@@ -481,27 +441,7 @@
       },
       "updated_at": 1781596239063
     },
-    "fantasypros": {
-      "player_id": "8200",
-      "player_owned_avg": 28.3,
-      "pos_rank": "DST29",
-      "start_sit_grade": "F",
-      "stats": {
-        "standard": {},
-        "ppr": {},
-        "half": {}
-      },
-      "rankings": {
-        "standard": {
-          "rank_ecr": 29,
-          "rank_min": 29,
-          "rank_max": 29,
-          "rank_ave": 29,
-          "rank_std": 0,
-          "tier": null
-        }
-      }
-    }
+    "fantasypros": null
   },
   "NO": {
     "player_id": "NO",
@@ -664,7 +604,7 @@
     "fantasypros": {
       "player_id": "8170",
       "player_owned_avg": 62.3,
-      "pos_rank": "DST8",
+      "pos_rank": "DST9",
       "start_sit_grade": "B",
       "stats": {
         "standard": {},
@@ -673,11 +613,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 8,
+          "rank_ecr": 9,
           "rank_min": 8,
           "rank_max": 10,
-          "rank_ave": 8.67,
-          "rank_std": 0.94,
+          "rank_ave": 9,
+          "rank_std": 1,
           "tier": null
         }
       }
@@ -838,8 +778,8 @@
           "rank_ecr": 7,
           "rank_min": 7,
           "rank_max": 8,
-          "rank_ave": 7.33,
-          "rank_std": 0.47,
+          "rank_ave": 7.5,
+          "rank_std": 0.5,
           "tier": null
         }
       }
@@ -1180,8 +1120,8 @@
           "rank_ecr": 14,
           "rank_min": 13,
           "rank_max": 14,
-          "rank_ave": 13.33,
-          "rank_std": 0.47,
+          "rank_ave": 13.5,
+          "rank_std": 0.5,
           "tier": null
         }
       }
@@ -1240,8 +1180,8 @@
           "rank_ecr": 10,
           "rank_min": 9,
           "rank_max": 11,
-          "rank_ave": 9.67,
-          "rank_std": 0.94,
+          "rank_ave": 10,
+          "rank_std": 1,
           "tier": null
         }
       }
@@ -1630,7 +1570,7 @@
     "fantasypros": {
       "player_id": "8030",
       "player_owned_avg": 32.9,
-      "pos_rank": "DST12",
+      "pos_rank": "DST11",
       "start_sit_grade": "C+",
       "stats": {
         "standard": {},
@@ -1639,11 +1579,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 12,
+          "rank_ecr": 11,
           "rank_min": 9,
           "rank_max": 14,
-          "rank_ave": 12.33,
-          "rank_std": 2.36,
+          "rank_ave": 11.5,
+          "rank_std": 2.5,
           "tier": null
         }
       }
@@ -1690,7 +1630,7 @@
     "fantasypros": {
       "player_id": "8020",
       "player_owned_avg": 46.5,
-      "pos_rank": "DST9",
+      "pos_rank": "DST8",
       "start_sit_grade": "B",
       "stats": {
         "standard": {},
@@ -1699,11 +1639,11 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 9,
+          "rank_ecr": 8,
           "rank_min": 7,
           "rank_max": 10,
-          "rank_ave": 9,
-          "rank_std": 1.41,
+          "rank_ave": 8.5,
+          "rank_std": 1.5,
           "tier": null
         }
       }
@@ -1765,7 +1705,7 @@
     "name": "arizona cardinals",
     "position": "DEF",
     "team": "ARI",
-    "bye_week": 14,
+    "bye_week": null,
     "borischen": {
       "std": null,
       "ppr": null,
@@ -1789,26 +1729,6 @@
       },
       "updated_at": 1781596239106
     },
-    "fantasypros": {
-      "player_id": "8000",
-      "player_owned_avg": 6,
-      "pos_rank": "DST31",
-      "start_sit_grade": "F",
-      "stats": {
-        "standard": {},
-        "ppr": {},
-        "half": {}
-      },
-      "rankings": {
-        "standard": {
-          "rank_ecr": 31,
-          "rank_min": 31,
-          "rank_max": 31,
-          "rank_ave": 31,
-          "rank_std": 0,
-          "tier": null
-        }
-      }
-    }
+    "fantasypros": null
   }
 }
