@@ -98,22 +98,7 @@ describe("PreviewPickDialog", () => {
           })),
         }));
       }
-      return new Response(JSON.stringify({
-        signal: {
-          available: true,
-          reason: null,
-          player: null,
-          current: {},
-          lastPresent: {},
-          flags: {
-            currentlyMissingPrimaryTier: true,
-            currentlyMissingFantasyPros: false,
-            hasDurableSleeperValue: true,
-            hasDurableFantasyProsValue: true,
-          },
-          recentTimeline: [],
-        },
-      }));
+      throw new Error(`Unexpected request: ${String(input)}`);
     }));
   });
 
@@ -169,7 +154,6 @@ describe("PreviewPickDialog", () => {
     expect(text).toContain("Overall tier3");
     expect(text).toContain("Why over Next Receiver");
     expect(text).not.toContain("Why over Top Running Back");
-    expect(text).toContain("Current tier is absent but prior tier exists.");
     expect(text).not.toContain("durable value");
     expect(text).not.toContain("Source Rows");
     expect(text).not.toContain("hidden source warning");

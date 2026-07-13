@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   ClipboardList,
-  Database,
   Trophy,
   UsersRound,
 } from "lucide-react";
@@ -38,16 +37,6 @@ const tools = [
     Icon: UsersRound,
     testId: "home-link-league-manager",
     details: ["League lookup", "Roster optimizer", "Position tiers"],
-  },
-  {
-    href: "/rating-history",
-    title: "Rating History",
-    description:
-      "Review source freshness, current coverage gaps, and players who are missing now but were ranked before.",
-    action: "Open data history",
-    Icon: Database,
-    testId: "home-link-rating-history",
-    details: ["Source runs", "Coverage gaps", "Prior ratings"],
   },
 ];
 
@@ -85,7 +74,7 @@ export default function Page() {
               manager when you need to understand a roster, compare positions,
               or plan the next move from Sleeper data.
             </p>
-            <div className="mt-8 grid gap-3 text-sm sm:grid-cols-4">
+            <div className="mt-8 grid gap-3 text-sm sm:grid-cols-3">
               <div className="rounded-lg border bg-muted/40 p-3">
                 <div className="font-semibold">Draft</div>
                 <div className="mt-1 text-muted-foreground">Pick tracking</div>
@@ -97,10 +86,6 @@ export default function Page() {
               <div className="rounded-lg border bg-muted/40 p-3">
                 <div className="font-semibold">Ranks</div>
                 <div className="mt-1 text-muted-foreground">Tier context</div>
-              </div>
-              <div className="rounded-lg border bg-muted/40 p-3">
-                <div className="font-semibold">Data</div>
-                <div className="mt-1 text-muted-foreground">History view</div>
               </div>
             </div>
           </section>

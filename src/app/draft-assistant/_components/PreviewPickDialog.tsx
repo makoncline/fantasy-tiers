@@ -22,10 +22,6 @@ import {
   SleeperPlayerNewsResponseSchema,
   type SleeperPlayerNewsItem,
 } from "@/lib/sleeperNews";
-import {
-  RatingHistoryPlayerSignalResponseSchema,
-  type RatingHistoryPlayerSignal,
-} from "@/lib/ratingHistory/playerSignals";
 import type { PlayerWithPick } from "@/lib/types.draft";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
 
@@ -109,43 +105,13 @@ function ExplanationList({
 }
 
 function PlayerDecisionPanel({
-  open,
   player,
 }: {
-  open: boolean;
   player: PreviewPickPlayer | null;
 }) {
-  const { league, decisionRows } = useDraftData();
-  const historySignalQuery = useQuery({
-    queryKey: qk.ratingHistory.playerSignal(
-      player?.player_id ?? "",
-      league?.scoring ?? "half",
-      player?.position ?? ""
-    ),
-    queryFn: async () => {
-      const params = new URLSearchParams({
-        playerId: player?.player_id ?? "",
-        scoring: league?.scoring ?? "half",
-        position: player?.position ?? "",
-      });
-      const res = await fetch(`/api/rating-history/player?${params.toString()}`);
-      if (!res.ok) {
-        throw new Error("Failed to fetch rating-history signal");
-      }
-      return RatingHistoryPlayerSignalResponseSchema.parse(await res.json())
-        .signal;
-    },
-    enabled:
-      open && Boolean(player?.player_id && league?.scoring && player?.position),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
-    refetchOnWindowFocus: false,
-  });
+  const { decisionRows } = useDraftData();
   if (!player) return null;
 
-  const historyHref = `/rating-history?q=${encodeURIComponent(
-    player.name
-  )}&playerId=${encodeURIComponent(player.player_id)}`;
   const decisionIndex = decisionRows.findIndex(
     (row) => row.player_id === player.player_id
   );
@@ -164,7 +130,7 @@ function PlayerDecisionPanel({
 
   return (
     <section className="space-y-3 rounded-lg border bg-muted/20 p-3">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start gap-3">
         <div>
           <h3 className="text-sm font-semibold">Draft Value</h3>
           {isUsefulCopy(player.draft_action_label) ||
@@ -185,12 +151,6 @@ function PlayerDecisionPanel({
             </p>
           ) : null}
         </div>
-        <a
-          href={historyHref}
-          className="text-xs font-medium underline-offset-2 hover:underline"
-        >
-          History
-        </a>
       </div>
       <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
         {player.draft_value_score != null ? (
@@ -273,31 +233,8 @@ function PlayerDecisionPanel({
           </div>
         </div>
       ) : null}
-      <RatingHistorySignalPanel
-        signal={historySignalQuery.data}
-      />
     </section>
   );
-}
-
-function RatingHistorySignalPanel({
-  signal,
-}: {
-  signal: RatingHistoryPlayerSignal | undefined;
-}) {
-  const flagMessages = [
-    signal?.available && signal.flags.currentlyMissingPrimaryTier
-      ? "Current tier is absent but prior tier exists."
-      : null,
-    signal?.available && signal.flags.currentlyMissingFantasyPros
-      ? "FantasyPros is currently absent but prior value exists."
-      : null,
-  ].filter((message): message is string => message != null);
-  return flagMessages.length ? (
-    <div className="rounded-md border bg-background/60 p-2 text-xs">
-      {flagMessages.map((message) => <div key={message}>{message}</div>)}
-    </div>
-  ) : null;
 }
 
 function formatNewsDate(value: number) {
@@ -483,7 +420,7 @@ export default function PreviewPickDialog({
         ) : null}
         <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-4">
-            <PlayerDecisionPanel open={open} player={player} />
+            <PlayerDecisionPanel player={player} />
           </div>
           <PlayerNewsPanel open={open} playerId={player?.player_id} />
         </div>

@@ -1,8 +1,8 @@
 # Fantasy Tiers
 
 Personal fantasy-football draft and league-management tools built with Next.js.
-The main surfaces are `/draft-assistant`, `/mock-draft`, `/league-manager`, and
-`/rating-history`.
+The public surfaces are `/draft-assistant` and `/league-manager`. The local-only
+`/mock-draft` route remains available in development for strategy tuning.
 
 Read `docs/project-context.md` before changing data or draft behavior. Read
 `docs/draft-assistant-runbook.md` before controlling a Sleeper mock.
@@ -52,13 +52,13 @@ started manually. It:
 The workflow aborts if `main` advances while it is running. It never rebases
 stale generated output over newer source code.
 
-## Rating History
+## History Storage
 
 Production uses `fantasy-tiers-history` in the dedicated `fantasy-tiers` Turso
-group. Configure the same database URL in GitHub Actions and Vercel, using a
-group-scoped write token for Actions and a separate group-scoped read-only token
-for Vercel. Do not use the Turso `default` group or credentials shared with
-another application:
+group. It is retained for scheduled historical storage and does not have a
+public UI. Configure the database URL in GitHub Actions with a group-scoped
+write token. Vercel does not need database access. Do not use the Turso
+`default` group or credentials shared with another application:
 
 ```text
 FANTASY_HISTORY_DATABASE_URL

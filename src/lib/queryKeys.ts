@@ -44,10 +44,6 @@ export const qk = {
   players: {
     byScoring: (scoring: string) => ["players", scoring] as const,
   },
-  ratingHistory: {
-    playerSignal: (playerId: string, scoring: string, position: string) =>
-      ["rating-history", "player-signal", playerId, scoring, position] as const,
-  },
   sleeper: {
     playersMeta: ["sleeper", "players-meta", "static"] as const,
     playerNews: (playerId: string) =>
