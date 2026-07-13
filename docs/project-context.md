@@ -21,7 +21,7 @@ The app should help answer questions like:
 
 - `/` is a home hub linking to the two main tools.
 - `/draft-assistant` is enabled again. It is the live draft room surface.
-- `/mock-draft` is a local seeded mock draft room. It uses bot teams, the live Sleeper Zod schemas, and the shared draft view-model path so agents can test draft-assistant decisions without opening Sleeper.
+- `/mock-draft` is a development-only seeded mock draft room. It uses bot teams, the live Sleeper Zod schemas, and the shared draft view-model path so agents can tune draft-assistant decisions locally without opening Sleeper. It is intentionally hidden from the home page; the route and its result-saving API return 404 in production.
 - `/league-manager` loads Sleeper user/league data and evaluates roster quality.
 - API routes under `/api/*` serve aggregate shards, bundles, rankings, draft view-models, Sleeper data, freshness metadata, and local mock draft result artifacts.
 
