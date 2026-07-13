@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import * as fs from "fs";
 import * as path from "path";
-import { getBorischenUpdateDate } from "../../src/lib/sourceUpdateDates";
+import { getTiersUpdateDate } from "../../src/lib/sourceUpdateDates";
 
 describe("sourceUpdateDates", () => {
   const testDir = path.join(process.cwd(), "test-fixtures");
@@ -20,11 +20,11 @@ describe("sourceUpdateDates", () => {
     }
   });
 
-  describe("getBorischenUpdateDate", () => {
+  describe("getTiersUpdateDate", () => {
     it("should return correct date from aggregated metadata", () => {
       const testMetadata = {
         fp: {},
-        borischen: {
+        tiers: {
           STD: {
             QB: { last_modified: "2025-09-10T17:02:31.000Z" },
             RB: { last_modified: "2025-09-10T17:02:31.000Z" },
@@ -63,33 +63,33 @@ describe("sourceUpdateDates", () => {
 
       try {
         // Test standard positions with STD scoring
-        const qbResult = getBorischenUpdateDate("QB", "std");
-        expect(qbResult.source).toBe("Borischen");
+        const qbResult = getTiersUpdateDate("QB", "std");
+        expect(qbResult.source).toBe("Tiers");
         expect(qbResult.lastUpdated).toEqual(
           new Date("2025-09-10T17:02:31.000Z")
         );
         expect(qbResult.fetchedAt).toBeNull();
 
         // Test PPR scoring
-        const rbPprResult = getBorischenUpdateDate("RB", "ppr");
+        const rbPprResult = getTiersUpdateDate("RB", "ppr");
         expect(rbPprResult.lastUpdated).toEqual(
           new Date("2025-09-10T17:02:31.000Z")
         );
 
         // Test DEF position mapping to DST
-        const defResult = getBorischenUpdateDate("DEF", "std");
+        const defResult = getTiersUpdateDate("DEF", "std");
         expect(defResult.lastUpdated).toEqual(
           new Date("Mon, 08 Sep 2025 18:57:14 GMT")
         );
 
         // Test K position always uses STD scoring
-        const kPprResult = getBorischenUpdateDate("K", "ppr");
+        const kPprResult = getTiersUpdateDate("K", "ppr");
         expect(kPprResult.lastUpdated).toEqual(
           new Date("2025-09-10T16:30:00.000Z")
         );
 
         // Test null values
-        const qbPprResult = getBorischenUpdateDate("QB", "ppr");
+        const qbPprResult = getTiersUpdateDate("QB", "ppr");
         expect(qbPprResult.lastUpdated).toBeNull();
       } finally {
         process.cwd = originalCwd;
@@ -102,8 +102,8 @@ describe("sourceUpdateDates", () => {
       process.cwd = () => testDir;
 
       try {
-        const result = getBorischenUpdateDate("QB", "std");
-        expect(result.source).toBe("Borischen");
+        const result = getTiersUpdateDate("QB", "std");
+        expect(result.source).toBe("Tiers");
         expect(result.lastUpdated).toBeNull();
         expect(result.fetchedAt).toBeNull();
         expect(result.details.error).toContain("ENOENT");
@@ -119,8 +119,8 @@ describe("sourceUpdateDates", () => {
       process.cwd = () => testDir;
 
       try {
-        const result = getBorischenUpdateDate("QB", "std");
-        expect(result.source).toBe("Borischen");
+        const result = getTiersUpdateDate("QB", "std");
+        expect(result.source).toBe("Tiers");
         expect(result.lastUpdated).toBeNull();
         expect(result.fetchedAt).toBeNull();
         expect(result.details.error).toBeDefined();

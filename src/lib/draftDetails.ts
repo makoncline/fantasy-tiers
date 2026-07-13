@@ -42,9 +42,14 @@ export const DraftDetailsSchema = z.object({
   settings: DraftSettingsSchema,
   slot_to_roster_id: z
     .record(z.string(), z.union([z.string(), z.number()]))
+    .nullable()
     .optional()
-    .default({}),
-  draft_order: z.record(z.string(), z.number()).default({}),
+    .transform((value) => value ?? {}),
+  draft_order: z
+    .record(z.string(), z.number())
+    .nullable()
+    .optional()
+    .transform((value) => value ?? {}),
 });
 
 export type DraftDetails = z.infer<typeof DraftDetailsSchema>;
@@ -52,8 +57,13 @@ export type DraftDetails = z.infer<typeof DraftDetailsSchema>;
 export async function fetchDraftDetails(
   draftId: string
 ): Promise<DraftDetails> {
-  const res = await fetch(
+  const url = new URL(
     `https://api.sleeper.app/v1/draft/${encodeURIComponent(draftId)}`
+  );
+  url.searchParams.set("_", String(Date.now()));
+  const res = await fetch(
+    url.toString(),
+    { cache: "no-store" }
   );
   if (!res.ok) {
     // Treat null/empty bodies as not-yet-created drafts

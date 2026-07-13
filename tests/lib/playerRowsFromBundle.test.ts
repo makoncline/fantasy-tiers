@@ -12,13 +12,15 @@ describe("toPlayerRowFromBundle", () => {
     position: "RB",
     team: "SF",
     bye_week: 9,
-    borischen: { rank: 4, tier: 1 },
+    tiers: { rank: 4, tier: 1 },
     sleeper: { rank: 4, adp: 3.2, pts: 263.4 },
     fantasypros: {
       rank: 4,
       tier: 1,
       pos_rank: "RB1",
       ecr: 4,
+      ecr_average: 4.7,
+      ecr_std: 1.2,
       ecr_round_pick: "1.03",
       pts: 278.1,
       baseline_pts: 192.5,
@@ -38,12 +40,14 @@ describe("toPlayerRowFromBundle", () => {
       team: "SF",
       bye_week: 9,
       rank: 4,
-      bc_rank: 4,
-      bc_tier: 1,
-      tier: 1, // Added because borischen.tier exists
+      tier_rank: 4,
+      tier_level: 1,
+      tier: 1, // Added because tiers.tier exists
       fp_pts: 278.1,
       fp_tier: 1,
       fp_rank_overall: 4,
+      fp_rank_ave: 4.7,
+      fp_rank_std: 1.2,
       fp_rank_pos: 1, // Parsed from "RB1"
       fp_baseline_pts: 192.5,
       fp_value: 86,
@@ -51,6 +55,7 @@ describe("toPlayerRowFromBundle", () => {
       fp_player_owned_avg: 97.3,
       sleeper_pts: 263.4,
       sleeper_adp: 3.2,
+      sleeper_adp_round_pick: "1.03",
       sleeper_rank_overall: 4,
       fp_adp: null,
       market_delta: -1,
@@ -63,11 +68,13 @@ describe("toPlayerRowFromBundle", () => {
       ...mockBundlePlayer,
       team: null,
       bye_week: null,
-      borischen: { rank: null, tier: null },
+      tiers: { rank: null, tier: null },
       sleeper: { rank: null, adp: null, pts: null },
       fantasypros: {
         ...mockBundlePlayer.fantasypros,
         pos_rank: null,
+        ecr_average: null,
+        ecr_std: null,
         ecr_round_pick: null,
         pts: null,
         baseline_pts: null,
@@ -80,8 +87,8 @@ describe("toPlayerRowFromBundle", () => {
     const result = toPlayerRowFromBundle(playerWithNulls, 12);
 
     expect(result.rank).toBeUndefined();
-    expect(result.bc_rank).toBeUndefined();
-    expect(result.bc_tier).toBeUndefined();
+    expect(result.tier_rank).toBeUndefined();
+    expect(result.tier_level).toBeUndefined();
     expect(result.tier).toBeUndefined();
     expect(result.fp_pts).toBeNull();
     expect(result.fp_value).toBeNull();
@@ -89,6 +96,30 @@ describe("toPlayerRowFromBundle", () => {
     expect(result.market_delta).toBeNull();
     expect(result.team).toBeNull();
     expect(result.bye_week).toBeNull();
+  });
+
+  it("maps Footballguys comparison data without affecting draft value fields", () => {
+    const result = toPlayerRowFromBundle({
+      ...mockBundlePlayer,
+      footballguys: {
+        id: "DoeJo00",
+        rank: 7,
+        tier: 2,
+        pos_rank: 3,
+        fetched_at: "2026-07-11T12:00:00.000Z",
+        settings: "12-team ppr public default",
+        adp: { consensus: 8, sleeper: null },
+      },
+    });
+
+    expect(result).toMatchObject({
+      fbg_rank: 7,
+      fbg_tier: 2,
+      fbg_rank_pos: 3,
+      fbg_adp_consensus: 8,
+      fbg_settings: "12-team ppr public default",
+      fp_rank_ave: 4.7,
+    });
   });
 
   it("parses pos_rank correctly", () => {
@@ -134,6 +165,7 @@ describe("toPlayerRowFromBundle", () => {
   it("handles missing leagueTeams gracefully", () => {
     const result = toPlayerRowFromBundle(mockBundlePlayer, undefined);
     expect(result.ecr_round_pick).toBe("1.03"); // Uses provided value
+    expect(result.sleeper_adp_round_pick).toBeUndefined();
   });
 
   it("handles null ecr values", () => {
@@ -142,6 +174,7 @@ describe("toPlayerRowFromBundle", () => {
       fantasypros: {
         ...mockBundlePlayer.fantasypros,
         ecr: null,
+        ecr_average: null,
         ecr_round_pick: null,
       },
     };
@@ -159,13 +192,15 @@ describe("toPlayerRowsFromBundle", () => {
       position: "RB",
       team: "SF",
       bye_week: 9,
-      borischen: { rank: 1, tier: 1 },
+      tiers: { rank: 1, tier: 1 },
       sleeper: { rank: 1, adp: 1.5, pts: 300 },
       fantasypros: {
         rank: 1,
         tier: 1,
         pos_rank: "RB1",
         ecr: 1,
+        ecr_average: 1.2,
+        ecr_std: 0.8,
         ecr_round_pick: "1.01",
         pts: 280,
         baseline_pts: 200,
@@ -180,13 +215,15 @@ describe("toPlayerRowsFromBundle", () => {
       position: "RB",
       team: "KC",
       bye_week: 10,
-      borischen: { rank: 2, tier: 1 },
+      tiers: { rank: 2, tier: 1 },
       sleeper: { rank: 2, adp: 2.1, pts: 290 },
       fantasypros: {
         rank: 2,
         tier: 1,
         pos_rank: "RB2",
         ecr: 2,
+        ecr_average: 2.4,
+        ecr_std: 1.1,
         ecr_round_pick: "1.02",
         pts: 270,
         baseline_pts: 195,
@@ -197,7 +234,7 @@ describe("toPlayerRowsFromBundle", () => {
     },
   ];
 
-  it("maps array of bundle players to PlayerRows and sorts by bc_rank", () => {
+  it("maps array of bundle players to PlayerRows and sorts by tier_rank", () => {
     const result = toPlayerRowsFromBundle(mockPlayers, 12);
 
     expect(result).toHaveLength(2);
@@ -212,12 +249,14 @@ describe("toPlayerRowsFromBundle", () => {
       team: "SF",
       bye_week: 9,
       rank: 1,
-      bc_rank: 1,
-      bc_tier: 1,
+      tier_rank: 1,
+      tier_level: 1,
       tier: 1,
       fp_pts: 280,
       fp_tier: 1,
       fp_rank_overall: 1,
+      fp_rank_ave: 1.2,
+      fp_rank_std: 0.8,
       fp_rank_pos: 1,
       fp_baseline_pts: 200,
       fp_value: 90,
@@ -225,7 +264,12 @@ describe("toPlayerRowsFromBundle", () => {
       fp_player_owned_avg: 98,
       sleeper_pts: 300,
       sleeper_adp: 1.5,
+      sleeper_adp_round_pick: "1.02",
       sleeper_rank_overall: 1,
+      sleeper_rank_pos: 1,
+      sleeper_tier_level: 1,
+      sleeper_injury_status: undefined,
+      sleeper_injury_notes: undefined,
       fp_adp: null,
       market_delta: 0,
       ecr_round_pick: "1.01",
@@ -241,16 +285,50 @@ describe("toPlayerRowsFromBundle", () => {
     const playersWithNullRanks: AggregatesBundlePlayerT[] = [
       {
         ...mockPlayers[0],
-        borischen: { rank: null, tier: 1 },
+        tiers: { rank: null, tier: 1 },
       },
       {
         ...mockPlayers[1],
-        borischen: { rank: 2, tier: 1 },
+        tiers: { rank: 2, tier: 1 },
       },
     ];
 
     const result = toPlayerRowsFromBundle(playersWithNullRanks, 12);
     expect(result[0].player_id).toBe("2"); // Rank 2 comes first
     expect(result[1].player_id).toBe("1"); // Null rank comes last
+  });
+
+  it("derives Sleeper position tiers from Sleeper rank using FP tier sizes", () => {
+    const players: AggregatesBundlePlayerT[] = [
+      {
+        ...mockPlayers[0],
+        player_id: "tier-one",
+        tiers: { rank: 1, tier: 1 },
+        sleeper: { ...mockPlayers[0].sleeper, rank: 30 },
+      },
+      {
+        ...mockPlayers[0],
+        player_id: "tier-two-a",
+        tiers: { rank: 2, tier: 2 },
+        sleeper: { ...mockPlayers[0].sleeper, rank: 10 },
+      },
+      {
+        ...mockPlayers[0],
+        player_id: "tier-two-b",
+        tiers: { rank: 3, tier: 2 },
+        sleeper: { ...mockPlayers[0].sleeper, rank: 20 },
+      },
+    ];
+
+    const result = toPlayerRowsFromBundle(players, 12);
+
+    expect(result.find((row) => row.player_id === "tier-two-a")).toMatchObject({
+      sleeper_rank_pos: 1,
+      sleeper_tier_level: 1,
+    });
+    expect(result.find((row) => row.player_id === "tier-one")).toMatchObject({
+      sleeper_rank_pos: 3,
+      sleeper_tier_level: 2,
+    });
   });
 });

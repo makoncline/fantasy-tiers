@@ -21,6 +21,10 @@ type Props = {
   hideDrafted?: boolean;
   renderActions?: (row: PlayerWithPick) => React.ReactNode;
   tierRowColors?: boolean; // Enable alternating tier-based row backgrounds
+  maxRows?: number | undefined;
+  defaultSortId?: string | undefined;
+  defaultSortDir?: "asc" | "desc" | undefined;
+  heatDomainRows?: PlayerWithPick[] | undefined;
 };
 
 export default function PlayersTableBase({
@@ -32,6 +36,10 @@ export default function PlayersTableBase({
   hideDrafted = false,
   renderActions = undefined,
   tierRowColors = false,
+  maxRows,
+  defaultSortId,
+  defaultSortDir = "asc",
+  heatDomainRows,
 }: Props) {
   // 1) Filter/dim drafted once
   const baseRows = React.useMemo(
@@ -45,7 +53,7 @@ export default function PlayersTableBase({
     const init = Object.fromEntries(
       ids.map((k) => [k, { min: +Infinity, max: -Infinity }])
     ) as Record<HeatScaleId, { min: number; max: number }>;
-    for (const r of baseRows) {
+    for (const r of heatDomainRows ?? baseRows) {
       for (const g of groups)
         for (const c of g.children) {
           if (!c.heat) continue;
@@ -58,7 +66,7 @@ export default function PlayersTableBase({
         }
     }
     return init;
-  }, [baseRows, groups]);
+  }, [baseRows, groups, heatDomainRows]);
 
   const heatBg = (
     scale: HeatScaleId | undefined,
@@ -74,8 +82,10 @@ export default function PlayersTableBase({
   };
 
   // 3) Sorting driven by column ids
-  const [sortId, setSortId] = React.useState<string | null>(null);
-  const [sortDir, setSortDir] = React.useState<"asc" | "desc">("asc");
+  const [sortId, setSortId] = React.useState<string | null>(
+    defaultSortId ?? null
+  );
+  const [sortDir, setSortDir] = React.useState<"asc" | "desc">(defaultSortDir);
 
   const allColumns: ColumnDef<PlayerWithPick>[] = groups.flatMap(
     (g) => g.children
@@ -102,12 +112,34 @@ export default function PlayersTableBase({
       if (aNull && bNull) return 0;
       if (aNull) return nullWeight;
       if (bNull) return -nullWeight;
-      if (asNum) return Number(av) - Number(bv);
-      return String(av).localeCompare(String(bv));
+      const comparison = asNum
+        ? Number(av) - Number(bv)
+        : String(av).localeCompare(String(bv));
+      return sortDir === "desc" ? -comparison : comparison;
     });
-    if (sortDir === "desc") arr.reverse();
     return arr;
   }, [baseRows, activeCol, sortDir, sortable]);
+
+  const visibleRows = React.useMemo(
+    () => (maxRows == null ? sorted : sorted.slice(0, maxRows)),
+    [maxRows, sorted]
+  );
+
+  const tierBandClasses = React.useMemo(() => {
+    const shouldBand = tierRowColors || sortId === "tier_level";
+    if (!shouldBand) return [];
+
+    let currentTier: number | string | null = null;
+    let bandIndex = -1;
+    return visibleRows.map((row) => {
+      const nextTier = row.tier_level ?? row.tier ?? "unranked";
+      if (nextTier !== currentTier) {
+        currentTier = nextTier;
+        bandIndex += 1;
+      }
+      return bandIndex % 2 === 1 ? "bg-muted" : "";
+    });
+  }, [sortId, tierRowColors, visibleRows]);
 
   const onHeadClick = (c: ColumnDef<PlayerWithPick>) => {
     if (!sortable || !c.sortable) return;
@@ -120,7 +152,7 @@ export default function PlayersTableBase({
 
   return (
     <Table>
-      <TableHeader className="sticky top-0 z-50">
+      <TableHeader className="sticky top-0 z-30">
         {/* group row */}
         <TableRow>
           {groups.map((g, i) => (
@@ -145,7 +177,7 @@ export default function PlayersTableBase({
                 (c.sortable ? "cursor-pointer select-none " : "") +
                 (c.className ?? "")
               }
-              title={c.header}
+              title={c.description ?? c.header}
               aria-sort={
                 sortable && c.sortable && sortId === c.id
                   ? sortDir === "asc"
@@ -166,22 +198,13 @@ export default function PlayersTableBase({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {sorted.map((r, idx) => {
+        {visibleRows.map((r, idx) => {
           const isDrafted = isDraftedRow(r);
-
-          // Tier-based row coloring for compact tables
-          let tierClass = "";
-          if (tierRowColors) {
-            const currentTier = r.bc_tier ?? r.tier ?? 1;
-            // Even tiers get lighter background
-            if (currentTier % 2 === 0) {
-              tierClass = "bg-muted";
-            }
-          }
+          const tierClass = tierBandClasses[idx] ?? "";
 
           const baseClass =
             dimDrafted && isDrafted
-              ? "opacity-60 text-muted-foreground hover:opacity-95 hover:text-foreground"
+              ? "opacity-60 text-muted-foreground hover:bg-transparent"
               : undefined;
 
           const combinedClass =

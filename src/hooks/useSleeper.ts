@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import {
   fetchSleeperUserByUsername,
   fetchSleeperUserById,
@@ -55,6 +55,42 @@ export function useSleeperLeaguesForYear(
     enabled: Boolean(userId) && enabled,
     staleTime: 60 * 1000,
   });
+}
+
+export type SleeperLeagueWithSeason = SleeperLeague & { season: string };
+
+export function useSleeperLeaguesForYears(
+  userId: string | undefined,
+  years: readonly string[],
+  enabled: boolean
+) {
+  const uniqueYears = Array.from(new Set(years.filter(Boolean)));
+  const results = useQueries({
+    queries: uniqueYears.map((year) => ({
+      queryKey: ["sleeper:leagues", userId, year],
+      queryFn: async () => {
+        if (!userId) throw new Error("userId is required");
+        return fetchLeaguesForUserYear(userId, year);
+      },
+      enabled: Boolean(userId) && enabled,
+      staleTime: 60 * 1000,
+    })),
+  });
+
+  const data: SleeperLeagueWithSeason[] = results.flatMap((result, index) => {
+    const season = uniqueYears[index];
+    if (!season) return [];
+    return (result.data ?? []).map((league) => ({ ...league, season }));
+  });
+  const firstError = results.find((result) => result.error instanceof Error)
+    ?.error;
+
+  return {
+    data,
+    searchedYears: uniqueYears,
+    isLoading: results.some((result) => result.isLoading),
+    error: firstError instanceof Error ? firstError : null,
+  };
 }
 
 // NFL state (season + week). Only fetch on initial load.

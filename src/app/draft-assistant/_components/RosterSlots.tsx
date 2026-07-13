@@ -22,16 +22,12 @@ export default function RosterSlots({
         <TableRow>
           <TableHead>Slot</TableHead>
           <TableHead>Player</TableHead>
-          <TableHead>Team</TableHead>
-          <TableHead>Pos</TableHead>
           <TableHead>Bye</TableHead>
-          <TableHead>Weeks</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {slots.map((s, idx) => {
           const p = s.player;
-          const byeWeek = p?.bye_week ? Number(p.bye_week) : null;
           const highlight =
             p && highlightPlayerId && p.player_id === highlightPlayerId;
           return (
@@ -48,46 +44,25 @@ export default function RosterSlots({
               <TableCell
                 className={highlight ? "border-primary border-y-2" : undefined}
               >
-                {p ? <span data-drafted="D">{p.name}</span> : "—"}
+                {p ? (
+                  <div data-drafted="D">
+                    <div>{p.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {p.team ?? "—"} · {p.position ?? "—"}
+                    </div>
+                  </div>
+                ) : (
+                  "—"
+                )}
               </TableCell>
               <TableCell
-                className={highlight ? "border-primary border-y-2" : undefined}
-              >
-                {p?.team ?? "—"}
-              </TableCell>
-              <TableCell
-                className={highlight ? "border-primary border-y-2" : undefined}
-              >
-                {p?.position ?? "—"}
-              </TableCell>
-              <TableCell
-                className={highlight ? "border-primary border-y-2" : undefined}
-              >
-                {p?.bye_week ?? "—"}
-              </TableCell>
-              <TableCell
-                className={`align-middle ${
+                className={
                   highlight
                     ? "border-primary border-y-2 border-r-2 rounded-r-md"
-                    : ""
-                }`}
+                    : undefined
+                }
               >
-                <div className="flex h-6 items-stretch gap-0.5">
-                  {Array.from({ length: 18 }, (_, i) => {
-                    const week = i + 1;
-                    const isBye = byeWeek === week;
-                    return (
-                      <div
-                        key={week}
-                        className={`${
-                          isBye ? "bg-red-500" : "bg-muted"
-                        } w-1 rounded`}
-                        title={`Week ${week}${isBye ? " (bye)" : ""}`}
-                        aria-label={`Week ${week}${isBye ? " bye" : ""}`}
-                      />
-                    );
-                  })}
-                </div>
+                {p?.bye_week ?? "—"}
               </TableCell>
             </TableRow>
           );

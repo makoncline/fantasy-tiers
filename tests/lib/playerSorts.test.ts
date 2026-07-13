@@ -10,7 +10,7 @@ describe("Player Sorts", () => {
       position: "QB",
       team: "TB",
       bye_week: 9,
-      bc_rank: 3,
+      tier_rank: 3,
     },
     {
       player_id: "2",
@@ -18,7 +18,7 @@ describe("Player Sorts", () => {
       position: "QB",
       team: "KC",
       bye_week: 10,
-      bc_rank: 1,
+      tier_rank: 1,
     },
     {
       player_id: "3",
@@ -26,7 +26,7 @@ describe("Player Sorts", () => {
       position: "QB",
       team: "SF",
       bye_week: 11,
-      bc_rank: 2,
+      tier_rank: 2,
     },
     {
       player_id: "4",
@@ -34,7 +34,7 @@ describe("Player Sorts", () => {
       position: "QB",
       team: "GB",
       bye_week: 12,
-      bc_rank: undefined,
+      tier_rank: undefined,
     },
   ];
 
@@ -66,13 +66,13 @@ describe("Player Sorts", () => {
   ];
 
   describe("sortByBcRank", () => {
-    it("should sort players by bc_rank in ascending order", () => {
+    it("should sort players by tier_rank in ascending order", () => {
       const sorted = sortByBcRank(mockRows);
 
-      expect(sorted[0].bc_rank).toBe(1); // Player B
-      expect(sorted[1].bc_rank).toBe(2); // Player C
-      expect(sorted[2].bc_rank).toBe(3); // Player A
-      expect(sorted[3].bc_rank).toBeUndefined(); // Player D (undefined ranks last)
+      expect(sorted[0].tier_rank).toBe(1); // Player B
+      expect(sorted[1].tier_rank).toBe(2); // Player C
+      expect(sorted[2].tier_rank).toBe(3); // Player A
+      expect(sorted[3].tier_rank).toBeUndefined(); // Player D (undefined ranks last)
     });
 
     it("should handle empty array", () => {
@@ -83,7 +83,7 @@ describe("Player Sorts", () => {
     it("should handle all undefined ranks", () => {
       const allUndefined = mockRows.map((row) => ({
         ...row,
-        bc_rank: undefined,
+        tier_rank: undefined,
       }));
       const sorted = sortByBcRank(allUndefined);
       expect(sorted).toHaveLength(4);

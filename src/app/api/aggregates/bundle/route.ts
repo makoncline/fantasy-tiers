@@ -1,209 +1,49 @@
 // src/app/api/aggregates/bundle/route.ts
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import * as fs from "fs";
-import * as path from "path";
 import { z } from "zod";
 
 import {
   AggregatesBundleQueryParams,
-  AggregatesBundleResponse,
-  AggregatesBundlePlayer,
-  AggregatesBundleShards,
-  RosterSlotsSchema,
 } from "@/lib/schemas-bundle";
-import { CombinedShard, type CombinedEntryT } from "@/lib/schemas-aggregates";
-import {
-  enrichPlayers,
-  type League,
-  type EnrichedPlayer,
-} from "@/lib/enrichPlayers";
-import { getAggregatesLastModifiedServer } from "@/lib/combinedAggregates";
-import { ecrToRoundPick } from "@/lib/util";
-
-// Load a shard file
-function loadShard(shardName: string) {
-  const filePath = path.resolve(
-    process.cwd(),
-    "public/data/aggregate",
-    `${shardName}-combined-aggregate.json`
-  );
-  if (!fs.existsSync(filePath)) {
-    throw new Error(
-      `Shard file not found: ${shardName}-combined-aggregate.json`
-    );
-  }
-
-  const fileContent = fs.readFileSync(filePath, "utf-8");
-
-  // Check if file is empty
-  if (!fileContent.trim()) {
-    throw new Error(
-      `Shard file is empty: ${shardName}-combined-aggregate.json`
-    );
-  }
-
-  const json = JSON.parse(fileContent);
-  return CombinedShard.parse(json);
-}
-
-// Convert enriched player to bundle format
-function enrichedToBundlePlayer(
-  player: EnrichedPlayer,
-  league: League
-): Record<string, unknown> {
-  return {
-    player_id: player.player_id,
-    name: player.name,
-    position: player.position,
-    team: player.team,
-    bye_week: player.bye_week,
-    borischen: {
-      rank: player.bc_rank,
-      tier: player.bc_tier,
-    },
-    sleeper: {
-      rank: player.sleeper_rank_overall,
-      adp: player.sleeper_adp,
-      pts: player.sleeper_pts,
-    },
-    fantasypros: {
-      rank: player.fp_rank_overall,
-      tier: player.fp_tier,
-      pos_rank:
-        player.fantasypros?.pos_rank ||
-        `${player.position}${player.fp_rank_pos || ""}`,
-      ecr: player.fp_rank_overall,
-      ecr_round_pick:
-        player.fp_rank_overall && league.teams
-          ? ecrToRoundPick(player.fp_rank_overall, league.teams)
-          : null,
-      pts: player.fp_pts,
-      baseline_pts: player.fp_baseline_pts,
-      adp: player.fp_adp,
-      player_owned_avg: player.fp_player_owned_avg,
-    },
-    calc: {
-      value: player.fp_value,
-      positional_scarcity: Math.round(player.fp_remaining_value_pct || 0),
-      market_delta: player.market_delta,
-    },
-  };
-}
-
-// Process position shards (RB, WR, TE need union for FLEX)
-function processPositionShards(league: League, _allData: CombinedEntryT[]) {
-  // Load all relevant shards explicitly; RB/WR/TE must come from their own files
-  const shards = {
-    QB: loadShard("QB"),
-    RB: loadShard("RB"),
-    WR: loadShard("WR"),
-    TE: loadShard("TE"),
-    K: loadShard("K"),
-    DEF: loadShard("DEF"),
-    FLEX: loadShard("FLEX"),
-    ALL: loadShard("ALL"),
-  };
-
-  // FLEX-aware enrichment pool: RB/WR/TE union (not ALL)
-  const flexEligible = [
-    ...Object.values(shards.RB),
-    ...Object.values(shards.WR),
-    ...Object.values(shards.TE),
-  ];
-  const enrichedFlex = enrichPlayers(flexEligible, league);
-
-  const rbWrTe = enrichedFlex.reduce((acc, player) => {
-    const pos = player.position;
-    if (!acc[pos]) acc[pos] = [];
-    acc[pos].push(player);
-    return acc;
-  }, {} as Record<string, EnrichedPlayer[]>);
-
-  // Per-position enrichment for non-FLEX-eligible shards
-  const enrichedQB = enrichPlayers(Object.values(shards.QB), league);
-  const enrichedK = enrichPlayers(Object.values(shards.K), league);
-  const enrichedDEF = enrichPlayers(Object.values(shards.DEF), league);
-  const enrichedALL = enrichPlayers(Object.values(shards.ALL), league);
-  const enrichedFLEX = enrichPlayers(Object.values(shards.FLEX), league);
-
-  return {
-    QB: enrichedQB.map((p) => enrichedToBundlePlayer(p, league)),
-    RB: (rbWrTe.RB || []).map((p) => enrichedToBundlePlayer(p, league)),
-    WR: (rbWrTe.WR || []).map((p) => enrichedToBundlePlayer(p, league)),
-    TE: (rbWrTe.TE || []).map((p) => enrichedToBundlePlayer(p, league)),
-    K: enrichedK.map((p) => enrichedToBundlePlayer(p, league)),
-    DEF: enrichedDEF.map((p) => enrichedToBundlePlayer(p, league)),
-    FLEX: enrichedFLEX.map((p) => enrichedToBundlePlayer(p, league)),
-    ALL: enrichedALL.map((p) => enrichedToBundlePlayer(p, league)),
-  };
-}
+import { buildAggregateBundle } from "@/lib/aggregateBundle";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const queryValue = (name: string, fallback: string) =>
+      searchParams.get(name) ?? fallback;
 
     // Parse and validate query parameters
     const params = AggregatesBundleQueryParams.parse({
-      scoring: searchParams.get("scoring"),
-      teams: searchParams.get("teams"),
-      slots_qb: searchParams.get("slots_qb"),
-      slots_rb: searchParams.get("slots_rb"),
-      slots_wr: searchParams.get("slots_wr"),
-      slots_te: searchParams.get("slots_te"),
-      slots_k: searchParams.get("slots_k"),
-      slots_def: searchParams.get("slots_def"),
-      slots_flex: searchParams.get("slots_flex"),
+      scoring: queryValue("scoring", "std"),
+      teams: queryValue("teams", "10"),
+      slots_qb: queryValue("slots_qb", "1"),
+      slots_rb: queryValue("slots_rb", "2"),
+      slots_wr: queryValue("slots_wr", "2"),
+      slots_te: queryValue("slots_te", "1"),
+      slots_k: queryValue("slots_k", "1"),
+      slots_def: queryValue("slots_def", "1"),
+      slots_flex: queryValue("slots_flex", "1"),
+      slots_bench: queryValue("slots_bench", "6"),
     });
 
-    // Build league configuration
-    const league: League = {
-      teams: params.teams,
+    const response = buildAggregateBundle({
       scoring: params.scoring,
-      roster: {
-        QB: params.slots_qb ?? 1,
-        RB: params.slots_rb ?? 2,
-        WR: params.slots_wr ?? 2,
-        TE: params.slots_te ?? 1,
-        K: params.slots_k ?? 1,
-        DEF: params.slots_def ?? 1,
-        FLEX: params.slots_flex ?? 1,
-        BENCH: 0,
+      teams: params.teams,
+      rosterSlots: {
+        QB: params.slots_qb,
+        RB: params.slots_rb,
+        WR: params.slots_wr,
+        TE: params.slots_te,
+        K: params.slots_k,
+        DEF: params.slots_def,
+        FLEX: params.slots_flex,
+        BENCH: params.slots_bench,
       },
-    };
-
-    // Load ALL data for FLEX calculations
-    const allShard = loadShard("ALL");
-    const allData = Object.values(allShard);
-
-    // Process all shards
-    const processedShards = processPositionShards(league, allData);
-
-    // Sort each shard by borischen rank
-    Object.keys(processedShards).forEach((shardKey) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      processedShards[shardKey as keyof typeof processedShards].sort((a, b) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const aRank = (a as any).borischen?.rank ?? 999999;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const bRank = (b as any).borischen?.rank ?? 999999;
-        return aRank - bRank;
-      });
     });
 
-    // Build response
-    const response = {
-      lastModified: getAggregatesLastModifiedServer(),
-      scoring: params.scoring,
-      teams: params.teams,
-      roster: league.roster,
-      shards: processedShards,
-    };
-
-    // Validate response
-    const validatedResponse = AggregatesBundleResponse.parse(response);
-
-    return NextResponse.json(validatedResponse, {
+    return NextResponse.json(response, {
       headers: {
         "cache-control": "public, max-age=60",
       },

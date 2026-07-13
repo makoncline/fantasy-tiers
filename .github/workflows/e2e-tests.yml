@@ -1,5 +1,8 @@
 name: E2E Tests
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     branches: [main, develop]
@@ -39,16 +42,19 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Start dev server
+      - name: Build production app
+        run: pnpm run build
+
+      - name: Start production server
         run: |
-          pnpm run dev &
+          pnpm exec next start -H 127.0.0.1 -p 3000 &
           SERVER_PID=$!
           echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
 
           # Wait for server to be ready (up to 60 seconds)
           timeout 60 bash -c 'until curl -f http://localhost:3000 > /dev/null 2>&1; do sleep 2; done' || (echo "Server failed to start" && exit 1)
 
-          echo "✅ Dev server started successfully on http://localhost:3000"
+          echo "✅ Production server started successfully on http://localhost:3000"
 
       - name: Run E2E tests
         run: pnpm run e2e:ci

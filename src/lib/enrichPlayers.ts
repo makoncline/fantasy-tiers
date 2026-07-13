@@ -33,14 +33,16 @@ export interface League {
 
 // Enriched player with computed fields
 export type EnrichedPlayer = CombinedEntryT & {
-  bc_rank: number | null;
-  bc_tier: number | null;
+  tier_rank: number | null;
+  tier_level: number | null;
   sleeper_pts: number | null;
   sleeper_adp: number | null;
   sleeper_rank_overall: number | null;
   fp_pts: number | null;
   fp_adp: number | null;
   fp_rank_overall: number | null;
+  fp_rank_ave: number | null;
+  fp_rank_std: number | null;
   fp_rank_pos: number | null;
   fp_tier: number | null;
   fp_baseline_pts: number;
@@ -62,15 +64,21 @@ function toNum(x: unknown): number | null {
 }
 
 // Extractors from the combined aggregate entry
-function getBoris(
+function getTierRanking(
   entry: CombinedEntryT,
   scoring: ScoringType
 ): { rank: number | null; tier: number | null } {
-  const { borisKey } = scoringKeys(scoring);
+  const { tierKey } = scoringKeys(scoring);
   // Use only the matching key for scoring; QB/K/DEF are mirrored at build time.
-  const bc = entry.borischen[borisKey];
-  const rank = bc && typeof bc.rank !== "undefined" ? toNum(bc.rank) : null;
-  const tier = bc && typeof bc.tier !== "undefined" ? toNum(bc.tier) : null;
+  const tierRanking = entry.tiers[tierKey];
+  const rank =
+    tierRanking && typeof tierRanking.rank !== "undefined"
+      ? toNum(tierRanking.rank)
+      : null;
+  const tier =
+    tierRanking && typeof tierRanking.tier !== "undefined"
+      ? toNum(tierRanking.tier)
+      : null;
   return { rank, tier };
 }
 
@@ -99,6 +107,8 @@ function getFpRanks(
   scoring: ScoringType
 ): {
   ecrOverall: number | null;
+  ecrAverage: number | null;
+  ecrStdDev: number | null;
   tier: number | null;
   posRank: number | null;
 } {
@@ -111,6 +121,8 @@ function getFpRanks(
       : NaN;
   return {
     ecrOverall: toNum((r as Record<string, unknown>)?.rank_ecr),
+    ecrAverage: toNum((r as Record<string, unknown>)?.rank_ave),
+    ecrStdDev: toNum((r as Record<string, unknown>)?.rank_std),
     tier: toNum((r as Record<string, unknown>)?.tier),
     posRank: Number.isFinite(posRankNum) ? posRankNum : null,
   };
@@ -432,8 +444,8 @@ export function enrichPlayers(
         return null;
       }
 
-      // Boris Chen
-      const { rank: bc_rank, tier: bc_tier } = getBoris(p, scoring);
+      // Tiers
+      const { rank: tier_rank, tier: tier_level } = getTierRanking(p, scoring);
 
       // Sleeper
       const { pts: sleeper_pts, adp: sleeper_adp } = getSleeperPtsAdp(
@@ -448,6 +460,8 @@ export function enrichPlayers(
       const fp_adp = getFpAdp(p, scoring);
       const {
         ecrOverall: fp_rank_overall,
+        ecrAverage: fp_rank_ave,
+        ecrStdDev: fp_rank_std,
         tier: fp_tier,
         posRank: fp_rank_pos,
       } = getFpRanks(p, scoring);
@@ -470,9 +484,9 @@ export function enrichPlayers(
 
       return {
         ...p,
-        // borischen
-        bc_rank,
-        bc_tier,
+        // tiers
+        tier_rank,
+        tier_level,
         // sleeper
         sleeper_pts,
         sleeper_adp,
@@ -481,6 +495,8 @@ export function enrichPlayers(
         fp_pts,
         fp_adp,
         fp_rank_overall,
+        fp_rank_ave,
+        fp_rank_std,
         fp_rank_pos,
         fp_tier,
         fp_baseline_pts,

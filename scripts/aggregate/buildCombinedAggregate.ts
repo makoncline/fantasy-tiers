@@ -11,6 +11,11 @@ import {
 import { CombinedEntry, CombinedShard } from "../../src/lib/schemas-aggregates";
 import { parse as parseCsvSync } from "csv-parse/sync";
 import { globSync } from "glob";
+import {
+  fantasyProsExpertMetadata,
+  normalizeExpertSampleMetadata,
+  type ExpertSampleMetadata,
+} from "../fp/fantasyprosExpertMetadata";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,6 +26,48 @@ function readJson<T = any>(p: string): T {
 
 function ensureDir(p: string) {
   fs.mkdirSync(p, { recursive: true });
+}
+
+type FantasyProsFetchMode = {
+  mode?: string;
+  projectionsFetched?: boolean;
+  fetchedAt?: string;
+};
+
+function readFantasyProsFetchMode(root: string): FantasyProsFetchMode | null {
+  const markerPath = path.join(
+    root,
+    "public",
+    "data",
+    "fantasypros",
+    "raw",
+    "fetch-mode.json"
+  );
+  try {
+    if (!fs.existsSync(markerPath)) return null;
+    return readJson<FantasyProsFetchMode>(markerPath);
+  } catch {
+    return null;
+  }
+}
+
+function emptyFantasyProsScoreMaps(): {
+  std: Map<string, any>;
+  half: Map<string, any>;
+  ppr: Map<string, any>;
+} {
+  return {
+    std: new Map(),
+    half: new Map(),
+    ppr: new Map(),
+  };
+}
+
+function toIsoDate(value: unknown): string | null {
+  if (value == null || value === "") return null;
+  const date =
+    typeof value === "number" ? new Date(value) : new Date(String(value));
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
 const POS_NO_VARIANT = new Set(["QB", "K", "DEF"]);
@@ -72,6 +119,40 @@ function loadLatestWeeklyEcrMap(
   return map;
 }
 
+function hasExpertSample(experts: ExpertSampleMetadata): boolean {
+  return (
+    experts.included != null ||
+    experts.available != null ||
+    experts.included_ids.length > 0 ||
+    experts.excluded_ids.length > 0 ||
+    experts.filter_ids.length > 0
+  );
+}
+
+function registerExpertSample(
+  samples: Record<string, ExpertSampleMetadata>,
+  key: string,
+  experts: ExpertSampleMetadata
+): string | null {
+  if (!hasExpertSample(experts)) return null;
+  samples[key] = experts;
+  return key;
+}
+
+function expertSummary(
+  experts: ExpertSampleMetadata,
+  sampleKey: string | null
+) {
+  return {
+    included: experts.included,
+    available: experts.available,
+    coverage_pct: experts.coverage_pct,
+    sample_size: experts.sample_size,
+    last_updated: experts.last_updated,
+    sample_key: sampleKey,
+  };
+}
+
 async function main() {
   const root = path.resolve(__dirname, "../../");
   const sleeperProjectionsPath = path.join(
@@ -89,10 +170,12 @@ async function main() {
     "fantasypros_aggregate.json"
   );
   const rankingsDir = path.join(root, "public", "data");
-  const borisDir = path.join(rankingsDir, "borischen");
+  const tiersDir = path.join(rankingsDir, "tiers");
   const outDir = path.join(root, "public", "data", "aggregate");
   const outFile = path.join(outDir, "combined-aggregate.json");
   const metaOutFile = path.join(outDir, "metadata.json");
+  const fpFetchMode = readFantasyProsFetchMode(root);
+  const useFantasyProsWeeklyRaw = fpFetchMode?.mode !== "draft";
 
   // Validate inputs exist with helpful guidance
   if (!fs.existsSync(sleeperProjectionsPath)) {
@@ -135,20 +218,22 @@ async function main() {
     { std: Map<string, any>; half: Map<string, any>; ppr: Map<string, any> }
   > = {};
   for (const pos of FP_POSITIONS) {
-    fpWeeklyByPosScore[pos] = {
-      std: loadLatestWeeklyEcrMap("std", pos, root),
-      half: loadLatestWeeklyEcrMap("half", pos, root),
-      ppr: loadLatestWeeklyEcrMap("ppr", pos, root),
-    };
+    fpWeeklyByPosScore[pos] = useFantasyProsWeeklyRaw
+      ? {
+          std: loadLatestWeeklyEcrMap("std", pos, root),
+          half: loadLatestWeeklyEcrMap("half", pos, root),
+          ppr: loadLatestWeeklyEcrMap("ppr", pos, root),
+        }
+      : emptyFantasyProsScoreMaps();
   }
 
-  // Load Boris Chen from raw CSVs → { [position]: { [scoring]: Map<normalizedName, {rank,tier}> } }
-  const borisByPosScore: Record<
+  // Load Tiers from raw CSVs → { [position]: { [scoring]: Map<normalizedName, {rank,tier}> } }
+  const tiersByPosScore: Record<
     string,
     Record<string, Map<string, { rank: number; tier: number }>>
   > = {};
-  // Additionally load ALL overall Boris Chen rankings per scoring
-  const borisAllByScore: Record<
+  // Additionally load ALL overall Tiers rankings per scoring
+  const tiersAllByScore: Record<
     "std" | "ppr" | "half",
     Map<string, { rank: number; tier: number }>
   > = {
@@ -156,14 +241,14 @@ async function main() {
     ppr: new Map(),
     half: new Map(),
   };
-  let borisAnyFound = false;
+  let tiersAnyFound = false;
   for (const [position, scoringTypes] of Object.entries(
     POSITIONS_TO_SCORING_TYPES
   )) {
-    borisByPosScore[position] = {};
+    tiersByPosScore[position] = {};
     for (const scoring of scoringTypes) {
       const file = path.join(
-        borisDir,
+        tiersDir,
         `${position}-${scoring}-rankings-raw.csv`
       );
       const map = new Map<string, { rank: number; tier: number }>();
@@ -174,7 +259,7 @@ async function main() {
             columns: true,
             skip_empty_lines: true,
           });
-          borisAnyFound = borisAnyFound || rows.length > 0;
+          tiersAnyFound = tiersAnyFound || rows.length > 0;
           for (const row of rows) {
             const name = String(row?.["Player.Name"] || "").trim();
             const nm = name ? normalizePlayerName(name) : "";
@@ -189,20 +274,20 @@ async function main() {
           // ignore
         }
       }
-      borisByPosScore[position][scoring] = map;
+      tiersByPosScore[position][scoring] = map;
     }
   }
-  if (!borisAnyFound) {
+  if (!tiersAnyFound) {
     // eslint-disable-next-line no-console
     console.warn(
-      `No Boris Chen raw rankings found under ${borisDir}.\n` +
-        `Fetch them with: pnpm run fetch:borischen`
+      `No Tiers raw rankings found under ${tiersDir}.\n` +
+        `Fetch them with: pnpm run fetch:tiers`
     );
   }
-  // Load ALL (overall) Boris Chen CSVs to be used for the ALL shard
+  // Load ALL (overall) Tiers CSVs to be used for the ALL shard
   for (const scoring of ["std", "ppr", "half"] as const) {
-    const file = path.join(borisDir, `ALL-${scoring}-rankings-raw.csv`);
-    const map = borisAllByScore[scoring];
+    const file = path.join(tiersDir, `ALL-${scoring}-rankings-raw.csv`);
+    const map = tiersAllByScore[scoring];
     if (fs.existsSync(file)) {
       try {
         const csv = fs.readFileSync(file, "utf8");
@@ -251,14 +336,14 @@ async function main() {
         ? Number(fpAggRow.player_bye_week) || null
         : null;
 
-    // Boris Chen rankings for this player's position
+    // Tiers rankings for this player's position
     // Pull per-scoring rankings where available, and only mirror for QB/K/DEF
-    const getBoris = (scoring: "std" | "ppr" | "half") =>
-      borisByPosScore[pos]?.[scoring]?.get(normalizedName) ?? null;
-    const borischen = mirror(pos, {
-      std: getBoris("std"),
-      ppr: getBoris("ppr"),
-      half: getBoris("half"),
+    const getTierRanking = (scoring: "std" | "ppr" | "half") =>
+      tiersByPosScore[pos]?.[scoring]?.get(normalizedName) ?? null;
+    const tiers = mirror(pos, {
+      std: getTierRanking("std"),
+      ppr: getTierRanking("ppr"),
+      half: getTierRanking("half"),
     });
 
     // Sleeper subset for example-compatible format (whitelist specific stats)
@@ -314,6 +399,14 @@ async function main() {
           }
         : undefined;
 
+    const fpAggRankings = fpAggRow?.rankings ?? {};
+    const standardRanking = stdRow
+      ? rankShape(stdRow)
+      : fpAggRankings.standard;
+    const halfRanking = halfRow ? rankShape(halfRow) : fpAggRankings.half;
+    const pprRanking = pprRow ? rankShape(pprRow) : fpAggRankings.ppr;
+    const fpAggStats = fpAggRow?.stats ?? {};
+
     const fantasypros = bestRow
       ? {
           player_id: String(bestRow.player_id ?? fpAggRow?.player_id ?? ""),
@@ -323,14 +416,14 @@ async function main() {
           start_sit_grade:
             bestRow.start_sit_grade ?? fpAggRow?.start_sit_grade ?? null,
           stats: {
-            standard: {},
-            ppr: {},
-            half: {},
+            standard: fpAggStats.standard ?? {},
+            ppr: fpAggStats.ppr ?? {},
+            half: fpAggStats.half ?? {},
           },
           rankings: {
-            ...(stdRow ? { standard: rankShape(stdRow)! } : {}),
-            ...(halfRow ? { half: rankShape(halfRow)! } : {}),
-            ...(pprRow ? { ppr: rankShape(pprRow)! } : {}),
+            ...(standardRanking ? { standard: standardRanking } : {}),
+            ...(halfRanking ? { half: halfRanking } : {}),
+            ...(pprRanking ? { ppr: pprRanking } : {}),
           },
         }
       : null;
@@ -341,7 +434,7 @@ async function main() {
       position: pos,
       team,
       bye_week,
-      borischen,
+      tiers,
       sleeper,
       fantasypros,
     };
@@ -379,24 +472,24 @@ async function main() {
     const shard: Record<string, any> = {};
     for (const [pid, entry] of Object.entries(combined)) {
       if (pos === "ALL") {
-        // For ALL shard, use the overall (ALL) Boris Chen rankings per scoring
+        // For ALL shard, use the overall (ALL) Tiers rankings per scoring
         const nm = entry.name as string;
         const bAll = {
-          std: borisAllByScore.std.get(nm) ?? null,
-          ppr: borisAllByScore.ppr.get(nm) ?? null,
-          half: borisAllByScore.half.get(nm) ?? null,
+          std: tiersAllByScore.std.get(nm) ?? null,
+          ppr: tiersAllByScore.ppr.get(nm) ?? null,
+          half: tiersAllByScore.half.get(nm) ?? null,
         };
-        shard[pid] = { ...entry, borischen: bAll };
+        shard[pid] = { ...entry, tiers: bAll };
       } else if (pos === "FLEX") {
         if (["RB", "WR", "TE"].includes(entry.position)) {
-          // For FLEX, use FLEX-specific Boris Chen rankings instead of individual position rankings
+          // For FLEX, use FLEX-specific Tiers rankings instead of individual position rankings
           const nm = entry.name as string;
           const bFlex = {
-            std: borisByPosScore["FLEX"]?.std?.get(nm) ?? null,
-            ppr: borisByPosScore["FLEX"]?.ppr?.get(nm) ?? null,
-            half: borisByPosScore["FLEX"]?.half?.get(nm) ?? null,
+            std: tiersByPosScore["FLEX"]?.std?.get(nm) ?? null,
+            ppr: tiersByPosScore["FLEX"]?.ppr?.get(nm) ?? null,
+            half: tiersByPosScore["FLEX"]?.half?.get(nm) ?? null,
           };
-          shard[pid] = { ...entry, borischen: bFlex };
+          shard[pid] = { ...entry, tiers: bFlex };
         }
       } else {
         if (entry.position === pos) shard[pid] = entry;
@@ -427,12 +520,66 @@ async function main() {
       HALF: ["RB", "WR", "TE", "FLEX"],
       PPR: ["RB", "WR", "TE", "FLEX"],
     };
+    const expertSamples: Record<string, ExpertSampleMetadata> = {};
     const fpMeta: Record<string, Record<string, any>> = {};
     for (const scoring of scorings) {
       const scoringKey = scoring;
       fpMeta[scoringKey] = {};
       const positions = positionsForScoring[scoring];
       for (const pos of positions) {
+        const draftFile = path.join(
+          fpRawDir,
+          `ECR-ADP-${scoring.toLowerCase()}-draft_raw.json`
+        );
+        const draftMetaFile = path.join(
+          fpRawDir,
+          `ECR-ADP-${scoring.toLowerCase()}-draft-metadata.json`
+        );
+        if (fpFetchMode?.mode === "draft" && fs.existsSync(draftFile)) {
+          try {
+            const txt = fs.readFileSync(draftFile, "utf8");
+            const json = JSON.parse(txt) as { raw?: any; rows?: any[] };
+            const r = json?.raw ?? {};
+            const sidecar = fs.existsSync(draftMetaFile)
+              ? readJson<{
+                  accessed?: string;
+                  last_updated_ts?: number;
+                  rowCount?: number;
+                  sources?: number;
+                  url?: string;
+                }>(draftMetaFile)
+              : {};
+            const experts = fantasyProsExpertMetadata(
+              r,
+              sidecar.sources ?? null
+            );
+            const expertSampleKey = registerExpertSample(
+              expertSamples,
+              `fantasypros:${scoringKey}:draft`,
+              experts
+            );
+            fpMeta[scoringKey][pos] = {
+              fetched_at: toIsoDate(sidecar.accessed ?? r.accessed),
+              last_updated: toIsoDate(
+                Number(r.last_updated_ts ?? sidecar.last_updated_ts) * 1000
+              ),
+              total_experts: experts.included,
+              experts: expertSummary(experts, expertSampleKey),
+              scoring: r.scoring ?? scoring,
+              position_id: pos,
+              week: "draft",
+              year: r.year ?? null,
+              url: sidecar.url ?? null,
+              row_count:
+                json.rows?.length ?? sidecar.rowCount ?? r.count ?? null,
+              mode: "draft",
+              projections_fetched: fpFetchMode.projectionsFetched ?? false,
+            };
+          } catch {
+            // ignore invalid draft metadata
+          }
+          continue;
+        }
         const pattern = `ECR-weekly-${scoring.toLowerCase()}-${pos.toLowerCase()}-week-*_raw.json`;
         const files = globSync(pattern, {
           cwd: fpRawDir,
@@ -470,11 +617,18 @@ async function main() {
             }
           } catch {}
 
+          const experts = fantasyProsExpertMetadata(r);
+          const expertSampleKey = registerExpertSample(
+            expertSamples,
+            `fantasypros:${scoringKey}:${pos}:week-${r.week ?? best?.week ?? "unknown"}`,
+            experts
+          );
           fpMeta[scoringKey][pos] = {
             fetched_at: new Date(fetched_at!).toISOString() ?? null,
             last_updated:
               new Date(r.last_updated_ts * 1000).toISOString() ?? null,
-            total_experts: r.total_experts ?? null,
+            total_experts: experts.included,
+            experts: expertSummary(experts, expertSampleKey),
             scoring: r.scoring ?? scoring,
             position_id: r.position_id ?? pos,
             week: r.week ?? best?.week ?? null,
@@ -487,21 +641,21 @@ async function main() {
       }
     }
 
-    // Build Borischen metadata
-    const borischenRawDir = path.join(root, "public", "data", "borischen");
-    const borischenMeta: Record<string, Record<string, any>> = {};
+    // Build Tiers metadata
+    const tiersRawDir = path.join(root, "public", "data", "tiers");
+    const tiersMeta: Record<string, Record<string, any>> = {};
 
     for (const scoring of scorings) {
       const scoringKey = scoring;
-      borischenMeta[scoringKey] = {};
+      tiersMeta[scoringKey] = {};
       const positions = positionsForScoring[scoring];
 
       for (const pos of positions) {
-        // Borischen uses DEF for defense, not DST like FantasyPros
-        const borischenPos = pos === "DST" ? "DEF" : pos;
+        // Tiers uses DEF for defense, not DST like FantasyPros
+        const tiersPos = pos === "DST" ? "DEF" : pos;
         const metadataFile = path.join(
-          borischenRawDir,
-          `${borischenPos}-${scoring.toLowerCase()}-metadata.json`
+          tiersRawDir,
+          `${tiersPos}-${scoring.toLowerCase()}-metadata.json`
         );
 
         try {
@@ -510,25 +664,51 @@ async function main() {
             const metaJson = JSON.parse(metaTxt) as {
               lastUpdated?: string;
               fetchedAt?: string;
+              source?: string;
+              sourceUrl?: string;
+              totalExperts?: number | null;
+              experts?: unknown;
+              rowCount?: number | null;
+              season?: number | null;
             };
-            borischenMeta[scoringKey][pos] = {
-              last_updated: new Date(metaJson?.lastUpdated!).toISOString(),
-              fetched_at: metaJson?.fetchedAt,
+            const experts = normalizeExpertSampleMetadata(
+              metaJson.experts ?? {
+                included: metaJson.totalExperts ?? null,
+              }
+            );
+            const expertSampleKey = registerExpertSample(
+              expertSamples,
+              `fantasypros:${scoringKey}:draft`,
+              experts
+            );
+            tiersMeta[scoringKey][pos] = {
+              last_updated: toIsoDate(metaJson.lastUpdated),
+              fetched_at: toIsoDate(metaJson.fetchedAt),
+              total_experts: experts.included,
+              experts: expertSummary(experts, expertSampleKey),
+              source: metaJson.source ?? null,
+              url: metaJson.sourceUrl ?? null,
+              row_count: metaJson.rowCount ?? null,
+              year: metaJson.season ?? null,
             };
           } else {
-            borischenMeta[scoringKey][pos] = {
+            tiersMeta[scoringKey][pos] = {
               last_updated: null,
             };
           }
         } catch {
-          borischenMeta[scoringKey][pos] = {
+          tiersMeta[scoringKey][pos] = {
             last_updated: null,
           };
         }
       }
     }
 
-    const aggregatesMetadata = { fp: fpMeta, borischen: borischenMeta };
+    const aggregatesMetadata = {
+      expert_samples: expertSamples,
+      fp: fpMeta,
+      tiers: tiersMeta,
+    };
     fs.writeFileSync(metaOutFile, JSON.stringify(aggregatesMetadata, null, 2));
   } catch (e) {
     // eslint-disable-next-line no-console

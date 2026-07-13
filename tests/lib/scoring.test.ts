@@ -1,6 +1,9 @@
 // tests/lib/scoring.test.ts
 import { describe, it, expect } from "vitest";
-import { scoringKeys } from "../../src/lib/scoring";
+import {
+  scoringKeys,
+  scoringTypeFromReceptionPoints,
+} from "../../src/lib/scoring";
 import { ScoringType } from "../../src/lib/schemas";
 
 describe("scoringKeys", () => {
@@ -9,7 +12,7 @@ describe("scoringKeys", () => {
     expect(result).toEqual({
       sleeperSuffix: "std",
       fpKey: "standard",
-      borisKey: "std",
+      tierKey: "std",
     });
   });
 
@@ -18,7 +21,7 @@ describe("scoringKeys", () => {
     expect(result).toEqual({
       sleeperSuffix: "ppr",
       fpKey: "ppr",
-      borisKey: "ppr",
+      tierKey: "ppr",
     });
   });
 
@@ -27,7 +30,7 @@ describe("scoringKeys", () => {
     expect(result).toEqual({
       sleeperSuffix: "half_ppr",
       fpKey: "half",
-      borisKey: "half",
+      tierKey: "half",
     });
   });
 
@@ -36,10 +39,23 @@ describe("scoringKeys", () => {
     // TypeScript should enforce these are the exact types
     const sleeperSuffix: "ppr" | "half_ppr" | "std" = result.sleeperSuffix;
     const fpKey: "ppr" | "half" | "standard" = result.fpKey;
-    const borisKey: ScoringType = result.borisKey;
+    const tierKey: ScoringType = result.tierKey;
 
     expect(sleeperSuffix).toBe("std");
     expect(fpKey).toBe("standard");
-    expect(borisKey).toBe("std");
+    expect(tierKey).toBe("std");
+  });
+});
+
+describe("scoringTypeFromReceptionPoints", () => {
+  it("maps exact common reception settings", () => {
+    expect(scoringTypeFromReceptionPoints(0)).toBe("std");
+    expect(scoringTypeFromReceptionPoints(0.5)).toBe("half");
+    expect(scoringTypeFromReceptionPoints(1)).toBe("ppr");
+  });
+
+  it("maps custom reception scoring to the closest useful aggregate bucket", () => {
+    expect(scoringTypeFromReceptionPoints(0.25)).toBe("half");
+    expect(scoringTypeFromReceptionPoints(0.69)).toBe("ppr");
   });
 });

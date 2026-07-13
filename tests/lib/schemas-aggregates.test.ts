@@ -201,7 +201,7 @@ describe("Aggregate Schemas", () => {
         position: "QB",
         team: "TB",
         bye_week: 9,
-        borischen: {
+        tiers: {
           std: { rank: 12, tier: 3 },
           ppr: null,
           half: { rank: 15, tier: 4 },
@@ -243,6 +243,39 @@ describe("Aggregate Schemas", () => {
       expect(result.fantasypros?.player_id).toBe("12345");
     });
 
+    it("should normalize legacy borischen key to tiers", () => {
+      const input = {
+        player_id: "12345",
+        name: "john doe",
+        position: "QB",
+        team: "TB",
+        bye_week: 9,
+        borischen: {
+          std: { rank: 12, tier: 3 },
+          ppr: null,
+          half: { rank: 15, tier: 4 },
+        },
+        sleeper: {
+          stats: {
+            adp_std: 45.2,
+            adp_half_ppr: 44.1,
+            adp_ppr: 43.5,
+          },
+          week: null,
+          player: {
+            injury_body_part: null,
+            injury_notes: null,
+            injury_start_date: null,
+            injury_status: null,
+          },
+          updated_at: 1640995200000,
+        },
+        fantasypros: null,
+      };
+      const result = CombinedEntry.parse(input);
+      expect(result.tiers).toEqual(input.borischen);
+    });
+
     it("should reject missing required fields", () => {
       const invalid = {
         player_id: "12345",
@@ -250,7 +283,7 @@ describe("Aggregate Schemas", () => {
         // missing position
         team: "TB",
         bye_week: 9,
-        borischen: {
+        tiers: {
           std: null,
           ppr: null,
           half: null,
@@ -278,7 +311,7 @@ describe("Aggregate Schemas", () => {
         position: "QB",
         team: null,
         bye_week: null,
-        borischen: {
+        tiers: {
           std: null,
           ppr: null,
           half: null,
@@ -319,7 +352,7 @@ describe("Aggregate Schemas", () => {
           position: "QB",
           team: "TB",
           bye_week: 9,
-          borischen: {
+          tiers: {
             std: { rank: 12, tier: 3 },
             ppr: null,
             half: { rank: 15, tier: 4 },
@@ -354,7 +387,7 @@ describe("Aggregate Schemas", () => {
           player_id: "12345",
           name: "john doe",
           // missing required fields
-          borischen: {
+          tiers: {
             std: null,
             ppr: null,
             half: null,

@@ -10,7 +10,7 @@ const sampleCombined = {
     position: "QB",
     team: "KC",
     bye_week: 10,
-    borischen: {
+    tiers: {
       std: null,
       ppr: { rank: 2, tier: 1 },
       half: null,
@@ -45,7 +45,7 @@ const sampleCombined = {
     position: "RB",
     team: "SF",
     bye_week: 9,
-    borischen: {
+    tiers: {
       std: null,
       ppr: { rank: 1, tier: 1 },
       half: null,
@@ -120,7 +120,7 @@ describe("/api/players route", () => {
         position: "QB",
         team: "KC",
         bye_week: 10,
-        borischen: {
+        tiers: {
           std: { rank: 1, tier: 1 },
           ppr: null,
           half: null,
@@ -148,7 +148,7 @@ describe("/api/players route", () => {
         position: "RB",
         team: "SF",
         bye_week: 9,
-        borischen: {
+        tiers: {
           std: { rank: 1, tier: 1 },
           ppr: null,
           half: null,
@@ -176,7 +176,7 @@ describe("/api/players route", () => {
         position: "WR",
         team: "GB",
         bye_week: 11,
-        borischen: {
+        tiers: {
           std: { rank: 1, tier: 1 },
           ppr: null,
           half: null,
@@ -204,7 +204,7 @@ describe("/api/players route", () => {
         position: "TE",
         team: "KC",
         bye_week: 10,
-        borischen: {
+        tiers: {
           std: { rank: 1, tier: 1 },
           ppr: null,
           half: null,
@@ -232,7 +232,7 @@ describe("/api/players route", () => {
         position: "K",
         team: "NE",
         bye_week: 14,
-        borischen: {
+        tiers: {
           std: { rank: 1, tier: 1 },
           ppr: null,
           half: null,
@@ -260,7 +260,7 @@ describe("/api/players route", () => {
         position: "DEF",
         team: null,
         bye_week: null,
-        borischen: {
+        tiers: {
           std: { rank: 1, tier: 1 },
           ppr: null,
           half: null,

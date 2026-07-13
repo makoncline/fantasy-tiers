@@ -10,6 +10,7 @@ import { ROSTER_SLOTS } from "@/lib/schemas";
 import { z } from "zod";
 import { CombinedShard } from "@/lib/schemas-aggregates";
 import { buildPlayersMapFromCombined } from "@/lib/playersFromCombined";
+import { scoringTypeFromReceptionPoints } from "@/lib/scoring";
 
 const RosterSchema = z.object({
   roster_id: z.number(),
@@ -64,13 +65,13 @@ function determineScoringType(
   scoringSettings: LeagueDetails["scoring_settings"]
 ): ScoringType {
   const recPoints = scoringSettings.rec || 0;
-  if (recPoints === 0) return "std";
-  if (recPoints === 0.5) return "half";
-  if (recPoints === 1) return "ppr";
-  console.warn(
-    `Non-standard scoring detected. Defaulting to PPR. Actual reception points: ${recPoints}`
-  );
-  return "std";
+  const scoring = scoringTypeFromReceptionPoints(recPoints);
+  if (![0, 0.5, 1].includes(recPoints)) {
+    console.warn(
+      `Non-standard scoring detected. Using ${scoring.toUpperCase()} aggregate rankings. Actual reception points: ${recPoints}`
+    );
+  }
+  return scoring;
 }
 
 // Remove the EmptyRosterSlot type and const
@@ -334,7 +335,7 @@ export function useLeagueData(leagueId: string, userId: string) {
     ? determineScoringType(leagueData.leagueDetails.scoring_settings)
     : null;
 
-  // Load ALL shard (merged) and map to DraftedPlayer using Borischen tiers
+  // Load ALL shard (merged) and map to DraftedPlayer using Tiers tiers
   const playersQuery = useQuery<Record<string, DraftedPlayer>, Error>({
     queryKey: ["players", leagueScoringType],
     queryFn: async () => {
@@ -362,7 +363,7 @@ export function useLeagueData(leagueId: string, userId: string) {
   const allPlayers = playersQuery.data ? Object.values(playersQuery.data) : [];
   const positionPlayers = allPlayers;
 
-  // Load FLEX shard separately to compute flexRank/flexTier from Borischen FLEX data
+  // Load FLEX shard separately to compute flexRank/flexTier from Tiers FLEX data
   const flexQuery = useQuery<Record<string, DraftedPlayer>, Error>({
     queryKey: ["players-flex", leagueScoringType],
     queryFn: async () => {

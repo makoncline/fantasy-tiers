@@ -15,6 +15,8 @@ export const DraftPickSchema = z.object({
   player_id: z.string(),
 });
 
+export const DraftPicksSchema = z.array(DraftPickSchema);
+
 export type DraftPick = z.infer<typeof DraftPickSchema>;
 
 // Schema for rank and tier data only

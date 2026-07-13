@@ -1,8 +1,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
+import { isUsableProjectionRowCount } from "./fantasyprosProjectionQuality";
 
 type Scoring = "STD" | "HALF" | "PPR";
 type Position = "QB" | "RB" | "WR" | "TE" | "FLEX" | "K" | "DST";
+type FantasyProsInputMode = "draft" | "weekly" | "auto";
 
 type EcrRow = {
   player_id: number;
@@ -25,10 +28,50 @@ type EcrRow = {
 };
 
 type RawJson<T> = { meta: any; rows: T[] };
+type FetchModeMarker = {
+  mode?: string;
+  projectionsFetched?: boolean;
+};
 
 async function readJson<T>(file: string): Promise<T> {
   const txt = await fs.readFile(file, "utf8");
   return JSON.parse(txt) as T;
+}
+
+function parseMode(value: string | undefined): FantasyProsInputMode | null {
+  if (!value) return null;
+  const normalized = value.toLowerCase();
+  if (normalized === "draft") return "draft";
+  if (normalized === "weekly") return "weekly";
+  if (normalized === "auto") return "auto";
+  return null;
+}
+
+export function chooseFantasyProsInputMode({
+  draftEnv,
+  explicitMode,
+  markerMode,
+}: {
+  draftEnv?: string | undefined;
+  explicitMode?: string | undefined;
+  markerMode?: string | undefined;
+}): FantasyProsInputMode {
+  const parsedExplicit = parseMode(explicitMode);
+  if (parsedExplicit) return parsedExplicit;
+  if (/^(1|true|yes)$/i.test(String(draftEnv || ""))) return "draft";
+  const parsedMarker = parseMode(markerMode);
+  if (parsedMarker && parsedMarker !== "auto") return parsedMarker;
+  return "auto";
+}
+
+async function readFetchMode(
+  rawDir: string
+): Promise<FetchModeMarker | undefined> {
+  try {
+    return await readJson<FetchModeMarker>(path.join(rawDir, "fetch-mode.json"));
+  } catch {
+    return undefined;
+  }
 }
 
 async function collectProjections(scoring: Scoring): Promise<Map<string, any>> {
@@ -48,7 +91,16 @@ async function collectProjections(scoring: Scoring): Promise<Map<string, any>> {
     );
     try {
       const raw = await readJson<RawJson<Record<string, string>>>(file);
-      for (const row of raw.rows) {
+      const rows = Array.isArray(raw.rows) ? raw.rows : [];
+      if (!isUsableProjectionRowCount(pos, rows.length)) {
+        console.warn(
+          `Skipping partial FantasyPros projection file ${path.basename(
+            file
+          )}: ${rows.length} rows`
+        );
+        continue;
+      }
+      for (const row of rows) {
         const filename = (row["PlayerFilename"] || "").trim();
         const normKey = `${(row["Player"] || "")
           .toLowerCase()
@@ -71,7 +123,7 @@ async function collectProjections(scoring: Scoring): Promise<Map<string, any>> {
   return result;
 }
 
-async function collectEcr(scoring: Scoring): Promise<{
+async function collectEcr(scoring: Scoring, mode: FantasyProsInputMode): Promise<{
   byId: Map<number, EcrRow>;
   byKey: Map<string, EcrRow>;
   byName: Map<string, EcrRow>;
@@ -118,35 +170,37 @@ async function collectEcr(scoring: Scoring): Promise<{
       if (better(existingByName, row)) byName.set(nameOnly, row);
     }
   };
-  // Prefer weekly files if present (across supported positions)
-  const weeklyGlobs = [
-    `ECR-weekly-${scoring.toLowerCase()}-rb-week-*_raw.json`,
-    `ECR-weekly-${scoring.toLowerCase()}-wr-week-*_raw.json`,
-    `ECR-weekly-${scoring.toLowerCase()}-te-week-*_raw.json`,
-    `ECR-weekly-${scoring.toLowerCase()}-flex-week-*_raw.json`,
-    `ECR-weekly-std-qb-week-*_raw.json`,
-    `ECR-weekly-std-k-week-*_raw.json`,
-    `ECR-weekly-std-dst-week-*_raw.json`,
-  ];
   let weeklyFound = false;
-  try {
-    const files = require("glob").sync(`{${weeklyGlobs.join(",")}}`, {
-      cwd: dir,
-      nodir: true,
-      absolute: true,
-    });
-    for (const f of files) {
-      try {
-        const raw = await readJson<RawJson<EcrRow>>(f);
-        if (Array.isArray(raw?.rows) && raw.rows.length) {
-          ingest(raw.rows);
-          weeklyFound = true;
+  if (mode !== "draft") {
+    // Prefer weekly files if present (across supported positions)
+    const weeklyGlobs = [
+      `ECR-weekly-${scoring.toLowerCase()}-rb-week-*_raw.json`,
+      `ECR-weekly-${scoring.toLowerCase()}-wr-week-*_raw.json`,
+      `ECR-weekly-${scoring.toLowerCase()}-te-week-*_raw.json`,
+      `ECR-weekly-${scoring.toLowerCase()}-flex-week-*_raw.json`,
+      `ECR-weekly-std-qb-week-*_raw.json`,
+      `ECR-weekly-std-k-week-*_raw.json`,
+      `ECR-weekly-std-dst-week-*_raw.json`,
+    ];
+    try {
+      const files = require("glob").sync(`{${weeklyGlobs.join(",")}}`, {
+        cwd: dir,
+        nodir: true,
+        absolute: true,
+      });
+      for (const f of files) {
+        try {
+          const raw = await readJson<RawJson<EcrRow>>(f);
+          if (Array.isArray(raw?.rows) && raw.rows.length) {
+            ingest(raw.rows);
+            weeklyFound = true;
+          }
+        } catch {
+          // ignore
         }
-      } catch {
-        // ignore
       }
-    }
-  } catch {}
+    } catch {}
+  }
 
   if (!weeklyFound) {
     try {
@@ -161,16 +215,26 @@ async function collectEcr(scoring: Scoring): Promise<{
 
 async function main() {
   const outDir = path.resolve("public", "data", "fantasypros");
+  const rawDir = path.join(outDir, "raw");
   const scorings: Scoring[] = ["STD", "HALF", "PPR"];
+  const fetchMode = await readFetchMode(rawDir);
+  const inputMode = chooseFantasyProsInputMode({
+    draftEnv: process.env.DRAFT,
+    explicitMode: process.env.FP_DATA_MODE,
+    markerMode: fetchMode?.mode,
+  });
+  const includeProjections = fetchMode?.projectionsFetched !== false;
 
   // Build indices
   const perScoringProjections = await Promise.all(
-    scorings.map((s) => collectProjections(s))
+    scorings.map((s) => (includeProjections ? collectProjections(s) : new Map()))
   );
-  const perScoringEcr = await Promise.all(scorings.map((s) => collectEcr(s)));
+  const perScoringEcr = await Promise.all(
+    scorings.map((s) => collectEcr(s, inputMode))
+  );
 
   // Merge by filename when possible; also attach ecr by matching player name/team if available via ECR rows
-  const aggregate: any[] = [];
+  const aggregateByPlayerId = new Map<number, any>();
   const keys = new Set<string>();
   // Keys from projections (if present)
   for (const map of perScoringProjections) {
@@ -293,7 +357,23 @@ async function main() {
       rankings,
     };
 
-    aggregate.push(entry);
+    const existing = aggregateByPlayerId.get(entry.player_id);
+    if (existing) {
+      for (const scoringKey of ["standard", "half", "ppr"] as const) {
+        if (
+          !Object.keys(existing.stats[scoringKey] ?? {}).length &&
+          Object.keys(entry.stats[scoringKey] ?? {}).length
+        ) {
+          existing.stats[scoringKey] = entry.stats[scoringKey];
+        }
+        if (!existing.rankings[scoringKey] && entry.rankings[scoringKey]) {
+          existing.rankings[scoringKey] = entry.rankings[scoringKey];
+        }
+      }
+      continue;
+    }
+
+    aggregateByPlayerId.set(entry.player_id, entry);
   }
 
   // Optionally, we could attempt to link ECR by player name later when needed
@@ -302,7 +382,10 @@ async function main() {
   await fs.writeFile(
     outPath,
     JSON.stringify(
-      { updatedAt: new Date().toISOString(), data: aggregate },
+      {
+        updatedAt: new Date().toISOString(),
+        data: Array.from(aggregateByPlayerId.values()),
+      },
       null,
       2
     ),
@@ -310,7 +393,9 @@ async function main() {
   );
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

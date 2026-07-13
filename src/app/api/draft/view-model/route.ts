@@ -2,10 +2,11 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { fetchDraftDetails } from "../../../../lib/draftDetails";
 import { fetchDraftPicks } from "../../../../lib/draftPicks";
-import { scoringTypeSchema } from "../../../../lib/schemas";
-import { loadMergedCombinedAggregates } from "../../../../lib/combinedAggregates";
-import { buildPlayersMapFromCombined } from "../../../../lib/playersFromCombined";
 import { buildDraftViewModel } from "../../../../lib/draftState";
+import { buildAggregateBundle } from "../../../../lib/aggregateBundle";
+import { draftCandidateMapFromBundle } from "../../../../lib/draftCandidate";
+import { buildRosterRequirementsFromDraftSettings } from "../../../../lib/draftHelpers";
+import { parseSleeperScoringType } from "../../../../lib/scoring";
 
 export async function GET(req: NextRequest) {
   const draftId = req.nextUrl.searchParams.get("draft_id");
@@ -20,25 +21,29 @@ export async function GET(req: NextRequest) {
   try {
     const draft = await fetchDraftDetails(draftId);
     const picks = await fetchDraftPicks(draftId);
-    const scoringRaw = draft?.metadata?.scoring_type || "";
-    const scoringParsed = scoringTypeSchema.safeParse(
-      String(scoringRaw).toLowerCase()
-    );
-    const scoring = scoringParsed.success ? scoringParsed.data : "ppr";
-
-    const merged = loadMergedCombinedAggregates();
-    if (!merged || Object.keys(merged).length === 0) {
-      return NextResponse.json(
-        { error: "no combined aggregates found; build aggregates first" },
-        { status: 500 }
-      );
-    }
-    const playersMap = buildPlayersMapFromCombined(merged, scoring);
+    const scoring = parseSleeperScoringType(draft.metadata?.scoring_type);
+    const requirements = buildRosterRequirementsFromDraftSettings(draft.settings);
+    const bundle = buildAggregateBundle({
+      scoring,
+      teams: draft.settings?.teams ?? 0,
+      rosterSlots: {
+        QB: requirements.QB,
+        RB: requirements.RB,
+        WR: requirements.WR,
+        TE: requirements.TE,
+        K: requirements.K,
+        DEF: requirements.DEF,
+        FLEX: requirements.FLEX,
+        BENCH: requirements.BN,
+      },
+    });
+    const playersMap = draftCandidateMapFromBundle(bundle);
     const vm = buildDraftViewModel({
       playersMap,
       draft,
       picks,
       userId,
+      sourceWarnings: bundle.sourceHealth?.warnings ?? [],
     });
     return NextResponse.json(vm);
   } catch (e) {

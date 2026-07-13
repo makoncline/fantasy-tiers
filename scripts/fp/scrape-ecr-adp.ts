@@ -10,6 +10,10 @@ import {
   type FantasyProsEcrItem,
   type Position,
 } from "@/lib/fantasyprosScrape";
+import {
+  validateFantasyProsDraftRows,
+  writeJsonAtomic,
+} from "@/lib/sourceDataQuality";
 
 // Scoring type is imported from shared helper
 
@@ -53,12 +57,8 @@ async function writeCsvAndMeta(
     rowCount: rows.length,
     ...metaExtras,
   };
-  await fs.writeFile(metaPath, JSON.stringify(metadata, null, 2), "utf8");
-  await fs.writeFile(
-    rawPath,
-    JSON.stringify({ raw: rawAny, rows }, null, 2),
-    "utf8"
-  );
+  await writeJsonAtomic(metaPath, metadata);
+  await writeJsonAtomic(rawPath, { raw: rawAny, rows });
 }
 
 async function scrapeOneDraft(scoring: Scoring) {
@@ -75,6 +75,7 @@ async function scrapeOneDraft(scoring: Scoring) {
       })();
 
   const rows = parseEcrRows(ecrData);
+  validateFantasyProsDraftRows(rows);
 
   const metaExtras = {
     sources:

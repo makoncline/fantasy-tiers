@@ -71,8 +71,9 @@ export function ecrToRoundPick(
   pad: boolean = true
 ): string | null {
   if (!ecrOverall || !teams || teams <= 0) return null;
-  const round = Math.ceil(ecrOverall / teams);
-  const pick = ((ecrOverall - 1) % teams) + 1;
+  const overallPick = Math.max(1, Math.round(ecrOverall));
+  const round = Math.ceil(overallPick / teams);
+  const pick = ((overallPick - 1) % teams) + 1;
   const width = String(teams).length;
   const pickStr = pad ? String(pick).padStart(width, "0") : String(pick);
   return `${round}.${pickStr}`;

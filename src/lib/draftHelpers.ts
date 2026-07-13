@@ -29,6 +29,34 @@ export const ZERO_ROSTER_SLOT_COUNTS: Record<RosterSlot, number> = {
 };
 export const MAX_RECOMMENDATIONS_PER_POSITION = 2;
 
+export function buildRosterRequirementsFromDraftSettings(
+  settings: DraftDetails["settings"]
+): Record<RosterSlot, number> {
+  const requirements = {
+    QB: settings?.slots_qb ?? 0,
+    RB: settings?.slots_rb ?? 0,
+    WR: settings?.slots_wr ?? 0,
+    TE: settings?.slots_te ?? 0,
+    K: settings?.slots_k ?? 0,
+    DEF: settings?.slots_def ?? 0,
+    FLEX: settings?.slots_flex ?? 0,
+  };
+  const starterCount =
+    requirements.QB +
+    requirements.RB +
+    requirements.WR +
+    requirements.TE +
+    requirements.K +
+    requirements.DEF +
+    requirements.FLEX;
+  const rounds = settings?.rounds ?? 0;
+
+  return {
+    ...requirements,
+    BN: Math.max(0, rounds - starterCount),
+  };
+}
+
 export function initializeRosters(
   draftDetails: DraftDetails,
   draftedTeams: Record<
@@ -197,6 +225,27 @@ export function calculateTeamNeedsAndCountsForSingleTeam(
 
   // FLEX needs are filled by extras from FLEX-eligible positions
   teamNeeds.FLEX = Math.max(0, rosterRequirements.FLEX - flexToAllocate);
+
+  const starterSlots =
+    rosterRequirements.QB +
+    rosterRequirements.RB +
+    rosterRequirements.WR +
+    rosterRequirements.TE +
+    rosterRequirements.K +
+    rosterRequirements.DEF +
+    rosterRequirements.FLEX;
+  const openStarterSlots =
+    teamNeeds.QB +
+    teamNeeds.RB +
+    teamNeeds.WR +
+    teamNeeds.TE +
+    teamNeeds.K +
+    teamNeeds.DEF +
+    teamNeeds.FLEX;
+  const filledStarterSlots = Math.max(0, starterSlots - openStarterSlots);
+  const benchUsed = Math.max(0, teamDraftedPlayers.length - filledStarterSlots);
+  positionCounts.BN = benchUsed;
+  teamNeeds.BN = Math.max(0, rosterRequirements.BN - benchUsed);
 
   return {
     positionNeeds: teamNeeds,

@@ -32,6 +32,7 @@ export async function fetchAggregatesBundle(
     slots_k: params.roster.K.toString(),
     slots_def: params.roster.DEF.toString(),
     slots_flex: params.roster.FLEX.toString(),
+    slots_bench: params.roster.BENCH.toString(),
   });
 
   const response = await fetch(

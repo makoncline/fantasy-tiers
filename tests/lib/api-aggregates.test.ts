@@ -24,7 +24,7 @@ describe("API Aggregates", () => {
           position: "QB",
           team: "TB",
           bye_week: 9,
-          borischen: {
+          tiers: {
             std: { rank: 12, tier: 3 },
             ppr: null,
             half: { rank: 15, tier: 4 },
@@ -99,7 +99,7 @@ describe("API Aggregates", () => {
           position: "QB",
           team: "TB",
           bye_week: 9,
-          borischen: {
+          tiers: {
             std: { rank: 12, tier: 3 },
             ppr: null,
             half: { rank: 15, tier: 4 },
@@ -157,7 +157,7 @@ describe("API Aggregates", () => {
               position === "ALL" ? "QB" : position === "FLEX" ? "RB" : position,
             team: "TB",
             bye_week: 9,
-            borischen: { std: null, ppr: null, half: null },
+            tiers: { std: null, ppr: null, half: null },
             sleeper: {
               stats: {
                 adp_std: 45.2,

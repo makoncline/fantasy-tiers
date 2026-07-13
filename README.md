@@ -1,198 +1,95 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Fantasy Tiers
 
-## Getting Started
+Personal fantasy-football draft and league-management tools built with Next.js.
+The main surfaces are `/draft-assistant`, `/mock-draft`, `/league-manager`, and
+`/rating-history`.
 
-First, run the development server:
+Read `docs/project-context.md` before changing data or draft behavior. Read
+`docs/draft-assistant-runbook.md` before controlling a Sleeper mock.
+
+## Local Development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+pnpm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app defaults rating history to the ignored local database at
+`data/fantasy-history.db` outside production.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Draft Data
 
-## Data Management
+The draft assistant uses 2026 FantasyPros ECR, Sleeper ADP/player data, tiers
+generated locally from ECR, and a compact Footballguys public-default comparison
+artifact. Draft recommendations do not require point projections. Raw provider
+responses remain local and ignored by git.
 
-### Automated Data Updates
-
-This project includes an automated workflow that fetches fresh fantasy football data every night at 2 AM UTC.
-
-#### What's Updated
-
-- **FantasyPros Rankings**: Player rankings and projections
-- **Sleeper Projections**: Weekly projections and player metadata
-- **Boris Chen Rankings**: Expert rankings across different scoring systems
-- **Aggregated Data**: Combined rankings and statistics
-
-#### Manual Data Updates
-
-You can also trigger data updates manually:
+Run a complete refresh with:
 
 ```bash
-# Fetch all data sources
-pnpm run fetch:all
-
-# Build aggregates from fetched data
+SEASON=2026 DRAFT=true FP_FETCH_PROJECTIONS=false pnpm run fetch:all
 pnpm run agg:all
-
-# Validate data integrity
-pnpm run validate:aggregates:ci
+SEASON=2026 pnpm run validate:aggregates:ci
 ```
 
-### FantasyPros data modes: Draft vs Weekly
+The semantic validator writes
+`public/data/aggregate/quality-report.json` and blocks partial or stale source
+responses before publication. Position tables always consume their dedicated
+QB/RB/WR/TE/K/DEF/FLEX shards, not filtered ALL data.
 
-You can build two flavors of FantasyPros data:
+## Automated Updates
 
-- Draft (preseason cheat sheets) — used before Week 1
-- Weekly (current-week ECR by position) — used in-season
+`.github/workflows/fetch-data.yml` runs at 12:00 and 21:00 UTC and can also be
+started manually. It:
 
-#### Build the Draft dataset (preseason)
+1. Fetches 2026 draft ECR and Sleeper data.
+2. Generates local tiers and aggregate shards.
+3. Runs semantic quality checks and focused contract tests.
+4. Writes the snapshot to persistent rating history.
+5. Commits only validated aggregate artifacts.
+6. Waits for Vercel to serve that exact commit and verifies data health.
+
+The workflow aborts if `main` advances while it is running. It never rebases
+stale generated output over newer source code.
+
+## Rating History
+
+Production uses `fantasy-tiers-history` in the dedicated `fantasy-tiers` Turso
+group. Configure the same database URL in GitHub Actions and Vercel, using a
+group-scoped write token for Actions and a separate group-scoped read-only token
+for Vercel. Do not use the Turso `default` group or credentials shared with
+another application:
+
+```text
+FANTASY_HISTORY_DATABASE_URL
+FANTASY_HISTORY_DATABASE_AUTH_TOKEN
+```
+
+Useful commands:
 
 ```bash
-# 1) Fetch FantasyPros in Draft mode only
-DRAFT=true pnpm run fetch:fp
-
-# 2) Build FantasyPros aggregate and combined shards
-pnpm run agg:all
+pnpm run history:migrate
+pnpm run history:ingest:aggregates
+pnpm run history:backfill
 ```
 
-What this does:
+`history:backfill` defaults to the ignored local SQLite database as its source
+and requires explicit remote target credentials. It refuses to merge into a
+partially populated target because source-run and version IDs must remain
+consistent.
 
-- Scrapes FantasyPros draft projections and draft ECR for STD/HALF/PPR
-- Writes raw files under `public/data/fantasypros/raw/`
-- Writes `public/data/fantasypros/fantasypros_aggregate.json`
-- Rebuilds per-position combined shards under `public/data/aggregate/`
+See `docs/deployment-runbook.md` for provisioning, verification, and recovery.
 
-#### Build the Weekly dataset (in-season, current week)
+## Verification
 
 ```bash
-# 1) Fetch FantasyPros weekly data (current week only)
-pnpm run fetch:fp
-
-# 2) Build FantasyPros aggregate and combined shards
-pnpm run agg:all
+pnpm test
+pnpm run typecheck
+pnpm run lint
+pnpm run build
+pnpm run e2e:ci
 ```
 
-Notes:
-
-- Weekly fetch scrapes current-week ECR per position/scoring from FantasyPros URLs (no `?week=` query).
-- Sidecar metadata JSONs include `accessed` (as `last_scraped`) and `url`.
-- A summary `public/data/aggregate/metadata.json` is produced during combine with per-scoring/per-position metadata:
-  - `last_updated`, `total_experts`, `scoring`, `position_id`, `week`, `year`, `last_scraped`, `url`.
-
-Optional (advanced): Fetch a specific week for ad‑hoc checks
-
-```bash
-# Example: RB PPR Week 2 (writes raw weekly files only)
-node --import=tsx scripts/fp/scrape-ecr-adp.ts weekly RB PPR 2
-
-# Then rebuild aggregates if desired
-pnpm run agg:fp && pnpm run agg:combine
-```
-
-#### GitHub Actions Workflow
-
-The automated workflow (`.github/workflows/fetch-data.yml`) runs nightly at 2 AM UTC and:
-
-1. Fetches fresh data from all sources (FantasyPros, Sleeper, Boris Chen)
-2. Builds aggregate rankings across all scoring systems (Standard, PPR, Half-PPR)
-3. Validates data integrity using strict type checking
-4. Commits only the processed aggregate data to git (raw provider data cached locally)
-
-**Monitoring the Workflow:**
-
-- Check the Actions tab in GitHub for workflow runs
-- Look for commits with messages starting with "🤖 Automated data update"
-- The workflow will skip commits if no data changes are detected
-
-**Manual Triggers:**
-
-- Go to Actions → "Fetch Fantasy Football Data" → "Run workflow"
-- Or push to the repository to trigger on schedule
-
-**Configuration:**
-
-- Schedule: Every night at 2 AM UTC (adjustable in the workflow file)
-- Data sources: FantasyPros, Sleeper, Boris Chen
-- Scoring systems: Standard, PPR, Half-PPR
-
-### Data Architecture
-
-#### Data Flow Pipeline
-
-```
-Raw Data Sources → Validation → Aggregation → API → Hooks → UI
-     ↓                ↓           ↓         ↓      ↓       ↓
-  FantasyPros      Zod schemas  Scripts   Routes  React   Components
-  + Sleeper       + TypeScript + Combine + Server + Query + Tables
-  + Boris Chen     validation   + Clean  + Cache + Client + Filters
-```
-
-#### Key Components
-
-**Schemas & Types** (`src/lib/schemas*.ts`):
-
-- `PositionEnum`: QB, RB, WR, TE, K, DEF only (no individual positions like FB, CB)
-- `FantasyProsCombined`: Requires `player_id: z.string().min(1)`
-- `CombinedEntry`: Uses `PositionEnum` for type safety
-- Runtime validation with Zod at all boundaries
-
-**Data Sources**:
-
-- **ALL file**: Complete player dataset from all sources (used by `/api/players`)
-- **FLEX file**: Dedicated FLEX rankings (not derived from RB/WR/TE filtering)
-- **Position files**: QB, RB, WR, TE, K, DEF (individual position rankings)
-
-**Important**: FLEX and ALL data files should NOT be made by combining other position-specific data files. They contain unique rankings and projections specific to their context.
-
-#### Position Tables Data Sources
-
-Each position table **MUST** use its own dedicated data file. Do NOT derive per-position tables by filtering the ALL data file:
-
-- QB: `public/data/aggregate/QB-combined-aggregate.json`
-- RB: `public/data/aggregate/RB-combined-aggregate.json`
-- WR: `public/data/aggregate/WR-combined-aggregate.json`
-- TE: `public/data/aggregate/TE-combined-aggregate.json`
-- K: `public/data/aggregate/K-combined-aggregate.json`
-- DEF: `public/data/aggregate/DEF-combined-aggregate.json`
-- FLEX: `public/data/aggregate/FLEX-combined-aggregate.json`
-- ALL: `public/data/aggregate/ALL-combined-aggregate.json`
-
-**Why?** Each file contains unique rankings, projections, and context-specific data that cannot be accurately derived by filtering other data files.
-
-#### Development Commands
-
-```bash
-# Rebuild all aggregates from source data
-pnpm agg:all
-
-# Validate aggregate data integrity
-pnpm validate:aggregates
-
-# Full pipeline (rebuild + validate + test + lint)
-pnpm agg:all && pnpm validate:aggregates && pnpm test && pnpm lint
-```
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+`GET /api/health/data` is read-only and uncached. It reports the deployed commit,
+committed source quality, and whether rating history is configured/queryable.
+It does not expose credentials, database URLs, SQL, or provider payloads.

@@ -3,8 +3,10 @@ import {
   fetchSleeperUserByUsername,
   fetchSleeperUserById,
   fetchDraftsForUserYear,
+  fetchSleeperNflState,
   type SleeperUser,
   type SleeperDraftSummary,
+  type SleeperNflState,
 } from "@/lib/sleeper";
 
 export function useSleeperUserByUsername(
@@ -50,5 +52,19 @@ export function useSleeperDrafts(
     },
     enabled: Boolean(userId) && enabled,
     staleTime: 60 * 1000,
+  });
+}
+
+export function useSleeperNflState(opts?: { enabled?: boolean }) {
+  const enabled = opts?.enabled ?? true;
+  return useQuery<SleeperNflState, Error>({
+    queryKey: ["sleeper:state", "nfl"],
+    queryFn: fetchSleeperNflState,
+    enabled,
+    staleTime: Infinity,
+    gcTime: 6 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
   });
 }

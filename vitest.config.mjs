@@ -14,7 +14,7 @@ export default defineConfig({
         test: {
           environment: "node",
           include: ["**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
-          exclude: ["tests/browser/**/*"],
+          exclude: ["tests/browser/**/*", "**/*.integration.test.*"],
         },
       },
       {
@@ -22,6 +22,7 @@ export default defineConfig({
         test: {
           environment: "browser",
           include: ["tests/browser/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+          exclude: ["**/*.integration.test.*"],
           browser: {
             enabled: true,
             name: "chromium",

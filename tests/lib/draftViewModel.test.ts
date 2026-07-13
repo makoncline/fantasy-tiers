@@ -29,8 +29,8 @@ describe("buildDraftViewModel", () => {
     expect(vm.topAvailablePlayersByPosition.WR.length).toBeLessThanOrEqual(2);
     // user roster exists for slot 3 (even if empty)
     expect(vm.userRoster).toBeDefined();
-    // recommendations present (may be null if no data)
-    expect("nextPickRecommendations" in vm).toBe(true);
+    expect("recommendationBoard" in vm).toBe(true);
+    expect("nextPickRecommendations" in vm).toBe(false);
+    expect("dynamicRecommendations" in vm).toBe(false);
   });
 });
-

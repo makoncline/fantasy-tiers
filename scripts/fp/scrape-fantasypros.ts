@@ -1,7 +1,10 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { load, type CheerioAPI } from "cheerio";
 import dayjs from "dayjs";
+import { buildFantasyProsHeaders } from "../../src/lib/fantasyprosRequest";
+import { assertUsableProjectionRows } from "./fantasyprosProjectionQuality";
 
 type Position = "QB" | "RB" | "WR" | "TE" | "FLEX" | "K" | "DST";
 type Scoring = "STD" | "PPR" | "HALF";
@@ -24,14 +27,7 @@ function buildUrl(position: Position, scoring: Scoring, week: string): string {
 
 async function fetchHtml(url: string): Promise<string> {
   const res = await fetch(url, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36",
-      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Accept-Language": "en-US,en;q=0.9",
-      Referer: "https://www.fantasypros.com/",
-      "Cache-Control": "no-cache",
-    },
+    headers: buildFantasyProsHeaders(),
   });
   if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
   return res.text();
@@ -47,14 +43,22 @@ function normalizeHeader(text: string): string {
 
 type ColumnSpec = { group: string; label: string; key: string };
 
-function parseColumns($: CheerioAPI, table: any): ColumnSpec[] {
+function buildColumnKey(label: string, group: string, duplicateLabels: Set<string>): string {
+  const labelKey = label.toUpperCase();
+  if (labelKey === "FPTS") return labelKey;
+  const groupKey = group.toUpperCase();
+  if (groupKey && duplicateLabels.has(labelKey)) return `${groupKey}_${labelKey}`;
+  return labelKey;
+}
+
+export function parseColumns($: CheerioAPI, table: any): ColumnSpec[] {
   const thead = $(table).find("thead");
   const headerRows = thead.find("tr").toArray();
   if (!headerRows.length) return [];
 
   // First row often contains group headers with colspans
   const firstRow = $(headerRows[0]);
-  const groupCells = firstRow.find("th").toArray();
+  const groupCells = firstRow.find("th,td").toArray();
   const groupMap: string[] = [];
 
   groupCells.forEach((th, index) => {
@@ -79,6 +83,16 @@ function parseColumns($: CheerioAPI, table: any): ColumnSpec[] {
     if (index === 0 && (/player/i.test(text) || !text)) return;
     if (text) statLabels.push(text);
   });
+  const labelCounts = statLabels.reduce<Record<string, number>>((acc, label) => {
+    const key = label.toUpperCase();
+    acc[key] = (acc[key] ?? 0) + 1;
+    return acc;
+  }, {});
+  const duplicateLabels = new Set(
+    Object.entries(labelCounts)
+      .filter(([, count]) => count > 1)
+      .map(([label]) => label)
+  );
 
   // Build ColumnSpec list mapping each stat to its group
   const columns: ColumnSpec[] = [];
@@ -87,7 +101,7 @@ function parseColumns($: CheerioAPI, table: any): ColumnSpec[] {
     if (!label) continue;
     const group = groupMap[i] || "";
     const groupKey = group ? (group.split(/\s+/)[0] || "").toUpperCase() : "";
-    const key = `${groupKey ? groupKey + "_" : ""}${label.toUpperCase()}`;
+    const key = buildColumnKey(label, groupKey, duplicateLabels);
     columns.push({ group: groupKey, label, key });
   }
   return columns;
@@ -95,7 +109,7 @@ function parseColumns($: CheerioAPI, table: any): ColumnSpec[] {
 
 type Row = Record<string, string>;
 
-function parseTable(html: string) {
+export function parseTable(html: string) {
   const $ = load(html);
   // Identify the main projections table: use the first big table on the page
   const table = $("table").first();
@@ -117,7 +131,7 @@ function parseTable(html: string) {
     }
     const name = linkEl.text().trim();
     const href = linkEl.attr("href") || "";
-    const filenameMatch = href.match(/\/players\/([^\/]+\.php)/);
+    const filenameMatch = href.match(/\/(?:players|projections)\/([^\/]+\.php)/);
     const filename = filenameMatch ? filenameMatch[1] : "";
     // Extract text nodes (excluding child divs and links) to find team code
     const textOnly = $(firstTd)
@@ -264,6 +278,13 @@ async function scrapeOne(
   const url = buildUrl(position, scoring, week);
   const html = await fetchHtml(url);
   const { columns, rows } = parseTable(html);
+  assertUsableProjectionRows({
+    position,
+    scoring,
+    week,
+    rowCount: rows.length,
+    html,
+  });
   const sources = inferSourcesCount(html);
   const date = inferDate(html);
   await writeOutputs({
@@ -299,8 +320,10 @@ async function main() {
   console.log("Done.");
 }
 
-main().catch((err) => {
-  // eslint-disable-next-line no-console
-  console.error(err);
-  process.exit(1);
-});
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
+  main().catch((err) => {
+    // eslint-disable-next-line no-console
+    console.error(err);
+    process.exit(1);
+  });
+}

@@ -1,70 +1,108 @@
-#!/usr/bin/env -S node --experimental-strip-types --enable-source-maps
-/**
- * CI validation script for aggregate data files
- * This script validates that all aggregate JSON files conform to the strict schema
- * and can be used as a CI step to prevent regressions.
- */
-
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { CombinedShard } from "../../src/lib/schemas-aggregates";
+import { z } from "zod";
+import {
+  buildDraftDataQualityReport,
+  DraftQualityMetadataSchema,
+  DraftDataQualityReportSchema,
+  type DraftDataQualityReport,
+} from "../../src/lib/draftDataQuality";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const POSITIONS = ["ALL", "QB", "RB", "WR", "TE", "K", "DEF", "FLEX"] as const;
 
-function readJson(p: string) {
-  return JSON.parse(fs.readFileSync(p, "utf8"));
+const FetchModeSchema = z.object({
+  mode: z.string(),
+  season: z.string().optional(),
+});
+
+function readJson(filePath: string): unknown {
+  return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
-function validateAggregateFiles(): { success: boolean; errors: string[] } {
-  const errors: string[] = [];
+function writeReportAtomic(filePath: string, report: DraftDataQualityReport): void {
+  const temporaryPath = `${filePath}.${process.pid}.tmp`;
+  fs.writeFileSync(temporaryPath, JSON.stringify(report, null, 2), "utf8");
+  fs.renameSync(temporaryPath, filePath);
+}
+
+function appendGithubSummary(report: DraftDataQualityReport): void {
+  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+  if (!summaryPath) return;
+  const rows = Object.entries(report.scoring)
+    .map(
+      ([scoring, quality]) =>
+        `| ${scoring.toUpperCase()} | ${quality.ecrRows} | ${quality.sleeperAdpCovered}/${quality.topCandidates} | ${quality.tierCovered}/${quality.topCandidates} | ${quality.expertsIncluded ?? "-"}/${quality.expertsAvailable ?? "-"} |`
+    )
+    .join("\n");
+  fs.appendFileSync(
+    summaryPath,
+    `## Draft data quality\n\nStatus: **${report.status}**  \nGenerated: ${report.generatedAt}\n\n| Scoring | FP ECR | Sleeper ADP | Tiers | Experts |\n| --- | ---: | ---: | ---: | ---: |\n${rows}\n\n${report.warnings.map((warning) => `- Warning: ${warning}`).join("\n")}\n`,
+    "utf8"
+  );
+}
+
+export function validateAggregateFiles(root: string): DraftDataQualityReport {
+  const aggregateDir = path.join(root, "public/data/aggregate");
+  const reportPath = path.join(aggregateDir, "quality-report.json");
+  const fetchModePath = path.join(
+    root,
+    "public/data/fantasypros/raw/fetch-mode.json"
+  );
+  const metadataPath = path.join(aggregateDir, "metadata.json");
+  const previous = fs.existsSync(reportPath)
+    ? DraftDataQualityReportSchema.parse(readJson(reportPath))
+    : null;
+  const fetchMode = FetchModeSchema.parse(readJson(fetchModePath));
+  const shards = Object.fromEntries(
+    POSITIONS.map((position) => {
+      const filePath = path.join(
+        aggregateDir,
+        `${position}-combined-aggregate.json`
+      );
+      if (!fs.existsSync(filePath)) {
+        throw new Error(`Missing aggregate file: ${path.basename(filePath)}`);
+      }
+      return [position, readJson(filePath)];
+    })
+  );
+  const report = buildDraftDataQualityReport({
+    mode: fetchMode.mode,
+    season: process.env.SEASON ?? fetchMode.season ?? "",
+    generatedAt: new Date(),
+    shards,
+    metadata: DraftQualityMetadataSchema.parse(readJson(metadataPath)),
+    previous,
+  });
+  writeReportAtomic(reportPath, report);
+  appendGithubSummary(report);
+  return report;
+}
+
+function main(): void {
   const root = path.resolve(__dirname, "../../");
-  const dir = path.join(root, "public/data/aggregate");
-  const shards = ["ALL", "QB", "RB", "WR", "TE", "K", "DEF", "FLEX"];
-
-  console.log("🔍 Validating aggregate data files...");
-
-  for (const s of shards) {
-    const fp = path.join(dir, `${s}-combined-aggregate.json`);
-
-    if (!fs.existsSync(fp)) {
-      errors.push(`Missing aggregate file: ${s}-combined-aggregate.json`);
-      continue;
-    }
-
-    try {
-      const data = readJson(fp);
-      CombinedShard.parse(data);
-      console.log(`✅ ${s} shard validated successfully`);
-    } catch (error: any) {
-      errors.push(`${s} shard validation failed: ${error.message}`);
-      console.log(`❌ ${s} shard validation failed`);
-    }
+  const report = validateAggregateFiles(root);
+  for (const [position, count] of Object.entries(report.shards)) {
+    console.log(`PASS ${position}: ${count} rows`);
   }
-
-  return {
-    success: errors.length === 0,
-    errors,
-  };
-}
-
-async function main() {
-  const result = validateAggregateFiles();
-
-  if (result.success) {
-    console.log("\n🎉 All aggregate files passed validation!");
-    process.exit(0);
-  } else {
-    console.log("\n💥 Aggregate validation failed:");
-    result.errors.forEach((error) => console.log(`  - ${error}`));
-    console.log("\nTo regenerate valid aggregate files, run:");
-    console.log("  pnpm run agg:combined");
+  for (const [scoring, quality] of Object.entries(report.scoring)) {
+    console.log(
+      `PASS ${scoring}: ${quality.ecrRows} ECR, ${quality.sleeperAdpCovered}/${quality.topCandidates} real ADP, ${quality.tierCovered}/${quality.topCandidates} tiers`
+    );
+  }
+  report.warnings.forEach((warning) => console.warn(`WARNING ${warning}`));
+  if (report.errors.length > 0) {
+    report.errors.forEach((error) => console.error(`BLOCKED ${error}`));
     process.exit(1);
   }
+  console.log("All aggregate files passed semantic draft-data validation.");
 }
 
-main().catch((e) => {
-  console.error("Unexpected error during validation:", e);
+try {
+  main();
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
-});
+}

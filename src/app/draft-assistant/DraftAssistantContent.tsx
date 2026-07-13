@@ -8,7 +8,6 @@ import {
   DraftDataProvider,
   useDraftData,
 } from "@/app/draft-assistant/_contexts/DraftDataContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import DraftInfo from "@/app/draft-assistant/_components/DraftInfo";
 
@@ -21,8 +20,8 @@ const DraftAssistantShell: React.FC = () => {
 
   return (
     <DraftDataProvider initialUserId={userId} initialDraftId={draftId}>
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Fantasy Draft Assistant</h1>
+      <div className="p-4 md:p-6">
+        <h1 className="mb-3 text-xl font-bold">Draft Assistant</h1>
         <DraftAssistantInner
           userId={userId}
           draftId={draftId}
@@ -57,63 +56,31 @@ const DraftAssistantInner: React.FC<{
     <>
       {!hasUser && <DraftAssistantForm step="user" />}
 
-      {hasUser && (
-        <Card className="mb-4">
-          <CardHeader>
-            <CardTitle>Selected User</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              className="flex items-center justify-between"
-              data-testid="selected-user-card"
-            >
-              <div>
-                <div className="font-medium" data-testid="selected-username">
-                  {loading.user ? "Loading..." : user?.username ?? "—"}
-                </div>
-                <div
-                  className="text-sm text-muted-foreground"
-                  data-testid="selected-user-id"
-                >
-                  userId: {userId}
-                </div>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={contextClearUser}
-              >
-                Clear user
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {hasUser && !hasDraft && <DraftAssistantForm step="draft" />}
 
       {hasDraft && (
-        <Card className="mb-4">
-          <CardHeader>
-            <CardTitle>Selected Draft</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              className="flex items-start justify-between gap-4 text-sm"
-              data-testid="selected-draft-card"
-            >
-              <div className="grow">
+        <div
+          className="mb-4 flex flex-col gap-3 border-y py-3 text-sm md:flex-row md:items-center md:justify-between"
+          data-testid="draft-context-bar"
+        >
+          <div className="flex min-w-0 flex-col gap-1 md:flex-row md:items-center md:gap-4">
+            <div className="flex items-center gap-2" data-testid="selected-user-card">
+              <span className="font-medium" data-testid="selected-username">
+                {loading.user ? "Loading..." : user?.username ?? "—"}
+              </span>
+              <Button type="button" variant="link" size="sm" className="h-auto p-0" onClick={contextClearUser}>
+                Change
+              </Button>
+            </div>
+            <div className="min-w-0" data-testid="selected-draft-card">
                 <DraftInfo
                   name={
                     loading.draftDetails
                       ? "Loading..."
                       : draftDetails?.metadata?.name ||
                         selectedDraft?.metadata?.name ||
-                        draftDetails?.draft_id ||
-                        selectedDraft?.draft_id ||
-                        "—"
+                        `${draftDetails?.season ?? "2026"} draft`
                   }
-                  draftId={draftDetails?.draft_id || draftId}
                   {...(draftDetails?.type && { type: draftDetails.type })}
                   {...(draftDetails?.settings?.teams && {
                     teams: draftDetails.settings.teams,
@@ -137,20 +104,12 @@ const DraftAssistantInner: React.FC<{
                     scoringType: draftDetails.metadata.scoring_type,
                   })}
                 />
-              </div>
-              <div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={contextClearDraft}
-                  data-testid="clear-draft"
-                >
-                  Clear draft
-                </Button>
-              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={contextClearDraft} data-testid="clear-draft">
+            Change draft
+          </Button>
+        </div>
       )}
 
       {hasUser && hasDraft && <DraftAssistantContentComponent />}

@@ -125,8 +125,8 @@ describe("filterAvailableRows", () => {
       position: "RB",
       team: "IND",
       bye_week: 14,
-      bc_rank: 1,
-      bc_tier: 1,
+      tier_rank: 1,
+      tier_level: 1,
       sleeper_rank_overall: 1,
       fp_rank_pos: 1,
       fp_pts: 350,
@@ -139,8 +139,8 @@ describe("filterAvailableRows", () => {
       position: "RB",
       team: "SF",
       bye_week: 9,
-      bc_rank: 2,
-      bc_tier: 1,
+      tier_rank: 2,
+      tier_level: 1,
       sleeper_rank_overall: 2,
       fp_rank_pos: 2,
       fp_pts: 340,
@@ -153,8 +153,8 @@ describe("filterAvailableRows", () => {
       position: "RB",
       team: "LAC",
       bye_week: 8,
-      bc_rank: 3,
-      bc_tier: 1,
+      tier_rank: 3,
+      tier_level: 1,
       sleeper_rank_overall: 3,
       fp_rank_pos: 3,
       fp_pts: 330,
@@ -167,8 +167,8 @@ describe("filterAvailableRows", () => {
       position: "RB",
       team: "TB",
       bye_week: 11,
-      bc_rank: undefined,
-      bc_tier: undefined,
+      tier_rank: undefined,
+      tier_level: undefined,
       sleeper_rank_overall: undefined,
       fp_rank_pos: undefined,
       fp_pts: undefined,
@@ -196,7 +196,7 @@ describe("filterAvailableRows", () => {
     expect(result).toHaveLength(4); // 3 ranked players + 1 drafted unranked player
     // All players should either be ranked OR drafted (drafted unranked players are allowed)
     expect(
-      result.every((p) => typeof p.bc_rank === "number" || p.picked === true)
+      result.every((p) => typeof p.tier_rank === "number" || p.picked === true)
     ).toBe(true);
     expect(result.find((p) => p.name === "Unranked Player")).toBeDefined(); // Should be included as drafted unranked
   });
@@ -230,8 +230,8 @@ describe("filterAvailableRows", () => {
         player_id: "5",
         name: "Cooper Kupp",
         position: "WR",
-        bc_rank: 4,
-        bc_tier: 1,
+        tier_rank: 4,
+        tier_level: 1,
         picked: false,
       },
       {
@@ -239,8 +239,8 @@ describe("filterAvailableRows", () => {
         player_id: "6",
         name: "Patrick Mahomes",
         position: "QB",
-        bc_rank: 5,
-        bc_tier: 1,
+        tier_rank: 5,
+        tier_level: 1,
         picked: false,
       },
     ];
@@ -255,15 +255,15 @@ describe("filterAvailableRows", () => {
     expect(result.find((p) => p.position === "WR")).toBeDefined();
   });
 
-  it("should sort by Boris rank ascending", () => {
+  it("should sort by Tier rank ascending", () => {
     const result = filterAvailableRows(mockPlayers, {
       showDrafted: true,
       showUnranked: true,
     });
 
-    expect(result[0].bc_rank).toBe(1); // Jonathan Taylor
-    expect(result[1].bc_rank).toBe(2); // Christian McCaffrey
-    expect(result[2].bc_rank).toBe(3); // Austin Ekeler
+    expect(result[0].tier_rank).toBe(1); // Jonathan Taylor
+    expect(result[1].tier_rank).toBe(2); // Christian McCaffrey
+    expect(result[2].tier_rank).toBe(3); // Austin Ekeler
   });
 
   it("should handle empty drafted sets", () => {
