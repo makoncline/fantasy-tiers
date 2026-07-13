@@ -14,7 +14,7 @@ test("home page links to the draft assistant", async ({ page }) => {
   await draftLink.click();
   await expect(page).toHaveURL(/\/draft-assistant$/);
   await expect(
-    page.getByRole("heading", { name: "Fantasy Draft Assistant" })
+    page.getByRole("heading", { name: "Draft Assistant" })
   ).toBeVisible();
 });
 
