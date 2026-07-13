@@ -8,6 +8,7 @@ import {
   resolveRatingHistoryDatabaseConfig,
 } from "../../src/lib/ratingHistory/db";
 import { migrateRatingHistoryDb } from "../../src/lib/ratingHistory/migrate";
+import { readRatingHistoryDashboardSnapshot } from "../../src/lib/ratingHistory/dashboardSnapshot";
 import {
   historyPlayers,
   playerRatingVersions,
@@ -20,6 +21,13 @@ function tempDatabase() {
 }
 
 describe("rating history deployment", () => {
+  it("ships a validated dashboard snapshot for request-time reads", () => {
+    const snapshot = readRatingHistoryDashboardSnapshot();
+    expect(snapshot.totals.totalPlayers).toBeGreaterThan(0);
+    expect(snapshot.latestSourceRuns.length).toBeGreaterThan(0);
+    expect(snapshot.coverage.length).toBeGreaterThan(0);
+  });
+
   it("uses local storage only outside production and requires remote credentials in production", () => {
     expect(resolveRatingHistoryDatabaseConfig({ NODE_ENV: "test" })).toMatchObject({
       available: true,

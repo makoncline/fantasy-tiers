@@ -20,6 +20,7 @@ const TotalsRow = z.object({
   latestFetchedAt: NullableText,
   latestEffectiveFrom: NullableText,
 });
+const TotalsWithoutAbsentRow = TotalsRow.omit({ currentAbsentRatings: true });
 
 const LatestSourceRunRow = z.object({
   id: Count,
@@ -108,6 +109,13 @@ export type RatingHistoryDashboard = {
   missingWithPrior: Array<z.infer<typeof MissingWithPriorRow>>;
 };
 
+export const RatingHistoryDashboardSchema = z.object({
+  totals: TotalsRow,
+  latestSourceRuns: LatestSourceRunRow.array(),
+  coverage: CoverageRow.array(),
+  missingWithPrior: MissingWithPriorRow.array(),
+});
+
 export type PlayerRatingHistory = {
   query: string;
   searchResults: Array<z.infer<typeof PlayerSearchRow>>;
@@ -115,11 +123,46 @@ export type PlayerRatingHistory = {
   timeline: Array<z.infer<typeof PlayerTimelineRow>>;
 };
 
+function getCoverageRows(db: RatingHistoryDatabase, source: string) {
+  return db.all(sql`
+    SELECT
+      source,
+      mode,
+      scoring,
+      position_scope AS positionScope,
+      COUNT(*) AS currentCount,
+      SUM(CASE WHEN source_status = 'present' THEN 1 ELSE 0 END)
+        AS presentCount,
+      SUM(CASE WHEN source_status = 'absent' THEN 1 ELSE 0 END)
+        AS absentCount,
+      MAX(effective_from) AS latestEffectiveFrom
+    FROM player_rating_versions
+    WHERE is_current = 1
+      AND source = ${source}
+    GROUP BY source, mode, scoring, position_scope
+    ORDER BY
+      mode,
+      CASE scoring
+        WHEN 'std' THEN 1
+        WHEN 'half' THEN 2
+        WHEN 'ppr' THEN 3
+        ELSE 4
+      END,
+      position_scope
+  `);
+}
+
 export async function getRatingHistoryDashboard(
   db: RatingHistoryDatabase
 ): Promise<RatingHistoryDashboard> {
-  const [totalRows, latestSourceRunRows, coverageRows, missingWithPriorRows] =
-    await Promise.all([
+  const [
+    totalRows,
+    latestSourceRunRows,
+    fantasyProsCoverageRows,
+    sleeperCoverageRows,
+    tiersCoverageRows,
+    missingWithPriorRows,
+  ] = await Promise.all([
       db.all(sql`
         SELECT
           (SELECT COUNT(*) FROM history_players) AS totalPlayers,
@@ -147,6 +190,7 @@ export async function getRatingHistoryDashboard(
                 scoring,
                 position_scope
               FROM player_rating_versions
+              WHERE is_current = 0
               GROUP BY
                 player_id,
                 source,
@@ -155,15 +199,8 @@ export async function getRatingHistoryDashboard(
                 week,
                 scoring,
                 position_scope
-              HAVING COUNT(*) > 1
             )
           ) AS changedRatingScopes,
-          (
-            SELECT COUNT(*)
-            FROM player_rating_versions
-            WHERE is_current = 1
-              AND source_status = 'absent'
-          ) AS currentAbsentRatings,
           (SELECT MAX(fetched_at) FROM source_runs) AS latestFetchedAt,
           (
             SELECT MAX(effective_from)
@@ -188,33 +225,18 @@ export async function getRatingHistoryDashboard(
         ORDER BY id DESC
         LIMIT 60
       `),
+      getCoverageRows(db, "fantasypros"),
+      getCoverageRows(db, "sleeper"),
+      getCoverageRows(db, "tiers"),
       db.all(sql`
-        SELECT
-          source,
-          mode,
-          scoring,
-          position_scope AS positionScope,
-          COUNT(*) AS currentCount,
-          SUM(CASE WHEN source_status = 'present' THEN 1 ELSE 0 END)
-            AS presentCount,
-          SUM(CASE WHEN source_status = 'absent' THEN 1 ELSE 0 END)
-            AS absentCount,
-          MAX(effective_from) AS latestEffectiveFrom
-        FROM player_rating_versions
-        WHERE is_current = 1
-        GROUP BY source, mode, scoring, position_scope
-        ORDER BY
-          source,
-          mode,
-          CASE scoring
-            WHEN 'std' THEN 1
-            WHEN 'half' THEN 2
-            WHEN 'ppr' THEN 3
-            ELSE 4
-          END,
-          position_scope
-      `),
-      db.all(sql`
+        WITH recent_absent AS (
+          SELECT *
+          FROM player_rating_versions
+          WHERE is_current = 1
+            AND source_status = 'absent'
+          ORDER BY effective_from DESC, id DESC
+          LIMIT 100
+        )
         SELECT
           current.id,
           current.player_id AS playerId,
@@ -233,7 +255,7 @@ export async function getRatingHistoryDashboard(
           prior.tier AS lastTier,
           prior.points AS lastPoints,
           prior.adp AS lastAdp
-        FROM player_rating_versions current
+        FROM recent_absent current
         JOIN history_players players
           ON players.player_id = current.player_id
         JOIN player_rating_versions prior
@@ -252,17 +274,29 @@ export async function getRatingHistoryDashboard(
             ORDER BY candidate.effective_from DESC, candidate.id DESC
             LIMIT 1
           )
-        WHERE current.is_current = 1
-          AND current.source_status = 'absent'
         ORDER BY current.effective_from DESC, players.position, players.name
-        LIMIT 100
       `),
     ]);
 
+  const totalsWithoutAbsent = TotalsWithoutAbsentRow.parse(totalRows[0]);
+  const coverageRows = [
+    ...fantasyProsCoverageRows,
+    ...sleeperCoverageRows,
+    ...tiersCoverageRows,
+  ];
+  const parsedCoverage = CoverageRow.array().parse(coverageRows);
+  const currentAbsentRatings = parsedCoverage.reduce(
+    (total, row) => total + row.absentCount,
+    0
+  );
+
   return {
-    totals: TotalsRow.parse(totalRows[0]),
+    totals: TotalsRow.parse({
+      ...totalsWithoutAbsent,
+      currentAbsentRatings,
+    }),
     latestSourceRuns: LatestSourceRunRow.array().parse(latestSourceRunRows),
-    coverage: CoverageRow.array().parse(coverageRows),
+    coverage: parsedCoverage,
     missingWithPrior: MissingWithPriorRow.array().parse(missingWithPriorRows),
   };
 }

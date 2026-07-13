@@ -38,13 +38,14 @@ import {
 } from "@/lib/ratingHistory/db";
 import {
   getPlayerRatingHistory,
-  getRatingHistoryDashboard,
   type PlayerRatingHistory,
   type RatingHistoryDashboard,
 } from "@/lib/ratingHistory/dashboard";
+import { readRatingHistoryDashboardSnapshot } from "@/lib/ratingHistory/dashboardSnapshot";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 export const metadata: Metadata = {
   title: "Rating History | Fantasy Tiers",
@@ -84,6 +85,31 @@ async function loadDashboard(input: {
   query: string;
   playerId?: string;
 }): Promise<DashboardState> {
+  let dashboard: RatingHistoryDashboard;
+  try {
+    dashboard = readRatingHistoryDashboardSnapshot();
+  } catch (error) {
+    console.error("Rating history dashboard snapshot failed", error);
+    return {
+      dashboard: null,
+      playerHistory: null,
+      error: "Rating history is temporarily unavailable.",
+    };
+  }
+
+  if (!input.query && !input.playerId) {
+    return {
+      dashboard,
+      playerHistory: {
+        query: "",
+        searchResults: [],
+        selectedPlayer: null,
+        timeline: [],
+      },
+      error: null,
+    };
+  }
+
   const config = resolveRatingHistoryDatabaseConfig();
   if (!config.available) {
     return {
@@ -94,10 +120,7 @@ async function loadDashboard(input: {
   }
   const db = createRatingHistoryDb(config.config);
   try {
-    const [dashboard, playerHistory] = await Promise.all([
-      getRatingHistoryDashboard(db),
-      getPlayerRatingHistory(db, input),
-    ]);
+    const playerHistory = await getPlayerRatingHistory(db, input);
 
     return {
       dashboard,

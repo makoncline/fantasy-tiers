@@ -34,6 +34,7 @@
     "db:migrate": "drizzle-kit migrate",
     "history:migrate": "node --import=tsx scripts/history/migrate.ts",
     "history:ingest:aggregates": "node --import=tsx scripts/history/ingest-aggregate-history.ts",
+    "history:snapshot-dashboard": "node --import=tsx scripts/history/snapshot-dashboard.ts",
     "history:backfill": "node --import=tsx scripts/history/backfill.ts",
     "validate:aggregates": "node --import=tsx scripts/validate/strictAggregates.ts",
     "validate:aggregates:ci": "node --import=tsx scripts/ci/validate-aggregates.ts",

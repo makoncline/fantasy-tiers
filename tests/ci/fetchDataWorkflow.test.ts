@@ -23,6 +23,12 @@ describe("scheduled data workflow", () => {
       workflow.indexOf("Snapshot rating history")
     );
     expect(workflow).toContain("Persistent rating history secrets are required");
+    expect(workflow.indexOf("history:ingest:aggregates")).toBeLessThan(
+      workflow.indexOf("history:snapshot-dashboard")
+    );
+    expect(workflow.indexOf("history:snapshot-dashboard")).toBeLessThan(
+      workflow.indexOf("git add public/data/aggregate/")
+    );
     expect(workflow).not.toContain("Skipping rating history snapshot");
     expect(workflow).not.toContain("fetch:borischen:remote");
     expect(workflow).not.toContain("Sleeper player data and projections");
