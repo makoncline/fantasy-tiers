@@ -1,32 +1,32 @@
 {
   "totals": {
     "totalPlayers": 3221,
-    "totalSourceRuns": 540,
-    "totalRatingVersions": 59462,
+    "totalSourceRuns": 644,
+    "totalRatingVersions": 60192,
     "currentRatingVersions": 46692,
-    "closedRatingVersions": 12770,
-    "changedRatingScopes": 9486,
+    "closedRatingVersions": 13500,
+    "changedRatingScopes": 9506,
     "currentAbsentRatings": 33259,
-    "latestFetchedAt": "2026-07-13T16:16:28.814Z",
-    "latestEffectiveFrom": "2026-07-13T16:14:21.588Z"
+    "latestFetchedAt": "2026-07-13T18:39:47.463Z",
+    "latestEffectiveFrom": "2026-07-13T18:35:00.953Z"
   },
   "latestSourceRuns": [
     {
-      "id": 540,
+      "id": 644,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "DEF",
-      "fetchedAt": "2026-07-13T16:16:28.814Z",
+      "fetchedAt": "2026-07-13T18:39:47.463Z",
       "sourceLastUpdated": "2026-07-13T07:50:41.457Z",
       "rowCount": 32,
       "contentHash": "5ac91bc34875a5b9c74882cca71040c1aa7ad8d74c32be109f7352127c3ae590",
       "status": "success"
     },
     {
-      "id": 539,
+      "id": 643,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
@@ -40,21 +40,21 @@
       "status": "success"
     },
     {
-      "id": 538,
+      "id": 642,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "K",
-      "fetchedAt": "2026-07-13T16:16:28.778Z",
+      "fetchedAt": "2026-07-13T18:39:47.215Z",
       "sourceLastUpdated": "2026-07-13T07:50:40.942Z",
       "rowCount": 153,
       "contentHash": "99727631f30604e7f670e8025919d850edf8662d4fd951d520b5f3417607f00c",
       "status": "success"
     },
     {
-      "id": 537,
+      "id": 641,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
@@ -68,21 +68,21 @@
       "status": "success"
     },
     {
-      "id": 536,
+      "id": 640,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "TE",
-      "fetchedAt": "2026-07-13T16:16:28.620Z",
+      "fetchedAt": "2026-07-13T18:39:46.925Z",
       "sourceLastUpdated": "2026-07-13T07:50:41.055Z",
       "rowCount": 640,
       "contentHash": "7d8579207c272df41d71a2f1fa6356e0eec681c3fc2d4e2566d0a0409cc011d0",
       "status": "success"
     },
     {
-      "id": 535,
+      "id": 639,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
@@ -96,21 +96,21 @@
       "status": "success"
     },
     {
-      "id": 534,
+      "id": 638,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "WR",
-      "fetchedAt": "2026-07-13T16:16:28.176Z",
+      "fetchedAt": "2026-07-13T18:39:46.574Z",
       "sourceLastUpdated": "2026-07-13T07:50:41.135Z",
       "rowCount": 1364,
       "contentHash": "dd0e1a60aff68c6e771128d5bc2f11903a20c014b669bbf5aff0b79c0f7f6838",
       "status": "success"
     },
     {
-      "id": 533,
+      "id": 637,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
@@ -124,21 +124,21 @@
       "status": "success"
     },
     {
-      "id": 532,
+      "id": 636,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "RB",
-      "fetchedAt": "2026-07-13T16:16:27.785Z",
+      "fetchedAt": "2026-07-13T18:39:45.750Z",
       "sourceLastUpdated": "2026-07-13T07:50:41.139Z",
       "rowCount": 674,
       "contentHash": "6566a83d8e28dd011c520f78720c382ba436d20013d304d8f8b6f8bd565bc6e8",
       "status": "success"
     },
     {
-      "id": 531,
+      "id": 635,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
@@ -152,49 +152,49 @@
       "status": "success"
     },
     {
-      "id": 530,
+      "id": 634,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "QB",
-      "fetchedAt": "2026-07-13T16:16:27.575Z",
+      "fetchedAt": "2026-07-13T18:39:43.658Z",
       "sourceLastUpdated": "2026-07-13T07:50:41.142Z",
       "rowCount": 355,
       "contentHash": "b2a3ce043dbc36df8e5b3c2329f63e19eb0b8e8ad6782f7c1e421f1cd3a13cbd",
       "status": "success"
     },
     {
-      "id": 529,
+      "id": 633,
       "source": "fantasypros",
       "mode": "draft",
       "season": null,
       "week": null,
       "scoring": "ppr",
       "position": "QB",
-      "fetchedAt": "2026-07-13T16:16:27.490Z",
+      "fetchedAt": "2026-07-13T18:39:43.456Z",
       "sourceLastUpdated": null,
       "rowCount": 355,
       "contentHash": "4b996c2d5a4c2882a047960b1bc60f4c99767e9840d465f898cca5811f2f034a",
       "status": "success"
     },
     {
-      "id": 528,
+      "id": 632,
       "source": "tiers",
       "mode": "draft",
       "season": null,
       "week": null,
       "scoring": "ppr",
       "position": "ALL",
-      "fetchedAt": "2026-07-13T16:16:26.870Z",
+      "fetchedAt": "2026-07-13T18:39:43.263Z",
       "sourceLastUpdated": null,
       "rowCount": 3218,
       "contentHash": "68534f4ce8bb4bad242153a3dce74510c8864a8b2b28a5eb46482c462db12ab4",
       "status": "success"
     },
     {
-      "id": 527,
+      "id": 631,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -208,7 +208,7 @@
       "status": "success"
     },
     {
-      "id": 526,
+      "id": 630,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -222,7 +222,7 @@
       "status": "success"
     },
     {
-      "id": 525,
+      "id": 629,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -236,7 +236,7 @@
       "status": "success"
     },
     {
-      "id": 524,
+      "id": 628,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -250,7 +250,7 @@
       "status": "success"
     },
     {
-      "id": 523,
+      "id": 627,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -264,7 +264,7 @@
       "status": "success"
     },
     {
-      "id": 522,
+      "id": 626,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -278,35 +278,35 @@
       "status": "success"
     },
     {
-      "id": 521,
+      "id": 625,
       "source": "tiers",
       "mode": "draft",
       "season": null,
       "week": null,
       "scoring": "ppr",
       "position": "QB",
-      "fetchedAt": "2026-07-13T16:16:25.578Z",
+      "fetchedAt": "2026-07-13T18:39:42.223Z",
       "sourceLastUpdated": null,
       "rowCount": 355,
       "contentHash": "675b63d866d537c5b7dd8bfcb5c3abae5cfc57f47922a2c2d03e7b4a68a2fdb0",
       "status": "success"
     },
     {
-      "id": 520,
+      "id": 624,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "DEF",
-      "fetchedAt": "2026-07-13T16:16:25.571Z",
+      "fetchedAt": "2026-07-13T18:39:42.083Z",
       "sourceLastUpdated": "2026-07-13T07:50:41.457Z",
       "rowCount": 32,
       "contentHash": "2cb14dc564db706181a82086d8c5b41de5b1971d99705f413e67c6df2269fcad",
       "status": "success"
     },
     {
-      "id": 519,
+      "id": 623,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
@@ -320,21 +320,21 @@
       "status": "success"
     },
     {
-      "id": 518,
+      "id": 622,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "K",
-      "fetchedAt": "2026-07-13T16:16:25.526Z",
+      "fetchedAt": "2026-07-13T18:39:41.823Z",
       "sourceLastUpdated": "2026-07-13T07:50:40.942Z",
       "rowCount": 153,
       "contentHash": "694215f85edc007121ff872ced0491304fb1a8874ea364836cdac761094b2bcb",
       "status": "success"
     },
     {
-      "id": 517,
+      "id": 621,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
@@ -348,21 +348,21 @@
       "status": "success"
     },
     {
-      "id": 516,
+      "id": 620,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "TE",
-      "fetchedAt": "2026-07-13T16:16:25.368Z",
+      "fetchedAt": "2026-07-13T18:39:41.529Z",
       "sourceLastUpdated": "2026-07-13T07:50:41.055Z",
       "rowCount": 640,
       "contentHash": "0bb0bfb8b01926ac29450c0314d846a60566df6e46e6597aea63aad25208ba4c",
       "status": "success"
     },
     {
-      "id": 515,
+      "id": 619,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
@@ -376,21 +376,21 @@
       "status": "success"
     },
     {
-      "id": 514,
+      "id": 618,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "WR",
-      "fetchedAt": "2026-07-13T16:16:24.955Z",
+      "fetchedAt": "2026-07-13T18:39:41.254Z",
       "sourceLastUpdated": "2026-07-13T07:50:41.135Z",
       "rowCount": 1364,
       "contentHash": "1a34b85c6905c91f3a2d426111c5b3198142d1722364d03265be6fec3113d498",
       "status": "success"
     },
     {
-      "id": 513,
+      "id": 617,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
@@ -404,21 +404,21 @@
       "status": "success"
     },
     {
-      "id": 512,
+      "id": 616,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "RB",
-      "fetchedAt": "2026-07-13T16:16:24.507Z",
+      "fetchedAt": "2026-07-13T18:39:40.953Z",
       "sourceLastUpdated": "2026-07-13T07:50:41.139Z",
       "rowCount": 674,
       "contentHash": "c483558ff9944e82e3b33b4f09e56243db0697f3e2670d8f4f155c3f6e39798d",
       "status": "success"
     },
     {
-      "id": 511,
+      "id": 615,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
@@ -432,49 +432,49 @@
       "status": "success"
     },
     {
-      "id": 510,
+      "id": 614,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "QB",
-      "fetchedAt": "2026-07-13T16:16:24.280Z",
+      "fetchedAt": "2026-07-13T18:39:40.525Z",
       "sourceLastUpdated": "2026-07-13T07:50:41.142Z",
       "rowCount": 355,
       "contentHash": "2f157cce9927c4776b87b327e3eec167dccc3af2dcf45f6aa1c3c4dcb198af20",
       "status": "success"
     },
     {
-      "id": 509,
+      "id": 613,
       "source": "fantasypros",
       "mode": "draft",
       "season": null,
       "week": null,
       "scoring": "half",
       "position": "QB",
-      "fetchedAt": "2026-07-13T16:16:24.208Z",
+      "fetchedAt": "2026-07-13T18:39:40.368Z",
       "sourceLastUpdated": null,
       "rowCount": 355,
       "contentHash": "0186384b4788232a33e90cead4385486a8856baf26f4d926461f88004dee341f",
       "status": "success"
     },
     {
-      "id": 508,
+      "id": 612,
       "source": "tiers",
       "mode": "draft",
       "season": null,
       "week": null,
       "scoring": "half",
       "position": "ALL",
-      "fetchedAt": "2026-07-13T16:16:23.587Z",
+      "fetchedAt": "2026-07-13T18:39:40.171Z",
       "sourceLastUpdated": null,
       "rowCount": 3218,
       "contentHash": "207d28ea4e81c697e0edb85dd6226e3b75c74e406095f895d13b825b249f293f",
       "status": "success"
     },
     {
-      "id": 507,
+      "id": 611,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -488,7 +488,7 @@
       "status": "success"
     },
     {
-      "id": 506,
+      "id": 610,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -502,7 +502,7 @@
       "status": "success"
     },
     {
-      "id": 505,
+      "id": 609,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -516,7 +516,7 @@
       "status": "success"
     },
     {
-      "id": 504,
+      "id": 608,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -530,7 +530,7 @@
       "status": "success"
     },
     {
-      "id": 503,
+      "id": 607,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -544,7 +544,7 @@
       "status": "success"
     },
     {
-      "id": 502,
+      "id": 606,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -558,35 +558,35 @@
       "status": "success"
     },
     {
-      "id": 501,
+      "id": 605,
       "source": "tiers",
       "mode": "draft",
       "season": null,
       "week": null,
       "scoring": "half",
       "position": "QB",
-      "fetchedAt": "2026-07-13T16:16:22.427Z",
+      "fetchedAt": "2026-07-13T18:39:38.275Z",
       "sourceLastUpdated": null,
       "rowCount": 355,
       "contentHash": "c5d9c3f06de06893182f906652201f5e42b0e108fb7128211c93fc4e5f073be0",
       "status": "success"
     },
     {
-      "id": 500,
+      "id": 604,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "DEF",
-      "fetchedAt": "2026-07-13T16:16:22.419Z",
+      "fetchedAt": "2026-07-13T18:39:38.126Z",
       "sourceLastUpdated": "2026-07-13T07:50:41.457Z",
       "rowCount": 32,
       "contentHash": "c59cc9ab1d4f11cff3523f2efdc46f7ca3a66f49a640fd043964aac65537b945",
       "status": "success"
     },
     {
-      "id": 499,
+      "id": 603,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
@@ -600,21 +600,21 @@
       "status": "success"
     },
     {
-      "id": 498,
+      "id": 602,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "K",
-      "fetchedAt": "2026-07-13T16:16:22.379Z",
+      "fetchedAt": "2026-07-13T18:39:37.789Z",
       "sourceLastUpdated": "2026-07-13T07:50:40.942Z",
       "rowCount": 153,
       "contentHash": "f7af138faa41b0e09b72905d9d969c6fca810379b40e930a7638e8da9c901dce",
       "status": "success"
     },
     {
-      "id": 497,
+      "id": 601,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
@@ -628,21 +628,21 @@
       "status": "success"
     },
     {
-      "id": 496,
+      "id": 600,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "TE",
-      "fetchedAt": "2026-07-13T16:16:22.193Z",
+      "fetchedAt": "2026-07-13T18:39:36.547Z",
       "sourceLastUpdated": "2026-07-13T07:50:41.055Z",
       "rowCount": 640,
       "contentHash": "5bfc2a3eaa2fcb9136b9afbfff250dda38a00843a4cefdc43f8aad5e3fd136be",
       "status": "success"
     },
     {
-      "id": 495,
+      "id": 599,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
@@ -656,21 +656,21 @@
       "status": "success"
     },
     {
-      "id": 494,
+      "id": 598,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "WR",
-      "fetchedAt": "2026-07-13T16:16:21.764Z",
+      "fetchedAt": "2026-07-13T18:39:36.139Z",
       "sourceLastUpdated": "2026-07-13T07:50:41.135Z",
       "rowCount": 1364,
       "contentHash": "2ab2111fd53112540f1172238cc7afb225ee1b867879698073d53ae5d60e4e87",
       "status": "success"
     },
     {
-      "id": 493,
+      "id": 597,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
@@ -684,21 +684,21 @@
       "status": "success"
     },
     {
-      "id": 492,
+      "id": 596,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "RB",
-      "fetchedAt": "2026-07-13T16:16:21.367Z",
+      "fetchedAt": "2026-07-13T18:39:35.774Z",
       "sourceLastUpdated": "2026-07-13T07:50:41.139Z",
       "rowCount": 674,
       "contentHash": "d0adf93a455fc55e5cd08c12d0bc60d2938f7d28f7e0e1d822d9b640f0ee47c7",
       "status": "success"
     },
     {
-      "id": 491,
+      "id": 595,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
@@ -712,21 +712,21 @@
       "status": "success"
     },
     {
-      "id": 490,
+      "id": 594,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "QB",
-      "fetchedAt": "2026-07-13T16:16:21.166Z",
+      "fetchedAt": "2026-07-13T18:39:35.507Z",
       "sourceLastUpdated": "2026-07-13T07:50:41.142Z",
       "rowCount": 355,
       "contentHash": "d3a5ded552ce932e6203091e908f269cf1472bdf857292fb6ca901a26c683b42",
       "status": "success"
     },
     {
-      "id": 489,
+      "id": 593,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
@@ -740,21 +740,21 @@
       "status": "success"
     },
     {
-      "id": 488,
+      "id": 592,
       "source": "tiers",
       "mode": "draft",
       "season": null,
       "week": null,
       "scoring": "std",
       "position": "ALL",
-      "fetchedAt": "2026-07-13T16:16:20.488Z",
+      "fetchedAt": "2026-07-13T18:39:34.878Z",
       "sourceLastUpdated": null,
       "rowCount": 3218,
       "contentHash": "0d8ae0946c44de83ccdf65d1a5c6e40788a677b0381f7144592635775f06f951",
       "status": "success"
     },
     {
-      "id": 487,
+      "id": 591,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -768,7 +768,7 @@
       "status": "success"
     },
     {
-      "id": 486,
+      "id": 590,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -782,7 +782,7 @@
       "status": "success"
     },
     {
-      "id": 485,
+      "id": 589,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -796,7 +796,7 @@
       "status": "success"
     },
     {
-      "id": 484,
+      "id": 588,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -810,7 +810,7 @@
       "status": "success"
     },
     {
-      "id": 483,
+      "id": 587,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -824,7 +824,7 @@
       "status": "success"
     },
     {
-      "id": 482,
+      "id": 586,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -838,7 +838,7 @@
       "status": "success"
     },
     {
-      "id": 481,
+      "id": 585,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
@@ -881,7 +881,7 @@
       "currentCount": 355,
       "presentCount": 51,
       "absentCount": 304,
-      "latestEffectiveFrom": "2026-07-13T16:14:21.588Z"
+      "latestEffectiveFrom": "2026-07-13T18:35:00.953Z"
     },
     {
       "source": "fantasypros",
@@ -891,7 +891,7 @@
       "currentCount": 675,
       "presentCount": 213,
       "absentCount": 462,
-      "latestEffectiveFrom": "2026-07-13T16:14:21.588Z"
+      "latestEffectiveFrom": "2026-07-13T18:35:00.953Z"
     },
     {
       "source": "fantasypros",
@@ -911,7 +911,7 @@
       "currentCount": 1365,
       "presentCount": 280,
       "absentCount": 1085,
-      "latestEffectiveFrom": "2026-07-13T16:14:21.588Z"
+      "latestEffectiveFrom": "2026-07-13T18:35:00.953Z"
     },
     {
       "source": "fantasypros",
@@ -1221,7 +1221,7 @@
       "currentCount": 3221,
       "presentCount": 200,
       "absentCount": 3021,
-      "latestEffectiveFrom": "2026-07-13T16:14:21.588Z"
+      "latestEffectiveFrom": "2026-07-13T18:35:00.953Z"
     },
     {
       "source": "tiers",
@@ -1231,7 +1231,7 @@
       "currentCount": 32,
       "presentCount": 20,
       "absentCount": 12,
-      "latestEffectiveFrom": "2026-07-13T16:14:21.588Z"
+      "latestEffectiveFrom": "2026-07-13T18:35:00.953Z"
     },
     {
       "source": "tiers",
@@ -1241,7 +1241,7 @@
       "currentCount": 2680,
       "presentCount": 95,
       "absentCount": 2585,
-      "latestEffectiveFrom": "2026-07-13T16:14:21.588Z"
+      "latestEffectiveFrom": "2026-07-13T18:35:00.953Z"
     },
     {
       "source": "tiers",
@@ -1261,7 +1261,7 @@
       "currentCount": 355,
       "presentCount": 26,
       "absentCount": 329,
-      "latestEffectiveFrom": "2026-07-13T16:14:21.588Z"
+      "latestEffectiveFrom": "2026-07-13T18:35:00.953Z"
     },
     {
       "source": "tiers",
@@ -1271,7 +1271,7 @@
       "currentCount": 675,
       "presentCount": 40,
       "absentCount": 635,
-      "latestEffectiveFrom": "2026-07-13T16:14:21.588Z"
+      "latestEffectiveFrom": "2026-07-13T18:35:00.953Z"
     },
     {
       "source": "tiers",
@@ -1281,7 +1281,7 @@
       "currentCount": 640,
       "presentCount": 24,
       "absentCount": 616,
-      "latestEffectiveFrom": "2026-07-13T16:14:21.588Z"
+      "latestEffectiveFrom": "2026-07-13T18:35:00.953Z"
     },
     {
       "source": "tiers",
@@ -1291,7 +1291,7 @@
       "currentCount": 1365,
       "presentCount": 60,
       "absentCount": 1305,
-      "latestEffectiveFrom": "2026-07-13T16:14:21.588Z"
+      "latestEffectiveFrom": "2026-07-13T18:35:00.953Z"
     },
     {
       "source": "tiers",
@@ -1455,6 +1455,25 @@
     }
   ],
   "missingWithPrior": [
+    {
+      "id": 59961,
+      "playerId": "BAL",
+      "name": "baltimore ravens",
+      "position": "DEF",
+      "team": "BAL",
+      "byeWeek": 13,
+      "source": "tiers",
+      "mode": "draft",
+      "scoring": "std",
+      "positionScope": "ALL",
+      "effectiveFrom": "2026-07-13T18:35:00.953Z",
+      "lastPresentAt": "2026-07-13T18:23:49.877Z",
+      "lastRankOverall": 199,
+      "lastRankPosition": null,
+      "lastTier": 26,
+      "lastPoints": null,
+      "lastAdp": null
+    },
     {
       "id": 57508,
       "playerId": "MIN",

@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { and, eq, isNull, desc } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { ScoringType } from "../schemas";
 import { CombinedShard, type CombinedEntryT } from "../schemas-aggregates";
 import { scoringKeys } from "../scoring";
@@ -8,7 +8,6 @@ import { historyPlayers, playerRatingVersions, sourceRuns } from "./schema";
 import type {
   NewPlayerRatingVersion,
   NewSourceRun,
-  PlayerRatingVersion,
 } from "./schema";
 import type { RatingHistoryDatabase } from "./db";
 import { hashValue, stableJson } from "./hash";
@@ -50,6 +49,11 @@ type RatingInput = RatingIdentity &
     | "sourceStatus"
     | "rawJson"
   >;
+
+type CurrentRating = RatingIdentity & {
+  id: number;
+  valueHash: string;
+};
 
 type IngestStats = {
   sourceRuns: number;
@@ -436,70 +440,76 @@ function ratingValueHash(rating: RatingInput) {
   });
 }
 
-async function findCurrentRating(
-  db: RatingHistoryDatabase,
-  identity: RatingIdentity
-): Promise<PlayerRatingVersion | undefined> {
-  const rows = await db
-    .select()
-    .from(playerRatingVersions)
-    .where(
-      and(
-        eq(playerRatingVersions.playerId, identity.playerId),
-        eq(playerRatingVersions.source, identity.source),
-        eq(playerRatingVersions.mode, identity.mode),
-        identity.season == null
-          ? isNull(playerRatingVersions.season)
-          : eq(playerRatingVersions.season, identity.season),
-        identity.week == null
-          ? isNull(playerRatingVersions.week)
-          : eq(playerRatingVersions.week, identity.week),
-        identity.scoring == null
-          ? isNull(playerRatingVersions.scoring)
-          : eq(playerRatingVersions.scoring, identity.scoring),
-        identity.positionScope == null
-          ? isNull(playerRatingVersions.positionScope)
-          : eq(playerRatingVersions.positionScope, identity.positionScope),
-        eq(playerRatingVersions.isCurrent, true)
-      )
-    )
-    .orderBy(desc(playerRatingVersions.id))
-    .limit(1);
-
-  return rows[0];
+function ratingIdentityKey(identity: RatingIdentity) {
+  return stableJson([
+    identity.playerId,
+    identity.source,
+    identity.mode,
+    identity.season,
+    identity.week,
+    identity.scoring,
+    identity.positionScope,
+  ]);
 }
 
-async function upsertPlayer(db: RatingHistoryDatabase, entry: CombinedEntryT) {
-  await db
-    .insert(historyPlayers)
-    .values({
+async function loadCurrentRatings(db: RatingHistoryDatabase) {
+  const rows = await db
+    .select({
+      id: playerRatingVersions.id,
+      playerId: playerRatingVersions.playerId,
+      source: playerRatingVersions.source,
+      mode: playerRatingVersions.mode,
+      season: playerRatingVersions.season,
+      week: playerRatingVersions.week,
+      scoring: playerRatingVersions.scoring,
+      positionScope: playerRatingVersions.positionScope,
+      valueHash: playerRatingVersions.valueHash,
+    })
+    .from(playerRatingVersions)
+    .where(eq(playerRatingVersions.isCurrent, true));
+
+  return new Map(rows.map((row) => [ratingIdentityKey(row), row]));
+}
+
+async function upsertPlayers(
+  db: RatingHistoryDatabase,
+  entries: CombinedEntryT[],
+  updatedAt: string
+) {
+  const batchSize = 200;
+  for (let index = 0; index < entries.length; index += batchSize) {
+    const batch = entries.slice(index, index + batchSize).map((entry) => ({
       playerId: entry.player_id,
       name: entry.name,
       position: entry.position,
       team: entry.team,
       byeWeek: entry.bye_week,
-      updatedAt: new Date().toISOString(),
-    })
-    .onConflictDoUpdate({
-      target: historyPlayers.playerId,
-      set: {
-        name: entry.name,
-        position: entry.position,
-        team: entry.team,
-        byeWeek: entry.bye_week,
-        updatedAt: new Date().toISOString(),
-      },
-    });
+      updatedAt,
+    }));
+    await db
+      .insert(historyPlayers)
+      .values(batch)
+      .onConflictDoUpdate({
+        target: historyPlayers.playerId,
+        set: {
+          name: sql`excluded.name`,
+          position: sql`excluded.position`,
+          team: sql`excluded.team`,
+          byeWeek: sql`excluded.bye_week`,
+          updatedAt: sql`excluded.updated_at`,
+        },
+      });
+  }
 }
 
 async function upsertRatingVersion(
   db: RatingHistoryDatabase,
   rating: RatingInput,
+  current: CurrentRating | undefined,
   sourceRunId: number,
   effectiveFrom: string
 ): Promise<"inserted" | "unchanged" | "closed-and-inserted"> {
   const valueHash = ratingValueHash(rating);
-  const current = await findCurrentRating(db, rating);
   if (current?.valueHash === valueHash) return "unchanged";
 
   if (current) {
@@ -524,6 +534,7 @@ async function upsertRatingVersion(
 async function ingestScope(
   db: RatingHistoryDatabase,
   scope: { run: SourceRunScope; ratings: RatingInput[] },
+  currentRatings: Map<string, CurrentRating>,
   effectiveFrom: string
 ): Promise<Omit<IngestStats, "playerUpserts">> {
   const run = await insertSourceRun(db, scope.run);
@@ -535,7 +546,13 @@ async function ingestScope(
   };
 
   for (const rating of scope.ratings) {
-    const result = await upsertRatingVersion(db, rating, run.id, effectiveFrom);
+    const result = await upsertRatingVersion(
+      db,
+      rating,
+      currentRatings.get(ratingIdentityKey(rating)),
+      run.id,
+      effectiveFrom
+    );
     if (result === "unchanged") {
       stats.ratingVersionsUnchanged += 1;
     } else if (result === "inserted") {
@@ -581,10 +598,10 @@ export async function ingestAggregateHistory(
       uniquePrimaryEntries.set(entry.player_id, entry);
     }
   }
-  for (const entry of uniquePrimaryEntries.values()) {
-    await upsertPlayer(db, entry);
-    stats.playerUpserts += 1;
-  }
+  const playerEntries = [...uniquePrimaryEntries.values()];
+  await upsertPlayers(db, playerEntries, effectiveFrom);
+  stats.playerUpserts = playerEntries.length;
+  const currentRatings = await loadCurrentRatings(db);
 
   for (const scoring of SCORINGS) {
     for (const position of SHARDS) {
@@ -595,6 +612,7 @@ export async function ingestAggregateHistory(
         await ingestScope(
           db,
           buildTiersRatings(entries, position, scoring, metadata),
+          currentRatings,
           effectiveFrom
         )
       );
@@ -608,6 +626,7 @@ export async function ingestAggregateHistory(
         await ingestScope(
           db,
           buildFantasyProsRatings(entries, position, scoring, metadata),
+          currentRatings,
           effectiveFrom
         )
       );
@@ -616,6 +635,7 @@ export async function ingestAggregateHistory(
         await ingestScope(
           db,
           buildSleeperRatings(entries, position, scoring),
+          currentRatings,
           effectiveFrom
         )
       );
