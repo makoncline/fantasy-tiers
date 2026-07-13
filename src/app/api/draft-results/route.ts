@@ -12,6 +12,10 @@ import {
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   try {
     const body = SaveDraftResultRequestSchema.parse(await request.json());
     const resultDir = path.join(

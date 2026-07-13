@@ -3,7 +3,6 @@ import {
   ArrowRight,
   ClipboardList,
   Database,
-  FlaskConical,
   Trophy,
   UsersRound,
 } from "lucide-react";
@@ -20,16 +19,6 @@ import {
 } from "@/components/ui/card";
 
 const tools = [
-  {
-    href: "/mock-draft",
-    title: "Mock Draft Lab",
-    description:
-      "Run a local seeded mock draft, pause on your picks, and test the assistant without opening Sleeper.",
-    action: "Open mock draft",
-    Icon: FlaskConical,
-    testId: "home-link-mock-draft",
-    details: ["Local draft board", "Bot picks", "Pick and undo"],
-  },
   {
     href: "/draft-assistant",
     title: "Draft Assistant",
