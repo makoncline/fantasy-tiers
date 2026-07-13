@@ -55,21 +55,17 @@ const quality = {
 } satisfies DraftDataQualityReport;
 
 describe("deployment data health", () => {
-  it("is healthy only for the expected current commit and queryable history", () => {
+  it("is healthy for the expected commit with current draft data", () => {
     const response = buildDataHealthResponse({
       commitSha: "abc1234",
       expectedCommitSha: "abc1234",
       quality,
-      historyConfigured: true,
-      historyQueryable: true,
       now: new Date("2026-07-14T16:00:00.000Z"),
     });
     expect(response.status).toBe("healthy");
     expect(response.checks).toEqual({
       commitMatches: true,
       dataCurrent: true,
-      historyConfigured: true,
-      historyQueryable: true,
     });
   });
 
@@ -78,8 +74,6 @@ describe("deployment data health", () => {
       commitSha: "old1234",
       expectedCommitSha: "new1234",
       quality,
-      historyConfigured: true,
-      historyQueryable: true,
       now: new Date("2026-07-20T16:00:00.000Z"),
     });
     expect(response.status).toBe("unhealthy");

@@ -284,9 +284,7 @@ For each user turn, record at least:
 - reason chips such as `Best value`, `Tier cliff`, `Likely gone`, `ADP bargain`, or `Roster need`
 - any source-health warning visible in the Draft Status card
 
-The player preview eye button should preserve the same draft-value context. Check that the dialog shows the same canonical `VAL` score, recent news, source confidence/missing fields, and a `History` link into `/rating-history?q=<player>&playerId=<id>`.
-
-The player preview also fetches rating-history signals on demand. A good screenshot should show the `VAL` panel plus `History Signal`, including durable Sleeper/FantasyPros value or current-absence warnings. This is the quick check that the draft assistant is using the history layer for more than a standalone diagnostic page.
+The player preview eye button should preserve the same draft-value context. Check that the dialog shows the same canonical `VAL` score, recent news, and source confidence or missing fields.
 
 Future player-detail validation should treat the dialog as an agent-readable fact sheet, not just a ranking explanation. Useful context includes team/offense quality, role stability, bye-week overlap with the current roster, whether the pick solves a starter/flex/bench need, and the next few same-position alternatives with tier/comeback labels. The app does not need to answer every strategic question directly if this context is available in a structured way.
 

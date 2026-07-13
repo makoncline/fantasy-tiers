@@ -11,8 +11,6 @@ export const DataHealthResponseSchema = z.object({
   checks: z.object({
     commitMatches: z.boolean(),
     dataCurrent: z.boolean(),
-    historyConfigured: z.boolean(),
-    historyQueryable: z.boolean(),
   }),
   quality: DraftDataQualityReportSchema,
 });
@@ -25,8 +23,6 @@ export function buildDataHealthResponse(input: {
   commitSha: string | null;
   expectedCommitSha: string | null;
   quality: DraftDataQualityReport;
-  historyConfigured: boolean;
-  historyQueryable: boolean;
   now?: Date;
 }): DataHealthResponse {
   const now = input.now ?? new Date();
@@ -38,11 +34,7 @@ export function buildDataHealthResponse(input: {
     input.quality.status === "healthy" &&
     reportAge >= 0 &&
     reportAge <= MAX_REPORT_AGE_MS;
-  const healthy =
-    commitMatches &&
-    dataCurrent &&
-    input.historyConfigured &&
-    input.historyQueryable;
+  const healthy = commitMatches && dataCurrent;
 
   return DataHealthResponseSchema.parse({
     status: healthy ? "healthy" : "unhealthy",
@@ -51,8 +43,6 @@ export function buildDataHealthResponse(input: {
     checks: {
       commitMatches,
       dataCurrent,
-      historyConfigured: input.historyConfigured,
-      historyQueryable: input.historyQueryable,
     },
     quality: input.quality,
   });

@@ -35,15 +35,3 @@ test("home page links to the league manager", async ({ page }) => {
     page.getByRole("heading", { name: "League Manager" })
   ).toBeVisible();
 });
-
-test("home page links to rating history", async ({ page }) => {
-  await page.goto("/");
-
-  const ratingHistoryLink = page.getByTestId("home-link-rating-history");
-  await expect(ratingHistoryLink).toHaveAttribute("href", "/rating-history");
-  await ratingHistoryLink.click();
-  await expect(page).toHaveURL(/\/rating-history$/);
-  await expect(
-    page.getByRole("heading", { name: "Rating History" })
-  ).toBeVisible();
-});
