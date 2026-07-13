@@ -36,8 +36,15 @@ yarn-error.log*
 next-env.d.ts
 
 # data
+/data
+/public/data/raw/
 **/data/fantasypros
 **/data/sleeper
 **/data/borischen
+**/data/tiers
 
-.agents
+/.agents/
+/.codex/
+/.playwright-mcp/
+/plans/
+/debug-page.png

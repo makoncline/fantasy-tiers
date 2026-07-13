@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "mode": "draft",
+  "season": "2026",
+  "generatedAt": "2026-07-13T16:28:36.146Z",
+  "status": "healthy",
+  "shards": {
+    "ALL": 3218,
+    "QB": 355,
+    "RB": 674,
+    "WR": 1364,
+    "TE": 640,
+    "K": 153,
+    "DEF": 32,
+    "FLEX": 2678
+  },
+  "scoring": {
+    "std": {
+      "ecrRows": 484,
+      "topCandidates": 180,
+      "sleeperAdpCovered": 170,
+      "sleeperAdpCoveragePct": 94.4,
+      "tierCovered": 180,
+      "tierCoveragePct": 100,
+      "expertsIncluded": 64,
+      "expertsAvailable": 92,
+      "expertCoveragePct": 69.6
+    },
+    "half": {
+      "ecrRows": 761,
+      "topCandidates": 180,
+      "sleeperAdpCovered": 174,
+      "sleeperAdpCoveragePct": 96.7,
+      "tierCovered": 177,
+      "tierCoveragePct": 98.3,
+      "expertsIncluded": 67,
+      "expertsAvailable": 94,
+      "expertCoveragePct": 71.3
+    },
+    "ppr": {
+      "ecrRows": 497,
+      "topCandidates": 180,
+      "sleeperAdpCovered": 171,
+      "sleeperAdpCoveragePct": 95,
+      "tierCovered": 180,
+      "tierCoveragePct": 100,
+      "expertsIncluded": 63,
+      "expertsAvailable": 91,
+      "expertCoveragePct": 69.2
+    }
+  },
+  "sources": {
+    "fantasyprosUpdatedAt": "2026-07-13T13:27:47.000Z",
+    "sleeperUpdatedAt": "2026-07-13T07:50:41.457Z",
+    "tiersUpdatedAt": "2026-07-13T13:27:47.000Z"
+  },
+  "warnings": [],
+  "errors": []
+}

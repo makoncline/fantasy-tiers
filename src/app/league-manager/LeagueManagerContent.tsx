@@ -32,17 +32,18 @@ import {
 } from "@/components/ui/table";
 import {
   useSleeperUserByUsername,
-  useSleeperLeaguesForYear,
+  useSleeperLeaguesForYears,
   useSleeperUserById,
   useSleeperNflState,
   useSleeperLeagueUsers,
 } from "@/hooks/useSleeper";
+import { getSleeperSeasonCandidates } from "@/lib/sleeperSeasons";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useQuery, useQueries } from "@tanstack/react-query";
 import { determineRecommendedRoster } from "@/lib/rosterOptimizer";
-import { borischenSourceUrl } from "@/lib/borischen";
+import { tiersSourceUrl } from "@/lib/tiers";
 import { Badge } from "@/components/ui/badge";
 import {
   Collapsible,
@@ -64,7 +65,7 @@ type AggregatePlayerData = {
   position?: string;
   team?: string;
   bye_week?: number;
-  borischen?: Record<"std" | "half" | "ppr", { rank?: number; tier?: number }>;
+  tiers?: Record<"std" | "half" | "ppr", { rank?: number; tier?: number }>;
   sleeper?: {
     player?: {
       injury_status?: string | null;
@@ -122,7 +123,7 @@ function buildAllPlayersFromRoster(
     pos: "QB" | "RB" | "WR" | "TE" | "K" | "DEF"
   ) =>
     | {
-        borischen?: Record<string, { rank?: number }>;
+        tiers?: Record<string, { rank?: number }>;
         fantasypros?: {
           rankings?: Record<"standard" | "half" | "ppr", { rank_ecr?: number }>;
         };
@@ -136,7 +137,7 @@ function buildAllPlayersFromRoster(
       {
         player_id: string;
         position: "QB" | "RB" | "WR" | "TE" | "K" | "DEF";
-        borisChenRank: number | null;
+        tierRank: number | null;
         fantasyProsEcr: number | null;
       }
     >
@@ -156,14 +157,14 @@ function buildAllPlayersFromRoster(
       p.player_id,
       pos as "QB" | "RB" | "WR" | "TE" | "K" | "DEF"
     );
-    const bc =
-      (agg?.borischen as Record<string, { rank?: number }>)?.[scoring]?.rank ??
+    const tierRanking =
+      (agg?.tiers as Record<string, { rank?: number }>)?.[scoring]?.rank ??
       null;
     const ecr = agg?.fantasypros?.rankings?.[fpKey]?.rank_ecr ?? null;
     map[pos][p.player_id] = {
       player_id: p.player_id,
       position: pos as "QB" | "RB" | "WR" | "TE" | "K" | "DEF",
-      borisChenRank: bc,
+      tierRank: tierRanking,
       fantasyProsEcr: ecr,
     };
   }
@@ -177,7 +178,11 @@ const LeagueManagerContent: React.FC = () => {
   // Username lookup flow via submit
   const [submittedUsername, setSubmittedUsername] = React.useState<string>("");
   const nflState = useSleeperNflState();
-  const currentYear = nflState.data?.season ?? String(new Date().getFullYear());
+  const seasonCandidates = React.useMemo(
+    () => getSleeperSeasonCandidates(nflState.data),
+    [nflState.data]
+  );
+  const currentYear = seasonCandidates[0] ?? String(new Date().getFullYear());
   const userLookup = useSleeperUserByUsername(
     submittedUsername || undefined,
     Boolean(submittedUsername)
@@ -189,13 +194,13 @@ const LeagueManagerContent: React.FC = () => {
 
   // Global sort state for all players tables
   const [globalSortKey, setGlobalSortKey] =
-    React.useState<TableSortKey>("bc_rank");
+    React.useState<TableSortKey>("tier_rank");
   const [globalSortDir, setGlobalSortDir] = React.useState<"asc" | "desc">(
     "asc"
   );
   // Worst players sort state (metric to determine "worst")
   const [worstSortKey, setWorstSortKey] =
-    React.useState<TableSortKey>("bc_rank");
+    React.useState<TableSortKey>("tier_rank");
   const onGlobalSort = React.useCallback(
     (key: TableSortKey) => {
       if (globalSortKey === key) {
@@ -211,7 +216,7 @@ const LeagueManagerContent: React.FC = () => {
     [globalSortKey]
   );
 
-  // Aggregates lookup for BC/FP details
+  // Aggregates lookup for tiers/FP details
   const { get: getAgg, isLoading: aggLoading } = useAggregatesLookup();
 
   // Keep URL as source of truth for userId once we have a user result
@@ -266,16 +271,16 @@ const LeagueManagerContent: React.FC = () => {
       ),
     [userPlayerIds, allPlayers, slotOrder]
   );
-  const recBC = React.useMemo(
-    () => new Map(optimized.borisChen.map((s) => [s.playerId, s.slot])),
+  const recTiers = React.useMemo(
+    () => new Map(optimized.tiers.map((s) => [s.playerId, s.slot])),
     [optimized]
   );
   const recFP = React.useMemo(
     () => new Map(optimized.fantasyPros.map((s) => [s.playerId, s.slot])),
     [optimized]
   );
-  const recBCSet = React.useMemo(
-    () => new Set(optimized.borisChen.map((s) => String(s.playerId))),
+  const recTiersSet = React.useMemo(
+    () => new Set(optimized.tiers.map((s) => String(s.playerId))),
     [optimized]
   );
   const recFPSet = React.useMemo(
@@ -341,8 +346,8 @@ const LeagueManagerContent: React.FC = () => {
     position: string;
     team: string | null;
     bye_week: number | null;
-    bc_rank: number | null;
-    bc_tier: number | null;
+    tier_rank: number | null;
+    tier_level: number | null;
     fp_ecr: number | null;
     fp_pos_rank: string | number | null;
     fp_owned: number | null;
@@ -370,7 +375,7 @@ const LeagueManagerContent: React.FC = () => {
         id,
         pos === "FLEX" ? ("RB" as PosForAgg) : (pos as PosForAgg)
       );
-      const bc = agg?.borischen?.[scoringKey] ?? null;
+      const tierRanking = agg?.tiers?.[scoringKey] ?? null;
       const fpr = agg?.fantasypros ?? null;
       const fr = fpr?.rankings?.[fpRankKey] ?? null;
       out.push({
@@ -379,8 +384,8 @@ const LeagueManagerContent: React.FC = () => {
         position: pos,
         team: (agg?.team as string | null) ?? null,
         bye_week: (agg?.bye_week as number | null) ?? null,
-        bc_rank: bc?.rank ?? null,
-        bc_tier: bc?.tier ?? null,
+        tier_rank: tierRanking?.rank ?? null,
+        tier_level: tierRanking?.tier ?? null,
         fp_ecr: fr?.rank_ecr ?? null,
         fp_pos_rank: fpr?.pos_rank ?? null,
         fp_owned: fpr?.player_owned_avg ?? null,
@@ -407,8 +412,8 @@ const LeagueManagerContent: React.FC = () => {
     };
     const keyVal = (r: WorstRow) => {
       switch (worstSortKey) {
-        case "bc_rank":
-          return r.bc_rank ?? Number.POSITIVE_INFINITY; // higher is worse
+        case "tier_rank":
+          return r.tier_rank ?? Number.POSITIVE_INFINITY; // higher is worse
         case "fp_ecr":
           return r.fp_ecr ?? Number.POSITIVE_INFINITY; // higher is worse
         case "fp_pos_rank":
@@ -475,7 +480,7 @@ const LeagueManagerContent: React.FC = () => {
         {userId && !leagueId && (
           <LeagueSelectionCard
             userId={userId}
-            currentYear={currentYear}
+            seasonCandidates={seasonCandidates}
             selectedLeagueId={leagueId}
             onSelect={(val) => {
               setLeagueId(val, { history: "replace" });
@@ -486,7 +491,7 @@ const LeagueManagerContent: React.FC = () => {
           <SelectedLeagueCard
             userId={userId}
             leagueId={leagueId}
-            currentYear={currentYear}
+            seasonCandidates={seasonCandidates}
             teamCount={rosters.length}
             scoringType={scoringType ?? null}
             rosterPositions={leagueDetails?.roster_positions}
@@ -552,9 +557,9 @@ const LeagueManagerContent: React.FC = () => {
                   currentRoster={currentRoster}
                   scoring={scoringKey as ScoringKey}
                   lookupAgg={getAgg}
-                  recommendedSlotsBC={recBC}
+                  recommendedSlotsTiers={recTiers}
                   recommendedSlotsFP={recFP}
-                  recommendedStarterIdsBC={recBCSet}
+                  recommendedStarterIdsTiers={recTiersSet}
                   recommendedStarterIdsFP={recFPSet}
                 />
               )}
@@ -578,7 +583,7 @@ const LeagueManagerContent: React.FC = () => {
                       Player
                     </TableHead>
                     <TableHead colSpan={2} className="w-[24%]">
-                      Boris Chen
+                      Tiers
                     </TableHead>
                     <TableHead colSpan={4} className="w-[36%]">
                       FantasyPros
@@ -593,12 +598,12 @@ const LeagueManagerContent: React.FC = () => {
                     </TableHead>
                     <TableHead
                       className="w-[12%] cursor-pointer select-none border-l border-border"
-                      onClick={() => setWorstSortKey("bc_rank")}
-                      title="Sort worst by Boris Chen rank"
+                      onClick={() => setWorstSortKey("tier_rank")}
+                      title="Sort worst by Tiers rank"
                     >
                       <span className="inline-flex items-center gap-1 whitespace-nowrap">
                         <span>Rnk</span>
-                        <span>{worstSortKey === "bc_rank" ? "▼" : ""}</span>
+                        <span>{worstSortKey === "tier_rank" ? "▼" : ""}</span>
                       </span>
                     </TableHead>
                     <TableHead className="w-[12%] border-r border-border">
@@ -671,10 +676,10 @@ const LeagueManagerContent: React.FC = () => {
                         </div>
                       </TableCell>
                       <TableCell className="border-l border-border">
-                        {r.bc_rank ?? "-"}
+                        {r.tier_rank ?? "-"}
                       </TableCell>
                       <TableCell className="border-r border-border">
-                        {r.bc_tier ?? "-"}
+                        {r.tier_level ?? "-"}
                       </TableCell>
                       <TableCell className="border-l border-border">
                         {r.fp_ecr ?? "-"}
@@ -757,17 +762,17 @@ const RosterTable: React.FC<{
   currentRoster: RosteredPlayer[];
   scoring: ScoringKey;
   lookupAgg: (id: string, pos: PosForAgg) => AggregatePlayerData | undefined;
-  recommendedSlotsBC: Map<string, string>;
+  recommendedSlotsTiers: Map<string, string>;
   recommendedSlotsFP: Map<string, string>;
-  recommendedStarterIdsBC: Set<string>;
+  recommendedStarterIdsTiers: Set<string>;
   recommendedStarterIdsFP: Set<string>;
 }> = ({
   currentRoster,
   scoring,
   lookupAgg,
-  recommendedSlotsBC,
+  recommendedSlotsTiers,
   recommendedSlotsFP,
-  recommendedStarterIdsBC,
+  recommendedStarterIdsTiers,
   recommendedStarterIdsFP,
 }) => {
   const fpRankKey: "standard" | "half" | "ppr" =
@@ -784,32 +789,32 @@ const RosterTable: React.FC<{
       !player.isEmpty && player.player_id && pos
         ? lookupAgg(String(player.player_id), pos)
         : undefined;
-    const bc =
-      (agg?.borischen as AggregatePlayerData["borischen"])?.[scoring] ?? null;
+    const tierRanking =
+      (agg?.tiers as AggregatePlayerData["tiers"])?.[scoring] ?? null;
     const fpr = agg?.fantasypros ?? null;
     const fr = fpr?.rankings?.[fpRankKey] ?? null;
     const inj = agg?.sleeper?.player?.injury_status ?? null;
     const id = String(player.player_id);
-    const bcRecStarter = recommendedStarterIdsBC.has(id);
+    const tierRecStarter = recommendedStarterIdsTiers.has(id);
     const fpRecStarter = recommendedStarterIdsFP.has(id);
-    const bcRecSlot = player.isEmpty
+    const tierRecSlot = player.isEmpty
       ? undefined
-      : bcRecStarter
-      ? recommendedSlotsBC.get(id) ?? player.slot
+      : tierRecStarter
+      ? recommendedSlotsTiers.get(id) ?? player.slot
       : "BN";
     const fpRecSlot = player.isEmpty
       ? undefined
       : fpRecStarter
       ? recommendedSlotsFP.get(id) ?? player.slot
       : "BN";
-    const bcMoveUp = !player.isEmpty && !isStarter && bcRecStarter;
-    const bcMoveDown = !player.isEmpty && isStarter && !bcRecStarter;
+    const tierMoveUp = !player.isEmpty && !isStarter && tierRecStarter;
+    const tierMoveDown = !player.isEmpty && isStarter && !tierRecStarter;
     const fpMoveUp = !player.isEmpty && !isStarter && fpRecStarter;
     const fpMoveDown = !player.isEmpty && isStarter && !fpRecStarter;
 
-    const bcRecClass =
-      bcMoveUp || bcMoveDown
-        ? bcMoveUp
+    const tierRecClass =
+      tierMoveUp || tierMoveDown
+        ? tierMoveUp
           ? "bg-yellow-50 dark:bg-yellow-900/30 text-green-700"
           : "bg-yellow-50 dark:bg-yellow-900/30 text-red-700"
         : undefined;
@@ -819,7 +824,7 @@ const RosterTable: React.FC<{
           ? "bg-yellow-50 dark:bg-yellow-900/30 text-green-700"
           : "bg-yellow-50 dark:bg-yellow-900/30 text-red-700"
         : undefined;
-    const bcArrow = bcMoveUp ? "▲" : bcMoveDown ? "▼" : "";
+    const tierArrow = tierMoveUp ? "▲" : tierMoveDown ? "▼" : "";
     const fpArrow = fpMoveUp ? "▲" : fpMoveDown ? "▼" : "";
 
     const teamStr = player.team || "-";
@@ -861,13 +866,15 @@ const RosterTable: React.FC<{
           </div>
         </TableCell>
 
-        {/* Boris Chen group: Rec, Rnk, Tier */}
-        <TableCell className={`border-l border-border ${bcRecClass ?? ""}`}>
-          {player.isEmpty ? "-" : `${bcRecSlot ?? "-"} ${bcArrow}`}
+        {/* Tiers group: Rec, Rnk, Tier */}
+        <TableCell className={`border-l border-border ${tierRecClass ?? ""}`}>
+          {player.isEmpty ? "-" : `${tierRecSlot ?? "-"} ${tierArrow}`}
         </TableCell>
-        <TableCell>{player.isEmpty ? "-" : bc?.rank ?? "N/A"}</TableCell>
+        <TableCell>
+          {player.isEmpty ? "-" : tierRanking?.rank ?? "N/A"}
+        </TableCell>
         <TableCell className="border-r border-border">
-          {player.isEmpty ? "-" : bc?.tier ?? "N/A"}
+          {player.isEmpty ? "-" : tierRanking?.tier ?? "N/A"}
         </TableCell>
 
         {/* FantasyPros group: Rec, ECR, Pos Rnk, %Own, Grade */}
@@ -897,7 +904,7 @@ const RosterTable: React.FC<{
           Player
         </TableHead>
         <TableHead colSpan={3} className="w-[24%]">
-          Boris Chen
+          Tiers
         </TableHead>
         <TableHead colSpan={5} className="w-[36%]">
           FantasyPros
@@ -1137,12 +1144,19 @@ function LastUpdatedCard({
   const [open, setOpen] = React.useState(false);
   const positions = ["QB", "RB", "WR", "TE", "FLEX", "K", "DEF"] as const;
   type Pos = (typeof positions)[number];
-  // Borischen aggregated metadata (from combine step)
+  // Tiers aggregated metadata (from combine step)
   const { data, isLoading } = useQuery<
-    Record<Pos, { last_updated: number | null; fetched_at: number | null }>,
+    Record<
+      Pos,
+      {
+        last_updated: number | null;
+        fetched_at: number | null;
+        url: string | null;
+      }
+    >,
     Error
   >({
-    queryKey: ["borischen", "meta", scoring],
+    queryKey: ["tiers", "meta", scoring],
     queryFn: async () => {
       try {
         const res = await fetch(`/data/aggregate/metadata.json`, {
@@ -1150,15 +1164,16 @@ function LastUpdatedCard({
         });
         if (!res.ok) throw new Error("failed to load metadata");
 
-        type BorischenMetadata = {
+        type TiersMetadata = {
           last_updated?: string;
           fetched_at?: string;
+          url?: string;
         };
 
         const meta = (await res.json()) as {
-          borischen?: Record<
+          tiers?: Record<
             "STD" | "PPR" | "HALF",
-            Record<string, BorischenMetadata>
+            Record<string, TiersMetadata>
           >;
         };
 
@@ -1167,8 +1182,8 @@ function LastUpdatedCard({
           positions.map((pos) => {
             const key = pos === "K" || pos === "DEF" ? "STD" : upper;
             const posKey = pos === "DEF" ? "DST" : pos;
-            const bucket = meta?.borischen?.[key] ?? {};
-            const rec = bucket[posKey] as BorischenMetadata | undefined;
+            const bucket = meta?.tiers?.[key] ?? {};
+            const rec = bucket[posKey] as TiersMetadata | undefined;
 
             const lastUpdated = rec?.last_updated
               ? new Date(rec.last_updated).getTime()
@@ -1182,20 +1197,32 @@ function LastUpdatedCard({
               {
                 last_updated: isNaN(lastUpdated || 0) ? null : lastUpdated,
                 fetched_at: isNaN(fetchedAt || 0) ? null : fetchedAt,
+                url: rec?.url ?? null,
               },
             ] as const;
           })
         ) as Record<
           Pos,
-          { last_updated: number | null; fetched_at: number | null }
+          {
+            last_updated: number | null;
+            fetched_at: number | null;
+            url: string | null;
+          }
         >;
         return out;
       } catch {
         return Object.fromEntries(
-          positions.map((p) => [p, { last_updated: null, fetched_at: null }])
+          positions.map((p) => [
+            p,
+            { last_updated: null, fetched_at: null, url: null },
+          ])
         ) as Record<
           Pos,
-          { last_updated: number | null; fetched_at: number | null }
+          {
+            last_updated: number | null;
+            fetched_at: number | null;
+            url: string | null;
+          }
         >;
       }
     },
@@ -1336,7 +1363,7 @@ function LastUpdatedCard({
           <CardContent>
             <div className="text-sm space-y-4">
               <div>
-                <div className="font-medium">Boris Chen</div>
+                <div className="font-medium">Tiers</div>
                 {isLoading || !data ? (
                   <div className="text-muted-foreground">Loading…</div>
                 ) : (
@@ -1344,8 +1371,9 @@ function LastUpdatedCard({
                     {positions.map((pos) => {
                       const metaScoring =
                         pos === "K" || pos === "DEF" ? "std" : scoring;
-                      const href = borischenSourceUrl(pos, metaScoring);
                       const rec = data[pos];
+                      const href =
+                        rec?.url ?? tiersSourceUrl(pos, metaScoring);
                       const lastUpdated = rec?.last_updated;
                       const fetchedAt = rec?.fetched_at;
                       const lastUpdatedLabel = formatAgo(lastUpdated);
@@ -1359,7 +1387,7 @@ function LastUpdatedCard({
                             target="_blank"
                             rel="noopener noreferrer"
                             className="underline-offset-2 hover:underline"
-                            title={`Open Boris Chen source for ${pos} (${metaScoring})`}
+                            title={`Open Tiers source for ${pos} (${metaScoring})`}
                           >
                             {pos}
                           </a>
@@ -1440,7 +1468,7 @@ function LastUpdatedCard({
 type ScoringKey = "std" | "half" | "ppr";
 type FpRankKey = "standard" | "half" | "ppr";
 type TableSortKey =
-  | "bc_rank"
+  | "tier_rank"
   | "fp_ecr"
   | "fp_pos_rank"
   | "fp_owned"
@@ -1473,14 +1501,14 @@ function AllPlayersPositionTable({
 }) {
   const [visibleCount, setVisibleCount] =
     React.useState<number>(DEFAULT_VISIBLE_ROWS);
-  // For FLEX fallback, reuse global aggregates lookup to pull primary-pos BC rank
+  // For FLEX fallback, reuse global aggregates lookup to pull primary-pos tier rank
   const { get: getAggForFallback } = useAggregatesLookup();
   type AggregatePlayerData = {
     name?: string;
     position?: string;
     team?: string;
     bye_week?: number;
-    borischen?: Record<string, { rank?: number; tier?: number }>;
+    tiers?: Record<string, { rank?: number; tier?: number }>;
     sleeper?: {
       player?: {
         injury_status?: string | null;
@@ -1520,9 +1548,9 @@ function AllPlayersPositionTable({
         position: string;
         team: string | null;
         bye_week: number | null;
-        bc_rank: number | null;
-        bc_tier: number | null;
-        bc_is_fallback?: boolean;
+        tier_rank: number | null;
+        tier_level: number | null;
+        tier_is_fallback?: boolean;
         fp_ecr: number | null;
         fp_pos_rank: string | number | null;
         fp_owned: number | null;
@@ -1538,13 +1566,13 @@ function AllPlayersPositionTable({
       const ownedByYou = owner?.userId
         ? String(owner.userId) === String(currentUserId)
         : false;
-      let bc = e?.borischen?.[scoring] ?? null;
-      let bc_is_fallback = false;
-      // FLEX-specific fallback: only for user's roster; if FLEX has no BC rank, pull from primary position
+      let tierRanking = e?.tiers?.[scoring] ?? null;
+      let tier_is_fallback = false;
+      // FLEX-specific fallback: only for user's roster; if FLEX has no tier rank, pull from primary position
       if (
         (pos as string) === "FLEX" &&
         ownedByYou &&
-        (!bc || (bc.rank == null && bc.tier == null))
+        (!tierRanking || (tierRanking.rank == null && tierRanking.tier == null))
       ) {
         const primaryPos = e?.position as string | undefined as
           | "RB"
@@ -1556,10 +1584,13 @@ function AllPlayersPositionTable({
           | undefined;
         if (primaryPos) {
           const rec = getAggForFallback(String(id), primaryPos);
-          const bcPrimary = rec?.borischen?.[scoring] ?? null;
-          if (bcPrimary && (bcPrimary.rank != null || bcPrimary.tier != null)) {
-            bc = bcPrimary;
-            bc_is_fallback = true;
+          const tierPrimary = rec?.tiers?.[scoring] ?? null;
+          if (
+            tierPrimary &&
+            (tierPrimary.rank != null || tierPrimary.tier != null)
+          ) {
+            tierRanking = tierPrimary;
+            tier_is_fallback = true;
           }
         }
       }
@@ -1571,9 +1602,9 @@ function AllPlayersPositionTable({
         position: String(e?.position ?? ""),
         team: (e?.team as string | null) ?? null,
         bye_week: (e?.bye_week as number | null) ?? null,
-        bc_rank: bc?.rank ?? null,
-        bc_tier: bc?.tier ?? null,
-        bc_is_fallback,
+        tier_rank: tierRanking?.rank ?? null,
+        tier_level: tierRanking?.tier ?? null,
+        tier_is_fallback,
         fp_ecr: fr?.rank_ecr ?? null,
         fp_pos_rank: fpr?.pos_rank ?? null,
         fp_owned: fpr?.player_owned_avg ?? null,
@@ -1636,8 +1667,8 @@ function AllPlayersPositionTable({
     };
     const metricValue = (r: (typeof rows)[number]) => {
       switch (sortKey) {
-        case "bc_rank":
-          return r.bc_rank ?? Number.POSITIVE_INFINITY; // lower is better
+        case "tier_rank":
+          return r.tier_rank ?? Number.POSITIVE_INFINITY; // lower is better
         case "fp_ecr":
           return r.fp_ecr ?? Number.POSITIVE_INFINITY; // lower is better
         case "fp_pos_rank":
@@ -1713,8 +1744,8 @@ function AllPlayersPositionTable({
     };
     const keyVal = (r: (typeof rows)[number]) => {
       switch (sortKey) {
-        case "bc_rank":
-          return r.bc_rank ?? Number.POSITIVE_INFINITY;
+        case "tier_rank":
+          return r.tier_rank ?? Number.POSITIVE_INFINITY;
         case "fp_ecr":
           return r.fp_ecr ?? Number.POSITIVE_INFINITY;
         case "fp_pos_rank":
@@ -1750,8 +1781,8 @@ function AllPlayersPositionTable({
     };
     const keyVal = (r: (typeof rows)[number]) => {
       switch (sortKey) {
-        case "bc_rank":
-          return r.bc_rank ?? Number.POSITIVE_INFINITY;
+        case "tier_rank":
+          return r.tier_rank ?? Number.POSITIVE_INFINITY;
         case "fp_ecr":
           return r.fp_ecr ?? Number.POSITIVE_INFINITY;
         case "fp_pos_rank":
@@ -1811,7 +1842,7 @@ function AllPlayersPositionTable({
       <CardContent>
         {pos === "FLEX" ? (
           <p className="text-xs text-muted-foreground mb-2">
-            Note: Boris Chen FLEX rankings may omit top players. For your
+            Note: Tiers FLEX rankings may omit top players. For your
             roster, missing FLEX ranks fall back to the player&apos;s primary
             position rank/tier and are highlighted in yellow.
           </p>
@@ -1826,7 +1857,7 @@ function AllPlayersPositionTable({
                   Player
                 </TableHead>
                 <TableHead colSpan={2} className="w-[24%]">
-                  Boris Chen
+                  Tiers
                 </TableHead>
                 <TableHead colSpan={4} className="w-[36%]">
                   FantasyPros
@@ -1841,11 +1872,11 @@ function AllPlayersPositionTable({
                 </TableHead>
                 <TableHead
                   className="w-[12%] cursor-pointer select-none border-l border-border"
-                  onClick={() => onSort("bc_rank")}
-                  title="Sort by Boris Chen rank"
+                  onClick={() => onSort("tier_rank")}
+                  title="Sort by Tiers rank"
                 >
                   Rnk{" "}
-                  {sortKey === "bc_rank" ? (sortDir === "asc" ? "▲" : "▼") : ""}
+                  {sortKey === "tier_rank" ? (sortDir === "asc" ? "▲" : "▼") : ""}
                 </TableHead>
                 <TableHead className="w-[12%] border-r border-border">
                   Tier
@@ -1960,31 +1991,31 @@ function AllPlayersPositionTable({
                     </TableCell>
                     <TableCell
                       className={`border-l border-border ${
-                        r.bc_is_fallback
+                        r.tier_is_fallback
                           ? "bg-yellow-50 dark:bg-yellow-900/30"
                           : ""
                       }`}
                       title={
-                        r.bc_is_fallback
-                          ? "Using primary-position Boris Chen rank/tier"
+                        r.tier_is_fallback
+                          ? "Using primary-position Tiers rank/tier"
                           : undefined
                       }
                     >
-                      {r.bc_rank ?? "-"}
+                      {r.tier_rank ?? "-"}
                     </TableCell>
                     <TableCell
                       className={`border-r border-border ${
-                        r.bc_is_fallback
+                        r.tier_is_fallback
                           ? "bg-yellow-50 dark:bg-yellow-900/30"
                           : ""
                       }`}
                       title={
-                        r.bc_is_fallback
-                          ? "Using primary-position Boris Chen rank/tier"
+                        r.tier_is_fallback
+                          ? "Using primary-position Tiers rank/tier"
                           : undefined
                       }
                     >
-                      {r.bc_tier ?? "-"}
+                      {r.tier_level ?? "-"}
                     </TableCell>
                     <TableCell className="border-l border-border">
                       {r.fp_ecr ?? "-"}
@@ -2052,18 +2083,18 @@ function SelectedUserCard({
 
 function LeagueSelectionCard({
   userId,
-  currentYear,
+  seasonCandidates,
   selectedLeagueId,
   onSelect,
 }: {
   userId: string;
-  currentYear: string;
+  seasonCandidates: readonly string[];
   selectedLeagueId: string | null | undefined;
   onSelect: (leagueId: string) => void;
 }) {
-  const { data: leagues, isLoading } = useSleeperLeaguesForYear(
+  const { data: leagues, isLoading, searchedYears } = useSleeperLeaguesForYears(
     userId,
-    currentYear,
+    seasonCandidates,
     true
   );
   const [selection, setSelection] = React.useState<string>(
@@ -2098,14 +2129,14 @@ function LeagueSelectionCard({
               <div className="flex flex-col">
                 <div className="font-medium">{lg.name}</div>
                 <div className="text-sm text-muted-foreground">
-                  leagueId: {lg.league_id}
+                  {lg.season} season - leagueId: {lg.league_id}
                 </div>
               </div>
             </label>
           ))}
           {!isLoading && (leagues || []).length === 0 && (
             <div className="text-sm text-muted-foreground">
-              No leagues found.
+              No leagues found for {searchedYears.join(", ")}.
             </div>
           )}
         </RadioGroup>
@@ -2118,7 +2149,7 @@ function LeagueSelectionCard({
 function SelectedLeagueCard({
   userId,
   leagueId,
-  currentYear,
+  seasonCandidates,
   teamCount,
   scoringType,
   rosterPositions,
@@ -2126,14 +2157,18 @@ function SelectedLeagueCard({
 }: {
   userId: string;
   leagueId: string;
-  currentYear: string;
+  seasonCandidates: readonly string[];
   teamCount: number;
   scoringType: "std" | "half" | "ppr" | null;
   rosterPositions: RosterSlot[] | undefined;
   onClear: () => void;
 }) {
   // Reuse leagues query to get display info and find selected league
-  const { data: leagues } = useSleeperLeaguesForYear(userId, currentYear, true);
+  const { data: leagues } = useSleeperLeaguesForYears(
+    userId,
+    seasonCandidates,
+    true
+  );
   const lg = (leagues || []).find((l) => l.league_id === leagueId);
   const rosterSummary = React.useMemo(() => {
     const slots = (rosterPositions || []).filter((s) => s !== "BN");
@@ -2157,7 +2192,7 @@ function SelectedLeagueCard({
         <div>
           <div className="text-lg font-semibold">{lg?.name || "—"}</div>
           <div className="text-sm text-muted-foreground">
-            leagueId: {leagueId}
+            {lg?.season ? `${lg.season} season - ` : ""}leagueId: {leagueId}
           </div>
           <div className="text-sm mt-1">
             {teamCount} {teamCount === 1 ? "team" : "teams"} -{" "}

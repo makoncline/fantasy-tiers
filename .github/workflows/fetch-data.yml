@@ -2,14 +2,31 @@ name: Fetch Fantasy Football Data
 
 on:
   schedule:
-    # Run at 7am and 4pm Eastern (12pm and 9pm UTC)
-    - cron: "0 12 * * *" # 7am Eastern (12pm UTC)
-    - cron: "0 21 * * *" # 4pm Eastern (9pm UTC)
+    # Run at 12:00 and 21:00 UTC.
+    # During daylight saving time this is 8am/5pm Eastern and 6am/3pm Mountain.
+    - cron: "0 12 * * *"
+    - cron: "0 21 * * *"
   workflow_dispatch: # Allow manual triggering
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fantasy-data-refresh-main
+  cancel-in-progress: false
 
 jobs:
   fetch-data:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # The draft assistant needs season-long draft ECR. Weekly mode is for the
+      # league-manager/in-season flow and should be enabled deliberately later.
+      DRAFT: "true"
+      SEASON: "2026"
+      FP_FETCH_PROJECTIONS: "false"
+      FP_COOKIE: ${{ secrets.FP_COOKIE }}
+      FANTASYPROS_COOKIE: ${{ secrets.FANTASYPROS_COOKIE }}
 
     steps:
       - name: Checkout repository
@@ -17,6 +34,9 @@ jobs:
         with:
           # Fetch full history for proper diff detection
           fetch-depth: 0
+
+      - name: Record checked-out main
+        run: echo "BASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
       - name: Enable Corepack
         run: corepack enable
@@ -42,15 +62,48 @@ jobs:
           pnpm run agg:all
           echo "✅ Aggregates built"
 
-      - name: Check for changes
+      - name: Validate aggregates
+        run: |
+          echo "🔄 Validating aggregate data..."
+          pnpm run validate:aggregates:ci
+          echo "✅ Aggregate validation completed"
+
+      - name: Test data quality contracts
+        run: pnpm run test:data-quality
+
+      - name: Verify main has not advanced
+        run: |
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$BASE_SHA" ]; then
+            echo "Main advanced during the refresh; aborting before writing history."
+            exit 1
+          fi
+
+      - name: Snapshot rating history
+        env:
+          FANTASY_HISTORY_DATABASE_URL: ${{ secrets.FANTASY_HISTORY_DATABASE_URL }}
+          FANTASY_HISTORY_DATABASE_AUTH_TOKEN: ${{ secrets.FANTASY_HISTORY_DATABASE_AUTH_TOKEN }}
+        run: |
+          if [ -z "$FANTASY_HISTORY_DATABASE_URL" ] || [ -z "$FANTASY_HISTORY_DATABASE_AUTH_TOKEN" ]; then
+            echo "Persistent rating history secrets are required."
+            exit 1
+          fi
+
+          echo "🔄 Snapshotting aggregate rating history..."
+          pnpm run history:migrate
+          pnpm run history:ingest:aggregates
+          echo "✅ Rating history snapshot completed"
+
+      - name: Stage and check aggregate changes
         id: verify-changed-files
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "changes=true" >> $GITHUB_OUTPUT
-            echo "📝 Data changes detected"
+          git add public/data/aggregate/
+          if git diff --cached --quiet; then
+            echo "changes=false" >> "$GITHUB_OUTPUT"
+            echo "✅ No aggregate changes detected"
           else
-            echo "changes=false" >> $GITHUB_OUTPUT
-            echo "✅ No data changes detected"
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "📝 Validated aggregate changes detected"
           fi
 
       - name: Commit and push changes
@@ -61,41 +114,54 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$BASE_SHA" ]; then
+            echo "Main advanced during the refresh; aborting instead of publishing stale generated output."
+            exit 1
+          fi
+
           # Show what files changed
           echo "Changed files:"
-          git status --porcelain
-
-          # Add only aggregate data (other data dirs are in .gitignore)
-          git add public/data/aggregate/
+          git diff --cached --name-only
 
           # Create detailed commit message
           TIMESTAMP=$(date -u +'%Y-%m-%d %H:%M UTC')
           COMMIT_MSG="🤖 Automated data update - $TIMESTAMP
 
           Updated combined aggregate rankings from multiple sources:
-          - FantasyPros rankings and projections
-          - Sleeper player data and projections
-          - Boris Chen expert rankings
+          - FantasyPros draft ECR
+          - Sleeper ADP and player data
+          - Locally generated tiers
+          - Footballguys public-default rankings and ADP comparisons
+          - Semantic source quality report
 
           Raw provider data cached locally (not committed to git)
 
-          Triggered by scheduled job (7am/4pm Eastern)"
+          Triggered by scheduled job (12:00/21:00 UTC)"
 
           git commit -m "$COMMIT_MSG"
 
+          echo "DATA_COMMIT_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
           echo "🚀 Pushing changes..."
-          git push origin ${{ github.ref_name }}
+          git push origin HEAD:main
           echo "✅ Changes pushed successfully"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify production deployment
+        if: steps.verify-changed-files.outputs.changes == 'true'
+        env:
+          PRODUCTION_BASE_URL: https://fantasy-tiers.vercel.app
+        run: pnpm run verify:deployment -- --expected-sha "$DATA_COMMIT_SHA" --timeout-seconds 240
 
       - name: Add workflow summary
         if: always()
         run: |
           if [ "${{ steps.verify-changed-files.outputs.changes }}" == "true" ]; then
-            echo "🎯 Workflow completed successfully with data updates (7am/4pm Eastern schedule)"
+            echo "🎯 Workflow completed successfully with data updates (12:00/21:00 UTC schedule)"
           else
-            echo "📋 Workflow completed - no data changes detected (7am/4pm Eastern schedule)"
+            echo "📋 Workflow completed - no data changes detected (12:00/21:00 UTC schedule)"
           fi
 
       - name: Notify on failure

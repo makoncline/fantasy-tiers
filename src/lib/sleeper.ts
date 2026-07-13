@@ -81,6 +81,11 @@ export const SleeperLeagueSchema = z.object({
   // Keep only absolutely-required fields as required; relax others
   league_id: z.string(),
   name: z.string(),
+  season: z.string().optional(),
+  total_rosters: z.number().optional(),
+  roster_positions: z.array(z.string()).optional(),
+  scoring_settings: z.record(z.string(), z.unknown()).optional(),
+  settings: z.record(z.string(), z.unknown()).optional(),
 });
 export type SleeperLeague = z.infer<typeof SleeperLeagueSchema>;
 

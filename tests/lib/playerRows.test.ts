@@ -16,7 +16,7 @@ describe("Player Rows", () => {
     position: "QB",
     team: "TB",
     bye_week: 9,
-    borischen: {
+    tiers: {
       std: { rank: 12, tier: 3 },
       ppr: null,
       half: { rank: 15, tier: 4 },
@@ -49,9 +49,9 @@ describe("Player Rows", () => {
         half: { FPTS_AVG: 18.8 },
       },
       rankings: {
-        standard: { rank_ecr: 42, tier: 5 },
-        ppr: { rank_ecr: 41, tier: 5 },
-        half: { rank_ecr: 43, tier: 5 },
+        standard: { rank_ecr: 42, rank_ave: 42.4, rank_std: 3.1, tier: 5 },
+        ppr: { rank_ecr: 41, rank_ave: 41.6, rank_std: 2.9, tier: 5 },
+        half: { rank_ecr: 43, rank_ave: 43.2, rank_std: 3.4, tier: 5 },
       },
     },
   };
@@ -83,12 +83,14 @@ describe("Player Rows", () => {
         position: "QB",
         team: "TB",
         bye_week: 9,
-        bc_rank: 12,
-        bc_tier: 3,
+        tier_rank: 12,
+        tier_level: 3,
         sleeper_pts: 320.5,
         sleeper_adp: 45.2,
         fp_pts: 18.5,
         fp_rank_overall: 42,
+        fp_rank_ave: 42.4,
+        fp_rank_std: 3.1,
         fp_tier: 5,
         fp_player_owned_avg: 15.5,
       });
@@ -133,6 +135,29 @@ describe("Player Rows", () => {
 
       expect(row.ecr_round_pick).toBeDefined();
       expect(typeof row.ecr_round_pick).toBe("string");
+    });
+
+    it("treats Sleeper placeholder ADP as missing", () => {
+      const enriched = enrichPlayers(
+        [
+          {
+            ...mockCombinedEntry,
+            sleeper: {
+              ...mockCombinedEntry.sleeper,
+              stats: {
+                ...mockCombinedEntry.sleeper.stats,
+                adp_std: 999,
+              },
+            },
+          },
+        ],
+        mockLeague
+      );
+
+      expect(toPlayerRows(enriched, {}, mockLeague.teams)[0]).toMatchObject({
+        sleeper_adp: null,
+        sleeper_adp_round_pick: undefined,
+      });
     });
   });
 

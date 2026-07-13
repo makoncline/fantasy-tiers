@@ -5,6 +5,10 @@ import {
   SleeperProjection,
   fetchSleeperProjections,
 } from "../../src/lib/sleeper";
+import {
+  validateSleeperDraftRows,
+  writeJsonAtomic,
+} from "../../src/lib/sourceDataQuality";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,6 +46,7 @@ async function main() {
       sport: "nfl",
     }
   );
+  validateSleeperDraftRows(projections, season);
 
   const stamp = startedAt.toISOString().replace(/[:.]/g, "-");
   const baseName = week
@@ -53,7 +58,7 @@ async function main() {
 
   await Promise.all([
     writeJsonPretty(rawFile, projections),
-    writeJsonPretty(latestFile, projections),
+    writeJsonAtomic(latestFile, projections),
     writeJsonPretty(metaFile, {
       provider: "sleeper",
       type: "projections",

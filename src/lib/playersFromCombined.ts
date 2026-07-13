@@ -39,7 +39,7 @@ export function buildPlayersMapFromCombined(
     const pos = normalizePosition(entry.position);
     if (!pos || !FANTASY_POSITIONS.has(pos)) continue;
 
-    const rankTier = entry.borischen?.[scoringType] ?? null;
+    const rankTier = entry.tiers?.[scoringType] ?? null;
     const rank = rankTier ? toNum(rankTier.rank) : null;
     const tier = rankTier ? toNum(rankTier.tier) : null;
 
@@ -61,7 +61,7 @@ export function buildPlayersMapFromCombined(
       bye_week: entry.bye_week?.toString() ?? null,
       rank,
       tier,
-      borischen: rank != null && tier != null ? { rank, tier } : null,
+      tiers: rank != null && tier != null ? { rank, tier } : null,
       sleeper: {
         ...entry.sleeper,
         stats: sleeperStats,

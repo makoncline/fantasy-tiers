@@ -3,7 +3,7 @@ import type { Position } from "@/lib/schemas";
 export type Player = {
   player_id: string;
   position: Position;
-  borisChenRank: number | null;
+  tierRank: number | null;
   fantasyProsEcr: number | null;
 };
 
@@ -15,14 +15,14 @@ export type LineupSlot = {
 
 export type LineupOutput = {
   fantasyPros: LineupSlot[];
-  borisChen: LineupSlot[];
+  tiers: LineupSlot[];
 };
 
-type RankingField = "fantasyProsEcr" | "borisChenRank";
+type RankingField = "fantasyProsEcr" | "tierRank";
 
 const makeComparator = (primary: RankingField) => {
   const secondary: RankingField =
-    primary === "fantasyProsEcr" ? "borisChenRank" : "fantasyProsEcr";
+    primary === "fantasyProsEcr" ? "tierRank" : "fantasyProsEcr";
   return (a: Player, b: Player) => {
     const pa = a[primary] ?? Infinity;
     const pb = b[primary] ?? Infinity;
@@ -57,7 +57,7 @@ export type SlotType = keyof typeof ELIGIBILITY;
  * @param userPlayerIds - Array of the user's roster player IDs
  * @param allPlayers - Combined aggregate object with all players for all positions
  * @param rosterPositions - Array of slot types to fill
- * @returns Object with Fantasy Pros and Boris Chen lineups
+ * @returns Object with Fantasy Pros and Tiers lineups
  */
 export function determineRecommendedRoster(
   userPlayerIds: string[],
@@ -168,6 +168,6 @@ export function determineRecommendedRoster(
 
   return {
     fantasyPros: createLineup("fantasyProsEcr"),
-    borisChen: createLineup("borisChenRank"),
+    tiers: createLineup("tierRank"),
   };
 }

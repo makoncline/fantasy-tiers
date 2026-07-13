@@ -19,7 +19,7 @@ describe("Query Keys", () => {
     });
 
     it("should generate bundle keys correctly", () => {
-      const roster = { QB: 1, RB: 2, WR: 2, TE: 1, K: 1, DEF: 1, FLEX: 1 };
+      const roster = { QB: 1, RB: 2, WR: 2, TE: 1, K: 1, DEF: 1, FLEX: 1, BENCH: 6 };
       expect(qk.aggregates.bundle("ppr", 12, roster)).toEqual([
         "aggregates",
         "bundle",
@@ -32,9 +32,10 @@ describe("Query Keys", () => {
         1,
         1,
         1,
+        6,
       ]);
 
-      const roster2 = { QB: 2, RB: 3, WR: 3, TE: 2, K: 1, DEF: 1, FLEX: 2 };
+      const roster2 = { QB: 2, RB: 3, WR: 3, TE: 2, K: 1, DEF: 1, FLEX: 2, BENCH: 5 };
       expect(qk.aggregates.bundle("std", 10, roster2)).toEqual([
         "aggregates",
         "bundle",
@@ -47,6 +48,7 @@ describe("Query Keys", () => {
         1,
         1,
         2,
+        5,
       ]);
     });
   });
@@ -137,6 +139,7 @@ describe("Query Keys", () => {
       number,
       number,
       number,
+      number,
       number
     ] = qk.aggregates.bundle("ppr", 12, {
       QB: 1,
@@ -146,6 +149,7 @@ describe("Query Keys", () => {
       K: 1,
       DEF: 1,
       FLEX: 1,
+      BENCH: 6,
     });
     const detailsKey: readonly ["draft", string, "details"] =
       qk.draft.details("draft123");
@@ -164,6 +168,7 @@ describe("Query Keys", () => {
       1,
       1,
       1,
+      6,
     ]);
     expect(detailsKey).toEqual(["draft", "draft123", "details"]);
   });

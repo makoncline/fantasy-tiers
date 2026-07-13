@@ -12,8 +12,8 @@ function makeRow(overrides: Partial<PlayerWithPick> = {}): PlayerWithPick {
     bye_week: overrides.bye_week ?? 9,
     // include rank fields
     rank: overrides.rank ?? null,
-    bc_rank: overrides.bc_rank,
-    bc_tier: overrides.bc_tier,
+    tier_rank: overrides.tier_rank,
+    tier_level: overrides.tier_level,
     fp_pts: overrides.fp_pts ?? null,
     ecr_round_pick: overrides.ecr_round_pick,
     fp_tier: overrides.fp_tier ?? null,
@@ -40,7 +40,7 @@ describe("filterAvailableRows", () => {
       player_id: "a",
       name: "Alpha One",
       position: "RB",
-      bc_rank: 1,
+      tier_rank: 1,
       picked: {
         round: 1,
         roundPick: 1,
@@ -53,7 +53,7 @@ describe("filterAvailableRows", () => {
       player_id: "b",
       name: "Bravo Two",
       position: "WR",
-      bc_rank: 2,
+      tier_rank: 2,
       picked: {
         round: 1,
         roundPick: 2,

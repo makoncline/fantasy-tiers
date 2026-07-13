@@ -5,13 +5,13 @@ import { determineRecommendedRoster, type Player } from "@/lib/rosterOptimizer";
 function createPlayer(
   id: string,
   position: string,
-  borisChenRank: number | null,
+  tierRank: number | null,
   fantasyProsEcr: number | null
 ): Player {
   return {
     player_id: id,
     position: position as any,
-    borisChenRank,
+    tierRank,
     fantasyProsEcr,
   };
 }
@@ -21,7 +21,7 @@ describe("determineRecommendedRoster", () => {
     const result = determineRecommendedRoster([], {});
     expect(result).toEqual({
       fantasyPros: [],
-      borisChen: [],
+      tiers: [],
     });
   });
 
@@ -143,8 +143,8 @@ describe("determineRecommendedRoster", () => {
         playerId: "wr3",
       },
     ]);
-    expect(result.borisChen).toHaveLength(10);
-    expect(result.borisChen).toEqual([
+    expect(result.tiers).toHaveLength(10);
+    expect(result.tiers).toEqual([
       {
         position: "RB",
         slot: "RB1",
@@ -204,7 +204,7 @@ describe("determineRecommendedRoster", () => {
     const playerData = {
       WR: {
         wrA: createPlayer("wrA", "WR", 10, 20),
-        wrB: createPlayer("wrB", "WR", 10, 30), // worse boris
+        wrB: createPlayer("wrB", "WR", 10, 30), // worse tier rank
       },
       RB: {
         rbA: createPlayer("rbA", "RB", 10, 20),
@@ -221,7 +221,7 @@ describe("determineRecommendedRoster", () => {
       playerData,
       rosterPositions
     );
-    // WR slots (ECR ties): wrA before wrB due to better Boris;
+    // WR slots (ECR ties): wrA before wrB due to better tier rank;
     // FLEX from leftovers: rbA vs none -> rbA
     expect(res.fantasyPros.map((s) => s.playerId)).toEqual([
       "wrA",

@@ -9,7 +9,7 @@ export const AggregatesBundlePlayer = z.object({
   position: z.string(),
   team: z.string().nullable(),
   bye_week: z.number().nullable(),
-  borischen: z.object({
+  tiers: z.object({
     rank: z.number().nullable(),
     tier: z.number().nullable(),
   }),
@@ -17,18 +17,34 @@ export const AggregatesBundlePlayer = z.object({
     rank: z.number().nullable(),
     adp: z.number().nullable(),
     pts: z.number().nullable(),
+    injuryStatus: z.string().nullable(),
+    injuryNotes: z.string().nullable(),
   }),
   fantasypros: z.object({
     rank: z.number().nullable(),
     tier: z.number().nullable(),
     pos_rank: z.string().nullable(),
     ecr: z.number().nullable(),
+    ecr_average: z.number().nullable(),
+    ecr_std: z.number().nullable(),
     ecr_round_pick: z.string().nullable(),
     pts: z.number().nullable(),
     baseline_pts: z.number().nullable(),
     adp: z.number().nullable(),
     player_owned_avg: z.number().nullable(),
   }),
+  footballguys: z
+    .object({
+      id: z.string(),
+      rank: z.number(),
+      tier: z.number(),
+      pos_rank: z.number(),
+      fetched_at: z.string().datetime(),
+      settings: z.string(),
+      adp: z.record(z.string(), z.number().nullable()),
+    })
+    .nullable()
+    .optional(),
   calc: z.object({
     value: z.number().nullable(),
     positional_scarcity: z.number().nullable(),
@@ -37,6 +53,28 @@ export const AggregatesBundlePlayer = z.object({
 });
 
 export type AggregatesBundlePlayerT = z.infer<typeof AggregatesBundlePlayer>;
+
+export const AggregateSourceHealthItem = z.object({
+  source: z.enum(["Sleeper", "FantasyPros", "Tiers", "Footballguys"]),
+  status: z.enum(["ok", "warning", "missing"]),
+  lastUpdated: z.string().nullable(),
+  fetchedAt: z.string().nullable(),
+  rowCount: z.number().nullable(),
+  relevantRowCount: z.number().nullable().optional(),
+  coveragePct: z.number().nullable(),
+  coverageBasis: z.string().nullable().optional(),
+  sampleSize: z.string().nullable(),
+  projectionsFetched: z.boolean().nullable(),
+  warnings: z.array(z.string()),
+});
+
+export const AggregateSourceHealth = z.object({
+  generatedAt: z.string(),
+  scoring: scoringTypeSchema,
+  sources: z.array(AggregateSourceHealthItem),
+  warnings: z.array(z.string()),
+});
+export type AggregateSourceHealthT = z.infer<typeof AggregateSourceHealth>;
 
 // Roster slots schema
 export const RosterSlotsSchema = z.object({
@@ -68,6 +106,7 @@ export const AggregatesBundleResponse = z.object({
   scoring: scoringTypeSchema,
   teams: z.number(),
   roster: RosterSlotsSchema,
+  sourceHealth: AggregateSourceHealth.optional(),
   shards: AggregatesBundleShards,
 });
 
@@ -107,6 +146,10 @@ export const AggregatesBundleQueryParams = z.object({
     .transform((val) => parseInt(val, 10))
     .optional(),
   slots_flex: z
+    .string()
+    .transform((val) => parseInt(val, 10))
+    .optional(),
+  slots_bench: z
     .string()
     .transform((val) => parseInt(val, 10))
     .optional(),

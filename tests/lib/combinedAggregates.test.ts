@@ -35,7 +35,7 @@ describe("loadMergedCombinedAggregates", () => {
       position: "QB",
       team: "TB",
       bye_week: 9,
-      borischen: {
+      tiers: {
         std: { rank: 12, tier: 3 },
         ppr: null,
         half: { rank: 15, tier: 4 },

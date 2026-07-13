@@ -2,7 +2,7 @@ import React from "react";
 
 interface DraftInfoProps {
   name: string;
-  draftId: string;
+  draftId?: string;
   type?: string;
   teams?: number | string;
   rounds?: number | string;
@@ -15,35 +15,26 @@ interface DraftInfoProps {
 
 export function DraftInfo({
   name,
-  draftId,
   type,
   teams,
   rounds,
   season,
-  startTime,
   status,
   pickNumber,
   scoringType,
 }: DraftInfoProps) {
   return (
-    <div className="text-sm">
-      <div className="font-semibold text-base">{name || "—"}</div>
-      <div className="text-muted-foreground mt-1">
-        draftId: {draftId || "—"}
+    <div className="min-w-0">
+      <div className="truncate font-semibold">{name || "—"}</div>
+      <div className="flex flex-wrap gap-x-2 text-xs text-muted-foreground">
+        {teams ? <span>{teams} teams</span> : null}
+        {rounds ? <span>{rounds} rounds</span> : null}
+        {scoringType ? <span>{scoringType}</span> : null}
+        {pickNumber ? <span>slot {pickNumber}</span> : null}
+        {season ? <span>{season}</span> : null}
+        {type ? <span>{type}</span> : null}
+        {status ? <span>{status}</span> : null}
       </div>
-      <div className="mt-1">
-        {(type || "—") + " - "}
-        {(teams ?? "—") + " teams - "}
-        {(rounds ?? "—") + " rounds - "}
-        {scoringType ?? "-"}
-      </div>
-      <div className="mt-1">
-        {(season || "—") + " - "}
-        {startTime ? new Date(startTime).toLocaleString() : "—"}
-        {" - "}
-        {status || "—"}
-      </div>
-      <div className="mt-1">pick number {pickNumber ?? "—"}</div>
     </div>
   );
 }

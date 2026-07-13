@@ -12,6 +12,7 @@ export default defineConfig({
       "**/.next/**",
       // Exclude Playwright E2E tests from Vitest run
       "tests/e2e/**",
+      "**/*.integration.test.*",
     ],
   },
   resolve: {

@@ -6,8 +6,8 @@ import Providers from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Fantasy Draft Assistant",
-  description: "A tool to help with fantasy football drafts",
+  title: "Fantasy Tiers",
+  description: "Draft and league management tools for fantasy football",
 };
 
 export default function RootLayout({

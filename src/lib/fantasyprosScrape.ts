@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import { buildFantasyProsHeaders } from "./fantasyprosRequest";
 
 export type Scoring = "STD" | "HALF" | "PPR";
 export type Position = "QB" | "RB" | "WR" | "TE" | "FLEX" | "K" | "DST";
@@ -66,11 +67,7 @@ export function extractJson<T>(html: string, varName: string): T {
 
 export async function fetchHtml(url: string): Promise<string> {
   const res = await fetch(url, {
-    headers: {
-      "user-agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    },
+    headers: buildFantasyProsHeaders(),
   });
   if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
   return await res.text();

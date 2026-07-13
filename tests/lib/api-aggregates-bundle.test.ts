@@ -34,13 +34,21 @@ describe("fetchAggregatesBundle", () => {
             position: "QB",
             team: "TB",
             bye_week: 11,
-            borischen: { rank: 1, tier: 1 },
-            sleeper: { rank: 1, adp: 1.5, pts: 450 },
+            tiers: { rank: 1, tier: 1 },
+            sleeper: {
+              rank: 1,
+              adp: 1.5,
+              pts: 450,
+              injuryStatus: null,
+              injuryNotes: null,
+            },
             fantasypros: {
               rank: 1,
               tier: 1,
               pos_rank: "QB1",
               ecr: 1,
+              ecr_average: 1.4,
+              ecr_std: 0.6,
               ecr_round_pick: "1.01",
               pts: 25.5,
               baseline_pts: 20.0,
@@ -83,7 +91,7 @@ describe("fetchAggregatesBundle", () => {
     const result = await fetchAggregatesBundle(params);
 
     expect(mockFetch).toHaveBeenCalledWith(
-      "/api/aggregates/bundle?scoring=ppr&teams=12&slots_qb=1&slots_rb=2&slots_wr=2&slots_te=1&slots_k=1&slots_def=1&slots_flex=1"
+      "/api/aggregates/bundle?scoring=ppr&teams=12&slots_qb=1&slots_rb=2&slots_wr=2&slots_te=1&slots_k=1&slots_def=1&slots_flex=1&slots_bench=0"
     );
 
     expect(result).toEqual(mockResponse);

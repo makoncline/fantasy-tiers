@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  buildRosterRequirementsFromDraftSettings,
   calculateTeamNeedsAndCountsForSingleTeam,
   ZERO_ROSTER_SLOT_COUNTS,
   FLEX_POSITIONS,
@@ -7,6 +8,22 @@ import {
 import type { Position, RosterSlot } from "./schemas";
 
 describe("calculateTeamNeedsAndCountsForSingleTeam (FLEX allocation)", () => {
+  it("derives bench slots from rounds minus starter slots", () => {
+    expect(
+      buildRosterRequirementsFromDraftSettings({
+        teams: 10,
+        rounds: 15,
+        slots_qb: 1,
+        slots_rb: 2,
+        slots_wr: 2,
+        slots_te: 1,
+        slots_flex: 1,
+        slots_k: 1,
+        slots_def: 1,
+      }).BN
+    ).toBe(6);
+  });
+
   it("allocates extra WR to FLEX when WR primary needs are filled", () => {
     const rosterRequirements: Record<RosterSlot, number> = {
       QB: 1,
@@ -184,5 +201,34 @@ describe("calculateTeamNeedsAndCountsForSingleTeam (FLEX allocation)", () => {
     // FLEX should get the extras up to FLEX requirement (1 extra WR beyond the 2 required)
     expect(positionCounts.FLEX).toBe(1);
     expect(positionNeeds.FLEX).toBe(0); // 1 >= 1, so FLEX requirement satisfied
+  });
+
+  it("counts extra drafted players against bench slots", () => {
+    const rosterRequirements: Record<RosterSlot, number> = {
+      QB: 1,
+      RB: 1,
+      WR: 1,
+      TE: 0,
+      FLEX: 1,
+      K: 0,
+      DEF: 0,
+      BN: 2,
+    };
+
+    const drafted: { position: Position }[] = [
+      { position: "QB" },
+      { position: "RB" },
+      { position: "WR" },
+      { position: "WR" },
+      { position: "RB" },
+    ];
+
+    const { positionNeeds, positionCounts } =
+      calculateTeamNeedsAndCountsForSingleTeam(drafted, rosterRequirements);
+
+    expect(positionCounts.FLEX).toBe(1);
+    expect(positionNeeds.FLEX).toBe(0);
+    expect(positionCounts.BN).toBe(1);
+    expect(positionNeeds.BN).toBe(1);
   });
 });

@@ -14,7 +14,7 @@ export const CORE_POSITIONS = [
   "DEF",
 ] as const satisfies readonly Position[];
 
-// Position to scoring types mapping for Boris Chen data
+// Position to scoring types mapping for Tiers data
 export const POSITIONS_TO_SCORING_TYPES: Record<string, ScoringType[]> = {
   QB: ["std"],
   K: ["std"],
@@ -38,7 +38,7 @@ export const ROSTER_SLOT_TO_RANKING_DATA_ABBV: Record<string, string> = {
   ALL: "ALL",
 };
 
-// Scoring type suffix mappings for Boris Chen files
+// Scoring type suffix mappings for Tiers files
 export const SUFFIX_FOR_SCORING: Record<ScoringType, string> = {
   std: "",
   half: "-HALF",
@@ -59,11 +59,36 @@ export function scoringKeys(scoring: ScoringType) {
       scoring === "ppr" ? "ppr" : scoring === "half" ? "half_ppr" : "std",
     // FantasyPros stats/rankings key group in combined aggregates
     fpKey: scoring === "ppr" ? "ppr" : scoring === "half" ? "half" : "standard",
-    // Boris Chen keys in combined aggregates are "std" | "ppr" | "half"
-    borisKey: scoring,
+    // Tiers keys in combined aggregates are "std" | "ppr" | "half"
+    tierKey: scoring,
   } as const satisfies {
     sleeperSuffix: "ppr" | "half_ppr" | "std";
     fpKey: "ppr" | "half" | "standard";
-    borisKey: ScoringType;
+    tierKey: ScoringType;
   };
+}
+
+export function scoringTypeFromReceptionPoints(recPoints: number): ScoringType {
+  if (recPoints <= 0) return "std";
+  if (recPoints === 0.5) return "half";
+  if (recPoints === 1) return "ppr";
+  return recPoints > 0.5 ? "ppr" : "half";
+}
+
+export function parseSleeperScoringType(value: unknown): ScoringType {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  switch (normalized) {
+    case "ppr":
+    case "full_ppr":
+      return "ppr";
+    case "half":
+    case "half_ppr":
+      return "half";
+    case "std":
+    case "standard":
+    case "non_ppr":
+      return "std";
+    default:
+      throw new Error(`Unsupported Sleeper scoring type: ${normalized || "missing"}`);
+  }
 }

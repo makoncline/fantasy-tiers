@@ -14,7 +14,7 @@ describe("enrichPlayers", () => {
     position: "QB",
     team: "TB",
     bye_week: 9,
-    borischen: {
+    tiers: {
       std: { rank: 12, tier: 3 },
       ppr: { rank: 11, tier: 3 },
       half: { rank: 10, tier: 3 },
@@ -47,9 +47,9 @@ describe("enrichPlayers", () => {
         half: { FPTS_AVG: 18.8 },
       },
       rankings: {
-        standard: { rank_ecr: 42, tier: 5 },
-        ppr: { rank_ecr: 41, tier: 5 },
-        half: { rank_ecr: 43, tier: 5 },
+        standard: { rank_ecr: 42, rank_ave: 42.4, rank_std: 3.1, tier: 5 },
+        ppr: { rank_ecr: 41, rank_ave: 41.6, rank_std: 2.9, tier: 5 },
+        half: { rank_ecr: 43, rank_ave: 43.2, rank_std: 3.4, tier: 5 },
       },
     },
   };
@@ -78,9 +78,9 @@ describe("enrichPlayers", () => {
     expect(enriched.name).toBe("John Doe");
     expect(enriched.position).toBe("QB");
 
-    // Check Boris Chen enrichment
-    expect(enriched.bc_rank).toBe(12);
-    expect(enriched.bc_tier).toBe(3);
+    // Check Tiers enrichment
+    expect(enriched.tier_rank).toBe(12);
+    expect(enriched.tier_level).toBe(3);
 
     // Check Sleeper enrichment
     expect(enriched.sleeper_pts).toBe(320.5);
@@ -90,6 +90,8 @@ describe("enrichPlayers", () => {
     expect(enriched.fp_pts).toBe(296);
     expect(enriched.fp_adp).toBeNull();
     expect(enriched.fp_rank_overall).toBe(42);
+    expect(enriched.fp_rank_ave).toBe(42.4);
+    expect(enriched.fp_rank_std).toBe(3.1);
     expect(enriched.fp_tier).toBe(5);
     expect(enriched.fp_player_owned_avg).toBe(15.5);
 
@@ -105,7 +107,7 @@ describe("enrichPlayers", () => {
     const pprLeague = { ...mockLeague, scoring: "ppr" as ScoringType };
     const result = enrichPlayers([mockCombinedEntry], pprLeague);
 
-    expect(result[0].bc_rank).toBe(11); // PPR rank
+    expect(result[0].tier_rank).toBe(11); // PPR rank
     expect(result[0].sleeper_pts).toBe(350.8); // PPR points
     expect(result[0].fp_pts).toBe(19.2); // PPR fantasy points
   });
@@ -119,21 +121,21 @@ describe("enrichPlayers", () => {
       const enriched = result[0];
 
       // Verify that enrichment works for each scoring type
-      expect(enriched.bc_rank).toBeDefined();
+      expect(enriched.tier_rank).toBeDefined();
       expect(enriched.sleeper_pts).toBeDefined();
       expect(enriched.fp_pts).toBeDefined();
 
       // Check that the correct scoring-specific data is used
       if (scoring === "std") {
-        expect(enriched.bc_rank).toBe(12);
+        expect(enriched.tier_rank).toBe(12);
         expect(enriched.sleeper_pts).toBe(320.5);
         expect(enriched.fp_pts).toBe(296);
       } else if (scoring === "ppr") {
-        expect(enriched.bc_rank).toBe(11);
+        expect(enriched.tier_rank).toBe(11);
         expect(enriched.sleeper_pts).toBe(350.8);
         expect(enriched.fp_pts).toBe(19.2);
       } else if (scoring === "half") {
-        expect(enriched.bc_rank).toBe(10);
+        expect(enriched.tier_rank).toBe(10);
         expect(enriched.sleeper_pts).toBe(340.2);
         expect(enriched.fp_pts).toBe(18.8);
       }
@@ -143,7 +145,7 @@ describe("enrichPlayers", () => {
   it("should handle null/undefined values gracefully", () => {
     const entryWithNulls: CombinedEntryT = {
       ...mockCombinedEntry,
-      borischen: {
+      tiers: {
         std: null,
         ppr: null,
         half: null,
@@ -164,8 +166,8 @@ describe("enrichPlayers", () => {
 
     const result = enrichPlayers([entryWithNulls], mockLeague);
 
-    expect(result[0].bc_rank).toBeNull();
-    expect(result[0].bc_tier).toBeNull();
+    expect(result[0].tier_rank).toBeNull();
+    expect(result[0].tier_level).toBeNull();
     expect(result[0].sleeper_pts).toBeNull();
     expect(result[0].sleeper_adp).toBeNull();
     expect(result[0].fp_pts).toBeNull();
@@ -209,7 +211,7 @@ describe("enrichPlayers", () => {
     const enriched = result[0];
 
     // Check that all original fields are still present
-    expect(enriched.borischen).toEqual(mockCombinedEntry.borischen);
+    expect(enriched.tiers).toEqual(mockCombinedEntry.tiers);
     expect(enriched.sleeper).toEqual(mockCombinedEntry.sleeper);
     expect(enriched.fantasypros).toEqual(mockCombinedEntry.fantasypros);
   });
@@ -247,7 +249,7 @@ describe("enrichPlayers FLEX & baseline smoke", () => {
       position: pos,
       team: "TEAM",
       bye_week: 9,
-      borischen: { std: null, ppr: null, half: null },
+      tiers: { std: null, ppr: null, half: null },
       sleeper: {
         stats: {
           adp_std: null,
@@ -274,7 +276,7 @@ describe("enrichPlayers FLEX & baseline smoke", () => {
           standard: { FPTS: fpts },
         },
         rankings: {
-          standard: { rank_ecr: ecr, tier: 1 },
+          standard: { rank_ecr: ecr, rank_ave: ecr + 0.4, rank_std: 1, tier: 1 },
         },
       },
     } as unknown as CombinedEntryT;

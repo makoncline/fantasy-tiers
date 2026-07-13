@@ -1,7 +1,6 @@
 import type { PlayerWithPick } from "@/lib/types.draft";
 import type { ColumnDef, ColumnGroup } from "./columns";
 import { fmt } from "@/lib/formatters";
-import { SEASON_WEEKS } from "@/lib/constants";
 
 const col = <K extends keyof PlayerWithPick>(
   id: string,
@@ -16,6 +15,52 @@ const col = <K extends keyof PlayerWithPick>(
   ...opts,
 });
 
+function positionRank(row: PlayerWithPick) {
+  return typeof row.fp_rank_pos === "number" && row.position
+    ? `${String(row.position).toUpperCase()}${row.fp_rank_pos}`
+    : "—";
+}
+
+function nameWithPositionRank(name: unknown, row: PlayerWithPick) {
+  const rank = positionRank(row);
+  const suffix = rank === "—" ? row.position : rank;
+  return `${name} (${suffix})`;
+}
+
+function formatAdpWithDelta(row: PlayerWithPick) {
+  const adp = row.sleeper_adp_round_pick ?? "—";
+  if (
+    typeof row.draft_adp_delta_rounds !== "number" ||
+    Math.abs(row.draft_adp_delta_rounds) < 0.5
+  ) {
+    return adp;
+  }
+
+  const rounded = Number(row.draft_adp_delta_rounds.toFixed(1));
+  const delta = `${rounded > 0 ? "+" : ""}${rounded}`;
+  return `${adp} (${delta})`;
+}
+
+function formatOverallWithSleeperDelta(row: PlayerWithPick) {
+  const fpRank = row.fp_rank_ave;
+  if (typeof fpRank !== "number") return "—";
+  const formattedFpRank = fpRank % 1 === 0 ? String(fpRank) : fpRank.toFixed(1);
+  if (typeof row.sleeper_rank_overall !== "number") return formattedFpRank;
+
+  const delta = row.sleeper_rank_overall - fpRank;
+  const formattedDelta = delta % 1 === 0 ? String(delta) : delta.toFixed(1);
+  return `${formattedFpRank} (${delta > 0 ? "+" : ""}${formattedDelta})`;
+}
+
+function formatOverallAndPositionTier(row: PlayerWithPick) {
+  const overallTier = row.tier_level ?? row.fp_tier ?? row.tier;
+  const positionTier = row.position_tier_level;
+  if (typeof overallTier !== "number" && typeof positionTier !== "number") {
+    return "—";
+  }
+  return `${overallTier ?? "—"}/${positionTier ?? "—"}`;
+}
+
 export const GROUPS_FULL: ColumnGroup<PlayerWithPick>[] = [
   {
     header: "Player",
@@ -25,146 +70,66 @@ export const GROUPS_FULL: ColumnGroup<PlayerWithPick>[] = [
         header: "Name",
         accessor: (r) => r.name,
         sortAs: "string",
-        width: "16ch",
-        render: (name, r) => `${name} (${r.position})`,
+        width: "18ch",
+        render: (name, r) => nameWithPositionRank(name, r),
+      },
+      {
+        id: "ovr",
+        header: "ECR (Sleeper Δ)",
+        description:
+          "FantasyPros ECR average, with Sleeper overall rank delta in parentheses.",
+        accessor: (r) => r.fp_rank_ave ?? null,
+        sortable: true,
+        sortAs: "number",
+        width: "9ch",
+        render: (_, r) => formatOverallWithSleeperDelta(r),
       },
       {
         id: "tm_bw",
-        header: "TM/BW",
+        header: "Team / Bye",
         accessor: (r) => fmt.teamBye(r),
+        sortable: true,
         sortAs: "string",
         width: "7ch",
       },
-    ],
-  },
-  {
-    header: "Boris Chen",
-    children: [
-      col("bc_rnk", "bc_rank", { header: "RNK", sortable: true, width: "4ch" }),
       {
-        id: "bc_tier",
-        header: "RT",
-        accessor: (r) => r.bc_tier ?? r.tier,
+        id: "tier_level",
+        header: "Tier (overall / pos)",
+        description:
+          "FantasyPros overall tier / FantasyPros position tier.",
+        accessor: (r) => r.tier_level ?? r.fp_tier ?? r.tier ?? null,
         sortAs: "number",
-        width: "3ch",
-      },
-    ],
-  },
-  {
-    header: "Sleeper",
-    children: [
-      col("sl_rnk", "sleeper_rank_overall", { header: "RNK", sortable: true }),
-      col("sl_adp", "sleeper_adp", { header: "ADP", sortable: true }),
-      col("sl_pts", "sleeper_pts", { header: "PTS", sortable: true }),
-    ],
-  },
-  {
-    header: "FantasyPros",
-    children: [
-      {
-        id: "fp_tier",
-        header: "RT",
-        accessor: (r) => r.fp_tier,
-        sortAs: "number",
-      },
-      {
-        id: "ecr",
-        header: "ECR",
-        accessor: (r) => {
-          const s = r.ecr_round_pick;
-          if (!s) return null;
-          const parts = s.split(".").map(Number);
-          if (parts.length !== 2) return null;
-          const rd = parts[0];
-          const pk = parts[1];
-          if (rd == null || pk == null) return null;
-          return Number.isFinite(rd) && Number.isFinite(pk)
-            ? rd * 100 + pk
-            : null;
-        },
         sortable: true,
-        sortAs: "number",
-        render: (_, r) => r.ecr_round_pick ?? "—",
-      },
-      {
-        id: "prnk",
-        header: "PRNK",
-        accessor: (r) =>
-          typeof r.fp_rank_pos === "number" && r.position
-            ? `${String(r.position).toUpperCase()}${r.fp_rank_pos}`
-            : "—",
-        sortAs: "string",
-      },
-      col("fp_pts", "fp_pts", { header: "PTS", sortable: true }),
-      {
-        id: "owned",
-        header: "%OWN",
-        accessor: (r) =>
-          r.fp_player_owned_avg != null
-            ? Math.round(r.fp_player_owned_avg)
-            : null,
-        sortable: true,
-        render: (v) => fmt.percent0(v),
-        defaultDir: "desc",
+        width: "8ch",
+        render: (_, r) => formatOverallAndPositionTier(r),
       },
     ],
   },
   {
-    header: "Calc",
+    header: "Pick",
     children: [
       {
         id: "val",
         header: "VAL",
-        accessor: (r) => r.fp_value ?? r.val ?? null,
+        description:
+          "Canonical pick value score from FantasyPros ECR, roster fit, timing, ADP, and draft strategy.",
+        accessor: (r) => r.draft_value_score ?? null,
         sortable: true,
         heat: { scale: "val" },
         defaultDir: "desc",
+        sortAs: "number",
+        width: "6ch",
       },
       {
-        id: "ps",
-        header: "PS",
-        accessor: (r) => {
-          const raw =
-            typeof r.fp_remaining_value_pct === "number"
-              ? r.fp_remaining_value_pct
-              : typeof r.ps === "number"
-              ? r.ps
-              : null;
-          return raw != null && raw > 0 ? Math.round(raw) : null; // null => excluded from heat range
-        },
-        sortable: true,
-        heat: { scale: "ps" },
-        render: (v) =>
-          v != null && typeof v === "number" && v > 0 ? `${v}%` : "-",
-        defaultDir: "desc",
-      },
-      {
-        id: "md",
-        header: "MD",
-        accessor: (r) =>
-          typeof r.market_delta === "number" ? r.market_delta : null,
-        sortable: true,
-        heat: { scale: "md" },
-        defaultDir: "desc",
-      },
-      {
-        id: "ppg",
-        header: "PPG",
-        accessor: (r) =>
-          typeof r.fp_pts === "number"
-            ? +(r.fp_pts / SEASON_WEEKS).toFixed(1)
-            : null,
+        id: "adp",
+        header: "ADP (delta)",
+        description:
+          "Sleeper ADP round/pick. Delta only appears at 0.5+ rounds: +N means the player might be drafted later, -N means the player might go earlier.",
+        accessor: (r) => r.sleeper_adp ?? null,
         sortable: true,
         sortAs: "number",
-        defaultDir: "desc",
-      },
-      {
-        id: "pck",
-        header: "PCK",
-        accessor: (r) => r.picked?.overall ?? null,
-        sortable: true,
-        sortAs: "number",
-        defaultDir: "asc", // lowest overall = earlier pick
+        width: "12ch",
+        render: (_, r) => formatAdpWithDelta(r),
       },
     ],
   },
@@ -172,78 +137,12 @@ export const GROUPS_FULL: ColumnGroup<PlayerWithPick>[] = [
 
 export const GROUPS_COMPACT_FULL: ColumnGroup<PlayerWithPick>[] = [
   {
-    header: " ",
-    children: [
-      col("bc_rnk", "bc_rank", { header: "RNK", width: "4ch", sortable: true }),
-      {
-        id: "name",
-        header: "Name",
-        accessor: (r) => r.name,
-        sortAs: "string",
-        width: "16ch",
-        render: (name, r) => `${name} (${r.position})`,
-      },
-      {
-        id: "tm_bw",
-        header: "TM/BW",
-        accessor: (r) => fmt.teamBye(r),
-        sortAs: "string",
-        width: "7ch",
-      },
-      {
-        id: "ecr",
-        header: "ECR",
-        accessor: (r) => {
-          const s = r.ecr_round_pick;
-          if (!s) return null;
-          const parts = s.split(".").map(Number);
-          if (parts.length !== 2) return null;
-          const rd = parts[0];
-          const pk = parts[1];
-          if (rd == null || pk == null) return null;
-          return Number.isFinite(rd) && Number.isFinite(pk)
-            ? rd * 100 + pk
-            : null;
-        },
-        sortable: true,
-        sortAs: "number",
-        width: "5ch",
-        render: (_, r) => r.ecr_round_pick ?? "—",
-      },
-      {
-        id: "rt",
-        header: "RT",
-        accessor: (r) => r.fp_tier ?? "—",
-        sortAs: "number",
-        width: "3ch",
-      },
-      {
-        id: "val",
-        header: "VAL",
-        accessor: (r) => r.fp_value ?? r.val ?? null,
-        sortable: true,
-        heat: { scale: "val" },
-        width: "5ch",
-      },
-      {
-        id: "ps",
-        header: "PS",
-        accessor: (r) => {
-          const raw =
-            typeof r.fp_remaining_value_pct === "number"
-              ? r.fp_remaining_value_pct
-              : typeof r.ps === "number"
-              ? r.ps
-              : null;
-          return raw != null && raw > 0 ? Math.round(raw) : null; // null => excluded from heat range
-        },
-        sortable: true,
-        heat: { scale: "ps" },
-        width: "5ch",
-        render: (v) =>
-          v != null && typeof v === "number" && v > 0 ? `${v}%` : "-",
-      },
-    ],
+    header: "Player",
+    children: GROUPS_FULL[0]?.children ?? [],
+  },
+  {
+    header: "Pick",
+    children: GROUPS_FULL[1]?.children ?? [],
   },
 ];
 
@@ -251,14 +150,15 @@ export const GROUPS_COMPACT_NAMEONLY: ColumnGroup<PlayerWithPick>[] = [
   {
     header: " ",
     children: [
-      col("bc_rnk", "bc_rank", { header: "RNK", width: "4ch" }),
+      col("tier_rnk", "tier_rank", { header: "RNK", width: "4ch" }),
       {
         id: "name",
         header: "Name",
         accessor: (r) => r.name,
+        sortable: true,
         sortAs: "string",
         width: "16ch",
-        render: (name, r) => `${name} (${r.position})`,
+        render: (name, r) => nameWithPositionRank(name, r),
       },
     ],
   },

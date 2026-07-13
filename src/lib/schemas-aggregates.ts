@@ -54,16 +54,30 @@ export const FantasyProsCombined = z.object({
   rankings: z.record(z.string(), z.unknown()),
 });
 
-export const CombinedEntry = z.object({
-  player_id: z.string(),
-  name: z.string(),
-  position: PositionEnum, // Required PositionEnum for fantasy positions only
-  team: z.union([z.string(), z.null()]), // nullable: observed in RB data
-  bye_week: z.number().nullable(), // nullable: observed in RB data
-  borischen: RankTiersByScoring,
-  sleeper: SleeperCombined,
-  fantasypros: z.union([FantasyProsCombined, z.null()]), // nullable: observed in RB data
-});
+function withLegacyTiersKey(value: unknown): unknown {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    return value;
+  }
+  const record = value as Record<string, unknown>;
+  if ("tiers" in record || !("borischen" in record)) {
+    return value;
+  }
+  return { ...record, tiers: record.borischen };
+}
+
+export const CombinedEntry = z.preprocess(
+  withLegacyTiersKey,
+  z.object({
+    player_id: z.string(),
+    name: z.string(),
+    position: PositionEnum, // Required PositionEnum for fantasy positions only
+    team: z.union([z.string(), z.null()]), // nullable: observed in RB data
+    bye_week: z.number().nullable(), // nullable: observed in RB data
+    tiers: RankTiersByScoring,
+    sleeper: SleeperCombined,
+    fantasypros: z.union([FantasyProsCombined, z.null()]), // nullable: observed in RB data
+  })
+);
 
 export const CombinedShard = z.record(z.string(), CombinedEntry);
 export type CombinedEntryT = z.infer<typeof CombinedEntry>;

@@ -29,8 +29,10 @@ describe("/api/aggregates/bundle", () => {
     const mockExistsSync = vi.mocked(fs.existsSync);
     const mockReadFileSync = vi.mocked(fs.readFileSync);
 
-    mockResolve.mockReturnValue("/mock/path");
-    mockExistsSync.mockReturnValue(true);
+    mockResolve.mockImplementation((...segments) => segments.join("/"));
+    mockExistsSync.mockImplementation(
+      (file) => !String(file).endsWith("/aggregate/footballguys-rankings.json")
+    );
     mockReadFileSync.mockReturnValue(
       JSON.stringify({
         player1: {
@@ -39,7 +41,7 @@ describe("/api/aggregates/bundle", () => {
           position: "QB",
           team: "TB",
           bye_week: 11,
-          borischen: {
+          tiers: {
             std: { rank: 1, tier: 1 },
             ppr: { rank: 1, tier: 1 },
             half: { rank: 1, tier: 1 },
@@ -72,9 +74,9 @@ describe("/api/aggregates/bundle", () => {
               half: { FPTS_AVG: 25.5 },
             },
             rankings: {
-              standard: { rank_ecr: 1, tier: 1 },
-              ppr: { rank_ecr: 1, tier: 1 },
-              half: { rank_ecr: 1, tier: 1 },
+              standard: { rank_ecr: 1, rank_ave: 1.3, rank_std: 0.4, tier: 1 },
+              ppr: { rank_ecr: 1, rank_ave: 1.3, rank_std: 0.4, tier: 1 },
+              half: { rank_ecr: 1, rank_ave: 1.3, rank_std: 0.4, tier: 1 },
             },
           },
         },
@@ -122,6 +124,42 @@ describe("/api/aggregates/bundle", () => {
 
     // Check response headers
     expect(response.headers.get("cache-control")).toBe("public, max-age=60");
+  });
+
+  it("uses default league settings when query params are omitted", async () => {
+    const mockResolve = vi.mocked(path.resolve);
+    const mockExistsSync = vi.mocked(fs.existsSync);
+    const mockReadFileSync = vi.mocked(fs.readFileSync);
+
+    mockResolve.mockImplementation((...segments) => segments.join("/"));
+    mockExistsSync.mockImplementation(
+      (file) => !String(file).endsWith("/aggregate/footballguys-rankings.json")
+    );
+    mockReadFileSync.mockReturnValue(JSON.stringify({}));
+
+    const { getAggregatesLastModifiedServer } = await import(
+      "@/lib/combinedAggregates"
+    );
+    vi.mocked(getAggregatesLastModifiedServer).mockReturnValue(1234567890000);
+
+    const request = new NextRequest(
+      new URL("http://localhost/api/aggregates/bundle")
+    );
+    const response = await GET(request);
+
+    expect(response.status).toBe(200);
+    const data = await response.json();
+    expect(data.scoring).toBe("std");
+    expect(data.teams).toBe(10);
+    expect(data.roster).toMatchObject({
+      QB: 1,
+      RB: 2,
+      WR: 2,
+      TE: 1,
+      K: 1,
+      DEF: 1,
+      FLEX: 1,
+    });
   });
 
   it("returns 400 for invalid scoring parameter", async () => {

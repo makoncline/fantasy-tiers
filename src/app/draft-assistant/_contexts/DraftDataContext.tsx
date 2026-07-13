@@ -17,41 +17,49 @@ import {
   useSleeperUserByUsername,
   useSleeperUserById,
   useSleeperDrafts,
+  useSleeperNflState,
 } from "@/app/draft-assistant/_lib/useSleeper";
 import { buildDraftViewModel } from "@/lib/draftState";
+import type { DraftContext } from "@/lib/draftState";
+import { buildRosterRequirementsFromDraftSettings } from "@/lib/draftHelpers";
+import { getSleeperSeasonCandidates } from "@/lib/sleeperSeasons";
 
 import type {
   DraftedPlayer,
   RankedPlayer,
   RosterSlot,
   DraftPick,
+  ScoringType,
 } from "@/lib/schemas";
-import { scoringTypeSchema } from "@/lib/schemas";
 import type { SleeperUser, SleeperDraftSummary } from "@/lib/sleeper";
 import type { DraftDetails } from "@/lib/draftDetails";
 import type { Position } from "../_lib/types";
-import type { AggregatesBundleResponseT } from "@/lib/schemas-bundle";
+import type {
+  AggregatesBundleResponseT,
+  AggregateSourceHealthT,
+} from "@/lib/schemas-bundle";
 import type { PlayerRow } from "@/lib/playerRows";
-import { toPlayerRowsFromBundle } from "@/lib/playerRows";
+import {
+  buildPositionTierMapFromBundle,
+  toPlayerRowsFromBundle,
+} from "@/lib/playerRows";
 import type { PlayerWithPick } from "@/lib/types.draft";
 import { normalizePick } from "@/lib/normalizePick";
 import type { PickMeta } from "@/lib/types.draft";
-
-interface Recommendation {
-  keyPositions: RankedPlayer[];
-  bestAvailable: RankedPlayer[];
-  backups: RankedPlayer[];
-  nonKeyPositions: RankedPlayer[];
-}
+import {
+  attachDraftValueMetrics,
+  type DraftRosterConstruction,
+} from "@/lib/draftValue";
+import { draftCandidateMapFromRows } from "@/lib/draftCandidate";
+import { parseSleeperScoringType } from "@/lib/scoring";
 
 interface ProcessedData {
-  recommendations: Recommendation | null;
   availablePlayers: RankedPlayer[];
   availableByPosition?: Record<string, RankedPlayer[]>;
   topAvailablePlayersByPosition?: Record<string, RankedPlayer[]>;
   userPositionNeeds: Partial<Record<Position, number>>;
   userPositionCounts: Partial<Record<Position, number>>;
-  userPositionRequirements: Partial<Record<Position, number>>;
+  userPositionRequirements: Partial<Record<RosterSlot, number>>;
   // Helper function to get roster status for a position
   getRosterStatus: (pos: Position) => {
     count: number;
@@ -61,6 +69,11 @@ interface ProcessedData {
   draftWideNeeds: Partial<Record<Position, number>>;
   userRoster: DraftedPlayer[] | null;
   userRosterSlots: { slot: RosterSlot; player: DraftedPlayer | null }[];
+  decisionRows: PlayerWithPick[];
+  topRecommendation: PlayerWithPick | null;
+  rosterConstruction: DraftRosterConstruction | null;
+  draftContext: DraftContext | null;
+  sourceHealth: AggregateSourceHealthT | null;
   positionRows?: {
     QB: PlayerRow[];
     RB: PlayerRow[];
@@ -73,7 +86,7 @@ interface ProcessedData {
   } | null;
 }
 
-interface DraftDataContextType extends ProcessedData {
+export interface DraftDataContextType extends ProcessedData {
   // Input state and handlers
   username: string;
   setUsername: (username: string) => void;
@@ -119,12 +132,14 @@ interface DraftDataContextType extends ProcessedData {
   // Minimal league shape for enrichment/UIs
   league: {
     teams: number;
-    scoring: ReturnType<typeof scoringTypeSchema.parse> | undefined;
+    scoring: ScoringType | undefined;
     roster: {
       QB: number;
       RB: number;
       WR: number;
       TE: number;
+      K: number;
+      DEF: number;
       FLEX: number;
       BENCH: number;
     };
@@ -174,7 +189,6 @@ const defaultContextValue: DraftDataContextType = {
   setShowUnranked: () => {},
 
   // Processed data
-  recommendations: null,
   availablePlayers: [],
   userPositionNeeds: {},
   userPositionCounts: {},
@@ -184,6 +198,11 @@ const defaultContextValue: DraftDataContextType = {
   draftWideNeeds: {},
   userRoster: null,
   userRosterSlots: [],
+  decisionRows: [],
+  topRecommendation: null,
+  rosterConstruction: null,
+  draftContext: null,
+  sourceHealth: null,
 
   // Loading states
   loading: {
@@ -214,7 +233,6 @@ const defaultContextValue: DraftDataContextType = {
 };
 
 const EMPTY_PROCESSED: ProcessedData = {
-  recommendations: null,
   availablePlayers: [],
   userPositionNeeds: {},
   userPositionCounts: {},
@@ -224,11 +242,48 @@ const EMPTY_PROCESSED: ProcessedData = {
   draftWideNeeds: {},
   userRoster: null,
   userRosterSlots: [],
+  decisionRows: [],
+  topRecommendation: null,
+  rosterConstruction: null,
+  draftContext: null,
+  sourceHealth: null,
   positionRows: null,
 };
 
 const DraftDataContext =
   createContext<DraftDataContextType>(defaultContextValue);
+
+export function DraftDataStaticProvider({
+  children,
+  value,
+}: {
+  children: React.ReactNode;
+  value: Partial<DraftDataContextType>;
+}) {
+  const [showAll, setShowAll] = useState(value.showAll ?? false);
+  const [showDrafted, setShowDrafted] = useState(value.showDrafted ?? false);
+  const [showUnranked, setShowUnranked] = useState(value.showUnranked ?? false);
+
+  const contextValue = useMemo(
+    () => ({
+      ...defaultContextValue,
+      ...value,
+      showAll,
+      setShowAll,
+      showDrafted,
+      setShowDrafted,
+      showUnranked,
+      setShowUnranked,
+    }),
+    [showAll, showDrafted, showUnranked, value]
+  );
+
+  return (
+    <DraftDataContext.Provider value={contextValue}>
+      {children}
+    </DraftDataContext.Provider>
+  );
+}
 
 export function DraftDataProvider({
   children,
@@ -309,7 +364,13 @@ export function DraftDataProvider({
     refetch: refetchUser,
   } = useSleeperUserByUsername(username, shouldLoadUser);
 
-  const currentYear = String(new Date().getFullYear());
+  const { data: nflState } = useSleeperNflState({ enabled: shouldLoadUser });
+  const draftSeason = useMemo(
+    () =>
+      getSleeperSeasonCandidates(nflState)[0] ??
+      String(new Date().getFullYear()),
+    [nflState]
+  );
   const {
     data: drafts,
     isLoading: isLoadingDrafts,
@@ -317,7 +378,7 @@ export function DraftDataProvider({
     refetch: refetchDrafts,
   } = useSleeperDrafts(
     user?.user_id,
-    currentYear,
+    draftSeason,
     shouldLoadUser && Boolean(user?.user_id)
   );
 
@@ -341,62 +402,40 @@ export function DraftDataProvider({
     dataUpdatedAt: updatedAtPicks,
   } = useDraftPicks(selectedDraftId, {
     enabled: Boolean(selectedDraftId),
+    ...(draftDetails?.settings.teams && draftDetails.settings.rounds
+      ? {
+          expectedPickCount:
+            draftDetails.settings.teams * draftDetails.settings.rounds,
+        }
+      : {}),
     refetchInterval: 3000,
   });
 
   // Parse scoring type from draft details
-  const parsedScoring = scoringTypeSchema.safeParse(
-    draftDetails?.metadata?.scoring_type
-  );
   const scoringType = React.useMemo(() => {
-    if (parsedScoring.success) return parsedScoring.data;
-    const raw = (draftDetails?.metadata?.scoring_type || "")
-      .toString()
-      .toLowerCase();
-    switch (raw) {
-      case "ppr":
-      case "full_ppr":
-        return "ppr" as const;
-      case "half":
-      case "half_ppr":
-        return "half" as const;
-      case "std":
-      case "standard":
-      case "non_ppr":
-        return "std" as const;
-      default:
-        return undefined;
-    }
-  }, [
-    parsedScoring.success,
-    parsedScoring.data,
-    draftDetails?.metadata?.scoring_type,
-  ]);
+    if (!draftDetails) return undefined;
+    return parseSleeperScoringType(draftDetails.metadata?.scoring_type);
+  }, [draftDetails]);
 
   // Build league object from draft details
   const league = useMemo(() => {
     if (!draftDetails || !scoringType) return null;
+    const rosterRequirements = buildRosterRequirementsFromDraftSettings(
+      draftDetails.settings
+    );
 
     const leagueObj = {
       teams: draftDetails.settings?.teams ?? 0,
       scoring: scoringType,
       roster: {
-        QB: draftDetails.settings?.slots_qb ?? 0,
-        RB: draftDetails.settings?.slots_rb ?? 0,
-        WR: draftDetails.settings?.slots_wr ?? 0,
-        TE: draftDetails.settings?.slots_te ?? 0,
-        K: draftDetails.settings?.slots_k ?? 0,
-        DEF: draftDetails.settings?.slots_def ?? 0,
-        FLEX: draftDetails.settings?.slots_flex ?? 0,
-        BENCH:
-          (draftDetails.settings?.rounds ?? 0) -
-          ((draftDetails.settings?.slots_qb ?? 0) +
-            (draftDetails.settings?.slots_rb ?? 0) +
-            (draftDetails.settings?.slots_wr ?? 0) +
-            (draftDetails.settings?.slots_te ?? 0) +
-            (draftDetails.settings?.slots_k ?? 0) +
-            (draftDetails.settings?.slots_def ?? 0) +
-            (draftDetails.settings?.slots_flex ?? 0)),
+        QB: rosterRequirements.QB,
+        RB: rosterRequirements.RB,
+        WR: rosterRequirements.WR,
+        TE: rosterRequirements.TE,
+        K: rosterRequirements.K,
+        DEF: rosterRequirements.DEF,
+        FLEX: rosterRequirements.FLEX,
+        BENCH: rosterRequirements.BN,
       },
     };
 
@@ -465,7 +504,7 @@ export function DraftDataProvider({
   const loading = useMemo(
     () => ({
       user: isLoadingUser || isLoadingInitialUser,
-      drafts: isLoadingDrafts,
+      drafts: selectedDraftId ? false : isLoadingDrafts,
       draftDetails: isLoadingDraftDetails,
       players: isLoadingPlayers,
       picks: isLoadingPicks,
@@ -474,6 +513,7 @@ export function DraftDataProvider({
       isLoadingUser,
       isLoadingInitialUser,
       isLoadingDrafts,
+      selectedDraftId,
       isLoadingDraftDetails,
       isLoadingPlayers,
       isLoadingPicks,
@@ -483,7 +523,7 @@ export function DraftDataProvider({
   const error = useMemo(
     () => ({
       user: errorUser || errorInitialUser,
-      drafts: errorDrafts,
+      drafts: selectedDraftId ? null : errorDrafts,
       draftDetails: errorDraftDetails,
       players: errorPlayers,
       picks: errorPicks,
@@ -492,6 +532,7 @@ export function DraftDataProvider({
       errorUser,
       errorInitialUser,
       errorDrafts,
+      selectedDraftId,
       errorDraftDetails,
       errorPlayers,
       errorPicks,
@@ -508,6 +549,7 @@ export function DraftDataProvider({
       // eslint-disable-next-line no-console
       console.error("drafts error", {
         userId: user?.user_id,
+        season: draftSeason,
         error: errorDrafts,
       });
     }
@@ -537,6 +579,7 @@ export function DraftDataProvider({
     errorPlayers,
     username,
     user?.user_id,
+    draftSeason,
     selectedDraftId,
   ]);
 
@@ -557,17 +600,49 @@ export function DraftDataProvider({
   // Build position rows from bundle when available
   const positionRows = useMemo(() => {
     if (!playersBundle || !league) return null;
+    const positionTierByPlayerId = buildPositionTierMapFromBundle(playersBundle);
+    const positionTierOptions = { tiersArePositionTiers: true };
 
     // Use existing import instead of require
     const result = {
-      QB: toPlayerRowsFromBundle(playersBundle.shards.QB, league.teams),
-      RB: toPlayerRowsFromBundle(playersBundle.shards.RB, league.teams),
-      WR: toPlayerRowsFromBundle(playersBundle.shards.WR, league.teams),
-      TE: toPlayerRowsFromBundle(playersBundle.shards.TE, league.teams),
-      K: toPlayerRowsFromBundle(playersBundle.shards.K, league.teams),
-      DEF: toPlayerRowsFromBundle(playersBundle.shards.DEF, league.teams),
-      FLEX: toPlayerRowsFromBundle(playersBundle.shards.FLEX, league.teams),
-      ALL: toPlayerRowsFromBundle(playersBundle.shards.ALL, league.teams),
+      QB: toPlayerRowsFromBundle(
+        playersBundle.shards.QB,
+        league.teams,
+        positionTierOptions
+      ),
+      RB: toPlayerRowsFromBundle(
+        playersBundle.shards.RB,
+        league.teams,
+        positionTierOptions
+      ),
+      WR: toPlayerRowsFromBundle(
+        playersBundle.shards.WR,
+        league.teams,
+        positionTierOptions
+      ),
+      TE: toPlayerRowsFromBundle(
+        playersBundle.shards.TE,
+        league.teams,
+        positionTierOptions
+      ),
+      K: toPlayerRowsFromBundle(
+        playersBundle.shards.K,
+        league.teams,
+        positionTierOptions
+      ),
+      DEF: toPlayerRowsFromBundle(
+        playersBundle.shards.DEF,
+        league.teams,
+        positionTierOptions
+      ),
+      FLEX: toPlayerRowsFromBundle(
+        playersBundle.shards.FLEX,
+        league.teams,
+        positionTierOptions
+      ),
+      ALL: toPlayerRowsFromBundle(playersBundle.shards.ALL, league.teams, {
+        positionTierByPlayerId,
+      }),
     } as const;
 
     return result;
@@ -575,23 +650,7 @@ export function DraftDataProvider({
 
   // Build playersMap from ALL shard for view-model
   const playersMap = useMemo(() => {
-    const map: Record<string, DraftedPlayer> = {};
-    if (!positionRows) return map;
-
-    // For view-model, use ALL rows (global pool) to include every player exactly once
-    for (const r of positionRows.ALL) {
-      // rank/tier must exist for Ranked filtering downstream
-      map[r.player_id] = {
-        player_id: r.player_id,
-        name: r.name,
-        position: r.position as DraftedPlayer["position"],
-        team: r.team,
-        bye_week: r.bye_week != null ? String(r.bye_week) : null,
-        rank: typeof r.bc_rank === "number" ? r.bc_rank : r.rank ?? null,
-        tier: typeof r.bc_tier === "number" ? r.bc_tier : r.tier ?? null,
-      };
-    }
-    return map;
+    return positionRows ? draftCandidateMapFromRows(positionRows.ALL) : {};
   }, [positionRows]);
 
   // Build the server-like draft VM on the client
@@ -609,8 +668,15 @@ export function DraftDataProvider({
       picks: picks || [],
       userId: user.user_id,
       topLimit: 3,
+      sourceWarnings: playersBundle?.sourceHealth?.warnings ?? [],
     });
-  }, [playersMap, draftDetails, picks, user?.user_id]);
+  }, [
+    playersMap,
+    draftDetails,
+    picks,
+    playersBundle?.sourceHealth?.warnings,
+    user?.user_id,
+  ]);
 
   // Build processed data when all required data is available
   const processedData = useMemo(() => {
@@ -620,7 +686,6 @@ export function DraftDataProvider({
 
     try {
       const result = {
-        recommendations: viewModel.nextPickRecommendations,
         availablePlayers: viewModel.available || [],
         availableByPosition: viewModel.availableByPosition,
         topAvailablePlayersByPosition: viewModel.topAvailablePlayersByPosition,
@@ -640,16 +705,10 @@ export function DraftDataProvider({
         userRosterSlots: (() => {
           // Build slots template from draft settings
           if (!draftDetails) return [];
-          const startersCount =
-            (draftDetails.settings?.slots_qb ?? 0) +
-            (draftDetails.settings?.slots_rb ?? 0) +
-            (draftDetails.settings?.slots_wr ?? 0) +
-            (draftDetails.settings?.slots_te ?? 0) +
-            (draftDetails.settings?.slots_k ?? 0) +
-            (draftDetails.settings?.slots_def ?? 0) +
-            (draftDetails.settings?.slots_flex ?? 0);
-          const rounds = draftDetails.settings?.rounds ?? 0;
-          const benchCount = Math.max(0, rounds - startersCount);
+          const rosterRequirements = buildRosterRequirementsFromDraftSettings(
+            draftDetails.settings
+          );
+          const benchCount = rosterRequirements.BN;
 
           const slots: RosterSlot[] = [
             ...Array.from(
@@ -714,6 +773,11 @@ export function DraftDataProvider({
           }
           return rows;
         })(),
+        decisionRows: [],
+        topRecommendation: null,
+        rosterConstruction: null,
+        draftContext: viewModel.draftContext,
+        sourceHealth: playersBundle?.sourceHealth ?? null,
         positionRows, // expose to tables to avoid recomputing
       };
 
@@ -722,7 +786,7 @@ export function DraftDataProvider({
       console.error("Error building processed data:", error);
       return EMPTY_PROCESSED;
     }
-  }, [viewModel, user, positionRows, draftDetails]);
+  }, [viewModel, user, positionRows, draftDetails, playersBundle?.sourceHealth]);
 
   // Build the overlay and enriched lists
   const pickOverlay = useMemo(() => {
@@ -737,8 +801,8 @@ export function DraftDataProvider({
     return m;
   }, [picks, league?.teams]);
 
-  // Enriched ALL
-  const playersAll: PlayerWithPick[] = useMemo(() => {
+  // Enriched ALL with pick overlay, before dynamic value calculations
+  const playersAllWithPicks: PlayerWithPick[] = useMemo(() => {
     const base = positionRows?.ALL ?? [];
     if (base.length === 0) return [];
     if (pickOverlay.size === 0) return base.map((r) => ({ ...r }));
@@ -752,18 +816,59 @@ export function DraftDataProvider({
     });
   }, [positionRows, pickOverlay, user?.user_id]);
 
+  const draftValueBoard = viewModel?.recommendationBoard ?? null;
+
+  const attachDraftValue = useCallback(
+    (row: PlayerWithPick): PlayerWithPick =>
+      attachDraftValueMetrics(
+        row,
+        draftValueBoard?.metricsByPlayerId[row.player_id]
+      ),
+    [draftValueBoard]
+  );
+
+  const playersAll: PlayerWithPick[] = useMemo(() => {
+    if (!draftValueBoard) return playersAllWithPicks;
+    return playersAllWithPicks
+      .map(attachDraftValue)
+      .sort(
+        (a, b) =>
+          (a.draft_recommendation_rank ?? 999_999) -
+            (b.draft_recommendation_rank ?? 999_999) ||
+          (a.tier_rank ?? a.rank ?? 999_999) -
+            (b.tier_rank ?? b.rank ?? 999_999)
+      );
+  }, [attachDraftValue, draftValueBoard, playersAllWithPicks]);
+
+  const decisionRows: PlayerWithPick[] = useMemo(() => {
+    if (!draftValueBoard) return [];
+    return playersAllWithPicks
+      .map(attachDraftValue)
+      .filter(
+        (row) => !row.picked && row.draft_recommendation_rank != null
+      )
+      .sort(
+        (a, b) =>
+          (a.draft_recommendation_rank ?? 999_999) -
+          (b.draft_recommendation_rank ?? 999_999)
+      )
+      .slice(0, 12);
+  }, [attachDraftValue, draftValueBoard, playersAllWithPicks]);
+
   // Enriched per-position (preserve order)
   const playersByPosition = useMemo(() => {
     if (!positionRows) return null;
 
     const me = user?.user_id;
     const enrich = (arr: PlayerRow[]): PlayerWithPick[] =>
-      arr.map((r) => {
-        const meta = pickOverlay.get(r.player_id);
-        return meta
-          ? { ...r, picked: meta, draftedByMe: meta.drafterId === me }
-          : { ...r };
-      });
+      arr
+        .map((r) => {
+          const meta = pickOverlay.get(r.player_id);
+          return meta
+            ? { ...r, picked: meta, draftedByMe: meta.drafterId === me }
+            : { ...r };
+        })
+        .map(attachDraftValue);
 
     return {
       QB: enrich(positionRows.QB),
@@ -775,7 +880,7 @@ export function DraftDataProvider({
       FLEX: enrich(positionRows.FLEX),
       ALL: enrich(positionRows.ALL),
     };
-  }, [positionRows, pickOverlay, user?.user_id]);
+  }, [attachDraftValue, positionRows, pickOverlay, user?.user_id]);
 
   // Drafted ids for legacy consumers and quick checks
   const draftedIds = useMemo(() => {
@@ -813,6 +918,10 @@ export function DraftDataProvider({
 
       // Processed data - build view model when all data is available
       ...processedData,
+      decisionRows,
+      topRecommendation: decisionRows[0] ?? null,
+      rosterConstruction: draftValueBoard?.rosterConstruction ?? null,
+      sourceHealth: playersBundle?.sourceHealth ?? null,
 
       // Loading states
       loading,
@@ -857,6 +966,8 @@ export function DraftDataProvider({
       updatedAtPicks,
       updatedAtPlayers,
       processedData,
+      decisionRows,
+      draftValueBoard,
       playersAll,
       playersByPosition,
       draftedIds,

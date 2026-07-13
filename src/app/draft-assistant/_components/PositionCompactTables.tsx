@@ -9,21 +9,19 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { useAggregatesLastModified } from "../_lib/useDraftQueries";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
 import { normalizePosition } from "@/lib/util";
 import { PlayerTable } from "./PlayerTable";
 
-import type { RankedPlayer } from "@/lib/schemas";
 import type { PlayerWithPick } from "@/lib/types.draft";
-import { findBaseline } from "@/lib/playerSorts";
 import PlayersTableBase from "./table/PlayersTableBase";
-import { GROUPS_COMPACT_FULL, GROUPS_COMPACT_NAMEONLY } from "./table/presets";
+import type { ColumnGroup } from "./table/columns";
 
-import PreviewPickDialog from "./PreviewPickDialog";
+import PreviewPickDialog, { type PreviewPickPlayer } from "./PreviewPickDialog";
 import { CheckIcon, EyeIcon } from "lucide-react";
+import type { DraftPickAction } from "@/app/draft-assistant/_lib/types";
 
-// Compact position tables: fixed columns and non-sortable, grouped by Boris Chen tiers
+// Compact position tables: fixed columns and non-sortable, grouped by Tiers tiers
 interface PositionCompactTablesProps {
   showAll?: boolean;
   setShowAll?: (value: boolean) => void;
@@ -31,6 +29,7 @@ interface PositionCompactTablesProps {
   setShowDrafted?: (value: boolean) => void;
   showUnranked?: boolean;
   setShowUnranked?: (value: boolean) => void;
+  pickAction?: DraftPickAction | undefined;
 }
 
 export default function PositionCompactTables({
@@ -40,19 +39,28 @@ export default function PositionCompactTables({
   setShowDrafted: externalSetShowDrafted,
   showUnranked: externalShowUnranked,
   setShowUnranked: externalSetShowUnranked,
+  pickAction,
 }: PositionCompactTablesProps = {}) {
   const {
     playersByPosition,
     userRosterSlots,
     getRosterStatus,
     showAll,
+    setShowAll,
     showDrafted,
     setShowDrafted,
     showUnranked,
     setShowUnranked,
   } = useDraftData();
-
-  const { data: lastModified } = useAggregatesLastModified();
+  const valueColorDomainRef = React.useRef<PlayerWithPick[]>([]);
+  if (
+    valueColorDomainRef.current.length === 0 &&
+    playersByPosition?.ALL?.some(
+      (player) => typeof player.draft_value_score === "number"
+    )
+  ) {
+    valueColorDomainRef.current = playersByPosition.ALL;
+  }
 
   // Use drafted lookups hook
   // Remove useDraftedLookups - using enriched data from context
@@ -60,12 +68,12 @@ export default function PositionCompactTables({
   const DEFAULT_POS_TABLE_LIMIT = 10;
   const [openLabel, setOpenLabel] = React.useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = React.useState(false);
-  const [previewPlayer, setPreviewPlayer] = React.useState<RankedPlayer | null>(
-    null
-  );
+  const [previewPlayer, setPreviewPlayer] =
+    React.useState<PreviewPickPlayer | null>(null);
 
   // Use external state if provided, otherwise use context state
   const actualShowAll = externalShowAll ?? showAll;
+  const actualSetShowAll = externalSetShowAll ?? setShowAll;
   const actualShowDrafted = externalShowDrafted ?? showDrafted;
   const actualSetShowDrafted = externalSetShowDrafted ?? setShowDrafted;
   const actualShowUnranked = externalShowUnranked ?? showUnranked;
@@ -78,7 +86,8 @@ export default function PositionCompactTables({
 
       if (found && userRosterSlots && userRosterSlots.length > 0) {
         // Convert found player to RankedPlayer format
-        const rankedPlayer: RankedPlayer = {
+        const rankedPlayer: PreviewPickPlayer = {
+          ...found,
           player_id: found.player_id,
           name: found.name,
           position: found.position,
@@ -92,7 +101,8 @@ export default function PositionCompactTables({
       } else {
         // If we can't find the player, try to create a basic player object for preview
         if (userRosterSlots && userRosterSlots.length > 0) {
-          const fallbackPlayer: RankedPlayer = {
+          const fallbackPlayer: PreviewPickPlayer = {
+            ...row,
             player_id: row.player_id,
             name: row.name,
             position: row.position,
@@ -112,53 +122,131 @@ export default function PositionCompactTables({
     [userRosterSlots]
   );
 
-  // Each position now uses data from the bundle
-
-  // Use position rows from context instead of computing locally
-
-  const sections: [string, PlayerWithPick[], "full" | "nameOnly"][] = [
-    ["QB", playersByPosition?.QB ?? [], "full"],
-    ["RB", playersByPosition?.RB ?? [], "full"],
-    ["WR", playersByPosition?.WR ?? [], "full"],
-    ["FLEX", playersByPosition?.FLEX ?? [], "full"],
-    ["TE", playersByPosition?.TE ?? [], "full"],
-    ["DEF", playersByPosition?.DEF ?? [], "full"],
-    ["K", playersByPosition?.K ?? [], "full"],
+  const sections: [string, PlayerWithPick[]][] = [
+    ["QB", playersByPosition?.QB ?? []],
+    ["RB", playersByPosition?.RB ?? []],
+    ["WR", playersByPosition?.WR ?? []],
+    ["FLEX", playersByPosition?.FLEX ?? []],
+    ["TE", playersByPosition?.TE ?? []],
+    ["DEF", playersByPosition?.DEF ?? []],
+    ["K", playersByPosition?.K ?? []],
   ];
 
-  // sticky nav + filter controls
-  const labels = sections.map(([l]) => l);
-  // draftedIds is available from context
-  const refs = React.useRef<Record<string, HTMLDivElement | null>>({});
-  const setRef = (label: string) => (el: HTMLDivElement | null) => {
-    refs.current[label] = el;
-  };
-  const scrollTo = (label: string) =>
-    refs.current[label]?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const compactGroups: ColumnGroup<PlayerWithPick>[] = [
+    {
+      header: "Players",
+      children: [
+        {
+          id: "name",
+          header: "Name",
+          accessor: (row) => row.name,
+          sortable: true,
+          sortAs: "string",
+          width: "16ch",
+        },
+        {
+          id: "position_tier",
+          header: "Tier",
+          description: "FantasyPros position tier.",
+          accessor: (row) => row.position_tier_level ?? null,
+          sortable: true,
+          sortAs: "number",
+          nulls: "last",
+          width: "5ch",
+        },
+        {
+          id: "val",
+          header: "VAL",
+          description: "Canonical pick value score.",
+          accessor: (row) => row.draft_value_score ?? null,
+          sortable: true,
+          sortAs: "number",
+          nulls: "last",
+          defaultDir: "desc",
+          heat: { scale: "val" },
+          width: "6ch",
+        },
+        {
+          id: "adp",
+          header: "ADP",
+          description: "Sleeper average draft position.",
+          accessor: (row) => row.sleeper_adp ?? null,
+          sortable: true,
+          sortAs: "number",
+          nulls: "last",
+          width: "6ch",
+          render: (_, row) => row.sleeper_adp_round_pick ?? "—",
+        },
+        {
+          id: "preview",
+          header: "Preview",
+          accessor: () => null,
+          width: "5ch",
+          render: (_, row) => (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={() => onPreview(row)}
+              aria-label={`Preview ${row.name}`}
+              title="Preview"
+            >
+              <EyeIcon className="h-4 w-4" />
+            </Button>
+          ),
+        },
+      ],
+    },
+  ];
 
-  // Dynamically position the toolbar below the sticky Draft Status card
-  const [stickyTop, setStickyTop] = React.useState<number>(72);
-  React.useEffect(() => {
-    const card = document.getElementById("draft-status-card");
-    if (!card) return;
-    const measure = () => {
-      try {
-        const h = card.getBoundingClientRect().height;
-        setStickyTop(Math.max(0, Math.round(h + 8))); // small gap
-      } catch {}
-    };
-    measure();
-    const hasRO = typeof window !== "undefined" && "ResizeObserver" in window;
-    const ro = hasRO ? new ResizeObserver(() => measure()) : null;
-    ro?.observe(card);
-    window.addEventListener("resize", measure);
-    const id = hasRO ? null : window.setInterval(measure, 1000);
-    return () => {
-      ro?.disconnect();
-      window.removeEventListener("resize", measure);
-      if (id) window.clearInterval(id);
-    };
-  }, []);
+  const renderActions = React.useCallback(
+    (row: PlayerWithPick) => (
+      <div className="flex items-center justify-end gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6"
+          onClick={() => onPreview(row)}
+          aria-label={`Preview ${row.name}`}
+          title="Preview"
+        >
+          <EyeIcon className="h-4 w-4" />
+        </Button>
+        {pickAction ? (
+          <Button
+            type="button"
+            size="sm"
+            className="h-6 px-2 text-xs"
+            disabled={pickAction.disabled || Boolean(row.picked)}
+            aria-label={`${pickAction.label ?? "Pick"} ${row.name}`}
+            data-testid={`mock-pick-${row.player_id}`}
+            onClick={() => pickAction.onPick(row)}
+          >
+            {pickAction.label ?? "Pick"}
+          </Button>
+        ) : null}
+      </div>
+    ),
+    [onPreview, pickAction]
+  );
+
+  const renderPickAction = React.useCallback(
+    (row: PlayerWithPick) =>
+      pickAction ? (
+        <Button
+          type="button"
+          size="sm"
+          className="h-6 px-2 text-xs"
+          disabled={pickAction.disabled || Boolean(row.picked)}
+          aria-label={`${pickAction.label ?? "Pick"} ${row.name}`}
+          data-testid={`mock-pick-${row.player_id}`}
+          onClick={() => pickAction.onPick(row)}
+        >
+          {pickAction.label ?? "Pick"}
+        </Button>
+      ) : null,
+    [pickAction]
+  );
 
   // Show loading state if bundle data is not loaded
   if (!playersByPosition) {
@@ -175,64 +263,35 @@ export default function PositionCompactTables({
 
   return (
     <div className="space-y-2">
-      <div
-        className="sticky z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-        style={{ top: stickyTop }}
-      >
-        <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between gap-2 md:gap-4 px-1 py-1">
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Switch controls moved to Draft Status Card */}
-          </div>
-          <div className="flex flex-wrap gap-1 w-full md:w-auto justify-start md:justify-end">
-            {labels.map((l) => (
-              <Button
-                key={l}
-                size="sm"
-                variant="secondary"
-                className="h-7 px-2 text-xs"
-                onClick={() => scrollTo(l)}
-              >
-                {l}
-              </Button>
-            ))}
-          </div>
-        </div>
-        {/* Data timestamp */}
-        <div
-          className="text-xs text-muted-foreground text-right"
-          data-testid="data-last-updated"
-        >
-          Data last updated: {lastModified?.formatted || "Loading..."}
-        </div>
+      <div className="flex items-center px-1 py-1">
+        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Switch
+            checked={actualShowAll}
+            onCheckedChange={actualSetShowAll}
+            data-testid="positions-toggle-show-all"
+          />
+          <span>Show all rows</span>
+        </label>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-1">
-        {sections.map(([label, rows, mode]) => {
+        {sections.map(([label, rows]) => {
           const limit = DEFAULT_POS_TABLE_LIMIT;
-          // Optionally include only players that have a Boris Chen rank
           const eligible = actualShowUnranked
             ? rows
-            : rows.filter((r) => typeof r.bc_rank === "number");
+            : rows.filter(
+                (row) =>
+                  typeof row.fp_rank_ave === "number" ||
+                  typeof row.position_tier_level === "number"
+              );
           const allRows = actualShowDrafted
             ? eligible
             : eligible.filter((r) => !r.picked);
-          const visible = actualShowAll ? allRows : allRows.slice(0, limit);
-          const baseline = findBaseline(rows);
           return (
-            <div
-              key={label}
-              ref={setRef(label)}
-              className="scroll-mt-24"
-              style={{ scrollMarginTop: stickyTop + 16 }}
-            >
+            <div key={label}>
               <Card className="block w-full" data-testid={`pos-card-${label}`}>
                 <CardHeader className="py-1 px-2">
                   <CardTitle className="text-sm flex items-baseline gap-2">
                     {label}
-                    {typeof baseline === "number" ? (
-                      <span className="text-xs text-muted-foreground font-normal">
-                        baseline {baseline.toFixed(1)} pts
-                      </span>
-                    ) : null}
                   </CardTitle>
                   {(() => {
                     const pos = normalizePosition(label);
@@ -270,43 +329,22 @@ export default function PositionCompactTables({
                 <CardContent className="pt-0 px-2 pb-2">
                   <div className="overflow-x-auto">
                     <PlayersTableBase
-                      rows={visible}
-                      groups={
-                        mode === "nameOnly"
-                          ? GROUPS_COMPACT_NAMEONLY
-                          : GROUPS_COMPACT_FULL
-                      }
-                      sortable={false}
+                      rows={allRows}
+                      groups={compactGroups}
+                      sortable
+                      maxRows={actualShowAll ? undefined : limit}
                       colorize={true}
                       dimDrafted={true}
                       tierRowColors={true}
-                      renderActions={(r) => (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => onPreview(r)}
-                          aria-label="Preview"
-                          title="Preview"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="h-4 w-4"
-                          >
-                            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
-                            <circle cx="12" cy="12" r="3" />
-                          </svg>
-                        </Button>
-                      )}
+                      defaultSortId="val"
+                      defaultSortDir="desc"
+                      heatDomainRows={valueColorDomainRef.current}
+                      {...(pickAction
+                        ? { renderActions: renderPickAction }
+                        : {})}
                     />
                   </div>
-                  {!actualShowAll && rows.length > limit ? (
+                  {!actualShowAll && allRows.length > limit ? (
                     <div className="mt-3">
                       <button
                         type="button"
@@ -331,16 +369,6 @@ export default function PositionCompactTables({
           <DialogHeader>
             <DialogTitle className="flex items-baseline gap-2">
               {openLabel}
-              {(() => {
-                const tuple = sections.find(([lab]) => lab === openLabel);
-                const set = tuple ? tuple[1] : [];
-                const bl = findBaseline(set);
-                return typeof bl === "number" ? (
-                  <span className="text-sm text-muted-foreground font-normal">
-                    baseline {bl.toFixed(1)} pts
-                  </span>
-                ) : null;
-              })()}
             </DialogTitle>
             {(() => {
               const pos = openLabel ? normalizePosition(openLabel) : null;
@@ -381,7 +409,7 @@ export default function PositionCompactTables({
               );
             })()}
             <DialogDescription>
-              Detailed view of {openLabel} players with rankings and statistics.
+              Compare {openLabel} draft value, position tier, and ADP.
             </DialogDescription>
           </DialogHeader>
           <div className="overflow-x-auto max-h-[70vh] overflow-y-auto pr-2">
@@ -391,7 +419,10 @@ export default function PositionCompactTables({
               const [, fullRowsRaw] = tuple;
               // Respect dialog toggles in the dialog view
               const dlgEligible = (fullRowsRaw || []).filter((r) =>
-                actualShowUnranked ? true : typeof r.bc_rank === "number"
+                actualShowUnranked
+                  ? true
+                  : typeof r.fp_rank_ave === "number" ||
+                    typeof r.position_tier_level === "number"
               );
               const fullRows = actualShowDrafted
                 ? dlgEligible
@@ -403,18 +434,10 @@ export default function PositionCompactTables({
                   colorizeValuePs
                   dimDrafted={actualShowDrafted}
                   hideDrafted={!actualShowDrafted}
-                  renderActions={(r) => (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => onPreview(r)}
-                      aria-label="Preview"
-                      title="Preview"
-                    >
-                      <EyeIcon className="h-4 w-4 cursor-pointer hover:text-blue-500 transition-colors" />
-                    </Button>
-                  )}
+                  defaultSortId="val"
+                  defaultSortDir="desc"
+                  heatDomainRows={valueColorDomainRef.current}
+                  renderActions={renderActions}
                 />
               );
             })()}

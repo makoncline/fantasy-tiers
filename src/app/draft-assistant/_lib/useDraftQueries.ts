@@ -16,13 +16,15 @@ export function useDraftDetails(
   opts?: { enabled?: boolean; refetchInterval?: number }
 ) {
   const enabled = Boolean(draftId) && (opts?.enabled ?? true);
+  const pollInterval = opts?.refetchInterval ?? 3000;
   return useQuery<DraftDetails, Error>({
     queryKey: qk.draft.details(String(draftId)),
     queryFn: () => fetchDraftDetails(String(draftId)),
     enabled,
     staleTime: 0,
     gcTime: 0,
-    refetchInterval: opts?.refetchInterval ?? 3000,
+    refetchInterval: (query) =>
+      query.state.data?.status === "complete" ? false : pollInterval,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   });
@@ -30,16 +32,30 @@ export function useDraftDetails(
 
 export function useDraftPicks(
   draftId: string | undefined,
-  opts?: { enabled?: boolean; refetchInterval?: number }
+  opts?: {
+    enabled?: boolean;
+    expectedPickCount?: number;
+    refetchInterval?: number;
+  }
 ) {
   const enabled = Boolean(draftId) && (opts?.enabled ?? true);
+  const pollInterval = opts?.refetchInterval ?? 3000;
   return useQuery<DraftPick[], Error>({
     queryKey: qk.draft.picks(String(draftId)),
     queryFn: () => fetchDraftPicks(String(draftId)),
     enabled,
     staleTime: 0,
     gcTime: 0,
-    refetchInterval: opts?.refetchInterval ?? 3000,
+    refetchInterval: (query) => {
+      const expectedPickCount = opts?.expectedPickCount;
+      if (
+        expectedPickCount !== undefined &&
+        query.state.data?.length === expectedPickCount
+      ) {
+        return false;
+      }
+      return pollInterval;
+    },
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   });
@@ -95,6 +111,7 @@ export function useAggregatesBundle(
           K: league.roster.K,
           DEF: league.roster.DEF,
           FLEX: league.roster.FLEX,
+          BENCH: league.roster.BENCH,
         })
       : ["aggregates", "bundle"],
     queryFn: async () => {

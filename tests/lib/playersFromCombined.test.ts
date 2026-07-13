@@ -11,7 +11,7 @@ describe("buildPlayersMapFromCombined", () => {
       position: "QB",
       team: "TB",
       bye_week: 9,
-      borischen: {
+      tiers: {
         std: { rank: 12, tier: 3 },
         ppr: { rank: 15, tier: 4 },
         half: { rank: 10, tier: 2 },
@@ -56,7 +56,7 @@ describe("buildPlayersMapFromCombined", () => {
       position: "RB",
       team: "KC",
       bye_week: 12,
-      borischen: {
+      tiers: {
         std: null,
         ppr: null,
         half: null,
@@ -80,7 +80,7 @@ describe("buildPlayersMapFromCombined", () => {
       position: "RB", // Valid fantasy position
       team: "SF",
       bye_week: 11,
-      borischen: {
+      tiers: {
         std: null,
         ppr: null,
         half: null,
@@ -120,20 +120,20 @@ describe("buildPlayersMapFromCombined", () => {
         tier: 3,
       });
 
-      expect(player.borischen).toEqual({ rank: 12, tier: 3 });
+      expect(player.tiers).toEqual({ rank: 12, tier: 3 });
       expect(player.sleeper.stats).toEqual({
         adp: 45.2,
         pts: 350.5,
       });
     });
 
-    it("should handle null borischen rankings", () => {
+    it("should handle null tiers rankings", () => {
       const result = buildPlayersMapFromCombined(mockCombinedData, "std");
 
       const player = result["67890"];
       expect(player.rank).toBeNull();
       expect(player.tier).toBeNull();
-      expect(player.borischen).toBeNull();
+      expect(player.tiers).toBeNull();
     });
 
     it("should handle missing sleeper stats", () => {
@@ -251,7 +251,7 @@ describe("buildPlayersMapFromCombined", () => {
       const dataWithStringRanks = {
         "11111": {
           ...mockCombinedData["12345"],
-          borischen: {
+          tiers: {
             std: { rank: "12", tier: "3" }, // strings instead of numbers
             ppr: null,
             half: null,

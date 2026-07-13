@@ -13,6 +13,9 @@ export function PlayerTable({
   colorizeValuePs = false,
   hideDrafted = false,
   dimDrafted = false,
+  defaultSortId,
+  defaultSortDir,
+  heatDomainRows,
 }: {
   rows: PlayerWithPick[];
   renderActions?: (row: PlayerWithPick) => React.ReactNode;
@@ -20,6 +23,9 @@ export function PlayerTable({
   colorizeValuePs?: boolean;
   hideDrafted?: boolean;
   dimDrafted?: boolean;
+  defaultSortId?: string;
+  defaultSortDir?: "asc" | "desc";
+  heatDomainRows?: PlayerWithPick[];
 }) {
   return (
     <PlayersTableBase
@@ -29,6 +35,9 @@ export function PlayerTable({
       colorize={colorizeValuePs}
       hideDrafted={hideDrafted}
       dimDrafted={dimDrafted}
+      defaultSortId={defaultSortId}
+      defaultSortDir={defaultSortDir}
+      heatDomainRows={heatDomainRows}
       {...(renderActions && { renderActions })}
     />
   );

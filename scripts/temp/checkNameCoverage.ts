@@ -4,14 +4,14 @@
  *
  * Purpose:
  * - Sleeper projections are our canonical player name source for the app.
- * - We still combine data from Boris Chen rankings and FantasyPros aggregate.
+ * - We still combine data from Tiers rankings and FantasyPros aggregate.
  * - This script checks the top N Sleeper names for presence in those sources
  *   and surfaces likely mismatches so we can improve normalization.
  *
  * What it does:
  * - Loads the first 300 unique names from Sleeper `projections-latest.json`.
  * - Normalizes names, then checks for presence in:
- *   - Boris Chen processed rankings (`public/data/*-rankings.json`) [deprecated; we read raw CSVs now].
+ *   - Tiers processed rankings (`public/data/*-rankings.json`) [deprecated; we read raw CSVs now].
  *   - FantasyPros aggregate (`public/data/fantasypros/fantasypros_aggregate.json`).
  * - Prints any missing names with `adp_std` (fallback to PPR/HALF) to prioritize fixes.
  * - Provides fuzzy suggestions to help identify close matches for normalization.
@@ -52,7 +52,7 @@ async function main() {
     "projections-latest.json"
   );
   const rankingsDir = path.join(root, "public", "data");
-  const borisDir = path.join(rankingsDir, "borischen");
+  const tiersDir = path.join(rankingsDir, "tiers");
   const fantasyProsAggPath = path.join(
     rankingsDir,
     "fantasypros",
@@ -80,15 +80,15 @@ async function main() {
     if (topNames.length >= SAMPLE_COUNT) break;
   }
 
-  // Collect Boris Chen names (processed rankings JSONs in rankings dir root)
-  const borisSet = new Set<string>();
-  const borisList: { raw: string; normalized: string }[] = [];
+  // Collect Tiers names from raw CSVs.
+  const tiersSet = new Set<string>();
+  const tiersList: { raw: string; normalized: string }[] = [];
   const files = fs
-    .readdirSync(borisDir)
+    .readdirSync(tiersDir)
     .filter((f) => f.endsWith("-rankings-raw.csv"));
   for (const f of files) {
     try {
-      const csv = fs.readFileSync(path.join(borisDir, f), "utf8");
+      const csv = fs.readFileSync(path.join(tiersDir, f), "utf8");
       const lines = csv.split(/\r?\n/).slice(1); // skip header
       for (const line of lines) {
         if (!line.trim()) continue;
@@ -96,8 +96,8 @@ async function main() {
         const rawName = cells[1]?.replace(/^"|"$/g, "") ?? ""; // Player.Name
         if (!rawName) continue;
         const norm = normalizePlayerName(rawName);
-        borisSet.add(norm);
-        borisList.push({ raw: rawName, normalized: norm });
+        tiersSet.add(norm);
+        tiersList.push({ raw: rawName, normalized: norm });
       }
     } catch {
       // ignore
@@ -132,7 +132,7 @@ async function main() {
     }
   }
 
-  const missingInBoris: {
+  const missingInTiers: {
     raw: string;
     normalized: string;
     adp_std?: number;
@@ -152,8 +152,8 @@ async function main() {
   }
   for (const item of topNames) {
     const adp = adpByName.get(item.normalized);
-    if (!borisSet.has(item.normalized))
-      missingInBoris.push({
+    if (!tiersSet.has(item.normalized))
+      missingInTiers.push({
         ...item,
         ...(adp !== undefined && { adp_std: adp }),
       });
@@ -163,7 +163,7 @@ async function main() {
 
   // eslint-disable-next-line no-console
   console.log(
-    `Checked top ${topNames.length} Sleeper names. Sources — Boris: ${borisSet.size} names, FantasyPros: ${fpSet.size} names.`
+    `Checked top ${topNames.length} Sleeper names. Sources — Tiers: ${tiersSet.size} names, FantasyPros: ${fpSet.size} names.`
   );
 
   // Build fuzzy indices for suggestions
@@ -172,7 +172,7 @@ async function main() {
     includeScore: true,
     threshold: 0.3,
   });
-  const fuseBoris = new Fuse(borisList, {
+  const fuseTiers = new Fuse(tiersList, {
     keys: ["normalized"],
     includeScore: true,
     threshold: 0.3,
@@ -193,8 +193,8 @@ async function main() {
     });
 
   console.log(
-    `Missing in Boris Chen: ${missingInBoris.length} — with suggestions:`,
-    suggest(missingInBoris, fuseBoris)
+    `Missing in Tiers: ${missingInTiers.length} — with suggestions:`,
+    suggest(missingInTiers, fuseTiers)
   );
   console.log(
     `Missing in FantasyPros: ${missingInFp.length} — with suggestions:`,

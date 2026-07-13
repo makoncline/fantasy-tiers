@@ -13,6 +13,7 @@ export type ColumnDef<T> = {
   nulls?: "first" | "last";
   width?: string; // optional fixed col width
   className?: string;
+  description?: string;
   heat?: { scale: HeatScaleId }; // e.g. VAL/PS/MD overlays
   render?: (value: ReturnType<Accessor<T>>, row: T) => React.ReactNode;
   defaultDir?: "asc" | "desc";
