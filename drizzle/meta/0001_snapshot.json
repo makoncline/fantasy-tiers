@@ -1,0 +1,502 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "1b196de0-015f-41d0-a358-c93b9c22a908",
+  "prevId": "9e85be93-2278-4b52-8c9a-40de24a55766",
+  "tables": {
+    "history_players": {
+      "name": "history_players",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "position": {
+          "name": "position",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "team": {
+          "name": "team",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "bye_week": {
+          "name": "bye_week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {
+        "history_players_position_idx": {
+          "name": "history_players_position_idx",
+          "columns": [
+            "position"
+          ],
+          "isUnique": false
+        },
+        "history_players_team_idx": {
+          "name": "history_players_team_idx",
+          "columns": [
+            "team"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "player_rating_versions": {
+      "name": "player_rating_versions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_run_id": {
+          "name": "source_run_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mode": {
+          "name": "mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "season": {
+          "name": "season",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "week": {
+          "name": "week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "scoring": {
+          "name": "scoring",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "position_scope": {
+          "name": "position_scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "effective_from": {
+          "name": "effective_from",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "effective_to": {
+          "name": "effective_to",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_current": {
+          "name": "is_current",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "rank_overall": {
+          "name": "rank_overall",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "rank_position": {
+          "name": "rank_position",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tier": {
+          "name": "tier",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "points": {
+          "name": "points",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "adp": {
+          "name": "adp",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "roster_pct": {
+          "name": "roster_pct",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sleeper_search_rank": {
+          "name": "sleeper_search_rank",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "source_status": {
+          "name": "source_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'present'"
+        },
+        "value_hash": {
+          "name": "value_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "raw_json": {
+          "name": "raw_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {
+        "player_rating_versions_player_idx": {
+          "name": "player_rating_versions_player_idx",
+          "columns": [
+            "player_id"
+          ],
+          "isUnique": false
+        },
+        "player_rating_versions_current_idx": {
+          "name": "player_rating_versions_current_idx",
+          "columns": [
+            "player_id",
+            "source",
+            "mode",
+            "season",
+            "week",
+            "scoring",
+            "position_scope",
+            "is_current"
+          ],
+          "isUnique": false
+        },
+        "player_rating_versions_scope_idx": {
+          "name": "player_rating_versions_scope_idx",
+          "columns": [
+            "source",
+            "mode",
+            "season",
+            "week",
+            "scoring",
+            "position_scope"
+          ],
+          "isUnique": false
+        },
+        "player_rating_versions_dashboard_scope_idx": {
+          "name": "player_rating_versions_dashboard_scope_idx",
+          "columns": [
+            "is_current",
+            "player_id",
+            "source",
+            "mode",
+            "season",
+            "week",
+            "scoring",
+            "position_scope"
+          ],
+          "isUnique": false
+        },
+        "player_rating_versions_dashboard_coverage_idx": {
+          "name": "player_rating_versions_dashboard_coverage_idx",
+          "columns": [
+            "is_current",
+            "source",
+            "mode",
+            "scoring",
+            "position_scope",
+            "source_status",
+            "effective_from"
+          ],
+          "isUnique": false
+        },
+        "player_rating_versions_dashboard_absent_idx": {
+          "name": "player_rating_versions_dashboard_absent_idx",
+          "columns": [
+            "is_current",
+            "source_status",
+            "effective_from"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "player_rating_versions_player_id_history_players_player_id_fk": {
+          "name": "player_rating_versions_player_id_history_players_player_id_fk",
+          "tableFrom": "player_rating_versions",
+          "tableTo": "history_players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "player_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_rating_versions_source_run_id_source_runs_id_fk": {
+          "name": "player_rating_versions_source_run_id_source_runs_id_fk",
+          "tableFrom": "player_rating_versions",
+          "tableTo": "source_runs",
+          "columnsFrom": [
+            "source_run_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "source_runs": {
+      "name": "source_runs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mode": {
+          "name": "mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "season": {
+          "name": "season",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "week": {
+          "name": "week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "scoring": {
+          "name": "scoring",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "position": {
+          "name": "position",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fetched_at": {
+          "name": "fetched_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_last_updated": {
+          "name": "source_last_updated",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "row_count": {
+          "name": "row_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "expert_sample_json": {
+          "name": "expert_sample_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "content_hash": {
+          "name": "content_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "metadata_json": {
+          "name": "metadata_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'success'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {
+        "source_runs_source_idx": {
+          "name": "source_runs_source_idx",
+          "columns": [
+            "source",
+            "mode"
+          ],
+          "isUnique": false
+        },
+        "source_runs_scope_idx": {
+          "name": "source_runs_scope_idx",
+          "columns": [
+            "source",
+            "mode",
+            "season",
+            "week",
+            "scoring",
+            "position"
+          ],
+          "isUnique": false
+        },
+        "source_runs_fetched_at_idx": {
+          "name": "source_runs_fetched_at_idx",
+          "columns": [
+            "fetched_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

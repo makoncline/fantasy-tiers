@@ -1,0 +1,3 @@
+CREATE INDEX `player_rating_versions_dashboard_scope_idx` ON `player_rating_versions` (`is_current`,`player_id`,`source`,`mode`,`season`,`week`,`scoring`,`position_scope`);--> statement-breakpoint
+CREATE INDEX `player_rating_versions_dashboard_coverage_idx` ON `player_rating_versions` (`is_current`,`source`,`mode`,`scoring`,`position_scope`,`source_status`,`effective_from`);--> statement-breakpoint
+CREATE INDEX `player_rating_versions_dashboard_absent_idx` ON `player_rating_versions` (`is_current`,`source_status`,`effective_from`);

@@ -115,6 +115,41 @@ export const playerRatingVersions = sqliteTable(
       table.scoring,
       table.positionScope
     ),
+    index("player_rating_versions_dashboard_scope_idx").on(
+      table.isCurrent,
+      table.playerId,
+      table.source,
+      table.mode,
+      table.season,
+      table.week,
+      table.scoring,
+      table.positionScope
+    ),
+    index("player_rating_versions_dashboard_coverage_idx").on(
+      table.isCurrent,
+      table.source,
+      table.mode,
+      table.scoring,
+      table.positionScope,
+      table.sourceStatus,
+      table.effectiveFrom
+    ),
+    index("player_rating_versions_dashboard_absent_idx").on(
+      table.isCurrent,
+      table.sourceStatus,
+      table.effectiveFrom
+    ),
+    index("player_rating_versions_prior_lookup_idx").on(
+      table.playerId,
+      table.source,
+      table.mode,
+      table.season,
+      table.week,
+      table.scoring,
+      table.positionScope,
+      table.sourceStatus,
+      table.effectiveFrom
+    ),
   ]
 );
 

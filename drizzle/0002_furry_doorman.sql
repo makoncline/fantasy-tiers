@@ -1,0 +1,1 @@
+CREATE INDEX `player_rating_versions_prior_lookup_idx` ON `player_rating_versions` (`player_id`,`source`,`mode`,`season`,`week`,`scoring`,`position_scope`,`source_status`,`effective_from`);

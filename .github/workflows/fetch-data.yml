@@ -92,6 +92,7 @@ jobs:
           echo "🔄 Snapshotting aggregate rating history..."
           pnpm run history:migrate
           pnpm run history:ingest:aggregates
+          pnpm run history:snapshot-dashboard
           echo "✅ Rating history snapshot completed"
 
       - name: Stage and check aggregate changes
