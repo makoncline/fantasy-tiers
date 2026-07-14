@@ -220,7 +220,6 @@ export default function MockDraftRoom() {
       picks: draftPicks,
       userId: draftState.config.userId,
       topLimit: 4,
-      sourceWarnings: bundle.data.sourceHealth?.warnings ?? [],
     });
   }, [bundle.data, draftDetails, draftPicks, draftState, players.length]);
 

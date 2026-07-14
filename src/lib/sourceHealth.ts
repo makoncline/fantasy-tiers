@@ -2,12 +2,11 @@ import * as fs from "fs";
 import * as path from "path";
 import type { ScoringType } from "@/lib/schemas";
 import type { CombinedEntryT } from "@/lib/schemas-aggregates";
-import { FootballguysPublicRankingsSchema } from "@/lib/footballguysRankings";
 
 export type AggregateSourceStatus = "ok" | "warning" | "missing";
 
 export type AggregateSourceHealthItem = {
-  source: "Sleeper" | "FantasyPros" | "Tiers" | "Footballguys";
+  source: "Sleeper" | "FantasyPros" | "Tiers";
   status: AggregateSourceStatus;
   lastUpdated: string | null;
   fetchedAt: string | null;
@@ -339,54 +338,6 @@ function sleeperHealth(
   } satisfies AggregateSourceHealthItem;
 }
 
-function footballguysHealth(now: Date): AggregateSourceHealthItem {
-  const filePath = path.resolve(
-    process.cwd(),
-    "public/data/aggregate/footballguys-rankings.json"
-  );
-  if (!fs.existsSync(filePath)) {
-    return {
-      source: "Footballguys",
-      status: "missing",
-      lastUpdated: null,
-      fetchedAt: null,
-      rowCount: null,
-      relevantRowCount: null,
-      coveragePct: null,
-      coverageBasis: null,
-      sampleSize: null,
-      projectionsFetched: null,
-      warnings: ["Footballguys public-default rankings are missing."],
-    };
-  }
-  const data = FootballguysPublicRankingsSchema.parse(
-    JSON.parse(fs.readFileSync(filePath, "utf8"))
-  );
-  const consensus = data.sources.find((source) => source.source === "consensus");
-  const warnings = [
-    "Footballguys rankings use public-default 12-team PPR settings, not this league's custom settings.",
-  ];
-  addFreshnessWarning({
-    warnings,
-    source: "Footballguys",
-    updatedAt: data.fetchedAt,
-    now,
-  });
-  return {
-    source: "Footballguys",
-    status: statusFromWarnings(warnings),
-    lastUpdated: null,
-    fetchedAt: data.fetchedAt,
-    rowCount: data.rows.length,
-    relevantRowCount: consensus?.adpRowCount ?? null,
-    coveragePct: consensus?.adpCoveragePct ?? null,
-    coverageBasis: "consensus ADP among Footballguys ranked players",
-    sampleSize: null,
-    projectionsFetched: null,
-    warnings,
-  };
-}
-
 export function getAggregateSourceHealth(args: {
   scoring: ScoringType;
   players: readonly CombinedEntryT[];
@@ -403,7 +354,6 @@ export function getAggregateSourceHealth(args: {
     sleeperHealth(args.players, args.scoring, draftCapacity, now),
     fantasyProsHealth(metadata, args.scoring, now),
     tiersHealth(metadata, args.scoring, now),
-    footballguysHealth(now),
   ];
   return {
     generatedAt: now.toISOString(),

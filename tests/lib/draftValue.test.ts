@@ -672,7 +672,7 @@ describe("buildDraftValueBoard", () => {
     );
   });
 
-  it("adds source and news risk reasons without hiding usable value", () => {
+  it("adds player news risk without hiding usable value", () => {
     const board = buildDraftValueBoard({
       players: [
         {
@@ -702,15 +702,12 @@ describe("buildDraftValueBoard", () => {
         { name: "RB B", position: "RB", bye_week: 8 },
         { name: "TE A", position: "TE", bye_week: 8 },
       ],
-      sourceWarnings: ["FantasyPros projections were not fetched."],
     });
 
     const reasons = board.metricsByPlayerId.wr1?.reasons.map(
       (reason) => reason.code
     );
-    expect(reasons).toEqual(
-      expect.arrayContaining(["SOURCE_WARNING", "NEWS_RISK"])
-    );
+    expect(reasons).toContain("NEWS_RISK");
     expect(board.rosterConstruction.byeWarnings).toContain(
       "3 RB/WR/TE players share Week 8 bye."
     );

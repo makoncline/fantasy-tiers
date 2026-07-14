@@ -39,8 +39,7 @@ const selected = {
   sleeper_injury_status: "Questionable",
   sleeper_injury_notes: "Limited at practice.",
   draft_action_label: "unknown",
-  draft_reason_labels: ["Best value", "Source warning"],
-  draft_data_quality_notes: ["Source warning; check freshness."],
+  draft_reason_labels: ["Best value"],
 } satisfies PreviewPickPlayer;
 
 function decisionPlayer(id: string, name: string, score: number): PlayerWithPick {

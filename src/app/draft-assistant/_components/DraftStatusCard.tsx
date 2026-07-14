@@ -126,10 +126,8 @@ export default function DraftStatusCard() {
   }
 
   const [collapsed, setCollapsed] = React.useState(false);
-  const draftSources =
-    sourceHealth?.sources.filter((source) => source.source !== "Footballguys") ?? [];
-  const sourceWarnings =
-    sourceHealth?.warnings.filter((warning) => !warning.startsWith("Footballguys")) ?? [];
+  const draftSources = sourceHealth?.sources ?? [];
+  const sourceWarnings = sourceHealth?.warnings ?? [];
   const sourceWarningCount = sourceWarnings.length;
 
   return (

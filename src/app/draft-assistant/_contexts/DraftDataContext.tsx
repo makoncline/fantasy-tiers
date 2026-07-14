@@ -668,13 +668,11 @@ export function DraftDataProvider({
       picks: picks || [],
       userId: user.user_id,
       topLimit: 3,
-      sourceWarnings: playersBundle?.sourceHealth?.warnings ?? [],
     });
   }, [
     playersMap,
     draftDetails,
     picks,
-    playersBundle?.sourceHealth?.warnings,
     user?.user_id,
   ]);
 

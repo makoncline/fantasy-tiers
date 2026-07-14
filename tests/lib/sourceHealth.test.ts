@@ -67,7 +67,6 @@ describe("getAggregateSourceHealth", () => {
       "Sleeper",
       "FantasyPros",
       "Tiers",
-      "Footballguys",
     ]);
     expect(
       health.sources.every((source) =>

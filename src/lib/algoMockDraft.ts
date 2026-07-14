@@ -128,7 +128,6 @@ export function runAlgorithmMockDraft(input: {
     picks: finalDraftPicks,
     userId: state.config.userId,
     topLimit: 4,
-    sourceWarnings: input.bundle.sourceHealth?.warnings ?? [],
   });
   const artifact = createMockDraftResultArtifact({
     state,
@@ -160,7 +159,6 @@ function buildAlgorithmDecisionContext(input: {
     picks: draftPicks,
     userId: input.state.config.userId,
     topLimit: 4,
-    sourceWarnings: input.bundle.sourceHealth?.warnings ?? [],
   });
   const board = viewModel.recommendationBoard;
 

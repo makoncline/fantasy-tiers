@@ -190,7 +190,7 @@ function PlayerDecisionPanel({
       </div>
       <div className="flex flex-wrap gap-1">
         {(player.draft_reason_labels ?? [])
-          .filter((reason) => isUsefulCopy(reason) && reason !== "Source warning")
+          .filter(isUsefulCopy)
           .map((reason) => (
           <Badge key={reason} variant="outline">
             {reason}

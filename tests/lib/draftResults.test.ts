@@ -62,6 +62,24 @@ describe("draft result artifacts", () => {
       draftDetails,
       draftPicks,
       viewModel: { recommendation: choice },
+      sourceHealth: {
+        generatedAt: "2026-07-01T12:00:00.000Z",
+        scoring: "ppr",
+        sources: [
+          {
+            source: "Footballguys",
+            status: "warning",
+            lastUpdated: null,
+            fetchedAt: "2026-07-01T11:00:00.000Z",
+            rowCount: 500,
+            coveragePct: null,
+            sampleSize: null,
+            projectionsFetched: null,
+            warnings: ["Legacy snapshot warning."],
+          },
+        ],
+        warnings: ["Footballguys: Legacy snapshot warning."],
+      },
       exportedAt: "2026-07-01T12:00:00.000Z",
     });
 

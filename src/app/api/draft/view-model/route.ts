@@ -43,7 +43,6 @@ export async function GET(req: NextRequest) {
       draft,
       picks,
       userId,
-      sourceWarnings: bundle.sourceHealth?.warnings ?? [],
     });
     return NextResponse.json(vm);
   } catch (e) {
