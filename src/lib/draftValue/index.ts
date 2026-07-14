@@ -2108,6 +2108,15 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     });
     return { player, staticValue: rankValue.score, rankValue };
   });
+  const bestStaticValue = valueSeed.reduce<number | null>(
+    (best, entry) =>
+      entry.staticValue == null
+        ? best
+        : best == null
+          ? entry.staticValue
+          : Math.max(best, entry.staticValue),
+    null
+  );
 
   const valueRanks = [...valueSeed]
     .sort((a, b) => (b.staticValue ?? -Infinity) - (a.staticValue ?? -Infinity))
@@ -2356,7 +2365,12 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       (isQbPreAdpReach ? (currentRound >= 9 ? -6 : -30) : 0) +
       lateQbStarterUrgency;
     const rawScores: DraftRecommendationComponents = {
-      value: normalizedComponent((staticValue ?? 0) / 2),
+      value:
+        staticValue == null || bestStaticValue == null
+          ? 0
+          : normalizedComponent(
+              100 - Math.max(0, bestStaticValue - staticValue) / 2
+            ),
       timing: normalizedComponent(
         (availabilityUrgency +
           runUrgency +
