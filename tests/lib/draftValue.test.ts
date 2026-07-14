@@ -221,6 +221,56 @@ describe("buildDraftValueBoard", () => {
     );
   });
 
+  it("preserves the ECR value gap between top players instead of flattening them at the cap", () => {
+    const board = buildDraftValueBoard({
+      players: [
+        {
+          player_id: "tier-one-wr",
+          name: "Tier One WR",
+          position: "WR",
+          tier_level: 1,
+          position_tier_level: 1,
+          fp_rank_ave: 3.2,
+          fp_rank_pos: 2,
+          sleeper_adp: 4.9,
+        },
+        {
+          player_id: "tier-two-rb",
+          name: "Tier Two RB",
+          position: "RB",
+          tier_level: 2,
+          position_tier_level: 1,
+          fp_rank_ave: 8.9,
+          fp_rank_pos: 3,
+          sleeper_adp: 6.7,
+        },
+      ],
+      teams: 12,
+      rounds: 14,
+      draftType: "snake",
+      currentPick: 5,
+      userSlot: 5,
+      rosterRequirements,
+      userPositionCounts: { RB: 0, WR: 0, QB: 0, TE: 0, K: 0, DEF: 0 },
+      userPositionNeeds: {
+        RB: 2,
+        WR: 2,
+        FLEX: 1,
+        QB: 1,
+        TE: 1,
+        K: 1,
+        DEF: 1,
+      },
+      draftWideNeeds: { RB: 22, WR: 22 },
+    });
+
+    expect(board.metricsByPlayerId["tier-one-wr"]?.rawScores.value).toBe(100);
+    expect(board.metricsByPlayerId["tier-two-rb"]?.rawScores.value).toBeLessThan(
+      100
+    );
+    expect(board.recommendations[0]?.player_id).toBe("tier-one-wr");
+  });
+
   it("uses intervening team roster demand to adjust comeback odds by position", () => {
     const teamRosterStates = Array.from({ length: 10 }, (_, index) => {
       const draftSlot = index + 1;
