@@ -65,7 +65,6 @@ async function main() {
         draft: artifact.sleeper.draftDetails,
         picks: priorPicks,
         userId: artifact.state.config.userId,
-        sourceWarnings: bundle.sourceHealth?.warnings ?? [],
       });
       const board = viewModel.recommendationBoard;
       const recommendation = board?.topRecommendation?.player ?? null;

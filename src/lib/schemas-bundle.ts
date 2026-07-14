@@ -55,6 +55,7 @@ export const AggregatesBundlePlayer = z.object({
 export type AggregatesBundlePlayerT = z.infer<typeof AggregatesBundlePlayer>;
 
 export const AggregateSourceHealthItem = z.object({
+  // Footballguys remains parseable for historical draft-result snapshots.
   source: z.enum(["Sleeper", "FantasyPros", "Tiers", "Footballguys"]),
   status: z.enum(["ok", "warning", "missing"]),
   lastUpdated: z.string().nullable(),

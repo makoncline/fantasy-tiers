@@ -643,7 +643,6 @@ export function buildDraftViewModel(args: {
   picks: DraftPick[];
   userId?: string;
   topLimit?: number;
-  sourceWarnings?: readonly string[];
 }) {
   const {
     playersMap,
@@ -651,7 +650,6 @@ export function buildDraftViewModel(args: {
     picks,
     userId,
     topLimit = 3,
-    sourceWarnings = [],
   } = args;
   const base = buildDraftState({ playersMap, draft, picks });
 
@@ -743,7 +741,6 @@ export function buildDraftViewModel(args: {
         draftWideNeeds,
         teamRosterStates,
         userRosterPlayers: userRoster.players,
-        sourceWarnings,
       })
     : null;
   const draftContext = buildDraftContext({

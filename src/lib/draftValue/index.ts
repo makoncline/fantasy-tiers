@@ -28,7 +28,6 @@ export type DraftValueReasonCode =
   | "ONESIE_WAIT"
   | "BENCH_UPSIDE"
   | "K_DEF_WAIT"
-  | "SOURCE_WARNING"
   | "NEWS_RISK";
 
 export type DraftValueReason = {
@@ -203,7 +202,6 @@ export type DraftValueBoardInput<TPlayer extends DraftValuePlayerInput> = {
   draftWideNeeds?: Partial<Record<Position | "FLEX", number>> | undefined;
   teamRosterStates?: readonly DraftTeamRosterState[] | undefined;
   userRosterPlayers?: readonly DraftRosterPlayerInput[] | undefined;
-  sourceWarnings?: readonly string[] | undefined;
 };
 
 export type DraftValueBoard<TPlayer extends DraftValuePlayerInput> = {
@@ -1811,7 +1809,6 @@ function byeCoverageText(args: {
 function dataQualityText(args: {
   missingFields: readonly string[];
   injuryRisk: { penalty: number; status: string | null; notes: string | null };
-  sourceWarnings?: readonly string[] | undefined;
 }) {
   return uniqueStrings([
     args.missingFields.includes("ecr") ? "FantasyPros ECR average missing." : null,
@@ -1821,7 +1818,6 @@ function dataQualityText(args: {
     args.injuryRisk.penalty > 0
       ? `Injury/news flag: ${args.injuryRisk.status ?? "check player news"}.`
       : null,
-    args.sourceWarnings?.length ? "Source warning; check freshness." : null,
   ]);
 }
 
@@ -1839,7 +1835,6 @@ function buildRecommendationExplanation(args: {
   rosterPlayers: readonly DraftRosterPlayerInput[];
   missingFields: readonly string[];
   injuryRisk: { penalty: number; status: string | null; notes: string | null };
-  sourceWarnings?: readonly string[] | undefined;
 }) {
   const pros: string[] = [];
   const cons: string[] = [];
@@ -1943,7 +1938,6 @@ function buildRecommendationExplanation(args: {
   const dataQuality = dataQualityText({
     missingFields: args.missingFields,
     injuryRisk: args.injuryRisk,
-    sourceWarnings: args.sourceWarnings,
   });
 
   return {
@@ -2496,13 +2490,6 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
         detail: `${directNeeds} open ${player.position} needs remain across the room.`,
       });
     }
-    if (input.sourceWarnings?.length) {
-      reasons.push({
-        code: "SOURCE_WARNING",
-        label: "Source warning",
-        detail: input.sourceWarnings.slice(0, 2).join(" "),
-      });
-    }
     if (injuryRisk.penalty > 0) {
       reasons.push({
         code: "NEWS_RISK",
@@ -2526,7 +2513,6 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       rosterPlayers: input.userRosterPlayers ?? [],
       missingFields,
       injuryRisk,
-      sourceWarnings: input.sourceWarnings,
     });
 
     return [

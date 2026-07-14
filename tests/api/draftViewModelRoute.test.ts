@@ -95,7 +95,6 @@ describe("GET /api/draft/view-model", () => {
       draft,
       picks,
       userId: "user-1",
-      sourceWarnings: ["stale"],
     });
   });
 
