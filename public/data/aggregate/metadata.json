@@ -1,9 +1,9 @@
 {
   "expert_samples": {
     "fantasypros:STD:draft": {
-      "included": 69,
-      "available": 95,
-      "coverage_pct": 72.6,
+      "included": 71,
+      "available": 97,
+      "coverage_pct": 73.2,
       "included_ids": [
         2716,
         692,
@@ -24,8 +24,8 @@
         747,
         7604,
         2373,
-        285,
         7,
+        285,
         7357,
         7373,
         552,
@@ -35,6 +35,7 @@
         284,
         279,
         835,
+        7254,
         1152,
         65,
         3379,
@@ -73,7 +74,8 @@
         5662,
         7649,
         329,
-        2672
+        2672,
+        1168
       ],
       "excluded_ids": [
         7565,
@@ -123,8 +125,8 @@
         747,
         7604,
         2373,
-        285,
         7,
+        285,
         7357,
         7373,
         552,
@@ -134,6 +136,7 @@
         284,
         279,
         835,
+        7254,
         1152,
         65,
         3379,
@@ -172,15 +175,16 @@
         5662,
         7649,
         329,
-        2672
+        2672,
+        1168
       ],
-      "last_updated": "2026-07-14T21:41:48.000Z",
+      "last_updated": "2026-07-15T03:08:06.000Z",
       "sample_size": "normal"
     },
     "fantasypros:HALF:draft": {
-      "included": 72,
-      "available": 97,
-      "coverage_pct": 74.2,
+      "included": 74,
+      "available": 99,
+      "coverage_pct": 74.7,
       "included_ids": [
         2716,
         692,
@@ -203,8 +207,8 @@
         3688,
         220,
         2373,
-        285,
         7,
+        285,
         7357,
         7373,
         552,
@@ -215,6 +219,7 @@
         279,
         835,
         1576,
+        7254,
         1152,
         4176,
         65,
@@ -253,7 +258,8 @@
         5662,
         7649,
         329,
-        2672
+        2672,
+        1168
       ],
       "excluded_ids": [
         7565,
@@ -304,8 +310,8 @@
         3688,
         220,
         2373,
-        285,
         7,
+        285,
         7357,
         7373,
         552,
@@ -316,6 +322,7 @@
         279,
         835,
         1576,
+        7254,
         1152,
         4176,
         65,
@@ -354,15 +361,16 @@
         5662,
         7649,
         329,
-        2672
+        2672,
+        1168
       ],
-      "last_updated": "2026-07-14T21:41:47.000Z",
+      "last_updated": "2026-07-15T13:01:57.000Z",
       "sample_size": "normal"
     },
     "fantasypros:PPR:draft": {
-      "included": 69,
-      "available": 95,
-      "coverage_pct": 72.6,
+      "included": 71,
+      "available": 97,
+      "coverage_pct": 73.2,
       "included_ids": [
         2716,
         692,
@@ -384,8 +392,8 @@
         3688,
         220,
         2373,
-        285,
         7,
+        285,
         7357,
         7373,
         552,
@@ -395,6 +403,7 @@
         284,
         279,
         835,
+        7254,
         1152,
         65,
         3379,
@@ -432,7 +441,8 @@
         5662,
         7649,
         329,
-        2672
+        2672,
+        1168
       ],
       "excluded_ids": [
         7565,
@@ -483,8 +493,8 @@
         3688,
         220,
         2373,
-        285,
         7,
+        285,
         7357,
         7373,
         552,
@@ -494,6 +504,7 @@
         284,
         279,
         835,
+        7254,
         1152,
         65,
         3379,
@@ -531,24 +542,25 @@
         5662,
         7649,
         329,
-        2672
+        2672,
+        1168
       ],
-      "last_updated": "2026-07-14T21:41:47.000Z",
+      "last_updated": "2026-07-15T13:01:58.000Z",
       "sample_size": "normal"
     }
   },
   "fp": {
     "STD": {
       "QB": {
-        "fetched_at": "2026-07-14T21:55:48.000Z",
-        "last_updated": "2026-07-14T21:41:48.000Z",
-        "total_experts": 69,
+        "fetched_at": "2026-07-15T13:06:13.000Z",
+        "last_updated": "2026-07-15T03:08:06.000Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:48.000Z",
+          "last_updated": "2026-07-15T03:08:06.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "scoring": "STD",
@@ -556,20 +568,20 @@
         "week": "draft",
         "year": "2026",
         "url": "https://www.fantasypros.com/nfl/rankings/consensus-cheatsheets.php",
-        "row_count": 486,
+        "row_count": 495,
         "mode": "draft",
         "projections_fetched": false
       },
       "RB": {
-        "fetched_at": "2026-07-14T21:55:48.000Z",
-        "last_updated": "2026-07-14T21:41:48.000Z",
-        "total_experts": 69,
+        "fetched_at": "2026-07-15T13:06:13.000Z",
+        "last_updated": "2026-07-15T03:08:06.000Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:48.000Z",
+          "last_updated": "2026-07-15T03:08:06.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "scoring": "STD",
@@ -577,20 +589,20 @@
         "week": "draft",
         "year": "2026",
         "url": "https://www.fantasypros.com/nfl/rankings/consensus-cheatsheets.php",
-        "row_count": 486,
+        "row_count": 495,
         "mode": "draft",
         "projections_fetched": false
       },
       "WR": {
-        "fetched_at": "2026-07-14T21:55:48.000Z",
-        "last_updated": "2026-07-14T21:41:48.000Z",
-        "total_experts": 69,
+        "fetched_at": "2026-07-15T13:06:13.000Z",
+        "last_updated": "2026-07-15T03:08:06.000Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:48.000Z",
+          "last_updated": "2026-07-15T03:08:06.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "scoring": "STD",
@@ -598,20 +610,20 @@
         "week": "draft",
         "year": "2026",
         "url": "https://www.fantasypros.com/nfl/rankings/consensus-cheatsheets.php",
-        "row_count": 486,
+        "row_count": 495,
         "mode": "draft",
         "projections_fetched": false
       },
       "TE": {
-        "fetched_at": "2026-07-14T21:55:48.000Z",
-        "last_updated": "2026-07-14T21:41:48.000Z",
-        "total_experts": 69,
+        "fetched_at": "2026-07-15T13:06:13.000Z",
+        "last_updated": "2026-07-15T03:08:06.000Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:48.000Z",
+          "last_updated": "2026-07-15T03:08:06.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "scoring": "STD",
@@ -619,20 +631,20 @@
         "week": "draft",
         "year": "2026",
         "url": "https://www.fantasypros.com/nfl/rankings/consensus-cheatsheets.php",
-        "row_count": 486,
+        "row_count": 495,
         "mode": "draft",
         "projections_fetched": false
       },
       "FLEX": {
-        "fetched_at": "2026-07-14T21:55:48.000Z",
-        "last_updated": "2026-07-14T21:41:48.000Z",
-        "total_experts": 69,
+        "fetched_at": "2026-07-15T13:06:13.000Z",
+        "last_updated": "2026-07-15T03:08:06.000Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:48.000Z",
+          "last_updated": "2026-07-15T03:08:06.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "scoring": "STD",
@@ -640,20 +652,20 @@
         "week": "draft",
         "year": "2026",
         "url": "https://www.fantasypros.com/nfl/rankings/consensus-cheatsheets.php",
-        "row_count": 486,
+        "row_count": 495,
         "mode": "draft",
         "projections_fetched": false
       },
       "K": {
-        "fetched_at": "2026-07-14T21:55:48.000Z",
-        "last_updated": "2026-07-14T21:41:48.000Z",
-        "total_experts": 69,
+        "fetched_at": "2026-07-15T13:06:13.000Z",
+        "last_updated": "2026-07-15T03:08:06.000Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:48.000Z",
+          "last_updated": "2026-07-15T03:08:06.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "scoring": "STD",
@@ -661,20 +673,20 @@
         "week": "draft",
         "year": "2026",
         "url": "https://www.fantasypros.com/nfl/rankings/consensus-cheatsheets.php",
-        "row_count": 486,
+        "row_count": 495,
         "mode": "draft",
         "projections_fetched": false
       },
       "DST": {
-        "fetched_at": "2026-07-14T21:55:48.000Z",
-        "last_updated": "2026-07-14T21:41:48.000Z",
-        "total_experts": 69,
+        "fetched_at": "2026-07-15T13:06:13.000Z",
+        "last_updated": "2026-07-15T03:08:06.000Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:48.000Z",
+          "last_updated": "2026-07-15T03:08:06.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "scoring": "STD",
@@ -682,22 +694,22 @@
         "week": "draft",
         "year": "2026",
         "url": "https://www.fantasypros.com/nfl/rankings/consensus-cheatsheets.php",
-        "row_count": 486,
+        "row_count": 495,
         "mode": "draft",
         "projections_fetched": false
       }
     },
     "HALF": {
       "RB": {
-        "fetched_at": "2026-07-14T21:55:48.000Z",
-        "last_updated": "2026-07-14T21:41:47.000Z",
-        "total_experts": 72,
+        "fetched_at": "2026-07-15T13:06:14.000Z",
+        "last_updated": "2026-07-15T13:01:57.000Z",
+        "total_experts": 74,
         "experts": {
-          "included": 72,
-          "available": 97,
-          "coverage_pct": 74.2,
+          "included": 74,
+          "available": 99,
+          "coverage_pct": 74.7,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:47.000Z",
+          "last_updated": "2026-07-15T13:01:57.000Z",
           "sample_key": "fantasypros:HALF:draft"
         },
         "scoring": "HALF",
@@ -705,20 +717,20 @@
         "week": "draft",
         "year": "2026",
         "url": "https://www.fantasypros.com/nfl/rankings/half-point-ppr-cheatsheets.php",
-        "row_count": 777,
+        "row_count": 776,
         "mode": "draft",
         "projections_fetched": false
       },
       "WR": {
-        "fetched_at": "2026-07-14T21:55:48.000Z",
-        "last_updated": "2026-07-14T21:41:47.000Z",
-        "total_experts": 72,
+        "fetched_at": "2026-07-15T13:06:14.000Z",
+        "last_updated": "2026-07-15T13:01:57.000Z",
+        "total_experts": 74,
         "experts": {
-          "included": 72,
-          "available": 97,
-          "coverage_pct": 74.2,
+          "included": 74,
+          "available": 99,
+          "coverage_pct": 74.7,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:47.000Z",
+          "last_updated": "2026-07-15T13:01:57.000Z",
           "sample_key": "fantasypros:HALF:draft"
         },
         "scoring": "HALF",
@@ -726,20 +738,20 @@
         "week": "draft",
         "year": "2026",
         "url": "https://www.fantasypros.com/nfl/rankings/half-point-ppr-cheatsheets.php",
-        "row_count": 777,
+        "row_count": 776,
         "mode": "draft",
         "projections_fetched": false
       },
       "TE": {
-        "fetched_at": "2026-07-14T21:55:48.000Z",
-        "last_updated": "2026-07-14T21:41:47.000Z",
-        "total_experts": 72,
+        "fetched_at": "2026-07-15T13:06:14.000Z",
+        "last_updated": "2026-07-15T13:01:57.000Z",
+        "total_experts": 74,
         "experts": {
-          "included": 72,
-          "available": 97,
-          "coverage_pct": 74.2,
+          "included": 74,
+          "available": 99,
+          "coverage_pct": 74.7,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:47.000Z",
+          "last_updated": "2026-07-15T13:01:57.000Z",
           "sample_key": "fantasypros:HALF:draft"
         },
         "scoring": "HALF",
@@ -747,20 +759,20 @@
         "week": "draft",
         "year": "2026",
         "url": "https://www.fantasypros.com/nfl/rankings/half-point-ppr-cheatsheets.php",
-        "row_count": 777,
+        "row_count": 776,
         "mode": "draft",
         "projections_fetched": false
       },
       "FLEX": {
-        "fetched_at": "2026-07-14T21:55:48.000Z",
-        "last_updated": "2026-07-14T21:41:47.000Z",
-        "total_experts": 72,
+        "fetched_at": "2026-07-15T13:06:14.000Z",
+        "last_updated": "2026-07-15T13:01:57.000Z",
+        "total_experts": 74,
         "experts": {
-          "included": 72,
-          "available": 97,
-          "coverage_pct": 74.2,
+          "included": 74,
+          "available": 99,
+          "coverage_pct": 74.7,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:47.000Z",
+          "last_updated": "2026-07-15T13:01:57.000Z",
           "sample_key": "fantasypros:HALF:draft"
         },
         "scoring": "HALF",
@@ -768,22 +780,22 @@
         "week": "draft",
         "year": "2026",
         "url": "https://www.fantasypros.com/nfl/rankings/half-point-ppr-cheatsheets.php",
-        "row_count": 777,
+        "row_count": 776,
         "mode": "draft",
         "projections_fetched": false
       }
     },
     "PPR": {
       "RB": {
-        "fetched_at": "2026-07-14T21:55:49.000Z",
-        "last_updated": "2026-07-14T21:41:47.000Z",
-        "total_experts": 69,
+        "fetched_at": "2026-07-15T13:06:14.000Z",
+        "last_updated": "2026-07-15T13:01:58.000Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:47.000Z",
+          "last_updated": "2026-07-15T13:01:58.000Z",
           "sample_key": "fantasypros:PPR:draft"
         },
         "scoring": "PPR",
@@ -791,20 +803,20 @@
         "week": "draft",
         "year": "2026",
         "url": "https://www.fantasypros.com/nfl/rankings/ppr-cheatsheets.php",
-        "row_count": 501,
+        "row_count": 507,
         "mode": "draft",
         "projections_fetched": false
       },
       "WR": {
-        "fetched_at": "2026-07-14T21:55:49.000Z",
-        "last_updated": "2026-07-14T21:41:47.000Z",
-        "total_experts": 69,
+        "fetched_at": "2026-07-15T13:06:14.000Z",
+        "last_updated": "2026-07-15T13:01:58.000Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:47.000Z",
+          "last_updated": "2026-07-15T13:01:58.000Z",
           "sample_key": "fantasypros:PPR:draft"
         },
         "scoring": "PPR",
@@ -812,20 +824,20 @@
         "week": "draft",
         "year": "2026",
         "url": "https://www.fantasypros.com/nfl/rankings/ppr-cheatsheets.php",
-        "row_count": 501,
+        "row_count": 507,
         "mode": "draft",
         "projections_fetched": false
       },
       "TE": {
-        "fetched_at": "2026-07-14T21:55:49.000Z",
-        "last_updated": "2026-07-14T21:41:47.000Z",
-        "total_experts": 69,
+        "fetched_at": "2026-07-15T13:06:14.000Z",
+        "last_updated": "2026-07-15T13:01:58.000Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:47.000Z",
+          "last_updated": "2026-07-15T13:01:58.000Z",
           "sample_key": "fantasypros:PPR:draft"
         },
         "scoring": "PPR",
@@ -833,20 +845,20 @@
         "week": "draft",
         "year": "2026",
         "url": "https://www.fantasypros.com/nfl/rankings/ppr-cheatsheets.php",
-        "row_count": 501,
+        "row_count": 507,
         "mode": "draft",
         "projections_fetched": false
       },
       "FLEX": {
-        "fetched_at": "2026-07-14T21:55:49.000Z",
-        "last_updated": "2026-07-14T21:41:47.000Z",
-        "total_experts": 69,
+        "fetched_at": "2026-07-15T13:06:14.000Z",
+        "last_updated": "2026-07-15T13:01:58.000Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:47.000Z",
+          "last_updated": "2026-07-15T13:01:58.000Z",
           "sample_key": "fantasypros:PPR:draft"
         },
         "scoring": "PPR",
@@ -854,7 +866,7 @@
         "week": "draft",
         "year": "2026",
         "url": "https://www.fantasypros.com/nfl/rankings/ppr-cheatsheets.php",
-        "row_count": 501,
+        "row_count": 507,
         "mode": "draft",
         "projections_fetched": false
       }
@@ -863,15 +875,15 @@
   "tiers": {
     "STD": {
       "QB": {
-        "last_updated": "2026-07-14T21:41:48.000Z",
-        "fetched_at": "2026-07-14T21:55:51.092Z",
-        "total_experts": 69,
+        "last_updated": "2026-07-15T03:08:06.000Z",
+        "fetched_at": "2026-07-15T13:06:16.987Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:48.000Z",
+          "last_updated": "2026-07-15T03:08:06.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -880,15 +892,15 @@
         "year": 2026
       },
       "RB": {
-        "last_updated": "2026-07-14T21:41:48.000Z",
-        "fetched_at": "2026-07-14T21:55:51.092Z",
-        "total_experts": 69,
+        "last_updated": "2026-07-15T03:08:06.000Z",
+        "fetched_at": "2026-07-15T13:06:16.987Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:48.000Z",
+          "last_updated": "2026-07-15T03:08:06.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -897,15 +909,15 @@
         "year": 2026
       },
       "WR": {
-        "last_updated": "2026-07-14T21:41:48.000Z",
-        "fetched_at": "2026-07-14T21:55:51.092Z",
-        "total_experts": 69,
+        "last_updated": "2026-07-15T03:08:06.000Z",
+        "fetched_at": "2026-07-15T13:06:16.987Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:48.000Z",
+          "last_updated": "2026-07-15T03:08:06.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -914,15 +926,15 @@
         "year": 2026
       },
       "TE": {
-        "last_updated": "2026-07-14T21:41:48.000Z",
-        "fetched_at": "2026-07-14T21:55:51.092Z",
-        "total_experts": 69,
+        "last_updated": "2026-07-15T03:08:06.000Z",
+        "fetched_at": "2026-07-15T13:06:16.987Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:48.000Z",
+          "last_updated": "2026-07-15T03:08:06.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -931,15 +943,15 @@
         "year": 2026
       },
       "FLEX": {
-        "last_updated": "2026-07-14T21:41:48.000Z",
-        "fetched_at": "2026-07-14T21:55:51.092Z",
-        "total_experts": 69,
+        "last_updated": "2026-07-15T03:08:06.000Z",
+        "fetched_at": "2026-07-15T13:06:16.987Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:48.000Z",
+          "last_updated": "2026-07-15T03:08:06.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -948,15 +960,15 @@
         "year": 2026
       },
       "K": {
-        "last_updated": "2026-07-14T21:41:48.000Z",
-        "fetched_at": "2026-07-14T21:55:51.092Z",
-        "total_experts": 69,
+        "last_updated": "2026-07-15T03:08:06.000Z",
+        "fetched_at": "2026-07-15T13:06:16.987Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:48.000Z",
+          "last_updated": "2026-07-15T03:08:06.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -965,15 +977,15 @@
         "year": 2026
       },
       "DST": {
-        "last_updated": "2026-07-14T21:41:48.000Z",
-        "fetched_at": "2026-07-14T21:55:51.092Z",
-        "total_experts": 69,
+        "last_updated": "2026-07-15T03:08:06.000Z",
+        "fetched_at": "2026-07-15T13:06:16.987Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:48.000Z",
+          "last_updated": "2026-07-15T03:08:06.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -984,15 +996,15 @@
     },
     "HALF": {
       "RB": {
-        "last_updated": "2026-07-14T21:41:47.000Z",
-        "fetched_at": "2026-07-14T21:55:51.092Z",
-        "total_experts": 72,
+        "last_updated": "2026-07-15T13:01:57.000Z",
+        "fetched_at": "2026-07-15T13:06:16.987Z",
+        "total_experts": 74,
         "experts": {
-          "included": 72,
-          "available": 97,
-          "coverage_pct": 74.2,
+          "included": 74,
+          "available": 99,
+          "coverage_pct": 74.7,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:47.000Z",
+          "last_updated": "2026-07-15T13:01:57.000Z",
           "sample_key": "fantasypros:HALF:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1001,15 +1013,15 @@
         "year": 2026
       },
       "WR": {
-        "last_updated": "2026-07-14T21:41:47.000Z",
-        "fetched_at": "2026-07-14T21:55:51.092Z",
-        "total_experts": 72,
+        "last_updated": "2026-07-15T13:01:57.000Z",
+        "fetched_at": "2026-07-15T13:06:16.987Z",
+        "total_experts": 74,
         "experts": {
-          "included": 72,
-          "available": 97,
-          "coverage_pct": 74.2,
+          "included": 74,
+          "available": 99,
+          "coverage_pct": 74.7,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:47.000Z",
+          "last_updated": "2026-07-15T13:01:57.000Z",
           "sample_key": "fantasypros:HALF:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1018,15 +1030,15 @@
         "year": 2026
       },
       "TE": {
-        "last_updated": "2026-07-14T21:41:47.000Z",
-        "fetched_at": "2026-07-14T21:55:51.092Z",
-        "total_experts": 72,
+        "last_updated": "2026-07-15T13:01:57.000Z",
+        "fetched_at": "2026-07-15T13:06:16.987Z",
+        "total_experts": 74,
         "experts": {
-          "included": 72,
-          "available": 97,
-          "coverage_pct": 74.2,
+          "included": 74,
+          "available": 99,
+          "coverage_pct": 74.7,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:47.000Z",
+          "last_updated": "2026-07-15T13:01:57.000Z",
           "sample_key": "fantasypros:HALF:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1035,15 +1047,15 @@
         "year": 2026
       },
       "FLEX": {
-        "last_updated": "2026-07-14T21:41:47.000Z",
-        "fetched_at": "2026-07-14T21:55:51.092Z",
-        "total_experts": 72,
+        "last_updated": "2026-07-15T13:01:57.000Z",
+        "fetched_at": "2026-07-15T13:06:16.987Z",
+        "total_experts": 74,
         "experts": {
-          "included": 72,
-          "available": 97,
-          "coverage_pct": 74.2,
+          "included": 74,
+          "available": 99,
+          "coverage_pct": 74.7,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:47.000Z",
+          "last_updated": "2026-07-15T13:01:57.000Z",
           "sample_key": "fantasypros:HALF:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1054,15 +1066,15 @@
     },
     "PPR": {
       "RB": {
-        "last_updated": "2026-07-14T21:41:47.000Z",
-        "fetched_at": "2026-07-14T21:55:51.092Z",
-        "total_experts": 69,
+        "last_updated": "2026-07-15T13:01:58.000Z",
+        "fetched_at": "2026-07-15T13:06:16.987Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:47.000Z",
+          "last_updated": "2026-07-15T13:01:58.000Z",
           "sample_key": "fantasypros:PPR:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1071,15 +1083,15 @@
         "year": 2026
       },
       "WR": {
-        "last_updated": "2026-07-14T21:41:47.000Z",
-        "fetched_at": "2026-07-14T21:55:51.092Z",
-        "total_experts": 69,
+        "last_updated": "2026-07-15T13:01:58.000Z",
+        "fetched_at": "2026-07-15T13:06:16.987Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:47.000Z",
+          "last_updated": "2026-07-15T13:01:58.000Z",
           "sample_key": "fantasypros:PPR:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1088,15 +1100,15 @@
         "year": 2026
       },
       "TE": {
-        "last_updated": "2026-07-14T21:41:47.000Z",
-        "fetched_at": "2026-07-14T21:55:51.092Z",
-        "total_experts": 69,
+        "last_updated": "2026-07-15T13:01:58.000Z",
+        "fetched_at": "2026-07-15T13:06:16.987Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:47.000Z",
+          "last_updated": "2026-07-15T13:01:58.000Z",
           "sample_key": "fantasypros:PPR:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1105,15 +1117,15 @@
         "year": 2026
       },
       "FLEX": {
-        "last_updated": "2026-07-14T21:41:47.000Z",
-        "fetched_at": "2026-07-14T21:55:51.092Z",
-        "total_experts": 69,
+        "last_updated": "2026-07-15T13:01:58.000Z",
+        "fetched_at": "2026-07-15T13:06:16.987Z",
+        "total_experts": 71,
         "experts": {
-          "included": 69,
-          "available": 95,
-          "coverage_pct": 72.6,
+          "included": 71,
+          "available": 97,
+          "coverage_pct": 73.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-14T21:41:47.000Z",
+          "last_updated": "2026-07-15T13:01:58.000Z",
           "sample_key": "fantasypros:PPR:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
