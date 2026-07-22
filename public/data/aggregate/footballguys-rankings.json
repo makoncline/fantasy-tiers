@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "fetchedAt": "2026-07-22T13:17:54.878Z",
+  "fetchedAt": "2026-07-22T22:02:35.962Z",
   "season": "2026",
   "scoring": "ppr",
   "teams": 12,
@@ -21,8 +21,8 @@
     {
       "source": "consensus",
       "rowCount": 568,
-      "adpRowCount": 342,
-      "adpCoveragePct": 60.2
+      "adpRowCount": 340,
+      "adpCoveragePct": 59.9
     },
     {
       "source": "draftkings-bestball",
@@ -57,8 +57,8 @@
     {
       "source": "nfl",
       "rowCount": 568,
-      "adpRowCount": 0,
-      "adpCoveragePct": 0
+      "adpRowCount": 340,
+      "adpCoveragePct": 59.9
     },
     {
       "source": "rtsports",
@@ -69,8 +69,8 @@
     {
       "source": "sleeper-redraft",
       "rowCount": 568,
-      "adpRowCount": 0,
-      "adpCoveragePct": 0
+      "adpRowCount": 340,
+      "adpCoveragePct": 59.9
     },
     {
       "source": "underdog",
@@ -102,9 +102,9 @@
         "espn": 1,
         "mfl": null,
         "nffc": 1,
-        "nfl": null,
+        "nfl": 1,
         "rtsports": 1,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 1,
         "underdog": 1,
         "yahoo": 2
       }
@@ -125,9 +125,9 @@
         "espn": 2,
         "mfl": null,
         "nffc": 2,
-        "nfl": null,
+        "nfl": 2,
         "rtsports": 2,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 2,
         "underdog": 2,
         "yahoo": 1
       }
@@ -148,9 +148,9 @@
         "espn": 4,
         "mfl": null,
         "nffc": 3,
-        "nfl": null,
+        "nfl": 3,
         "rtsports": 3,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 3,
         "underdog": 3,
         "yahoo": 3
       }
@@ -171,9 +171,9 @@
         "espn": 5,
         "mfl": null,
         "nffc": 7,
-        "nfl": null,
+        "nfl": 6,
         "rtsports": 5,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 6,
         "underdog": 6,
         "yahoo": 5
       }
@@ -194,9 +194,9 @@
         "espn": 3,
         "mfl": null,
         "nffc": 4,
-        "nfl": null,
+        "nfl": 4,
         "rtsports": 4,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 4,
         "underdog": 4,
         "yahoo": 4
       }
@@ -217,9 +217,9 @@
         "espn": 8,
         "mfl": null,
         "nffc": 9,
-        "nfl": null,
+        "nfl": 8,
         "rtsports": 7,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 8,
         "underdog": 8,
         "yahoo": 7
       }
@@ -240,9 +240,9 @@
         "espn": 13,
         "mfl": null,
         "nffc": 8,
-        "nfl": null,
-        "rtsports": 9,
-        "sleeper-redraft": null,
+        "nfl": 9,
+        "rtsports": 8,
+        "sleeper-redraft": 9,
         "underdog": 11,
         "yahoo": 12
       }
@@ -255,7 +255,7 @@
       "tier": 3,
       "posRank": 1,
       "adp": {
-        "bestball10s": 24,
+        "bestball10s": 23,
         "cbs": 25,
         "consensus": 20,
         "draftkings-bestball": null,
@@ -263,9 +263,9 @@
         "espn": 20,
         "mfl": null,
         "nffc": 19,
-        "nfl": null,
+        "nfl": 20,
         "rtsports": 23,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 20,
         "underdog": 21,
         "yahoo": 19
       }
@@ -286,9 +286,9 @@
         "espn": 6,
         "mfl": null,
         "nffc": 5,
-        "nfl": null,
+        "nfl": 5,
         "rtsports": 6,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 5,
         "underdog": 5,
         "yahoo": 6
       }
@@ -309,9 +309,9 @@
         "espn": 7,
         "mfl": null,
         "nffc": 6,
-        "nfl": null,
-        "rtsports": 8,
-        "sleeper-redraft": null,
+        "nfl": 7,
+        "rtsports": 9,
+        "sleeper-redraft": 7,
         "underdog": 7,
         "yahoo": 8
       }
@@ -324,7 +324,7 @@
       "tier": 3,
       "posRank": 6,
       "adp": {
-        "bestball10s": 10,
+        "bestball10s": 11,
         "cbs": 10,
         "consensus": 13,
         "draftkings-bestball": null,
@@ -332,9 +332,9 @@
         "espn": 10,
         "mfl": null,
         "nffc": 20,
-        "nfl": null,
-        "rtsports": 10,
-        "sleeper-redraft": null,
+        "nfl": 13,
+        "rtsports": 11,
+        "sleeper-redraft": 13,
         "underdog": 17,
         "yahoo": 13
       }
@@ -347,7 +347,7 @@
       "tier": 4,
       "posRank": 5,
       "adp": {
-        "bestball10s": 33,
+        "bestball10s": 28,
         "cbs": 22,
         "consensus": 21,
         "draftkings-bestball": null,
@@ -355,9 +355,9 @@
         "espn": 25,
         "mfl": null,
         "nffc": 15,
-        "nfl": null,
-        "rtsports": 21,
-        "sleeper-redraft": null,
+        "nfl": 21,
+        "rtsports": 20,
+        "sleeper-redraft": 21,
         "underdog": 19,
         "yahoo": 26
       }
@@ -370,7 +370,7 @@
       "tier": 4,
       "posRank": 6,
       "adp": {
-        "bestball10s": 11,
+        "bestball10s": 10,
         "cbs": 9,
         "consensus": 12,
         "draftkings-bestball": null,
@@ -378,9 +378,9 @@
         "espn": 9,
         "mfl": null,
         "nffc": 12,
-        "nfl": null,
+        "nfl": 12,
         "rtsports": 15,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 12,
         "underdog": 9,
         "yahoo": 9
       }
@@ -401,9 +401,9 @@
         "espn": 12,
         "mfl": null,
         "nffc": 11,
-        "nfl": null,
-        "rtsports": 11,
-        "sleeper-redraft": null,
+        "nfl": 10,
+        "rtsports": 10,
+        "sleeper-redraft": 10,
         "underdog": 12,
         "yahoo": 10
       }
@@ -424,9 +424,9 @@
         "espn": 26,
         "mfl": null,
         "nffc": 14,
-        "nfl": null,
+        "nfl": 16,
         "rtsports": 13,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 16,
         "underdog": 16,
         "yahoo": 16
       }
@@ -447,9 +447,9 @@
         "espn": 18,
         "mfl": null,
         "nffc": 13,
-        "nfl": null,
+        "nfl": 15,
         "rtsports": 14,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 15,
         "underdog": 14,
         "yahoo": 18
       }
@@ -470,9 +470,9 @@
         "espn": 11,
         "mfl": null,
         "nffc": 10,
-        "nfl": null,
+        "nfl": 11,
         "rtsports": 12,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 11,
         "underdog": 10,
         "yahoo": 11
       }
@@ -485,7 +485,7 @@
       "tier": 4,
       "posRank": 8,
       "adp": {
-        "bestball10s": 18,
+        "bestball10s": 17,
         "cbs": 14,
         "consensus": 17,
         "draftkings-bestball": null,
@@ -493,9 +493,9 @@
         "espn": 17,
         "mfl": null,
         "nffc": 16,
-        "nfl": null,
+        "nfl": 17,
         "rtsports": 19,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 17,
         "underdog": 20,
         "yahoo": 15
       }
@@ -508,7 +508,7 @@
       "tier": 4,
       "posRank": 10,
       "adp": {
-        "bestball10s": 17,
+        "bestball10s": 16,
         "cbs": 17,
         "consensus": 14,
         "draftkings-bestball": null,
@@ -516,9 +516,9 @@
         "espn": 14,
         "mfl": null,
         "nffc": 18,
-        "nfl": null,
+        "nfl": 14,
         "rtsports": 16,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 14,
         "underdog": 13,
         "yahoo": 14
       }
@@ -531,7 +531,7 @@
       "tier": 4,
       "posRank": 9,
       "adp": {
-        "bestball10s": 23,
+        "bestball10s": 22,
         "cbs": 20,
         "consensus": 22,
         "draftkings-bestball": null,
@@ -539,9 +539,9 @@
         "espn": 22,
         "mfl": null,
         "nffc": 22,
-        "nfl": null,
-        "rtsports": 26,
-        "sleeper-redraft": null,
+        "nfl": 22,
+        "rtsports": 25,
+        "sleeper-redraft": 22,
         "underdog": 22,
         "yahoo": 21
       }
@@ -554,17 +554,17 @@
       "tier": 4,
       "posRank": 2,
       "adp": {
-        "bestball10s": 16,
+        "bestball10s": 19,
         "cbs": 26,
-        "consensus": 24,
+        "consensus": 23,
         "draftkings-bestball": null,
         "drafters": 29,
         "espn": 19,
         "mfl": null,
         "nffc": 26,
-        "nfl": null,
-        "rtsports": 17,
-        "sleeper-redraft": null,
+        "nfl": 23,
+        "rtsports": 18,
+        "sleeper-redraft": 23,
         "underdog": 28,
         "yahoo": 24
       }
@@ -577,7 +577,7 @@
       "tier": 5,
       "posRank": 11,
       "adp": {
-        "bestball10s": 20,
+        "bestball10s": 18,
         "cbs": 23,
         "consensus": 18,
         "draftkings-bestball": null,
@@ -585,9 +585,9 @@
         "espn": 28,
         "mfl": null,
         "nffc": 17,
-        "nfl": null,
-        "rtsports": 18,
-        "sleeper-redraft": null,
+        "nfl": 18,
+        "rtsports": 17,
+        "sleeper-redraft": 18,
         "underdog": 15,
         "yahoo": 22
       }
@@ -600,7 +600,7 @@
       "tier": 5,
       "posRank": 10,
       "adp": {
-        "bestball10s": 28,
+        "bestball10s": 30,
         "cbs": 19,
         "consensus": 27,
         "draftkings-bestball": null,
@@ -608,9 +608,9 @@
         "espn": 23,
         "mfl": null,
         "nffc": 24,
-        "nfl": null,
+        "nfl": 27,
         "rtsports": 34,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 27,
         "underdog": 25,
         "yahoo": 33
       }
@@ -623,17 +623,17 @@
       "tier": 5,
       "posRank": 12,
       "adp": {
-        "bestball10s": 32,
+        "bestball10s": 31,
         "cbs": 31,
-        "consensus": 31,
+        "consensus": 30,
         "draftkings-bestball": null,
         "drafters": 31,
         "espn": 31,
         "mfl": null,
         "nffc": 36,
-        "nfl": null,
+        "nfl": 30,
         "rtsports": 32,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 30,
         "underdog": 27,
         "yahoo": 38
       }
@@ -646,17 +646,17 @@
       "tier": 5,
       "posRank": 13,
       "adp": {
-        "bestball10s": 19,
+        "bestball10s": 20,
         "cbs": 29,
-        "consensus": 23,
+        "consensus": 24,
         "draftkings-bestball": null,
         "drafters": 27,
         "espn": 15,
         "mfl": null,
         "nffc": 30,
-        "nfl": null,
-        "rtsports": 20,
-        "sleeper-redraft": null,
+        "nfl": 24,
+        "rtsports": 21,
+        "sleeper-redraft": 24,
         "underdog": 24,
         "yahoo": 25
       }
@@ -669,7 +669,7 @@
       "tier": 5,
       "posRank": 11,
       "adp": {
-        "bestball10s": 26,
+        "bestball10s": 25,
         "cbs": 21,
         "consensus": 25,
         "draftkings-bestball": null,
@@ -677,9 +677,9 @@
         "espn": 27,
         "mfl": null,
         "nffc": 21,
-        "nfl": null,
-        "rtsports": 24,
-        "sleeper-redraft": null,
+        "nfl": 25,
+        "rtsports": 26,
+        "sleeper-redraft": 25,
         "underdog": 23,
         "yahoo": 23
       }
@@ -692,7 +692,7 @@
       "tier": 5,
       "posRank": 14,
       "adp": {
-        "bestball10s": 22,
+        "bestball10s": 21,
         "cbs": 18,
         "consensus": 19,
         "draftkings-bestball": null,
@@ -700,9 +700,9 @@
         "espn": 16,
         "mfl": null,
         "nffc": 25,
-        "nfl": null,
+        "nfl": 19,
         "rtsports": 22,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 19,
         "underdog": 18,
         "yahoo": 20
       }
@@ -715,17 +715,17 @@
       "tier": 5,
       "posRank": 15,
       "adp": {
-        "bestball10s": 27,
+        "bestball10s": 32,
         "cbs": 24,
-        "consensus": 32,
+        "consensus": 33,
         "draftkings-bestball": null,
         "drafters": 43,
         "espn": 24,
         "mfl": null,
         "nffc": 42,
-        "nfl": null,
-        "rtsports": 28,
-        "sleeper-redraft": null,
+        "nfl": 33,
+        "rtsports": 29,
+        "sleeper-redraft": 33,
         "underdog": 41,
         "yahoo": 28
       }
@@ -738,17 +738,17 @@
       "tier": 5,
       "posRank": 16,
       "adp": {
-        "bestball10s": 29,
+        "bestball10s": 26,
         "cbs": 28,
-        "consensus": 30,
+        "consensus": 31,
         "draftkings-bestball": null,
         "drafters": 32,
         "espn": 35,
         "mfl": null,
         "nffc": 39,
-        "nfl": null,
+        "nfl": 31,
         "rtsports": 30,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 31,
         "underdog": 31,
         "yahoo": 31
       }
@@ -761,7 +761,7 @@
       "tier": 5,
       "posRank": 12,
       "adp": {
-        "bestball10s": 44,
+        "bestball10s": 39,
         "cbs": 34,
         "consensus": 29,
         "draftkings-bestball": null,
@@ -769,9 +769,9 @@
         "espn": 32,
         "mfl": null,
         "nffc": 27,
-        "nfl": null,
+        "nfl": 29,
         "rtsports": 35,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 29,
         "underdog": 26,
         "yahoo": 30
       }
@@ -784,7 +784,7 @@
       "tier": 5,
       "posRank": 1,
       "adp": {
-        "bestball10s": 25,
+        "bestball10s": 24,
         "cbs": 27,
         "consensus": 26,
         "draftkings-bestball": null,
@@ -792,9 +792,9 @@
         "espn": 21,
         "mfl": null,
         "nffc": 38,
-        "nfl": null,
-        "rtsports": 25,
-        "sleeper-redraft": null,
+        "nfl": 26,
+        "rtsports": 24,
+        "sleeper-redraft": 26,
         "underdog": 35,
         "yahoo": 17
       }
@@ -807,7 +807,7 @@
       "tier": 5,
       "posRank": 13,
       "adp": {
-        "bestball10s": 30,
+        "bestball10s": 29,
         "cbs": 30,
         "consensus": 28,
         "draftkings-bestball": null,
@@ -815,9 +815,9 @@
         "espn": 30,
         "mfl": null,
         "nffc": 28,
-        "nfl": null,
+        "nfl": 28,
         "rtsports": 27,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 28,
         "underdog": 29,
         "yahoo": 29
       }
@@ -830,7 +830,7 @@
       "tier": 5,
       "posRank": 17,
       "adp": {
-        "bestball10s": 31,
+        "bestball10s": 33,
         "cbs": 37,
         "consensus": 34,
         "draftkings-bestball": null,
@@ -838,9 +838,9 @@
         "espn": 34,
         "mfl": null,
         "nffc": 40,
-        "nfl": null,
-        "rtsports": 29,
-        "sleeper-redraft": null,
+        "nfl": 34,
+        "rtsports": 28,
+        "sleeper-redraft": 34,
         "underdog": 37,
         "yahoo": 35
       }
@@ -853,17 +853,17 @@
       "tier": 6,
       "posRank": 14,
       "adp": {
-        "bestball10s": 39,
+        "bestball10s": 38,
         "cbs": 38,
-        "consensus": 35,
+        "consensus": 32,
         "draftkings-bestball": null,
         "drafters": 30,
         "espn": 41,
         "mfl": null,
         "nffc": 29,
-        "nfl": null,
-        "rtsports": 44,
-        "sleeper-redraft": null,
+        "nfl": 32,
+        "rtsports": 41,
+        "sleeper-redraft": 32,
         "underdog": 30,
         "yahoo": 41
       }
@@ -884,9 +884,9 @@
         "espn": 40,
         "mfl": null,
         "nffc": 50,
-        "nfl": null,
+        "nfl": 38,
         "rtsports": 33,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 38,
         "underdog": 34,
         "yahoo": 39
       }
@@ -899,17 +899,17 @@
       "tier": 6,
       "posRank": 15,
       "adp": {
-        "bestball10s": 21,
+        "bestball10s": 27,
         "cbs": 32,
-        "consensus": 33,
+        "consensus": 37,
         "draftkings-bestball": null,
         "drafters": 42,
         "espn": 29,
         "mfl": null,
         "nffc": 44,
-        "nfl": null,
-        "rtsports": 41,
-        "sleeper-redraft": null,
+        "nfl": 37,
+        "rtsports": 45,
+        "sleeper-redraft": 37,
         "underdog": 38,
         "yahoo": 27
       }
@@ -922,7 +922,7 @@
       "tier": 6,
       "posRank": 16,
       "adp": {
-        "bestball10s": 41,
+        "bestball10s": 40,
         "cbs": 46,
         "consensus": 41,
         "draftkings-bestball": null,
@@ -930,9 +930,9 @@
         "espn": 52,
         "mfl": null,
         "nffc": 33,
-        "nfl": null,
-        "rtsports": 50,
-        "sleeper-redraft": null,
+        "nfl": 41,
+        "rtsports": 48,
+        "sleeper-redraft": 41,
         "underdog": 36,
         "yahoo": 45
       }
@@ -953,9 +953,9 @@
         "espn": 37,
         "mfl": null,
         "nffc": 32,
-        "nfl": null,
-        "rtsports": 40,
-        "sleeper-redraft": null,
+        "nfl": 39,
+        "rtsports": 42,
+        "sleeper-redraft": 39,
         "underdog": 39,
         "yahoo": 36
       }
@@ -968,7 +968,7 @@
       "tier": 6,
       "posRank": 19,
       "adp": {
-        "bestball10s": 43,
+        "bestball10s": 42,
         "cbs": 35,
         "consensus": 43,
         "draftkings-bestball": null,
@@ -976,9 +976,9 @@
         "espn": 38,
         "mfl": null,
         "nffc": 47,
-        "nfl": null,
+        "nfl": 43,
         "rtsports": 31,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 43,
         "underdog": 43,
         "yahoo": 42
       }
@@ -991,17 +991,17 @@
       "tier": 6,
       "posRank": 18,
       "adp": {
-        "bestball10s": 73,
+        "bestball10s": 65,
         "cbs": 52,
-        "consensus": 55,
+        "consensus": 54,
         "draftkings-bestball": null,
         "drafters": 52,
         "espn": 58,
         "mfl": null,
         "nffc": 51,
-        "nfl": null,
+        "nfl": 54,
         "rtsports": 39,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 54,
         "underdog": 57,
         "yahoo": 61
       }
@@ -1022,9 +1022,9 @@
         "espn": 51,
         "mfl": null,
         "nffc": 59,
-        "nfl": null,
+        "nfl": 52,
         "rtsports": 36,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 52,
         "underdog": 53,
         "yahoo": 55
       }
@@ -1037,17 +1037,17 @@
       "tier": 6,
       "posRank": 19,
       "adp": {
-        "bestball10s": 48,
+        "bestball10s": 44,
         "cbs": 36,
-        "consensus": 36,
+        "consensus": 35,
         "draftkings-bestball": null,
         "drafters": 33,
         "espn": 44,
         "mfl": null,
         "nffc": 23,
-        "nfl": null,
-        "rtsports": 38,
-        "sleeper-redraft": null,
+        "nfl": 35,
+        "rtsports": 37,
+        "sleeper-redraft": 35,
         "underdog": 33,
         "yahoo": 49
       }
@@ -1068,9 +1068,9 @@
         "espn": 56,
         "mfl": null,
         "nffc": 35,
-        "nfl": null,
+        "nfl": 44,
         "rtsports": 54,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 44,
         "underdog": 42,
         "yahoo": 50
       }
@@ -1085,15 +1085,15 @@
       "adp": {
         "bestball10s": 36,
         "cbs": 33,
-        "consensus": 37,
+        "consensus": 36,
         "draftkings-bestball": null,
         "drafters": 35,
         "espn": 46,
         "mfl": null,
         "nffc": 31,
-        "nfl": null,
+        "nfl": 36,
         "rtsports": 49,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 36,
         "underdog": 32,
         "yahoo": 34
       }
@@ -1106,17 +1106,17 @@
       "tier": 6,
       "posRank": 21,
       "adp": {
-        "bestball10s": 38,
+        "bestball10s": 41,
         "cbs": 44,
-        "consensus": 50,
+        "consensus": 49,
         "draftkings-bestball": null,
         "drafters": 59,
         "espn": 49,
         "mfl": null,
         "nffc": 63,
-        "nfl": null,
-        "rtsports": 37,
-        "sleeper-redraft": null,
+        "nfl": 49,
+        "rtsports": 38,
+        "sleeper-redraft": 49,
         "underdog": 54,
         "yahoo": 47
       }
@@ -1129,7 +1129,7 @@
       "tier": 6,
       "posRank": 22,
       "adp": {
-        "bestball10s": 55,
+        "bestball10s": 54,
         "cbs": 49,
         "consensus": 46,
         "draftkings-bestball": null,
@@ -1137,9 +1137,9 @@
         "espn": 48,
         "mfl": null,
         "nffc": 41,
-        "nfl": null,
+        "nfl": 46,
         "rtsports": 55,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 46,
         "underdog": 45,
         "yahoo": 58
       }
@@ -1160,9 +1160,9 @@
         "espn": 36,
         "mfl": null,
         "nffc": 34,
-        "nfl": null,
-        "rtsports": 47,
-        "sleeper-redraft": null,
+        "nfl": 40,
+        "rtsports": 46,
+        "sleeper-redraft": 40,
         "underdog": 40,
         "yahoo": 43
       }
@@ -1175,7 +1175,7 @@
       "tier": 6,
       "posRank": 24,
       "adp": {
-        "bestball10s": 45,
+        "bestball10s": 46,
         "cbs": 50,
         "consensus": 45,
         "draftkings-bestball": null,
@@ -1183,9 +1183,9 @@
         "espn": 67,
         "mfl": null,
         "nffc": 37,
-        "nfl": null,
-        "rtsports": 45,
-        "sleeper-redraft": null,
+        "nfl": 45,
+        "rtsports": 44,
+        "sleeper-redraft": 45,
         "underdog": 44,
         "yahoo": 56
       }
@@ -1206,9 +1206,9 @@
         "espn": 62,
         "mfl": null,
         "nffc": 56,
-        "nfl": null,
+        "nfl": 53,
         "rtsports": 51,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 53,
         "underdog": 51,
         "yahoo": 51
       }
@@ -1221,7 +1221,7 @@
       "tier": 7,
       "posRank": 23,
       "adp": {
-        "bestball10s": 64,
+        "bestball10s": 66,
         "cbs": 70,
         "consensus": 69,
         "draftkings-bestball": null,
@@ -1229,9 +1229,9 @@
         "espn": 83,
         "mfl": null,
         "nffc": 73,
-        "nfl": null,
-        "rtsports": 65,
-        "sleeper-redraft": null,
+        "nfl": 69,
+        "rtsports": 64,
+        "sleeper-redraft": 69,
         "underdog": 74,
         "yahoo": 74
       }
@@ -1244,17 +1244,17 @@
       "tier": 7,
       "posRank": 24,
       "adp": {
-        "bestball10s": 52,
+        "bestball10s": 50,
         "cbs": 56,
-        "consensus": 51,
+        "consensus": 50,
         "draftkings-bestball": null,
         "drafters": 49,
         "espn": 63,
         "mfl": null,
         "nffc": 52,
-        "nfl": null,
-        "rtsports": 43,
-        "sleeper-redraft": null,
+        "nfl": 50,
+        "rtsports": 40,
+        "sleeper-redraft": 50,
         "underdog": 48,
         "yahoo": 57
       }
@@ -1269,15 +1269,15 @@
       "adp": {
         "bestball10s": 56,
         "cbs": 48,
-        "consensus": 57,
+        "consensus": 58,
         "draftkings-bestball": null,
         "drafters": 65,
         "espn": 45,
         "mfl": null,
         "nffc": 65,
-        "nfl": null,
+        "nfl": 58,
         "rtsports": 59,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 58,
         "underdog": 65,
         "yahoo": 40
       }
@@ -1290,17 +1290,17 @@
       "tier": 7,
       "posRank": 25,
       "adp": {
-        "bestball10s": 50,
+        "bestball10s": 52,
         "cbs": 57,
-        "consensus": 54,
+        "consensus": 55,
         "draftkings-bestball": null,
         "drafters": 54,
         "espn": 61,
         "mfl": null,
         "nffc": 46,
-        "nfl": null,
+        "nfl": 55,
         "rtsports": 58,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 55,
         "underdog": 50,
         "yahoo": 60
       }
@@ -1313,17 +1313,17 @@
       "tier": 7,
       "posRank": 26,
       "adp": {
-        "bestball10s": 97,
+        "bestball10s": 95,
         "cbs": 105,
-        "consensus": 93,
+        "consensus": 92,
         "draftkings-bestball": null,
         "drafters": 90,
         "espn": 76,
         "mfl": null,
         "nffc": 78,
-        "nfl": null,
-        "rtsports": 106,
-        "sleeper-redraft": null,
+        "nfl": 92,
+        "rtsports": 104,
+        "sleeper-redraft": 92,
         "underdog": 99,
         "yahoo": 121
       }
@@ -1336,7 +1336,7 @@
       "tier": 7,
       "posRank": 25,
       "adp": {
-        "bestball10s": 61,
+        "bestball10s": 64,
         "cbs": 67,
         "consensus": 70,
         "draftkings-bestball": null,
@@ -1344,9 +1344,9 @@
         "espn": 73,
         "mfl": null,
         "nffc": 94,
-        "nfl": null,
+        "nfl": 70,
         "rtsports": 78,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 70,
         "underdog": 77,
         "yahoo": 63
       }
@@ -1367,9 +1367,9 @@
         "espn": 70,
         "mfl": null,
         "nffc": 49,
-        "nfl": null,
+        "nfl": 56,
         "rtsports": 56,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 56,
         "underdog": 46,
         "yahoo": 64
       }
@@ -1382,17 +1382,17 @@
       "tier": 7,
       "posRank": 3,
       "adp": {
-        "bestball10s": 63,
+        "bestball10s": 60,
         "cbs": 55,
-        "consensus": 58,
+        "consensus": 57,
         "draftkings-bestball": null,
         "drafters": 60,
         "espn": 43,
         "mfl": null,
         "nffc": 57,
-        "nfl": null,
+        "nfl": 57,
         "rtsports": 57,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 57,
         "underdog": 64,
         "yahoo": 48
       }
@@ -1405,7 +1405,7 @@
       "tier": 7,
       "posRank": 4,
       "adp": {
-        "bestball10s": 42,
+        "bestball10s": 43,
         "cbs": 40,
         "consensus": 42,
         "draftkings-bestball": null,
@@ -1413,9 +1413,9 @@
         "espn": 39,
         "mfl": null,
         "nffc": 45,
-        "nfl": null,
-        "rtsports": 46,
-        "sleeper-redraft": null,
+        "nfl": 42,
+        "rtsports": 47,
+        "sleeper-redraft": 42,
         "underdog": 47,
         "yahoo": 37
       }
@@ -1428,7 +1428,7 @@
       "tier": 7,
       "posRank": 28,
       "adp": {
-        "bestball10s": 47,
+        "bestball10s": 48,
         "cbs": 61,
         "consensus": 47,
         "draftkings-bestball": null,
@@ -1436,9 +1436,9 @@
         "espn": 42,
         "mfl": null,
         "nffc": 48,
-        "nfl": null,
-        "rtsports": 64,
-        "sleeper-redraft": null,
+        "nfl": 47,
+        "rtsports": 62,
+        "sleeper-redraft": 47,
         "underdog": 49,
         "yahoo": 46
       }
@@ -1453,15 +1453,15 @@
       "adp": {
         "bestball10s": 85,
         "cbs": 72,
-        "consensus": 82,
+        "consensus": 81,
         "draftkings-bestball": null,
         "drafters": 95,
         "espn": 60,
         "mfl": null,
         "nffc": 93,
-        "nfl": null,
-        "rtsports": 75,
-        "sleeper-redraft": null,
+        "nfl": 81,
+        "rtsports": 74,
+        "sleeper-redraft": 81,
         "underdog": 104,
         "yahoo": 73
       }
@@ -1474,17 +1474,17 @@
       "tier": 8,
       "posRank": 26,
       "adp": {
-        "bestball10s": 40,
+        "bestball10s": 45,
         "cbs": 54,
-        "consensus": 49,
+        "consensus": 51,
         "draftkings-bestball": null,
         "drafters": 58,
         "espn": 55,
         "mfl": null,
         "nffc": 54,
-        "nfl": null,
-        "rtsports": 42,
-        "sleeper-redraft": null,
+        "nfl": 51,
+        "rtsports": 43,
+        "sleeper-redraft": 51,
         "underdog": 52,
         "yahoo": 53
       }
@@ -1499,15 +1499,15 @@
       "adp": {
         "bestball10s": 70,
         "cbs": 87,
-        "consensus": 71,
+        "consensus": 72,
         "draftkings-bestball": null,
         "drafters": 76,
         "espn": 75,
         "mfl": null,
         "nffc": 72,
-        "nfl": null,
-        "rtsports": 89,
-        "sleeper-redraft": null,
+        "nfl": 72,
+        "rtsports": 88,
+        "sleeper-redraft": 72,
         "underdog": 78,
         "yahoo": 83
       }
@@ -1528,9 +1528,9 @@
         "espn": 65,
         "mfl": null,
         "nffc": 55,
-        "nfl": null,
-        "rtsports": 63,
-        "sleeper-redraft": null,
+        "nfl": 61,
+        "rtsports": 65,
+        "sleeper-redraft": 61,
         "underdog": 60,
         "yahoo": 69
       }
@@ -1543,7 +1543,7 @@
       "tier": 8,
       "posRank": 3,
       "adp": {
-        "bestball10s": 54,
+        "bestball10s": 55,
         "cbs": 58,
         "consensus": 59,
         "draftkings-bestball": null,
@@ -1551,9 +1551,9 @@
         "espn": 50,
         "mfl": null,
         "nffc": 64,
-        "nfl": null,
-        "rtsports": 61,
-        "sleeper-redraft": null,
+        "nfl": 59,
+        "rtsports": 60,
+        "sleeper-redraft": 59,
         "underdog": 68,
         "yahoo": 44
       }
@@ -1566,7 +1566,7 @@
       "tier": 8,
       "posRank": 4,
       "adp": {
-        "bestball10s": 46,
+        "bestball10s": 47,
         "cbs": 45,
         "consensus": 48,
         "draftkings-bestball": null,
@@ -1574,9 +1574,9 @@
         "espn": 33,
         "mfl": null,
         "nffc": 71,
-        "nfl": null,
+        "nfl": 48,
         "rtsports": 53,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 48,
         "underdog": 55,
         "yahoo": 32
       }
@@ -1589,7 +1589,7 @@
       "tier": 8,
       "posRank": 31,
       "adp": {
-        "bestball10s": 65,
+        "bestball10s": 63,
         "cbs": 74,
         "consensus": 63,
         "draftkings-bestball": null,
@@ -1597,9 +1597,9 @@
         "espn": 54,
         "mfl": null,
         "nffc": 53,
-        "nfl": null,
-        "rtsports": 76,
-        "sleeper-redraft": null,
+        "nfl": 63,
+        "rtsports": 77,
+        "sleeper-redraft": 63,
         "underdog": 59,
         "yahoo": 75
       }
@@ -1612,17 +1612,17 @@
       "tier": 8,
       "posRank": 32,
       "adp": {
-        "bestball10s": 72,
+        "bestball10s": 75,
         "cbs": 59,
-        "consensus": 76,
+        "consensus": 75,
         "draftkings-bestball": null,
         "drafters": 91,
         "espn": 78,
         "mfl": null,
         "nffc": 67,
-        "nfl": null,
-        "rtsports": 82,
-        "sleeper-redraft": null,
+        "nfl": 75,
+        "rtsports": 83,
+        "sleeper-redraft": 75,
         "underdog": 79,
         "yahoo": 78
       }
@@ -1635,7 +1635,7 @@
       "tier": 8,
       "posRank": 27,
       "adp": {
-        "bestball10s": 79,
+        "bestball10s": 80,
         "cbs": 81,
         "consensus": 79,
         "draftkings-bestball": null,
@@ -1643,9 +1643,9 @@
         "espn": 104,
         "mfl": null,
         "nffc": 89,
-        "nfl": null,
-        "rtsports": 70,
-        "sleeper-redraft": null,
+        "nfl": 79,
+        "rtsports": 71,
+        "sleeper-redraft": 79,
         "underdog": 76,
         "yahoo": 82
       }
@@ -1658,17 +1658,17 @@
       "tier": 8,
       "posRank": 6,
       "adp": {
-        "bestball10s": 75,
+        "bestball10s": 83,
         "cbs": 76,
-        "consensus": 81,
+        "consensus": 82,
         "draftkings-bestball": null,
         "drafters": 108,
         "espn": 59,
         "mfl": null,
         "nffc": 92,
-        "nfl": null,
-        "rtsports": 60,
-        "sleeper-redraft": null,
+        "nfl": 82,
+        "rtsports": 61,
+        "sleeper-redraft": 82,
         "underdog": 103,
         "yahoo": 68
       }
@@ -1681,17 +1681,17 @@
       "tier": 8,
       "posRank": 7,
       "adp": {
-        "bestball10s": 77,
+        "bestball10s": 82,
         "cbs": 75,
-        "consensus": 75,
+        "consensus": 76,
         "draftkings-bestball": null,
         "drafters": 78,
         "espn": 100,
         "mfl": null,
         "nffc": 76,
-        "nfl": null,
-        "rtsports": 85,
-        "sleeper-redraft": null,
+        "nfl": 76,
+        "rtsports": 86,
+        "sleeper-redraft": 76,
         "underdog": 82,
         "yahoo": 59
       }
@@ -1704,7 +1704,7 @@
       "tier": 8,
       "posRank": 8,
       "adp": {
-        "bestball10s": 128,
+        "bestball10s": 120,
         "cbs": 106,
         "consensus": 111,
         "draftkings-bestball": null,
@@ -1712,9 +1712,9 @@
         "espn": 82,
         "mfl": null,
         "nffc": 125,
-        "nfl": null,
+        "nfl": 111,
         "rtsports": 102,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 111,
         "underdog": 121,
         "yahoo": 92
       }
@@ -1727,7 +1727,7 @@
       "tier": 8,
       "posRank": 5,
       "adp": {
-        "bestball10s": 62,
+        "bestball10s": 61,
         "cbs": 65,
         "consensus": 64,
         "draftkings-bestball": null,
@@ -1735,9 +1735,9 @@
         "espn": 47,
         "mfl": null,
         "nffc": 81,
-        "nfl": null,
+        "nfl": 64,
         "rtsports": 69,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 64,
         "underdog": 66,
         "yahoo": 52
       }
@@ -1750,7 +1750,7 @@
       "tier": 8,
       "posRank": 6,
       "adp": {
-        "bestball10s": 68,
+        "bestball10s": 67,
         "cbs": 77,
         "consensus": 67,
         "draftkings-bestball": null,
@@ -1758,9 +1758,9 @@
         "espn": 53,
         "mfl": null,
         "nffc": 95,
-        "nfl": null,
+        "nfl": 67,
         "rtsports": 80,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 67,
         "underdog": 71,
         "yahoo": 54
       }
@@ -1773,17 +1773,17 @@
       "tier": 8,
       "posRank": 28,
       "adp": {
-        "bestball10s": 83,
+        "bestball10s": 81,
         "cbs": 69,
-        "consensus": 72,
+        "consensus": 71,
         "draftkings-bestball": null,
         "drafters": 71,
         "espn": 81,
         "mfl": null,
         "nffc": 80,
-        "nfl": null,
-        "rtsports": 68,
-        "sleeper-redraft": null,
+        "nfl": 71,
+        "rtsports": 67,
+        "sleeper-redraft": 71,
         "underdog": 72,
         "yahoo": 86
       }
@@ -1796,7 +1796,7 @@
       "tier": 8,
       "posRank": 33,
       "adp": {
-        "bestball10s": 69,
+        "bestball10s": 72,
         "cbs": 80,
         "consensus": 77,
         "draftkings-bestball": null,
@@ -1804,9 +1804,9 @@
         "espn": 77,
         "mfl": null,
         "nffc": 70,
-        "nfl": null,
+        "nfl": 77,
         "rtsports": 81,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 77,
         "underdog": 83,
         "yahoo": 90
       }
@@ -1819,7 +1819,7 @@
       "tier": 8,
       "posRank": 34,
       "adp": {
-        "bestball10s": 78,
+        "bestball10s": 77,
         "cbs": 78,
         "consensus": 68,
         "draftkings-bestball": null,
@@ -1827,9 +1827,9 @@
         "espn": 92,
         "mfl": null,
         "nffc": 62,
-        "nfl": null,
-        "rtsports": 67,
-        "sleeper-redraft": null,
+        "nfl": 68,
+        "rtsports": 70,
+        "sleeper-redraft": 68,
         "underdog": 61,
         "yahoo": 91
       }
@@ -1842,7 +1842,7 @@
       "tier": 8,
       "posRank": 29,
       "adp": {
-        "bestball10s": 66,
+        "bestball10s": 62,
         "cbs": 53,
         "consensus": 60,
         "draftkings-bestball": null,
@@ -1850,9 +1850,9 @@
         "espn": 68,
         "mfl": null,
         "nffc": 61,
-        "nfl": null,
-        "rtsports": 48,
-        "sleeper-redraft": null,
+        "nfl": 60,
+        "rtsports": 50,
+        "sleeper-redraft": 60,
         "underdog": 56,
         "yahoo": 65
       }
@@ -1873,9 +1873,9 @@
         "espn": 85,
         "mfl": null,
         "nffc": 43,
-        "nfl": null,
-        "rtsports": 71,
-        "sleeper-redraft": null,
+        "nfl": 62,
+        "rtsports": 68,
+        "sleeper-redraft": 62,
         "underdog": 58,
         "yahoo": 71
       }
@@ -1888,7 +1888,7 @@
       "tier": 9,
       "posRank": 36,
       "adp": {
-        "bestball10s": 76,
+        "bestball10s": 74,
         "cbs": 66,
         "consensus": 66,
         "draftkings-bestball": null,
@@ -1896,9 +1896,9 @@
         "espn": 69,
         "mfl": null,
         "nffc": 58,
-        "nfl": null,
+        "nfl": 66,
         "rtsports": 79,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 66,
         "underdog": 69,
         "yahoo": 76
       }
@@ -1911,7 +1911,7 @@
       "tier": 9,
       "posRank": 37,
       "adp": {
-        "bestball10s": 93,
+        "bestball10s": 87,
         "cbs": 86,
         "consensus": 78,
         "draftkings-bestball": null,
@@ -1919,9 +1919,9 @@
         "espn": 96,
         "mfl": null,
         "nffc": 60,
-        "nfl": null,
-        "rtsports": 91,
-        "sleeper-redraft": null,
+        "nfl": 78,
+        "rtsports": 94,
+        "sleeper-redraft": 78,
         "underdog": 67,
         "yahoo": 106
       }
@@ -1934,17 +1934,17 @@
       "tier": 9,
       "posRank": 30,
       "adp": {
-        "bestball10s": 132,
+        "bestball10s": 121,
         "cbs": 110,
-        "consensus": 108,
+        "consensus": 104,
         "draftkings-bestball": null,
         "drafters": 99,
         "espn": 102,
         "mfl": null,
         "nffc": 82,
-        "nfl": null,
-        "rtsports": 84,
-        "sleeper-redraft": null,
+        "nfl": 104,
+        "rtsports": 85,
+        "sleeper-redraft": 104,
         "underdog": 109,
         "yahoo": 125
       }
@@ -1957,17 +1957,17 @@
       "tier": 9,
       "posRank": 9,
       "adp": {
-        "bestball10s": 113,
+        "bestball10s": 111,
         "cbs": 85,
-        "consensus": 102,
+        "consensus": 103,
         "draftkings-bestball": null,
         "drafters": 117,
         "espn": 71,
         "mfl": null,
         "nffc": 114,
-        "nfl": null,
-        "rtsports": 104,
-        "sleeper-redraft": null,
+        "nfl": 103,
+        "rtsports": 105,
+        "sleeper-redraft": 103,
         "underdog": 114,
         "yahoo": 93
       }
@@ -1980,7 +1980,7 @@
       "tier": 9,
       "posRank": 10,
       "adp": {
-        "bestball10s": 143,
+        "bestball10s": 141,
         "cbs": 123,
         "consensus": 123,
         "draftkings-bestball": null,
@@ -1988,9 +1988,9 @@
         "espn": 135,
         "mfl": null,
         "nffc": 131,
-        "nfl": null,
+        "nfl": 123,
         "rtsports": 124,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 123,
         "underdog": 125,
         "yahoo": 115
       }
@@ -2003,7 +2003,7 @@
       "tier": 9,
       "posRank": 38,
       "adp": {
-        "bestball10s": 86,
+        "bestball10s": 90,
         "cbs": 90,
         "consensus": 91,
         "draftkings-bestball": null,
@@ -2011,9 +2011,9 @@
         "espn": 113,
         "mfl": null,
         "nffc": 79,
-        "nfl": null,
+        "nfl": 91,
         "rtsports": 72,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 91,
         "underdog": 100,
         "yahoo": 88
       }
@@ -2026,7 +2026,7 @@
       "tier": 9,
       "posRank": 31,
       "adp": {
-        "bestball10s": 90,
+        "bestball10s": 86,
         "cbs": 73,
         "consensus": 85,
         "draftkings-bestball": null,
@@ -2034,9 +2034,9 @@
         "espn": 91,
         "mfl": null,
         "nffc": 98,
-        "nfl": null,
+        "nfl": 85,
         "rtsports": 66,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 85,
         "underdog": 87,
         "yahoo": 79
       }
@@ -2049,7 +2049,7 @@
       "tier": 9,
       "posRank": 11,
       "adp": {
-        "bestball10s": 99,
+        "bestball10s": 98,
         "cbs": 68,
         "consensus": 86,
         "draftkings-bestball": null,
@@ -2057,9 +2057,9 @@
         "espn": 66,
         "mfl": null,
         "nffc": 102,
-        "nfl": null,
-        "rtsports": 94,
-        "sleeper-redraft": null,
+        "nfl": 86,
+        "rtsports": 93,
+        "sleeper-redraft": 86,
         "underdog": 96,
         "yahoo": 66
       }
@@ -2072,7 +2072,7 @@
       "tier": 9,
       "posRank": 7,
       "adp": {
-        "bestball10s": 71,
+        "bestball10s": 68,
         "cbs": 104,
         "consensus": 74,
         "draftkings-bestball": null,
@@ -2080,9 +2080,9 @@
         "espn": 90,
         "mfl": null,
         "nffc": 86,
-        "nfl": null,
-        "rtsports": 95,
-        "sleeper-redraft": null,
+        "nfl": 74,
+        "rtsports": 96,
+        "sleeper-redraft": 74,
         "underdog": 70,
         "yahoo": 72
       }
@@ -2095,7 +2095,7 @@
       "tier": 9,
       "posRank": 12,
       "adp": {
-        "bestball10s": 134,
+        "bestball10s": 130,
         "cbs": 92,
         "consensus": 118,
         "draftkings-bestball": null,
@@ -2103,9 +2103,9 @@
         "espn": 124,
         "mfl": null,
         "nffc": 132,
-        "nfl": null,
-        "rtsports": 88,
-        "sleeper-redraft": null,
+        "nfl": 118,
+        "rtsports": 90,
+        "sleeper-redraft": 118,
         "underdog": 130,
         "yahoo": 110
       }
@@ -2118,7 +2118,7 @@
       "tier": 9,
       "posRank": 32,
       "adp": {
-        "bestball10s": 82,
+        "bestball10s": 71,
         "cbs": 62,
         "consensus": 65,
         "draftkings-bestball": null,
@@ -2126,9 +2126,9 @@
         "espn": 57,
         "mfl": null,
         "nffc": 69,
-        "nfl": null,
+        "nfl": 65,
         "rtsports": 52,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 65,
         "underdog": 62,
         "yahoo": 67
       }
@@ -2143,15 +2143,15 @@
       "adp": {
         "bestball10s": 103,
         "cbs": 96,
-        "consensus": 94,
+        "consensus": 93,
         "draftkings-bestball": null,
         "drafters": 74,
         "espn": 132,
         "mfl": null,
         "nffc": 66,
-        "nfl": null,
-        "rtsports": 114,
-        "sleeper-redraft": null,
+        "nfl": 93,
+        "rtsports": 115,
+        "sleeper-redraft": 93,
         "underdog": 75,
         "yahoo": 130
       }
@@ -2164,7 +2164,7 @@
       "tier": 9,
       "posRank": 8,
       "adp": {
-        "bestball10s": 80,
+        "bestball10s": 78,
         "cbs": 71,
         "consensus": 84,
         "draftkings-bestball": null,
@@ -2172,9 +2172,9 @@
         "espn": 86,
         "mfl": null,
         "nffc": 105,
-        "nfl": null,
-        "rtsports": 92,
-        "sleeper-redraft": null,
+        "nfl": 84,
+        "rtsports": 91,
+        "sleeper-redraft": 84,
         "underdog": 80,
         "yahoo": 77
       }
@@ -2187,7 +2187,7 @@
       "tier": 9,
       "posRank": 33,
       "adp": {
-        "bestball10s": 129,
+        "bestball10s": 122,
         "cbs": 111,
         "consensus": 113,
         "draftkings-bestball": null,
@@ -2195,9 +2195,9 @@
         "espn": 87,
         "mfl": null,
         "nffc": 129,
-        "nfl": null,
-        "rtsports": 109,
-        "sleeper-redraft": null,
+        "nfl": 113,
+        "rtsports": 107,
+        "sleeper-redraft": 113,
         "underdog": 120,
         "yahoo": 114
       }
@@ -2212,15 +2212,15 @@
       "adp": {
         "bestball10s": 91,
         "cbs": 112,
-        "consensus": 99,
+        "consensus": 98,
         "draftkings-bestball": null,
         "drafters": 93,
         "espn": 93,
         "mfl": null,
         "nffc": 111,
-        "nfl": null,
+        "nfl": 98,
         "rtsports": 116,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 98,
         "underdog": 95,
         "yahoo": 103
       }
@@ -2233,7 +2233,7 @@
       "tier": 9,
       "posRank": 40,
       "adp": {
-        "bestball10s": 88,
+        "bestball10s": 84,
         "cbs": 84,
         "consensus": 73,
         "draftkings-bestball": null,
@@ -2241,9 +2241,9 @@
         "espn": 79,
         "mfl": null,
         "nffc": 68,
-        "nfl": null,
-        "rtsports": 99,
-        "sleeper-redraft": null,
+        "nfl": 73,
+        "rtsports": 98,
+        "sleeper-redraft": 73,
         "underdog": 63,
         "yahoo": 81
       }
@@ -2264,9 +2264,9 @@
         "espn": 106,
         "mfl": null,
         "nffc": 88,
-        "nfl": null,
-        "rtsports": 74,
-        "sleeper-redraft": null,
+        "nfl": 109,
+        "rtsports": 75,
+        "sleeper-redraft": 109,
         "underdog": 115,
         "yahoo": 160
       }
@@ -2279,7 +2279,7 @@
       "tier": 9,
       "posRank": 42,
       "adp": {
-        "bestball10s": 104,
+        "bestball10s": 105,
         "cbs": 82,
         "consensus": 87,
         "draftkings-bestball": null,
@@ -2287,9 +2287,9 @@
         "espn": 95,
         "mfl": null,
         "nffc": 75,
-        "nfl": null,
-        "rtsports": 83,
-        "sleeper-redraft": null,
+        "nfl": 87,
+        "rtsports": 82,
+        "sleeper-redraft": 87,
         "underdog": 88,
         "yahoo": 99
       }
@@ -2302,7 +2302,7 @@
       "tier": 10,
       "posRank": 43,
       "adp": {
-        "bestball10s": 133,
+        "bestball10s": 131,
         "cbs": 122,
         "consensus": 122,
         "draftkings-bestball": null,
@@ -2310,9 +2310,9 @@
         "espn": 111,
         "mfl": null,
         "nffc": 104,
-        "nfl": null,
-        "rtsports": 136,
-        "sleeper-redraft": null,
+        "nfl": 122,
+        "rtsports": 135,
+        "sleeper-redraft": 122,
         "underdog": 111,
         "yahoo": 186
       }
@@ -2325,17 +2325,17 @@
       "tier": 10,
       "posRank": 44,
       "adp": {
-        "bestball10s": 130,
+        "bestball10s": 117,
         "cbs": 95,
-        "consensus": 107,
+        "consensus": 105,
         "draftkings-bestball": null,
         "drafters": 85,
         "espn": 127,
         "mfl": null,
         "nffc": 83,
-        "nfl": null,
+        "nfl": 105,
         "rtsports": 110,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 105,
         "underdog": 90,
         "yahoo": 128
       }
@@ -2348,7 +2348,7 @@
       "tier": 10,
       "posRank": 34,
       "adp": {
-        "bestball10s": 106,
+        "bestball10s": 101,
         "cbs": 99,
         "consensus": 95,
         "draftkings-bestball": null,
@@ -2356,9 +2356,9 @@
         "espn": 99,
         "mfl": null,
         "nffc": 84,
-        "nfl": null,
-        "rtsports": 90,
-        "sleeper-redraft": null,
+        "nfl": 95,
+        "rtsports": 89,
+        "sleeper-redraft": 95,
         "underdog": 108,
         "yahoo": 113
       }
@@ -2371,17 +2371,17 @@
       "tier": 10,
       "posRank": 45,
       "adp": {
-        "bestball10s": 102,
+        "bestball10s": 106,
         "cbs": 107,
-        "consensus": 105,
+        "consensus": 108,
         "draftkings-bestball": null,
         "drafters": 94,
         "espn": 126,
         "mfl": null,
         "nffc": 103,
-        "nfl": null,
-        "rtsports": 112,
-        "sleeper-redraft": null,
+        "nfl": 108,
+        "rtsports": 109,
+        "sleeper-redraft": 108,
         "underdog": 89,
         "yahoo": 123
       }
@@ -2394,7 +2394,7 @@
       "tier": 10,
       "posRank": 35,
       "adp": {
-        "bestball10s": 60,
+        "bestball10s": 69,
         "cbs": 79,
         "consensus": 80,
         "draftkings-bestball": null,
@@ -2402,9 +2402,9 @@
         "espn": 108,
         "mfl": null,
         "nffc": 90,
-        "nfl": null,
-        "rtsports": 62,
-        "sleeper-redraft": null,
+        "nfl": 80,
+        "rtsports": 63,
+        "sleeper-redraft": 80,
         "underdog": 86,
         "yahoo": 85
       }
@@ -2417,17 +2417,17 @@
       "tier": 10,
       "posRank": 46,
       "adp": {
-        "bestball10s": 120,
+        "bestball10s": 114,
         "cbs": 114,
-        "consensus": 104,
+        "consensus": 107,
         "draftkings-bestball": null,
         "drafters": 79,
         "espn": 137,
         "mfl": null,
         "nffc": 91,
-        "nfl": null,
-        "rtsports": 107,
-        "sleeper-redraft": null,
+        "nfl": 107,
+        "rtsports": 108,
+        "sleeper-redraft": 107,
         "underdog": 84,
         "yahoo": 132
       }
@@ -2440,17 +2440,17 @@
       "tier": 10,
       "posRank": 36,
       "adp": {
-        "bestball10s": 107,
+        "bestball10s": 100,
         "cbs": 88,
-        "consensus": 98,
+        "consensus": 96,
         "draftkings-bestball": null,
         "drafters": 106,
         "espn": 98,
         "mfl": null,
         "nffc": 101,
-        "nfl": null,
-        "rtsports": 77,
-        "sleeper-redraft": null,
+        "nfl": 96,
+        "rtsports": 76,
+        "sleeper-redraft": 96,
         "underdog": 98,
         "yahoo": 102
       }
@@ -2463,7 +2463,7 @@
       "tier": 10,
       "posRank": 47,
       "adp": {
-        "bestball10s": 92,
+        "bestball10s": 93,
         "cbs": 98,
         "consensus": 90,
         "draftkings-bestball": null,
@@ -2471,9 +2471,9 @@
         "espn": 105,
         "mfl": null,
         "nffc": 85,
-        "nfl": null,
-        "rtsports": 105,
-        "sleeper-redraft": null,
+        "nfl": 90,
+        "rtsports": 106,
+        "sleeper-redraft": 90,
         "underdog": 73,
         "yahoo": 89
       }
@@ -2486,7 +2486,7 @@
       "tier": 10,
       "posRank": 48,
       "adp": {
-        "bestball10s": 115,
+        "bestball10s": 116,
         "cbs": 129,
         "consensus": 129,
         "draftkings-bestball": null,
@@ -2494,9 +2494,9 @@
         "espn": 159,
         "mfl": null,
         "nffc": 100,
-        "nfl": null,
-        "rtsports": 145,
-        "sleeper-redraft": null,
+        "nfl": 129,
+        "rtsports": 146,
+        "sleeper-redraft": 129,
         "underdog": 124,
         "yahoo": 201
       }
@@ -2509,17 +2509,17 @@
       "tier": 10,
       "posRank": 49,
       "adp": {
-        "bestball10s": 89,
+        "bestball10s": 92,
         "cbs": 89,
-        "consensus": 103,
+        "consensus": 106,
         "draftkings-bestball": null,
         "drafters": 111,
         "espn": 97,
         "mfl": null,
         "nffc": 106,
-        "nfl": null,
-        "rtsports": 96,
-        "sleeper-redraft": null,
+        "nfl": 106,
+        "rtsports": 95,
+        "sleeper-redraft": 106,
         "underdog": 106,
         "yahoo": 122
       }
@@ -2532,17 +2532,17 @@
       "tier": 10,
       "posRank": 37,
       "adp": {
-        "bestball10s": 84,
+        "bestball10s": 89,
         "cbs": 94,
-        "consensus": 92,
+        "consensus": 94,
         "draftkings-bestball": null,
         "drafters": 110,
         "espn": 110,
         "mfl": null,
         "nffc": 96,
-        "nfl": null,
+        "nfl": 94,
         "rtsports": 73,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 94,
         "underdog": 93,
         "yahoo": 95
       }
@@ -2555,7 +2555,7 @@
       "tier": 11,
       "posRank": 50,
       "adp": {
-        "bestball10s": 123,
+        "bestball10s": 126,
         "cbs": 125,
         "consensus": 130,
         "draftkings-bestball": null,
@@ -2563,9 +2563,9 @@
         "espn": 131,
         "mfl": null,
         "nffc": 122,
-        "nfl": null,
-        "rtsports": 159,
-        "sleeper-redraft": null,
+        "nfl": 130,
+        "rtsports": 156,
+        "sleeper-redraft": 130,
         "underdog": 126,
         "yahoo": 196
       }
@@ -2578,17 +2578,17 @@
       "tier": 11,
       "posRank": 10,
       "adp": {
-        "bestball10s": 81,
+        "bestball10s": 79,
         "cbs": 116,
-        "consensus": 89,
+        "consensus": 88,
         "draftkings-bestball": null,
         "drafters": 81,
         "espn": 109,
         "mfl": null,
         "nffc": 99,
-        "nfl": null,
-        "rtsports": 98,
-        "sleeper-redraft": null,
+        "nfl": 88,
+        "rtsports": 99,
+        "sleeper-redraft": 88,
         "underdog": 85,
         "yahoo": 84
       }
@@ -2601,7 +2601,7 @@
       "tier": 11,
       "posRank": 11,
       "adp": {
-        "bestball10s": 74,
+        "bestball10s": 73,
         "cbs": 91,
         "consensus": 83,
         "draftkings-bestball": null,
@@ -2609,9 +2609,9 @@
         "espn": 117,
         "mfl": null,
         "nffc": 87,
-        "nfl": null,
-        "rtsports": 100,
-        "sleeper-redraft": null,
+        "nfl": 83,
+        "rtsports": 101,
+        "sleeper-redraft": 83,
         "underdog": 81,
         "yahoo": 62
       }
@@ -2624,7 +2624,7 @@
       "tier": 12,
       "posRank": 51,
       "adp": {
-        "bestball10s": 138,
+        "bestball10s": 132,
         "cbs": 113,
         "consensus": 116,
         "draftkings-bestball": null,
@@ -2632,9 +2632,9 @@
         "espn": 125,
         "mfl": null,
         "nffc": 107,
-        "nfl": null,
+        "nfl": 116,
         "rtsports": 123,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 116,
         "underdog": 94,
         "yahoo": 147
       }
@@ -2647,7 +2647,7 @@
       "tier": 12,
       "posRank": 52,
       "adp": {
-        "bestball10s": 141,
+        "bestball10s": 140,
         "cbs": 118,
         "consensus": 128,
         "draftkings-bestball": null,
@@ -2655,9 +2655,9 @@
         "espn": 122,
         "mfl": null,
         "nffc": 110,
-        "nfl": null,
-        "rtsports": 128,
-        "sleeper-redraft": null,
+        "nfl": 128,
+        "rtsports": 131,
+        "sleeper-redraft": 128,
         "underdog": 119,
         "yahoo": 187
       }
@@ -2670,7 +2670,7 @@
       "tier": 12,
       "posRank": 53,
       "adp": {
-        "bestball10s": 121,
+        "bestball10s": 125,
         "cbs": 120,
         "consensus": 124,
         "draftkings-bestball": null,
@@ -2678,9 +2678,9 @@
         "espn": 139,
         "mfl": null,
         "nffc": 112,
-        "nfl": null,
+        "nfl": 124,
         "rtsports": 125,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 124,
         "underdog": 117,
         "yahoo": 182
       }
@@ -2693,17 +2693,17 @@
       "tier": 12,
       "posRank": 38,
       "adp": {
-        "bestball10s": 124,
+        "bestball10s": 135,
         "cbs": 121,
-        "consensus": 132,
+        "consensus": 133,
         "draftkings-bestball": null,
         "drafters": 151,
         "espn": 136,
         "mfl": null,
         "nffc": 150,
-        "nfl": null,
-        "rtsports": 119,
-        "sleeper-redraft": null,
+        "nfl": 133,
+        "rtsports": 118,
+        "sleeper-redraft": 133,
         "underdog": 159,
         "yahoo": 135
       }
@@ -2724,9 +2724,9 @@
         "espn": 114,
         "mfl": null,
         "nffc": 123,
-        "nfl": null,
-        "rtsports": 115,
-        "sleeper-redraft": null,
+        "nfl": 110,
+        "rtsports": 114,
+        "sleeper-redraft": 110,
         "underdog": 107,
         "yahoo": 101
       }
@@ -2739,7 +2739,7 @@
       "tier": 12,
       "posRank": 13,
       "adp": {
-        "bestball10s": 140,
+        "bestball10s": 139,
         "cbs": 101,
         "consensus": 121,
         "draftkings-bestball": null,
@@ -2747,9 +2747,9 @@
         "espn": 94,
         "mfl": null,
         "nffc": 128,
-        "nfl": null,
+        "nfl": 121,
         "rtsports": 149,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 121,
         "underdog": 136,
         "yahoo": 104
       }
@@ -2762,7 +2762,7 @@
       "tier": 12,
       "posRank": 13,
       "adp": {
-        "bestball10s": 110,
+        "bestball10s": 107,
         "cbs": 153,
         "consensus": 120,
         "draftkings-bestball": null,
@@ -2770,9 +2770,9 @@
         "espn": 152,
         "mfl": null,
         "nffc": 137,
-        "nfl": null,
-        "rtsports": 144,
-        "sleeper-redraft": null,
+        "nfl": 120,
+        "rtsports": 141,
+        "sleeper-redraft": 120,
         "underdog": 112,
         "yahoo": 107
       }
@@ -2785,17 +2785,17 @@
       "tier": 13,
       "posRank": 39,
       "adp": {
-        "bestball10s": 147,
+        "bestball10s": 129,
         "cbs": 102,
-        "consensus": 106,
+        "consensus": 102,
         "draftkings-bestball": null,
         "drafters": 98,
         "espn": 123,
         "mfl": null,
         "nffc": 74,
-        "nfl": null,
+        "nfl": 102,
         "rtsports": 87,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 102,
         "underdog": 102,
         "yahoo": 118
       }
@@ -2808,17 +2808,17 @@
       "tier": 13,
       "posRank": 40,
       "adp": {
-        "bestball10s": 117,
+        "bestball10s": 112,
         "cbs": 108,
-        "consensus": 115,
+        "consensus": 114,
         "draftkings-bestball": null,
         "drafters": 116,
         "espn": 146,
         "mfl": null,
         "nffc": 108,
-        "nfl": null,
-        "rtsports": 86,
-        "sleeper-redraft": null,
+        "nfl": 114,
+        "rtsports": 84,
+        "sleeper-redraft": 114,
         "underdog": 116,
         "yahoo": 140
       }
@@ -2831,7 +2831,7 @@
       "tier": 13,
       "posRank": 41,
       "adp": {
-        "bestball10s": 122,
+        "bestball10s": 118,
         "cbs": 97,
         "consensus": 117,
         "draftkings-bestball": null,
@@ -2839,9 +2839,9 @@
         "espn": 129,
         "mfl": null,
         "nffc": 126,
-        "nfl": null,
-        "rtsports": 101,
-        "sleeper-redraft": null,
+        "nfl": 117,
+        "rtsports": 100,
+        "sleeper-redraft": 117,
         "underdog": 122,
         "yahoo": 112
       }
@@ -2854,17 +2854,17 @@
       "tier": 13,
       "posRank": 54,
       "adp": {
-        "bestball10s": 127,
+        "bestball10s": 134,
         "cbs": 136,
-        "consensus": 133,
+        "consensus": 134,
         "draftkings-bestball": null,
         "drafters": 129,
         "espn": 153,
         "mfl": null,
         "nffc": 116,
-        "nfl": null,
-        "rtsports": 139,
-        "sleeper-redraft": null,
+        "nfl": 134,
+        "rtsports": 142,
+        "sleeper-redraft": 134,
         "underdog": 131,
         "yahoo": 198
       }
@@ -2877,7 +2877,7 @@
       "tier": 13,
       "posRank": 42,
       "adp": {
-        "bestball10s": 101,
+        "bestball10s": 102,
         "cbs": 103,
         "consensus": 100,
         "draftkings-bestball": null,
@@ -2885,9 +2885,9 @@
         "espn": 120,
         "mfl": null,
         "nffc": 97,
-        "nfl": null,
-        "rtsports": 93,
-        "sleeper-redraft": null,
+        "nfl": 100,
+        "rtsports": 92,
+        "sleeper-redraft": 100,
         "underdog": 91,
         "yahoo": 98
       }
@@ -2900,17 +2900,17 @@
       "tier": 13,
       "posRank": 14,
       "adp": {
-        "bestball10s": 87,
+        "bestball10s": 88,
         "cbs": 119,
-        "consensus": 97,
+        "consensus": 99,
         "draftkings-bestball": null,
         "drafters": 101,
         "espn": 84,
         "mfl": null,
         "nffc": 109,
-        "nfl": null,
-        "rtsports": 120,
-        "sleeper-redraft": null,
+        "nfl": 99,
+        "rtsports": 121,
+        "sleeper-redraft": 99,
         "underdog": 105,
         "yahoo": 100
       }
@@ -2923,17 +2923,17 @@
       "tier": 13,
       "posRank": 43,
       "adp": {
-        "bestball10s": 163,
+        "bestball10s": 157,
         "cbs": 142,
-        "consensus": 143,
+        "consensus": 142,
         "draftkings-bestball": null,
         "drafters": 148,
         "espn": 141,
         "mfl": null,
         "nffc": 152,
-        "nfl": null,
-        "rtsports": 122,
-        "sleeper-redraft": null,
+        "nfl": 142,
+        "rtsports": 120,
+        "sleeper-redraft": 142,
         "underdog": 154,
         "yahoo": 180
       }
@@ -2946,7 +2946,7 @@
       "tier": 13,
       "posRank": 15,
       "adp": {
-        "bestball10s": 95,
+        "bestball10s": 94,
         "cbs": 124,
         "consensus": 101,
         "draftkings-bestball": null,
@@ -2954,9 +2954,9 @@
         "espn": 107,
         "mfl": null,
         "nffc": 119,
-        "nfl": null,
-        "rtsports": 117,
-        "sleeper-redraft": null,
+        "nfl": 101,
+        "rtsports": 119,
+        "sleeper-redraft": 101,
         "underdog": 92,
         "yahoo": 94
       }
@@ -2969,17 +2969,17 @@
       "tier": 13,
       "posRank": 16,
       "adp": {
-        "bestball10s": 67,
+        "bestball10s": 76,
         "cbs": 93,
-        "consensus": 88,
+        "consensus": 89,
         "draftkings-bestball": null,
         "drafters": 100,
         "espn": 64,
         "mfl": null,
         "nffc": 120,
-        "nfl": null,
+        "nfl": 89,
         "rtsports": 97,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 89,
         "underdog": 101,
         "yahoo": 70
       }
@@ -2992,17 +2992,17 @@
       "tier": 13,
       "posRank": 14,
       "adp": {
-        "bestball10s": 112,
+        "bestball10s": 113,
         "cbs": 127,
-        "consensus": 114,
+        "consensus": 115,
         "draftkings-bestball": null,
         "drafters": 133,
         "espn": 103,
         "mfl": null,
         "nffc": 118,
-        "nfl": null,
-        "rtsports": 121,
-        "sleeper-redraft": null,
+        "nfl": 115,
+        "rtsports": 117,
+        "sleeper-redraft": 115,
         "underdog": 129,
         "yahoo": 109
       }
@@ -3015,17 +3015,17 @@
       "tier": 14,
       "posRank": 55,
       "adp": {
-        "bestball10s": 150,
+        "bestball10s": 152,
         "cbs": 154,
-        "consensus": 154,
+        "consensus": 155,
         "draftkings-bestball": null,
         "drafters": 162,
         "espn": 188,
         "mfl": null,
         "nffc": 138,
-        "nfl": null,
-        "rtsports": 179,
-        "sleeper-redraft": null,
+        "nfl": 155,
+        "rtsports": 176,
+        "sleeper-redraft": 155,
         "underdog": 155,
         "yahoo": 176
       }
@@ -3038,7 +3038,7 @@
       "tier": 14,
       "posRank": 15,
       "adp": {
-        "bestball10s": 126,
+        "bestball10s": 127,
         "cbs": 138,
         "consensus": 119,
         "draftkings-bestball": null,
@@ -3046,9 +3046,9 @@
         "espn": 149,
         "mfl": null,
         "nffc": 121,
-        "nfl": null,
+        "nfl": 119,
         "rtsports": 130,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 119,
         "underdog": 128,
         "yahoo": 96
       }
@@ -3069,9 +3069,9 @@
         "espn": 184,
         "mfl": null,
         "nffc": 115,
-        "nfl": null,
+        "nfl": 131,
         "rtsports": 113,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 131,
         "underdog": 134,
         "yahoo": 162
       }
@@ -3084,7 +3084,7 @@
       "tier": 14,
       "posRank": 45,
       "adp": {
-        "bestball10s": 145,
+        "bestball10s": 143,
         "cbs": 109,
         "consensus": 136,
         "draftkings-bestball": null,
@@ -3092,9 +3092,9 @@
         "espn": 170,
         "mfl": null,
         "nffc": 136,
-        "nfl": null,
+        "nfl": 136,
         "rtsports": 132,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 136,
         "underdog": 127,
         "yahoo": 175
       }
@@ -3107,7 +3107,7 @@
       "tier": 14,
       "posRank": 56,
       "adp": {
-        "bestball10s": 179,
+        "bestball10s": 175,
         "cbs": 149,
         "consensus": 174,
         "draftkings-bestball": null,
@@ -3115,9 +3115,9 @@
         "espn": 179,
         "mfl": null,
         "nffc": 170,
-        "nfl": null,
-        "rtsports": 164,
-        "sleeper-redraft": null,
+        "nfl": 174,
+        "rtsports": 161,
+        "sleeper-redraft": 174,
         "underdog": 179,
         "yahoo": 228
       }
@@ -3130,7 +3130,7 @@
       "tier": 14,
       "posRank": 46,
       "adp": {
-        "bestball10s": 136,
+        "bestball10s": 142,
         "cbs": 133,
         "consensus": 135,
         "draftkings-bestball": null,
@@ -3138,9 +3138,9 @@
         "espn": 138,
         "mfl": null,
         "nffc": 140,
-        "nfl": null,
+        "nfl": 135,
         "rtsports": 111,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 135,
         "underdog": 143,
         "yahoo": 177
       }
@@ -3153,17 +3153,17 @@
       "tier": 14,
       "posRank": 57,
       "adp": {
-        "bestball10s": 175,
+        "bestball10s": 169,
         "cbs": 150,
-        "consensus": 163,
+        "consensus": 162,
         "draftkings-bestball": null,
         "drafters": 142,
         "espn": 223,
         "mfl": null,
         "nffc": 148,
-        "nfl": null,
-        "rtsports": 150,
-        "sleeper-redraft": null,
+        "nfl": 162,
+        "rtsports": 148,
+        "sleeper-redraft": 162,
         "underdog": 147,
         "yahoo": 225
       }
@@ -3176,7 +3176,7 @@
       "tier": 14,
       "posRank": 47,
       "adp": {
-        "bestball10s": 172,
+        "bestball10s": 159,
         "cbs": 128,
         "consensus": 138,
         "draftkings-bestball": null,
@@ -3184,9 +3184,9 @@
         "espn": 140,
         "mfl": null,
         "nffc": 155,
-        "nfl": null,
-        "rtsports": 129,
-        "sleeper-redraft": null,
+        "nfl": 138,
+        "rtsports": 127,
+        "sleeper-redraft": 138,
         "underdog": 148,
         "yahoo": 151
       }
@@ -3199,17 +3199,17 @@
       "tier": 14,
       "posRank": 48,
       "adp": {
-        "bestball10s": 155,
+        "bestball10s": 153,
         "cbs": 144,
-        "consensus": 166,
+        "consensus": 167,
         "draftkings-bestball": null,
         "drafters": 160,
         "espn": null,
         "mfl": null,
         "nffc": 143,
-        "nfl": null,
-        "rtsports": 151,
-        "sleeper-redraft": null,
+        "nfl": 167,
+        "rtsports": 154,
+        "sleeper-redraft": 167,
         "underdog": 172,
         "yahoo": 197
       }
@@ -3222,17 +3222,17 @@
       "tier": 14,
       "posRank": 58,
       "adp": {
-        "bestball10s": 164,
+        "bestball10s": 160,
         "cbs": 132,
-        "consensus": 172,
+        "consensus": 173,
         "draftkings-bestball": null,
         "drafters": 149,
         "espn": 201,
         "mfl": null,
         "nffc": 161,
-        "nfl": null,
-        "rtsports": 228,
-        "sleeper-redraft": null,
+        "nfl": 173,
+        "rtsports": 235,
+        "sleeper-redraft": 173,
         "underdog": 153,
         "yahoo": 223
       }
@@ -3245,7 +3245,7 @@
       "tier": 15,
       "posRank": 17,
       "adp": {
-        "bestball10s": 98,
+        "bestball10s": 97,
         "cbs": 141,
         "consensus": 112,
         "draftkings-bestball": null,
@@ -3253,9 +3253,9 @@
         "espn": 148,
         "mfl": null,
         "nffc": 113,
-        "nfl": null,
-        "rtsports": 118,
-        "sleeper-redraft": null,
+        "nfl": 112,
+        "rtsports": 122,
+        "sleeper-redraft": 112,
         "underdog": 110,
         "yahoo": 116
       }
@@ -3268,17 +3268,17 @@
       "tier": 15,
       "posRank": 59,
       "adp": {
-        "bestball10s": 165,
+        "bestball10s": 161,
         "cbs": 173,
-        "consensus": 142,
+        "consensus": 143,
         "draftkings-bestball": null,
         "drafters": 143,
         "espn": 167,
         "mfl": null,
         "nffc": 133,
-        "nfl": null,
-        "rtsports": 172,
-        "sleeper-redraft": null,
+        "nfl": 143,
+        "rtsports": 174,
+        "sleeper-redraft": 143,
         "underdog": 145,
         "yahoo": 149
       }
@@ -3291,17 +3291,17 @@
       "tier": 15,
       "posRank": 60,
       "adp": {
-        "bestball10s": 157,
+        "bestball10s": 150,
         "cbs": 146,
-        "consensus": 134,
+        "consensus": 132,
         "draftkings-bestball": null,
         "drafters": 135,
         "espn": 160,
         "mfl": null,
         "nffc": 117,
-        "nfl": null,
-        "rtsports": 131,
-        "sleeper-redraft": null,
+        "nfl": 132,
+        "rtsports": 126,
+        "sleeper-redraft": 132,
         "underdog": 132,
         "yahoo": 164
       }
@@ -3314,17 +3314,17 @@
       "tier": 15,
       "posRank": 49,
       "adp": {
-        "bestball10s": 177,
+        "bestball10s": 173,
         "cbs": 143,
-        "consensus": 152,
+        "consensus": 150,
         "draftkings-bestball": null,
         "drafters": 168,
         "espn": 144,
         "mfl": null,
         "nffc": 160,
-        "nfl": null,
+        "nfl": 150,
         "rtsports": 133,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 150,
         "underdog": 170,
         "yahoo": 163
       }
@@ -3337,17 +3337,17 @@
       "tier": 15,
       "posRank": 16,
       "adp": {
-        "bestball10s": 146,
+        "bestball10s": 147,
         "cbs": 131,
-        "consensus": 144,
+        "consensus": 146,
         "draftkings-bestball": null,
         "drafters": 150,
         "espn": 181,
         "mfl": null,
         "nffc": 151,
-        "nfl": null,
-        "rtsports": 157,
-        "sleeper-redraft": null,
+        "nfl": 146,
+        "rtsports": 159,
+        "sleeper-redraft": 146,
         "underdog": 150,
         "yahoo": 136
       }
@@ -3360,17 +3360,17 @@
       "tier": 15,
       "posRank": 61,
       "adp": {
-        "bestball10s": 142,
+        "bestball10s": 148,
         "cbs": 158,
-        "consensus": 160,
+        "consensus": 156,
         "draftkings-bestball": null,
         "drafters": 158,
         "espn": 199,
         "mfl": null,
         "nffc": 166,
-        "nfl": null,
-        "rtsports": 181,
-        "sleeper-redraft": null,
+        "nfl": 156,
+        "rtsports": 170,
+        "sleeper-redraft": 156,
         "underdog": 152,
         "yahoo": 192
       }
@@ -3383,17 +3383,17 @@
       "tier": 15,
       "posRank": 50,
       "adp": {
-        "bestball10s": 111,
+        "bestball10s": 123,
         "cbs": 134,
-        "consensus": 139,
+        "consensus": 141,
         "draftkings-bestball": null,
         "drafters": 157,
         "espn": 174,
         "mfl": null,
         "nffc": 142,
-        "nfl": null,
+        "nfl": 141,
         "rtsports": 134,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 141,
         "underdog": 162,
         "yahoo": 156
       }
@@ -3406,7 +3406,7 @@
       "tier": 16,
       "posRank": 17,
       "adp": {
-        "bestball10s": 139,
+        "bestball10s": 144,
         "cbs": 156,
         "consensus": 145,
         "draftkings-bestball": null,
@@ -3414,9 +3414,9 @@
         "espn": 173,
         "mfl": null,
         "nffc": 159,
-        "nfl": null,
-        "rtsports": 127,
-        "sleeper-redraft": null,
+        "nfl": 145,
+        "rtsports": 128,
+        "sleeper-redraft": 145,
         "underdog": 157,
         "yahoo": 168
       }
@@ -3437,9 +3437,9 @@
         "espn": null,
         "mfl": null,
         "nffc": 249,
-        "nfl": null,
+        "nfl": 268,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 268,
         "underdog": 210,
         "yahoo": null
       }
@@ -3452,17 +3452,17 @@
       "tier": 16,
       "posRank": 63,
       "adp": {
-        "bestball10s": 94,
+        "bestball10s": 99,
         "cbs": 100,
-        "consensus": 96,
+        "consensus": 97,
         "draftkings-bestball": null,
         "drafters": 97,
         "espn": 115,
         "mfl": null,
         "nffc": 77,
-        "nfl": null,
+        "nfl": 97,
         "rtsports": 103,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 97,
         "underdog": 97,
         "yahoo": 111
       }
@@ -3475,17 +3475,17 @@
       "tier": 16,
       "posRank": 51,
       "adp": {
-        "bestball10s": 189,
+        "bestball10s": 179,
         "cbs": 185,
-        "consensus": 161,
+        "consensus": 159,
         "draftkings-bestball": null,
         "drafters": 175,
         "espn": 185,
         "mfl": null,
         "nffc": 165,
-        "nfl": null,
-        "rtsports": 155,
-        "sleeper-redraft": null,
+        "nfl": 159,
+        "rtsports": 152,
+        "sleeper-redraft": 159,
         "underdog": 169,
         "yahoo": 138
       }
@@ -3498,7 +3498,7 @@
       "tier": 16,
       "posRank": 18,
       "adp": {
-        "bestball10s": 105,
+        "bestball10s": 108,
         "cbs": 167,
         "consensus": 126,
         "draftkings-bestball": null,
@@ -3506,9 +3506,9 @@
         "espn": 157,
         "mfl": null,
         "nffc": 130,
-        "nfl": null,
-        "rtsports": 135,
-        "sleeper-redraft": null,
+        "nfl": 126,
+        "rtsports": 136,
+        "sleeper-redraft": 126,
         "underdog": 118,
         "yahoo": 158
       }
@@ -3529,9 +3529,9 @@
         "espn": 197,
         "mfl": null,
         "nffc": 182,
-        "nfl": null,
-        "rtsports": 190,
-        "sleeper-redraft": null,
+        "nfl": 171,
+        "rtsports": 200,
+        "sleeper-redraft": 171,
         "underdog": 168,
         "yahoo": 178
       }
@@ -3544,7 +3544,7 @@
       "tier": 16,
       "posRank": 19,
       "adp": {
-        "bestball10s": 153,
+        "bestball10s": 151,
         "cbs": 161,
         "consensus": 149,
         "draftkings-bestball": null,
@@ -3552,9 +3552,9 @@
         "espn": 161,
         "mfl": null,
         "nffc": 168,
-        "nfl": null,
-        "rtsports": 161,
-        "sleeper-redraft": null,
+        "nfl": 149,
+        "rtsports": 162,
+        "sleeper-redraft": 149,
         "underdog": 151,
         "yahoo": 144
       }
@@ -3569,15 +3569,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": 195,
-        "consensus": 233,
+        "consensus": 231,
         "draftkings-bestball": null,
         "drafters": 198,
         "espn": null,
         "mfl": null,
         "nffc": 227,
-        "nfl": null,
-        "rtsports": 200,
-        "sleeper-redraft": null,
+        "nfl": 231,
+        "rtsports": 195,
+        "sleeper-redraft": 231,
         "underdog": 222,
         "yahoo": 245
       }
@@ -3590,17 +3590,17 @@
       "tier": 16,
       "posRank": 64,
       "adp": {
-        "bestball10s": 218,
+        "bestball10s": 216,
         "cbs": 180,
-        "consensus": 184,
+        "consensus": 185,
         "draftkings-bestball": null,
         "drafters": 187,
         "espn": 172,
         "mfl": null,
         "nffc": 221,
-        "nfl": null,
-        "rtsports": 148,
-        "sleeper-redraft": null,
+        "nfl": 185,
+        "rtsports": 150,
+        "sleeper-redraft": 185,
         "underdog": 188,
         "yahoo": 233
       }
@@ -3613,17 +3613,17 @@
       "tier": 16,
       "posRank": 20,
       "adp": {
-        "bestball10s": 170,
+        "bestball10s": 171,
         "cbs": null,
-        "consensus": 164,
+        "consensus": 163,
         "draftkings-bestball": null,
         "drafters": 173,
         "espn": 145,
         "mfl": null,
         "nffc": 196,
-        "nfl": null,
-        "rtsports": 167,
-        "sleeper-redraft": null,
+        "nfl": 163,
+        "rtsports": 163,
+        "sleeper-redraft": 163,
         "underdog": 167,
         "yahoo": 183
       }
@@ -3636,7 +3636,7 @@
       "tier": 16,
       "posRank": 53,
       "adp": {
-        "bestball10s": 214,
+        "bestball10s": 209,
         "cbs": 139,
         "consensus": 191,
         "draftkings-bestball": null,
@@ -3644,9 +3644,9 @@
         "espn": null,
         "mfl": null,
         "nffc": 198,
-        "nfl": null,
-        "rtsports": 176,
-        "sleeper-redraft": null,
+        "nfl": 191,
+        "rtsports": 178,
+        "sleeper-redraft": 191,
         "underdog": 204,
         "yahoo": 188
       }
@@ -3659,17 +3659,17 @@
       "tier": 16,
       "posRank": 21,
       "adp": {
-        "bestball10s": 154,
+        "bestball10s": 156,
         "cbs": 171,
-        "consensus": 151,
+        "consensus": 152,
         "draftkings-bestball": null,
         "drafters": 169,
         "espn": 142,
         "mfl": null,
         "nffc": 163,
-        "nfl": null,
-        "rtsports": 162,
-        "sleeper-redraft": null,
+        "nfl": 152,
+        "rtsports": 166,
+        "sleeper-redraft": 152,
         "underdog": 161,
         "yahoo": 152
       }
@@ -3682,17 +3682,17 @@
       "tier": 16,
       "posRank": 65,
       "adp": {
-        "bestball10s": 148,
+        "bestball10s": 146,
         "cbs": 148,
-        "consensus": 141,
+        "consensus": 139,
         "draftkings-bestball": null,
         "drafters": 139,
         "espn": 166,
         "mfl": null,
         "nffc": 124,
-        "nfl": null,
-        "rtsports": 156,
-        "sleeper-redraft": null,
+        "nfl": 139,
+        "rtsports": 155,
+        "sleeper-redraft": 139,
         "underdog": 135,
         "yahoo": 191
       }
@@ -3705,17 +3705,17 @@
       "tier": 16,
       "posRank": 66,
       "adp": {
-        "bestball10s": 206,
+        "bestball10s": 194,
         "cbs": null,
-        "consensus": 185,
+        "consensus": 182,
         "draftkings-bestball": null,
         "drafters": 164,
         "espn": null,
         "mfl": null,
         "nffc": 171,
-        "nfl": null,
-        "rtsports": 180,
-        "sleeper-redraft": null,
+        "nfl": 182,
+        "rtsports": 181,
+        "sleeper-redraft": 182,
         "underdog": 182,
         "yahoo": 247
       }
@@ -3728,17 +3728,17 @@
       "tier": 16,
       "posRank": 67,
       "adp": {
-        "bestball10s": 166,
+        "bestball10s": 167,
         "cbs": 147,
-        "consensus": 153,
+        "consensus": 151,
         "draftkings-bestball": null,
         "drafters": 155,
         "espn": 162,
         "mfl": null,
         "nffc": 154,
-        "nfl": null,
-        "rtsports": 183,
-        "sleeper-redraft": null,
+        "nfl": 151,
+        "rtsports": 173,
+        "sleeper-redraft": 151,
         "underdog": 144,
         "yahoo": 167
       }
@@ -3751,7 +3751,7 @@
       "tier": 16,
       "posRank": 19,
       "adp": {
-        "bestball10s": 100,
+        "bestball10s": 104,
         "cbs": 137,
         "consensus": 127,
         "draftkings-bestball": null,
@@ -3759,9 +3759,9 @@
         "espn": 155,
         "mfl": null,
         "nffc": 135,
-        "nfl": null,
-        "rtsports": 137,
-        "sleeper-redraft": null,
+        "nfl": 127,
+        "rtsports": 138,
+        "sleeper-redraft": 127,
         "underdog": 123,
         "yahoo": 159
       }
@@ -3774,7 +3774,7 @@
       "tier": 17,
       "posRank": 54,
       "adp": {
-        "bestball10s": 193,
+        "bestball10s": 185,
         "cbs": 188,
         "consensus": 165,
         "draftkings-bestball": null,
@@ -3782,9 +3782,9 @@
         "espn": 183,
         "mfl": null,
         "nffc": 158,
-        "nfl": null,
-        "rtsports": 165,
-        "sleeper-redraft": null,
+        "nfl": 165,
+        "rtsports": 164,
+        "sleeper-redraft": 165,
         "underdog": 163,
         "yahoo": 203
       }
@@ -3797,17 +3797,17 @@
       "tier": 17,
       "posRank": 22,
       "adp": {
-        "bestball10s": 176,
+        "bestball10s": 163,
         "cbs": 151,
-        "consensus": 147,
+        "consensus": 144,
         "draftkings-bestball": null,
         "drafters": 138,
         "espn": 195,
         "mfl": null,
         "nffc": 144,
-        "nfl": null,
-        "rtsports": 152,
-        "sleeper-redraft": null,
+        "nfl": 144,
+        "rtsports": 151,
+        "sleeper-redraft": 144,
         "underdog": 139,
         "yahoo": 150
       }
@@ -3820,17 +3820,17 @@
       "tier": 17,
       "posRank": 1,
       "adp": {
-        "bestball10s": 144,
+        "bestball10s": 145,
         "cbs": null,
-        "consensus": 158,
+        "consensus": 157,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 74,
         "mfl": null,
         "nffc": 145,
-        "nfl": null,
-        "rtsports": 126,
-        "sleeper-redraft": null,
+        "nfl": 157,
+        "rtsports": 129,
+        "sleeper-redraft": 157,
         "underdog": null,
         "yahoo": 87
       }
@@ -3851,9 +3851,9 @@
         "espn": 72,
         "mfl": null,
         "nffc": 141,
-        "nfl": null,
-        "rtsports": 108,
-        "sleeper-redraft": null,
+        "nfl": 168,
+        "rtsports": 112,
+        "sleeper-redraft": 168,
         "underdog": null,
         "yahoo": 80
       }
@@ -3866,7 +3866,7 @@
       "tier": 17,
       "posRank": 2,
       "adp": {
-        "bestball10s": 161,
+        "bestball10s": 165,
         "cbs": null,
         "consensus": 169,
         "draftkings-bestball": null,
@@ -3874,9 +3874,9 @@
         "espn": 80,
         "mfl": null,
         "nffc": 164,
-        "nfl": null,
+        "nfl": 169,
         "rtsports": 143,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 169,
         "underdog": null,
         "yahoo": 105
       }
@@ -3889,7 +3889,7 @@
       "tier": 17,
       "posRank": 3,
       "adp": {
-        "bestball10s": 156,
+        "bestball10s": 158,
         "cbs": null,
         "consensus": 170,
         "draftkings-bestball": null,
@@ -3897,9 +3897,9 @@
         "espn": 88,
         "mfl": null,
         "nffc": 162,
-        "nfl": null,
-        "rtsports": 142,
-        "sleeper-redraft": null,
+        "nfl": 170,
+        "rtsports": 144,
+        "sleeper-redraft": 170,
         "underdog": null,
         "yahoo": 108
       }
@@ -3914,15 +3914,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": 130,
-        "consensus": 182,
+        "consensus": 183,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 119,
         "mfl": null,
         "nffc": 173,
-        "nfl": null,
+        "nfl": 183,
         "rtsports": 147,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 183,
         "underdog": null,
         "yahoo": 119
       }
@@ -3935,7 +3935,7 @@
       "tier": 17,
       "posRank": 20,
       "adp": {
-        "bestball10s": 108,
+        "bestball10s": 110,
         "cbs": 162,
         "consensus": 125,
         "draftkings-bestball": null,
@@ -3943,9 +3943,9 @@
         "espn": 165,
         "mfl": null,
         "nffc": 139,
-        "nfl": null,
-        "rtsports": 153,
-        "sleeper-redraft": null,
+        "nfl": 125,
+        "rtsports": 157,
+        "sleeper-redraft": 125,
         "underdog": 113,
         "yahoo": 134
       }
@@ -3960,15 +3960,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": 193,
-        "consensus": 189,
+        "consensus": 190,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 101,
         "mfl": null,
         "nffc": 193,
-        "nfl": null,
-        "rtsports": 146,
-        "sleeper-redraft": null,
+        "nfl": 190,
+        "rtsports": 145,
+        "sleeper-redraft": 190,
         "underdog": null,
         "yahoo": 154
       }
@@ -3983,15 +3983,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": 126,
-        "consensus": 194,
+        "consensus": 193,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 116,
         "mfl": null,
         "nffc": 191,
-        "nfl": null,
+        "nfl": 193,
         "rtsports": 160,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 193,
         "underdog": null,
         "yahoo": 141
       }
@@ -4004,17 +4004,17 @@
       "tier": 17,
       "posRank": 21,
       "adp": {
-        "bestball10s": 135,
+        "bestball10s": 138,
         "cbs": 152,
-        "consensus": 162,
+        "consensus": 161,
         "draftkings-bestball": null,
         "drafters": 141,
         "espn": 177,
         "mfl": null,
         "nffc": 201,
-        "nfl": null,
-        "rtsports": 235,
-        "sleeper-redraft": null,
+        "nfl": 161,
+        "rtsports": 225,
+        "sleeper-redraft": 161,
         "underdog": 146,
         "yahoo": 181
       }
@@ -4027,17 +4027,17 @@
       "tier": 17,
       "posRank": 4,
       "adp": {
-        "bestball10s": 194,
+        "bestball10s": 188,
         "cbs": null,
-        "consensus": 205,
+        "consensus": 204,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 118,
         "mfl": null,
         "nffc": 202,
-        "nfl": null,
-        "rtsports": 195,
-        "sleeper-redraft": null,
+        "nfl": 204,
+        "rtsports": 191,
+        "sleeper-redraft": 204,
         "underdog": null,
         "yahoo": 205
       }
@@ -4052,15 +4052,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 241,
+        "consensus": 240,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 163,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": 199,
-        "sleeper-redraft": null,
+        "nfl": 240,
+        "rtsports": 190,
+        "sleeper-redraft": 240,
         "underdog": null,
         "yahoo": 216
       }
@@ -4073,17 +4073,17 @@
       "tier": 17,
       "posRank": 5,
       "adp": {
-        "bestball10s": 182,
+        "bestball10s": 181,
         "cbs": null,
-        "consensus": 202,
+        "consensus": 198,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 151,
         "mfl": null,
         "nffc": 203,
-        "nfl": null,
-        "rtsports": 186,
-        "sleeper-redraft": null,
+        "nfl": 198,
+        "rtsports": 177,
+        "sleeper-redraft": 198,
         "underdog": null,
         "yahoo": 169
       }
@@ -4096,7 +4096,7 @@
       "tier": 17,
       "posRank": 23,
       "adp": {
-        "bestball10s": 173,
+        "bestball10s": 176,
         "cbs": 197,
         "consensus": 177,
         "draftkings-bestball": null,
@@ -4104,9 +4104,9 @@
         "espn": 202,
         "mfl": null,
         "nffc": 205,
-        "nfl": null,
-        "rtsports": 226,
-        "sleeper-redraft": null,
+        "nfl": 177,
+        "rtsports": 238,
+        "sleeper-redraft": 177,
         "underdog": 175,
         "yahoo": 171
       }
@@ -4121,15 +4121,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": 191,
-        "consensus": 237,
+        "consensus": 233,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 143,
         "mfl": null,
         "nffc": 213,
-        "nfl": null,
-        "rtsports": 229,
-        "sleeper-redraft": null,
+        "nfl": 233,
+        "rtsports": 212,
+        "sleeper-redraft": 233,
         "underdog": null,
         "yahoo": 219
       }
@@ -4142,17 +4142,17 @@
       "tier": 17,
       "posRank": 6,
       "adp": {
-        "bestball10s": 203,
+        "bestball10s": 204,
         "cbs": null,
-        "consensus": 218,
+        "consensus": 214,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 168,
         "mfl": null,
         "nffc": 197,
-        "nfl": null,
-        "rtsports": 207,
-        "sleeper-redraft": null,
+        "nfl": 214,
+        "rtsports": 197,
+        "sleeper-redraft": 214,
         "underdog": null,
         "yahoo": 209
       }
@@ -4167,15 +4167,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 262,
+        "consensus": 259,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 190,
         "mfl": null,
         "nffc": 229,
-        "nfl": null,
-        "rtsports": null,
-        "sleeper-redraft": null,
+        "nfl": 259,
+        "rtsports": 250,
+        "sleeper-redraft": 259,
         "underdog": null,
         "yahoo": 218
       }
@@ -4188,17 +4188,17 @@
       "tier": 17,
       "posRank": 68,
       "adp": {
-        "bestball10s": 234,
+        "bestball10s": 211,
         "cbs": null,
-        "consensus": 190,
+        "consensus": 187,
         "draftkings-bestball": null,
         "drafters": 154,
         "espn": null,
         "mfl": null,
         "nffc": 156,
-        "nfl": null,
+        "nfl": 187,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 187,
         "underdog": 160,
         "yahoo": 231
       }
@@ -4213,15 +4213,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": 192,
-        "consensus": 231,
+        "consensus": 229,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 147,
         "mfl": null,
         "nffc": 241,
-        "nfl": null,
-        "rtsports": 194,
-        "sleeper-redraft": null,
+        "nfl": 229,
+        "rtsports": 185,
+        "sleeper-redraft": 229,
         "underdog": null,
         "yahoo": 213
       }
@@ -4236,15 +4236,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 201,
+        "consensus": 202,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 130,
         "mfl": null,
         "nffc": 200,
-        "nfl": null,
-        "rtsports": 154,
-        "sleeper-redraft": null,
+        "nfl": 202,
+        "rtsports": 153,
+        "sleeper-redraft": 202,
         "underdog": null,
         "yahoo": 157
       }
@@ -4259,15 +4259,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 300,
+        "consensus": 288,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": 216,
-        "sleeper-redraft": null,
+        "nfl": 288,
+        "rtsports": 210,
+        "sleeper-redraft": 288,
         "underdog": null,
         "yahoo": null
       }
@@ -4280,17 +4280,17 @@
       "tier": 17,
       "posRank": 7,
       "adp": {
-        "bestball10s": 207,
+        "bestball10s": 212,
         "cbs": null,
-        "consensus": 226,
+        "consensus": 236,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 207,
         "mfl": null,
         "nffc": 226,
-        "nfl": null,
-        "rtsports": 214,
-        "sleeper-redraft": null,
+        "nfl": 236,
+        "rtsports": 239,
+        "sleeper-redraft": 236,
         "underdog": null,
         "yahoo": 170
       }
@@ -4305,15 +4305,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 278,
+        "consensus": 263,
         "draftkings-bestball": null,
         "drafters": 232,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": null,
-        "sleeper-redraft": null,
+        "nfl": 263,
+        "rtsports": 201,
+        "sleeper-redraft": 263,
         "underdog": 234,
         "yahoo": null
       }
@@ -4326,17 +4326,17 @@
       "tier": 17,
       "posRank": 8,
       "adp": {
-        "bestball10s": 192,
+        "bestball10s": 190,
         "cbs": null,
-        "consensus": 188,
+        "consensus": 189,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 121,
         "mfl": null,
         "nffc": 178,
-        "nfl": null,
-        "rtsports": 184,
-        "sleeper-redraft": null,
+        "nfl": 189,
+        "rtsports": 179,
+        "sleeper-redraft": 189,
         "underdog": null,
         "yahoo": 153
       }
@@ -4349,17 +4349,17 @@
       "tier": 17,
       "posRank": 9,
       "adp": {
-        "bestball10s": 219,
+        "bestball10s": 218,
         "cbs": null,
-        "consensus": 247,
+        "consensus": 250,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 213,
         "mfl": null,
         "nffc": 250,
-        "nfl": null,
-        "rtsports": 237,
-        "sleeper-redraft": null,
+        "nfl": 250,
+        "rtsports": 243,
+        "sleeper-redraft": 250,
         "underdog": null,
         "yahoo": 179
       }
@@ -4372,17 +4372,17 @@
       "tier": 17,
       "posRank": 10,
       "adp": {
-        "bestball10s": 196,
+        "bestball10s": 197,
         "cbs": null,
-        "consensus": 216,
+        "consensus": 215,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 156,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": 173,
-        "sleeper-redraft": null,
+        "nfl": 215,
+        "rtsports": 172,
+        "sleeper-redraft": 215,
         "underdog": null,
         "yahoo": 207
       }
@@ -4403,9 +4403,9 @@
         "espn": 164,
         "mfl": null,
         "nffc": 240,
-        "nfl": null,
+        "nfl": 256,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 256,
         "underdog": null,
         "yahoo": 217
       }
@@ -4418,17 +4418,17 @@
       "tier": 17,
       "posRank": 11,
       "adp": {
-        "bestball10s": 174,
+        "bestball10s": 166,
         "cbs": null,
-        "consensus": 167,
+        "consensus": 166,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 89,
         "mfl": null,
         "nffc": 147,
-        "nfl": null,
-        "rtsports": 138,
-        "sleeper-redraft": null,
+        "nfl": 166,
+        "rtsports": 137,
+        "sleeper-redraft": 166,
         "underdog": null,
         "yahoo": 97
       }
@@ -4443,15 +4443,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 246,
+        "consensus": 247,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 169,
         "mfl": null,
         "nffc": 215,
-        "nfl": null,
-        "rtsports": 247,
-        "sleeper-redraft": null,
+        "nfl": 247,
+        "rtsports": 242,
+        "sleeper-redraft": 247,
         "underdog": null,
         "yahoo": 215
       }
@@ -4466,15 +4466,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 282,
+        "consensus": 278,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": null,
-        "sleeper-redraft": null,
+        "nfl": 278,
+        "rtsports": 249,
+        "sleeper-redraft": 278,
         "underdog": null,
         "yahoo": 193
       }
@@ -4487,17 +4487,17 @@
       "tier": 17,
       "posRank": 12,
       "adp": {
-        "bestball10s": 221,
+        "bestball10s": 223,
         "cbs": null,
-        "consensus": 306,
+        "consensus": 304,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 304,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 304,
         "underdog": null,
         "yahoo": null
       }
@@ -4510,17 +4510,17 @@
       "tier": 17,
       "posRank": 69,
       "adp": {
-        "bestball10s": 187,
+        "bestball10s": 182,
         "cbs": 176,
-        "consensus": 183,
+        "consensus": 181,
         "draftkings-bestball": null,
         "drafters": 163,
         "espn": null,
         "mfl": null,
         "nffc": 146,
-        "nfl": null,
-        "rtsports": 221,
-        "sleeper-redraft": null,
+        "nfl": 181,
+        "rtsports": 216,
+        "sleeper-redraft": 181,
         "underdog": 165,
         "yahoo": null
       }
@@ -4533,17 +4533,17 @@
       "tier": 17,
       "posRank": 70,
       "adp": {
-        "bestball10s": 180,
+        "bestball10s": 203,
         "cbs": 169,
-        "consensus": 200,
+        "consensus": 207,
         "draftkings-bestball": null,
         "drafters": 221,
         "espn": 189,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": 178,
-        "sleeper-redraft": null,
+        "nfl": 207,
+        "rtsports": 184,
+        "sleeper-redraft": 207,
         "underdog": 232,
         "yahoo": 195
       }
@@ -4556,17 +4556,17 @@
       "tier": 17,
       "posRank": 71,
       "adp": {
-        "bestball10s": 248,
+        "bestball10s": 241,
         "cbs": null,
-        "consensus": 227,
+        "consensus": 225,
         "draftkings-bestball": null,
         "drafters": 191,
         "espn": 218,
         "mfl": null,
         "nffc": 245,
-        "nfl": null,
+        "nfl": 225,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 225,
         "underdog": 185,
         "yahoo": null
       }
@@ -4579,7 +4579,7 @@
       "tier": 17,
       "posRank": 72,
       "adp": {
-        "bestball10s": 159,
+        "bestball10s": 168,
         "cbs": 174,
         "consensus": 175,
         "draftkings-bestball": null,
@@ -4587,9 +4587,9 @@
         "espn": null,
         "mfl": null,
         "nffc": 183,
-        "nfl": null,
-        "rtsports": 177,
-        "sleeper-redraft": null,
+        "nfl": 175,
+        "rtsports": 180,
+        "sleeper-redraft": 175,
         "underdog": 164,
         "yahoo": 200
       }
@@ -4602,17 +4602,17 @@
       "tier": 17,
       "posRank": 73,
       "adp": {
-        "bestball10s": 231,
+        "bestball10s": 222,
         "cbs": null,
-        "consensus": 229,
+        "consensus": 226,
         "draftkings-bestball": null,
         "drafters": 207,
         "espn": 200,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 226,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 226,
         "underdog": 203,
         "yahoo": null
       }
@@ -4625,17 +4625,17 @@
       "tier": 17,
       "posRank": 74,
       "adp": {
-        "bestball10s": 241,
+        "bestball10s": 233,
         "cbs": 177,
-        "consensus": 224,
+        "consensus": 227,
         "draftkings-bestball": null,
         "drafters": 199,
         "espn": null,
         "mfl": null,
         "nffc": 206,
-        "nfl": null,
-        "rtsports": 212,
-        "sleeper-redraft": null,
+        "nfl": 227,
+        "rtsports": 234,
+        "sleeper-redraft": 227,
         "underdog": 198,
         "yahoo": null
       }
@@ -4648,17 +4648,17 @@
       "tier": 17,
       "posRank": 75,
       "adp": {
-        "bestball10s": 228,
+        "bestball10s": 231,
         "cbs": 140,
-        "consensus": 215,
+        "consensus": 218,
         "draftkings-bestball": null,
         "drafters": 200,
         "espn": null,
         "mfl": null,
         "nffc": 218,
-        "nfl": null,
-        "rtsports": 201,
-        "sleeper-redraft": null,
+        "nfl": 218,
+        "rtsports": 205,
+        "sleeper-redraft": 218,
         "underdog": 196,
         "yahoo": null
       }
@@ -4671,17 +4671,17 @@
       "tier": 17,
       "posRank": 76,
       "adp": {
-        "bestball10s": 169,
+        "bestball10s": 186,
         "cbs": 172,
-        "consensus": 214,
+        "consensus": 217,
         "draftkings-bestball": null,
         "drafters": 243,
         "espn": null,
         "mfl": null,
         "nffc": 222,
-        "nfl": null,
-        "rtsports": 197,
-        "sleeper-redraft": null,
+        "nfl": 217,
+        "rtsports": 198,
+        "sleeper-redraft": 217,
         "underdog": 223,
         "yahoo": 194
       }
@@ -4694,7 +4694,7 @@
       "tier": 17,
       "posRank": 77,
       "adp": {
-        "bestball10s": 199,
+        "bestball10s": 193,
         "cbs": null,
         "consensus": 186,
         "draftkings-bestball": null,
@@ -4702,9 +4702,9 @@
         "espn": null,
         "mfl": null,
         "nffc": 157,
-        "nfl": null,
-        "rtsports": 222,
-        "sleeper-redraft": null,
+        "nfl": 186,
+        "rtsports": 229,
+        "sleeper-redraft": 186,
         "underdog": 166,
         "yahoo": 232
       }
@@ -4717,17 +4717,17 @@
       "tier": 17,
       "posRank": 78,
       "adp": {
-        "bestball10s": 205,
+        "bestball10s": 195,
         "cbs": 165,
-        "consensus": 181,
+        "consensus": 179,
         "draftkings-bestball": null,
         "drafters": 153,
         "espn": null,
         "mfl": null,
         "nffc": 174,
-        "nfl": null,
-        "rtsports": 198,
-        "sleeper-redraft": null,
+        "nfl": 179,
+        "rtsports": 199,
+        "sleeper-redraft": 179,
         "underdog": 171,
         "yahoo": 224
       }
@@ -4740,17 +4740,17 @@
       "tier": 17,
       "posRank": 57,
       "adp": {
-        "bestball10s": 151,
+        "bestball10s": 154,
         "cbs": 163,
-        "consensus": 178,
+        "consensus": 184,
         "draftkings-bestball": null,
         "drafters": 205,
         "espn": null,
         "mfl": null,
         "nffc": 153,
-        "nfl": null,
-        "rtsports": 209,
-        "sleeper-redraft": null,
+        "nfl": 184,
+        "rtsports": 224,
+        "sleeper-redraft": 184,
         "underdog": 190,
         "yahoo": 185
       }
@@ -4763,17 +4763,17 @@
       "tier": 17,
       "posRank": 58,
       "adp": {
-        "bestball10s": 181,
+        "bestball10s": 170,
         "cbs": 170,
-        "consensus": 156,
+        "consensus": 154,
         "draftkings-bestball": null,
         "drafters": 137,
         "espn": null,
         "mfl": null,
         "nffc": 127,
-        "nfl": null,
-        "rtsports": 141,
-        "sleeper-redraft": null,
+        "nfl": 154,
+        "rtsports": 139,
+        "sleeper-redraft": 154,
         "underdog": 137,
         "yahoo": 199
       }
@@ -4832,7 +4832,7 @@
       "tier": 17,
       "posRank": 81,
       "adp": {
-        "bestball10s": 178,
+        "bestball10s": 192,
         "cbs": 160,
         "consensus": 212,
         "draftkings-bestball": null,
@@ -4840,9 +4840,9 @@
         "espn": null,
         "mfl": null,
         "nffc": 216,
-        "nfl": null,
-        "rtsports": 169,
-        "sleeper-redraft": null,
+        "nfl": 212,
+        "rtsports": 167,
+        "sleeper-redraft": 212,
         "underdog": 216,
         "yahoo": 243
       }
@@ -4857,15 +4857,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 339,
+        "consensus": 338,
         "draftkings-bestball": null,
         "drafters": 244,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 338,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 338,
         "underdog": 250,
         "yahoo": null
       }
@@ -4880,15 +4880,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 319,
+        "consensus": 318,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 318,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 318,
         "underdog": 239,
         "yahoo": null
       }
@@ -4901,7 +4901,7 @@
       "tier": 17,
       "posRank": 84,
       "adp": {
-        "bestball10s": 229,
+        "bestball10s": 242,
         "cbs": null,
         "consensus": 252,
         "draftkings-bestball": null,
@@ -4909,9 +4909,9 @@
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 252,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 252,
         "underdog": 201,
         "yahoo": null
       }
@@ -4932,9 +4932,9 @@
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 279,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 279,
         "underdog": 214,
         "yahoo": null
       }
@@ -4949,15 +4949,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 327,
+        "consensus": 326,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 326,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 326,
         "underdog": 238,
         "yahoo": null
       }
@@ -4970,17 +4970,17 @@
       "tier": 17,
       "posRank": 87,
       "adp": {
-        "bestball10s": 191,
+        "bestball10s": 187,
         "cbs": null,
-        "consensus": 155,
+        "consensus": 160,
         "draftkings-bestball": null,
         "drafters": 166,
         "espn": 112,
         "mfl": null,
         "nffc": 188,
-        "nfl": null,
-        "rtsports": 208,
-        "sleeper-redraft": null,
+        "nfl": 160,
+        "rtsports": null,
+        "sleeper-redraft": 160,
         "underdog": 142,
         "yahoo": 148
       }
@@ -5001,9 +5001,9 @@
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 333,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 333,
         "underdog": 243,
         "yahoo": 250
       }
@@ -5016,17 +5016,17 @@
       "tier": 17,
       "posRank": 89,
       "adp": {
-        "bestball10s": 244,
+        "bestball10s": 250,
         "cbs": 182,
-        "consensus": 245,
+        "consensus": 246,
         "draftkings-bestball": null,
         "drafters": 209,
         "espn": null,
         "mfl": null,
         "nffc": 208,
-        "nfl": null,
+        "nfl": 246,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 246,
         "underdog": 226,
         "yahoo": null
       }
@@ -5064,15 +5064,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 259,
+        "consensus": 260,
         "draftkings-bestball": null,
         "drafters": 211,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 260,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 260,
         "underdog": 207,
         "yahoo": 234
       }
@@ -5110,15 +5110,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 294,
+        "consensus": 290,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": 218,
-        "sleeper-redraft": null,
+        "nfl": 290,
+        "rtsports": 220,
+        "sleeper-redraft": 290,
         "underdog": 244,
         "yahoo": null
       }
@@ -5131,17 +5131,17 @@
       "tier": 17,
       "posRank": 59,
       "adp": {
-        "bestball10s": 242,
+        "bestball10s": 234,
         "cbs": 135,
-        "consensus": 236,
+        "consensus": 232,
         "draftkings-bestball": null,
         "drafters": 202,
         "espn": null,
         "mfl": null,
         "nffc": 211,
-        "nfl": null,
-        "rtsports": 220,
-        "sleeper-redraft": null,
+        "nfl": 232,
+        "rtsports": 215,
+        "sleeper-redraft": 232,
         "underdog": 213,
         "yahoo": 244
       }
@@ -5154,7 +5154,7 @@
       "tier": 17,
       "posRank": 60,
       "adp": {
-        "bestball10s": null,
+        "bestball10s": 244,
         "cbs": null,
         "consensus": 208,
         "draftkings-bestball": null,
@@ -5162,9 +5162,9 @@
         "espn": null,
         "mfl": null,
         "nffc": 169,
-        "nfl": null,
-        "rtsports": 193,
-        "sleeper-redraft": null,
+        "nfl": 208,
+        "rtsports": 194,
+        "sleeper-redraft": 208,
         "underdog": 194,
         "yahoo": 230
       }
@@ -5200,17 +5200,17 @@
       "tier": 17,
       "posRank": 61,
       "adp": {
-        "bestball10s": 232,
+        "bestball10s": 226,
         "cbs": null,
-        "consensus": 192,
+        "consensus": 194,
         "draftkings-bestball": null,
         "drafters": 182,
         "espn": null,
         "mfl": null,
         "nffc": 177,
-        "nfl": null,
-        "rtsports": 168,
-        "sleeper-redraft": null,
+        "nfl": 194,
+        "rtsports": 183,
+        "sleeper-redraft": 194,
         "underdog": 193,
         "yahoo": 229
       }
@@ -5223,7 +5223,7 @@
       "tier": 17,
       "posRank": 22,
       "adp": {
-        "bestball10s": 118,
+        "bestball10s": 119,
         "cbs": null,
         "consensus": 148,
         "draftkings-bestball": null,
@@ -5231,9 +5231,9 @@
         "espn": 180,
         "mfl": null,
         "nffc": 204,
-        "nfl": null,
-        "rtsports": 185,
-        "sleeper-redraft": null,
+        "nfl": 148,
+        "rtsports": 186,
+        "sleeper-redraft": 148,
         "underdog": 141,
         "yahoo": 137
       }
@@ -5269,7 +5269,7 @@
       "tier": 17,
       "posRank": 23,
       "adp": {
-        "bestball10s": 116,
+        "bestball10s": 115,
         "cbs": 175,
         "consensus": 137,
         "draftkings-bestball": null,
@@ -5277,9 +5277,9 @@
         "espn": 187,
         "mfl": null,
         "nffc": 176,
-        "nfl": null,
-        "rtsports": 170,
-        "sleeper-redraft": null,
+        "nfl": 137,
+        "rtsports": 168,
+        "sleeper-redraft": 137,
         "underdog": 133,
         "yahoo": 120
       }
@@ -5292,17 +5292,17 @@
       "tier": 17,
       "posRank": 96,
       "adp": {
-        "bestball10s": 213,
+        "bestball10s": 200,
         "cbs": 157,
-        "consensus": 179,
+        "consensus": 178,
         "draftkings-bestball": null,
         "drafters": 178,
         "espn": null,
         "mfl": null,
         "nffc": 167,
-        "nfl": null,
-        "rtsports": 175,
-        "sleeper-redraft": null,
+        "nfl": 178,
+        "rtsports": 187,
+        "sleeper-redraft": 178,
         "underdog": 176,
         "yahoo": 208
       }
@@ -5315,17 +5315,17 @@
       "tier": 17,
       "posRank": 62,
       "adp": {
-        "bestball10s": 167,
+        "bestball10s": 178,
         "cbs": null,
-        "consensus": 187,
+        "consensus": 188,
         "draftkings-bestball": null,
         "drafters": 208,
         "espn": null,
         "mfl": null,
         "nffc": 175,
-        "nfl": null,
-        "rtsports": 206,
-        "sleeper-redraft": null,
+        "nfl": 188,
+        "rtsports": 188,
+        "sleeper-redraft": 188,
         "underdog": 197,
         "yahoo": 165
       }
@@ -5340,15 +5340,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 280,
+        "consensus": 285,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": 192,
-        "sleeper-redraft": null,
+        "nfl": 285,
+        "rtsports": 211,
+        "sleeper-redraft": 285,
         "underdog": null,
         "yahoo": null
       }
@@ -5361,17 +5361,17 @@
       "tier": 17,
       "posRank": 97,
       "adp": {
-        "bestball10s": 249,
+        "bestball10s": null,
         "cbs": null,
-        "consensus": 263,
+        "consensus": 262,
         "draftkings-bestball": null,
         "drafters": 225,
         "espn": null,
         "mfl": null,
         "nffc": 248,
-        "nfl": null,
-        "rtsports": 230,
-        "sleeper-redraft": null,
+        "nfl": 262,
+        "rtsports": 218,
+        "sleeper-redraft": 262,
         "underdog": 229,
         "yahoo": null
       }
@@ -5438,9 +5438,9 @@
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 253,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 253,
         "underdog": 208,
         "yahoo": null
       }
@@ -5453,17 +5453,17 @@
       "tier": 17,
       "posRank": 64,
       "adp": {
-        "bestball10s": 240,
+        "bestball10s": 228,
         "cbs": null,
-        "consensus": 206,
+        "consensus": 205,
         "draftkings-bestball": null,
         "drafters": 183,
         "espn": null,
         "mfl": null,
         "nffc": 180,
-        "nfl": null,
-        "rtsports": 211,
-        "sleeper-redraft": null,
+        "nfl": 205,
+        "rtsports": 209,
+        "sleeper-redraft": 205,
         "underdog": 191,
         "yahoo": 227
       }
@@ -5499,17 +5499,17 @@
       "tier": 17,
       "posRank": 102,
       "adp": {
-        "bestball10s": 239,
+        "bestball10s": 236,
         "cbs": null,
-        "consensus": 225,
+        "consensus": 224,
         "draftkings-bestball": null,
         "drafters": 192,
         "espn": null,
         "mfl": null,
         "nffc": 212,
-        "nfl": null,
+        "nfl": 224,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 224,
         "underdog": 189,
         "yahoo": null
       }
@@ -5524,15 +5524,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 325,
+        "consensus": 324,
         "draftkings-bestball": null,
         "drafters": 238,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 324,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 324,
         "underdog": 249,
         "yahoo": null
       }
@@ -5545,17 +5545,17 @@
       "tier": 17,
       "posRank": 104,
       "adp": {
-        "bestball10s": null,
+        "bestball10s": 245,
         "cbs": null,
-        "consensus": 221,
+        "consensus": 220,
         "draftkings-bestball": null,
         "drafters": 190,
         "espn": null,
         "mfl": null,
         "nffc": 214,
-        "nfl": null,
-        "rtsports": 244,
-        "sleeper-redraft": null,
+        "nfl": 220,
+        "rtsports": 246,
+        "sleeper-redraft": 220,
         "underdog": 173,
         "yahoo": null
       }
@@ -5568,17 +5568,17 @@
       "tier": 17,
       "posRank": 105,
       "adp": {
-        "bestball10s": 190,
+        "bestball10s": 205,
         "cbs": null,
-        "consensus": 235,
+        "consensus": 239,
         "draftkings-bestball": null,
         "drafters": 214,
         "espn": null,
         "mfl": null,
         "nffc": 220,
-        "nfl": null,
+        "nfl": 239,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 239,
         "underdog": 219,
         "yahoo": 249
       }
@@ -5591,7 +5591,7 @@
       "tier": 17,
       "posRank": 24,
       "adp": {
-        "bestball10s": 183,
+        "bestball10s": 174,
         "cbs": null,
         "consensus": 176,
         "draftkings-bestball": null,
@@ -5599,9 +5599,9 @@
         "espn": 234,
         "mfl": null,
         "nffc": 237,
-        "nfl": null,
-        "rtsports": 213,
-        "sleeper-redraft": null,
+        "nfl": 176,
+        "rtsports": 232,
+        "sleeper-redraft": 176,
         "underdog": 177,
         "yahoo": 117
       }
@@ -5614,17 +5614,17 @@
       "tier": 17,
       "posRank": 24,
       "adp": {
-        "bestball10s": 114,
+        "bestball10s": 128,
         "cbs": 145,
-        "consensus": 146,
+        "consensus": 147,
         "draftkings-bestball": null,
         "drafters": 156,
         "espn": 192,
         "mfl": null,
         "nffc": 149,
-        "nfl": null,
-        "rtsports": 202,
-        "sleeper-redraft": null,
+        "nfl": 147,
+        "rtsports": 193,
+        "sleeper-redraft": 147,
         "underdog": 149,
         "yahoo": 124
       }
@@ -5639,15 +5639,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 332,
+        "consensus": 331,
         "draftkings-bestball": null,
         "drafters": 246,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 331,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 331,
         "underdog": null,
         "yahoo": null
       }
@@ -5660,7 +5660,7 @@
       "tier": 17,
       "posRank": 25,
       "adp": {
-        "bestball10s": 119,
+        "bestball10s": 124,
         "cbs": 186,
         "consensus": 140,
         "draftkings-bestball": null,
@@ -5668,9 +5668,9 @@
         "espn": 171,
         "mfl": null,
         "nffc": 179,
-        "nfl": null,
+        "nfl": 140,
         "rtsports": 171,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 140,
         "underdog": 140,
         "yahoo": 133
       }
@@ -5683,17 +5683,17 @@
       "tier": 17,
       "posRank": 25,
       "adp": {
-        "bestball10s": 215,
+        "bestball10s": 210,
         "cbs": null,
-        "consensus": 193,
+        "consensus": 196,
         "draftkings-bestball": null,
         "drafters": 194,
         "espn": 204,
         "mfl": null,
         "nffc": 246,
-        "nfl": null,
-        "rtsports": 238,
-        "sleeper-redraft": null,
+        "nfl": 196,
+        "rtsports": null,
+        "sleeper-redraft": 196,
         "underdog": 192,
         "yahoo": 127
       }
@@ -5708,15 +5708,15 @@
       "adp": {
         "bestball10s": 247,
         "cbs": null,
-        "consensus": 285,
+        "consensus": 282,
         "draftkings-bestball": null,
         "drafters": 237,
         "espn": null,
         "mfl": null,
         "nffc": 219,
-        "nfl": null,
-        "rtsports": 246,
-        "sleeper-redraft": null,
+        "nfl": 282,
+        "rtsports": 245,
+        "sleeper-redraft": 282,
         "underdog": null,
         "yahoo": null
       }
@@ -5729,17 +5729,17 @@
       "tier": 17,
       "posRank": 67,
       "adp": {
-        "bestball10s": 186,
+        "bestball10s": 189,
         "cbs": 179,
-        "consensus": 210,
+        "consensus": 211,
         "draftkings-bestball": null,
         "drafters": 201,
         "espn": null,
         "mfl": null,
         "nffc": 192,
-        "nfl": null,
-        "rtsports": 188,
-        "sleeper-redraft": null,
+        "nfl": 211,
+        "rtsports": 203,
+        "sleeper-redraft": 211,
         "underdog": 228,
         "yahoo": 242
       }
@@ -5752,17 +5752,17 @@
       "tier": 17,
       "posRank": 26,
       "adp": {
-        "bestball10s": 185,
+        "bestball10s": 183,
         "cbs": null,
-        "consensus": 207,
+        "consensus": 206,
         "draftkings-bestball": null,
         "drafters": 177,
         "espn": 229,
         "mfl": null,
         "nffc": 228,
-        "nfl": null,
-        "rtsports": 249,
-        "sleeper-redraft": null,
+        "nfl": 206,
+        "rtsports": 247,
+        "sleeper-redraft": 206,
         "underdog": 180,
         "yahoo": null
       }
@@ -5777,15 +5777,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 338,
+        "consensus": 337,
         "draftkings-bestball": null,
         "drafters": 245,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 337,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 337,
         "underdog": null,
         "yahoo": null
       }
@@ -5798,7 +5798,7 @@
       "tier": 17,
       "posRank": 69,
       "adp": {
-        "bestball10s": null,
+        "bestball10s": 248,
         "cbs": null,
         "consensus": 222,
         "draftkings-bestball": null,
@@ -5806,9 +5806,9 @@
         "espn": null,
         "mfl": null,
         "nffc": 187,
-        "nfl": null,
+        "nfl": 222,
         "rtsports": 196,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 222,
         "underdog": 215,
         "yahoo": 238
       }
@@ -5821,17 +5821,17 @@
       "tier": 17,
       "posRank": 26,
       "adp": {
-        "bestball10s": 125,
+        "bestball10s": 136,
         "cbs": null,
-        "consensus": 157,
+        "consensus": 164,
         "draftkings-bestball": null,
         "drafters": 152,
         "espn": 196,
         "mfl": null,
         "nffc": 235,
-        "nfl": null,
-        "rtsports": 182,
-        "sleeper-redraft": null,
+        "nfl": 164,
+        "rtsports": 202,
+        "sleeper-redraft": 164,
         "underdog": 158,
         "yahoo": 131
       }
@@ -5844,17 +5844,17 @@
       "tier": 17,
       "posRank": 27,
       "adp": {
-        "bestball10s": 131,
+        "bestball10s": 133,
         "cbs": null,
-        "consensus": 150,
+        "consensus": 153,
         "draftkings-bestball": null,
         "drafters": 140,
         "espn": 186,
         "mfl": null,
         "nffc": 190,
-        "nfl": null,
-        "rtsports": 189,
-        "sleeper-redraft": null,
+        "nfl": 153,
+        "rtsports": 207,
+        "sleeper-redraft": 153,
         "underdog": 138,
         "yahoo": 145
       }
@@ -5867,7 +5867,7 @@
       "tier": 17,
       "posRank": 27,
       "adp": {
-        "bestball10s": 208,
+        "bestball10s": 206,
         "cbs": 194,
         "consensus": 223,
         "draftkings-bestball": null,
@@ -5875,9 +5875,9 @@
         "espn": null,
         "mfl": null,
         "nffc": 247,
-        "nfl": null,
+        "nfl": 223,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 223,
         "underdog": 186,
         "yahoo": null
       }
@@ -5936,17 +5936,17 @@
       "tier": 17,
       "posRank": 28,
       "adp": {
-        "bestball10s": 152,
+        "bestball10s": 155,
         "cbs": null,
-        "consensus": 199,
+        "consensus": 201,
         "draftkings-bestball": null,
         "drafters": 180,
         "espn": null,
         "mfl": null,
         "nffc": 224,
-        "nfl": null,
-        "rtsports": 240,
-        "sleeper-redraft": null,
+        "nfl": 201,
+        "rtsports": 237,
+        "sleeper-redraft": 201,
         "underdog": 195,
         "yahoo": 240
       }
@@ -5959,17 +5959,17 @@
       "tier": 17,
       "posRank": 28,
       "adp": {
-        "bestball10s": 246,
+        "bestball10s": 214,
         "cbs": 181,
-        "consensus": 204,
+        "consensus": 192,
         "draftkings-bestball": null,
         "drafters": 167,
         "espn": null,
         "mfl": null,
         "nffc": 189,
-        "nfl": null,
-        "rtsports": 215,
-        "sleeper-redraft": null,
+        "nfl": 192,
+        "rtsports": 206,
+        "sleeper-redraft": 192,
         "underdog": 178,
         "yahoo": 241
       }
@@ -5984,15 +5984,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 311,
+        "consensus": 308,
         "draftkings-bestball": null,
         "drafters": 234,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 308,
         "rtsports": 248,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 308,
         "underdog": 245,
         "yahoo": null
       }
@@ -6013,9 +6013,9 @@
         "espn": null,
         "mfl": null,
         "nffc": 186,
-        "nfl": null,
-        "rtsports": 232,
-        "sleeper-redraft": null,
+        "nfl": 251,
+        "rtsports": 244,
+        "sleeper-redraft": 251,
         "underdog": 230,
         "yahoo": null
       }
@@ -6051,17 +6051,17 @@
       "tier": 17,
       "posRank": 29,
       "adp": {
-        "bestball10s": 168,
+        "bestball10s": 172,
         "cbs": null,
-        "consensus": 209,
+        "consensus": 210,
         "draftkings-bestball": null,
         "drafters": 179,
         "espn": null,
         "mfl": null,
         "nffc": 236,
-        "nfl": null,
+        "nfl": 210,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 210,
         "underdog": 184,
         "yahoo": null
       }
@@ -6074,7 +6074,7 @@
       "tier": 17,
       "posRank": 29,
       "adp": {
-        "bestball10s": 238,
+        "bestball10s": 235,
         "cbs": null,
         "consensus": 195,
         "draftkings-bestball": null,
@@ -6082,9 +6082,9 @@
         "espn": 193,
         "mfl": null,
         "nffc": 209,
-        "nfl": null,
+        "nfl": 195,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 195,
         "underdog": 187,
         "yahoo": 174
       }
@@ -6097,17 +6097,17 @@
       "tier": 17,
       "posRank": 30,
       "adp": {
-        "bestball10s": 204,
+        "bestball10s": 208,
         "cbs": null,
-        "consensus": 196,
+        "consensus": 199,
         "draftkings-bestball": null,
         "drafters": 206,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": 166,
-        "sleeper-redraft": null,
+        "nfl": 199,
+        "rtsports": 169,
+        "sleeper-redraft": 199,
         "underdog": 217,
         "yahoo": 139
       }
@@ -6122,15 +6122,15 @@
       "adp": {
         "bestball10s": 149,
         "cbs": 166,
-        "consensus": 159,
+        "consensus": 158,
         "draftkings-bestball": null,
         "drafters": 172,
         "espn": null,
         "mfl": null,
         "nffc": 134,
-        "nfl": null,
+        "nfl": 158,
         "rtsports": 140,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 158,
         "underdog": 156,
         "yahoo": 173
       }
@@ -6151,9 +6151,9 @@
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 257,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 257,
         "underdog": 202,
         "yahoo": null
       }
@@ -6189,17 +6189,17 @@
       "tier": 17,
       "posRank": 30,
       "adp": {
-        "bestball10s": 195,
+        "bestball10s": 191,
         "cbs": null,
-        "consensus": 230,
+        "consensus": 228,
         "draftkings-bestball": null,
         "drafters": 195,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 228,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 228,
         "underdog": 206,
         "yahoo": null
       }
@@ -6212,17 +6212,17 @@
       "tier": 17,
       "posRank": 110,
       "adp": {
-        "bestball10s": 236,
+        "bestball10s": 249,
         "cbs": null,
-        "consensus": 291,
+        "consensus": 309,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 309,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 309,
         "underdog": 235,
         "yahoo": null
       }
@@ -6237,15 +6237,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 269,
+        "consensus": 270,
         "draftkings-bestball": null,
         "drafters": 223,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 270,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 270,
         "underdog": 218,
         "yahoo": null
       }
@@ -6258,17 +6258,17 @@
       "tier": 17,
       "posRank": 73,
       "adp": {
-        "bestball10s": 171,
+        "bestball10s": 180,
         "cbs": 155,
-        "consensus": 219,
+        "consensus": 221,
         "draftkings-bestball": null,
         "drafters": 249,
         "espn": null,
         "mfl": null,
         "nffc": 210,
-        "nfl": null,
-        "rtsports": 210,
-        "sleeper-redraft": null,
+        "nfl": 221,
+        "rtsports": 213,
+        "sleeper-redraft": 221,
         "underdog": null,
         "yahoo": 172
       }
@@ -6283,15 +6283,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 271,
+        "consensus": 275,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 209,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": 219,
-        "sleeper-redraft": null,
+        "nfl": 275,
+        "rtsports": 228,
+        "sleeper-redraft": 275,
         "underdog": 242,
         "yahoo": null
       }
@@ -6304,17 +6304,17 @@
       "tier": 17,
       "posRank": 31,
       "adp": {
-        "bestball10s": 160,
+        "bestball10s": 164,
         "cbs": null,
-        "consensus": 173,
+        "consensus": 172,
         "draftkings-bestball": null,
         "drafters": 170,
         "espn": 176,
         "mfl": null,
         "nffc": 242,
-        "nfl": null,
-        "rtsports": 231,
-        "sleeper-redraft": null,
+        "nfl": 172,
+        "rtsports": 217,
+        "sleeper-redraft": 172,
         "underdog": 174,
         "yahoo": 129
       }
@@ -6329,15 +6329,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 211,
+        "consensus": 209,
         "draftkings-bestball": null,
         "drafters": 186,
         "espn": 236,
         "mfl": null,
         "nffc": 184,
-        "nfl": null,
-        "rtsports": 233,
-        "sleeper-redraft": null,
+        "nfl": 209,
+        "rtsports": 219,
+        "sleeper-redraft": 209,
         "underdog": 181,
         "yahoo": 248
       }
@@ -6396,17 +6396,17 @@
       "tier": 17,
       "posRank": 32,
       "adp": {
-        "bestball10s": 233,
+        "bestball10s": 225,
         "cbs": null,
-        "consensus": 267,
+        "consensus": 265,
         "draftkings-bestball": null,
         "drafters": 216,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 265,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 265,
         "underdog": 237,
         "yahoo": null
       }
@@ -6421,15 +6421,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 302,
+        "consensus": 299,
         "draftkings-bestball": null,
         "drafters": 248,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": 225,
-        "sleeper-redraft": null,
+        "nfl": 299,
+        "rtsports": 226,
+        "sleeper-redraft": 299,
         "underdog": null,
         "yahoo": null
       }
@@ -6444,15 +6444,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 341,
+        "consensus": 340,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 340,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 340,
         "underdog": null,
         "yahoo": null
       }
@@ -6465,17 +6465,17 @@
       "tier": 17,
       "posRank": 77,
       "adp": {
-        "bestball10s": 198,
+        "bestball10s": 196,
         "cbs": 190,
-        "consensus": 197,
+        "consensus": 200,
         "draftkings-bestball": null,
         "drafters": 219,
         "espn": null,
         "mfl": null,
         "nffc": 199,
-        "nfl": null,
-        "rtsports": 174,
-        "sleeper-redraft": null,
+        "nfl": 200,
+        "rtsports": 175,
+        "sleeper-redraft": 200,
         "underdog": 209,
         "yahoo": 190
       }
@@ -6559,15 +6559,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 347,
+        "consensus": 346,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 240,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 346,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 346,
         "underdog": null,
         "yahoo": null
       }
@@ -6603,9 +6603,9 @@
       "tier": 17,
       "posRank": 33,
       "adp": {
-        "bestball10s": 250,
+        "bestball10s": null,
         "cbs": null,
-        "consensus": 350,
+        "consensus": null,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
@@ -6674,15 +6674,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": 189,
-        "consensus": 228,
+        "consensus": 230,
         "draftkings-bestball": null,
         "drafters": 222,
         "espn": null,
         "mfl": null,
         "nffc": 172,
-        "nfl": null,
-        "rtsports": 217,
-        "sleeper-redraft": null,
+        "nfl": 230,
+        "rtsports": 214,
+        "sleeper-redraft": 230,
         "underdog": 224,
         "yahoo": 236
       }
@@ -6697,15 +6697,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 297,
+        "consensus": 294,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 294,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 294,
         "underdog": 220,
         "yahoo": null
       }
@@ -6741,17 +6741,17 @@
       "tier": 17,
       "posRank": 34,
       "adp": {
-        "bestball10s": 197,
+        "bestball10s": 201,
         "cbs": null,
-        "consensus": 239,
+        "consensus": 237,
         "draftkings-bestball": null,
         "drafters": 213,
         "espn": null,
         "mfl": null,
         "nffc": 239,
-        "nfl": null,
+        "nfl": 237,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 237,
         "underdog": 212,
         "yahoo": null
       }
@@ -6812,15 +6812,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 346,
+        "consensus": 345,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": 242,
-        "sleeper-redraft": null,
+        "nfl": 345,
+        "rtsports": 240,
+        "sleeper-redraft": 345,
         "underdog": null,
         "yahoo": null
       }
@@ -6864,9 +6864,9 @@
         "espn": 248,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 334,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 334,
         "underdog": 247,
         "yahoo": null
       }
@@ -6879,17 +6879,17 @@
       "tier": 17,
       "posRank": 121,
       "adp": {
-        "bestball10s": 225,
+        "bestball10s": 240,
         "cbs": null,
-        "consensus": 308,
+        "consensus": 332,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 332,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 332,
         "underdog": null,
         "yahoo": null
       }
@@ -6902,17 +6902,17 @@
       "tier": 17,
       "posRank": 33,
       "adp": {
-        "bestball10s": 226,
+        "bestball10s": 230,
         "cbs": null,
-        "consensus": 273,
+        "consensus": 274,
         "draftkings-bestball": null,
         "drafters": 241,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 274,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 274,
         "underdog": 240,
         "yahoo": null
       }
@@ -6950,15 +6950,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 287,
+        "consensus": 284,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": 205,
-        "sleeper-redraft": null,
+        "nfl": 284,
+        "rtsports": 204,
+        "sleeper-redraft": 284,
         "underdog": null,
         "yahoo": null
       }
@@ -6971,9 +6971,9 @@
       "tier": 17,
       "posRank": 123,
       "adp": {
-        "bestball10s": 245,
+        "bestball10s": null,
         "cbs": null,
-        "consensus": 336,
+        "consensus": null,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
@@ -6996,15 +6996,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 298,
+        "consensus": 295,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 295,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 295,
         "underdog": 221,
         "yahoo": null
       }
@@ -7025,9 +7025,9 @@
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 258,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 258,
         "underdog": 199,
         "yahoo": null
       }
@@ -7157,15 +7157,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 301,
+        "consensus": 297,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 219,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 297,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 297,
         "underdog": null,
         "yahoo": null
       }
@@ -7201,17 +7201,17 @@
       "tier": 17,
       "posRank": 34,
       "adp": {
-        "bestball10s": 222,
+        "bestball10s": 229,
         "cbs": null,
-        "consensus": 270,
+        "consensus": 273,
         "draftkings-bestball": null,
         "drafters": 230,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 273,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 273,
         "underdog": 233,
         "yahoo": null
       }
@@ -7224,17 +7224,17 @@
       "tier": 17,
       "posRank": 129,
       "adp": {
-        "bestball10s": 201,
+        "bestball10s": 220,
         "cbs": null,
-        "consensus": 281,
+        "consensus": 287,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 287,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 287,
         "underdog": null,
         "yahoo": 246
       }
@@ -7247,17 +7247,17 @@
       "tier": 17,
       "posRank": 38,
       "adp": {
-        "bestball10s": 223,
+        "bestball10s": 243,
         "cbs": null,
-        "consensus": 284,
+        "consensus": 301,
         "draftkings-bestball": null,
         "drafters": 224,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 301,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 301,
         "underdog": null,
         "yahoo": null
       }
@@ -7270,7 +7270,7 @@
       "tier": 17,
       "posRank": 88,
       "adp": {
-        "bestball10s": 158,
+        "bestball10s": 177,
         "cbs": 178,
         "consensus": 213,
         "draftkings-bestball": null,
@@ -7278,9 +7278,9 @@
         "espn": 208,
         "mfl": null,
         "nffc": 232,
-        "nfl": null,
-        "rtsports": 243,
-        "sleeper-redraft": null,
+        "nfl": 213,
+        "rtsports": 221,
+        "sleeper-redraft": 213,
         "underdog": 241,
         "yahoo": 155
       }
@@ -7295,15 +7295,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 344,
+        "consensus": 343,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 246,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 343,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 343,
         "underdog": null,
         "yahoo": null
       }
@@ -7387,15 +7387,15 @@
       "adp": {
         "bestball10s": 237,
         "cbs": null,
-        "consensus": 260,
+        "consensus": 261,
         "draftkings-bestball": null,
         "drafters": 233,
         "espn": 220,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 261,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 261,
         "underdog": 225,
         "yahoo": null
       }
@@ -7410,15 +7410,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 316,
+        "consensus": 315,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 243,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 315,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 315,
         "underdog": null,
         "yahoo": 239
       }
@@ -7431,17 +7431,17 @@
       "tier": 17,
       "posRank": 89,
       "adp": {
-        "bestball10s": 209,
+        "bestball10s": 207,
         "cbs": null,
-        "consensus": 198,
+        "consensus": 197,
         "draftkings-bestball": null,
         "drafters": 189,
         "espn": null,
         "mfl": null,
         "nffc": 195,
-        "nfl": null,
-        "rtsports": 191,
-        "sleeper-redraft": null,
+        "nfl": 197,
+        "rtsports": 189,
+        "sleeper-redraft": 197,
         "underdog": 183,
         "yahoo": 235
       }
@@ -7477,17 +7477,17 @@
       "tier": 17,
       "posRank": 134,
       "adp": {
-        "bestball10s": 210,
+        "bestball10s": 215,
         "cbs": null,
-        "consensus": 232,
+        "consensus": 234,
         "draftkings-bestball": null,
         "drafters": 242,
         "espn": 244,
         "mfl": null,
         "nffc": 223,
-        "nfl": null,
-        "rtsports": 187,
-        "sleeper-redraft": null,
+        "nfl": 234,
+        "rtsports": 182,
+        "sleeper-redraft": 234,
         "underdog": 227,
         "yahoo": null
       }
@@ -7548,15 +7548,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 320,
+        "consensus": 319,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 319,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 319,
         "underdog": null,
         "yahoo": 237
       }
@@ -7663,15 +7663,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 290,
+        "consensus": 286,
         "draftkings-bestball": null,
         "drafters": 236,
         "espn": null,
         "mfl": null,
         "nffc": 225,
-        "nfl": null,
+        "nfl": 286,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 286,
         "underdog": null,
         "yahoo": null
       }
@@ -7686,15 +7686,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 312,
+        "consensus": 310,
         "draftkings-bestball": null,
         "drafters": 239,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 310,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 310,
         "underdog": 236,
         "yahoo": null
       }
@@ -7707,17 +7707,17 @@
       "tier": 17,
       "posRank": 42,
       "adp": {
-        "bestball10s": 230,
+        "bestball10s": 239,
         "cbs": null,
-        "consensus": 261,
+        "consensus": 264,
         "draftkings-bestball": null,
         "drafters": 226,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 264,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 264,
         "underdog": 211,
         "yahoo": null
       }
@@ -7753,7 +7753,7 @@
       "tier": 17,
       "posRank": 95,
       "adp": {
-        "bestball10s": 202,
+        "bestball10s": 199,
         "cbs": 187,
         "consensus": 203,
         "draftkings-bestball": null,
@@ -7761,9 +7761,9 @@
         "espn": null,
         "mfl": null,
         "nffc": 181,
-        "nfl": null,
-        "rtsports": 204,
-        "sleeper-redraft": null,
+        "nfl": 203,
+        "rtsports": 208,
+        "sleeper-redraft": 203,
         "underdog": 200,
         "yahoo": 226
       }
@@ -7870,15 +7870,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 275,
+        "consensus": 276,
         "draftkings-bestball": null,
         "drafters": 231,
         "espn": 227,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 276,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 276,
         "underdog": 231,
         "yahoo": null
       }
@@ -7985,15 +7985,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 266,
+        "consensus": 267,
         "draftkings-bestball": null,
         "drafters": 217,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 267,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 267,
         "underdog": 205,
         "yahoo": null
       }
@@ -8031,15 +8031,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 317,
+        "consensus": 316,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 316,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 316,
         "underdog": null,
         "yahoo": null
       }
@@ -8100,15 +8100,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 342,
+        "consensus": 341,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 341,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 341,
         "underdog": null,
         "yahoo": null
       }
@@ -8121,17 +8121,17 @@
       "tier": 17,
       "posRank": 46,
       "adp": {
-        "bestball10s": 217,
+        "bestball10s": 227,
         "cbs": null,
-        "consensus": 274,
+        "consensus": 280,
         "draftkings-bestball": null,
         "drafters": 235,
         "espn": null,
         "mfl": null,
         "nffc": 234,
-        "nfl": null,
+        "nfl": 280,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 280,
         "underdog": 246,
         "yahoo": null
       }
@@ -8238,15 +8238,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 326,
+        "consensus": 325,
         "draftkings-bestball": null,
         "drafters": 250,
         "espn": 239,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 325,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 325,
         "underdog": null,
         "yahoo": null
       }
@@ -8376,15 +8376,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 309,
+        "consensus": 306,
         "draftkings-bestball": null,
         "drafters": 228,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 306,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 306,
         "underdog": null,
         "yahoo": null
       }
@@ -8606,15 +8606,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 340,
+        "consensus": 339,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 245,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 339,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 339,
         "underdog": null,
         "yahoo": null
       }
@@ -9026,9 +9026,9 @@
         "espn": 241,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 335,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 335,
         "underdog": null,
         "yahoo": null
       }
@@ -9411,15 +9411,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 345,
+        "consensus": 344,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 344,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 344,
         "underdog": null,
         "yahoo": null
       }
@@ -9526,15 +9526,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 318,
+        "consensus": 317,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 317,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 317,
         "underdog": null,
         "yahoo": null
       }
@@ -9549,15 +9549,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 292,
+        "consensus": 298,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": 223,
-        "sleeper-redraft": null,
+        "nfl": 298,
+        "rtsports": 231,
+        "sleeper-redraft": 298,
         "underdog": null,
         "yahoo": null
       }
@@ -9823,7 +9823,7 @@
       "tier": 17,
       "posRank": 13,
       "adp": {
-        "bestball10s": 188,
+        "bestball10s": 184,
         "cbs": null,
         "consensus": 180,
         "draftkings-bestball": null,
@@ -9831,9 +9831,9 @@
         "espn": 128,
         "mfl": null,
         "nffc": 194,
-        "nfl": null,
+        "nfl": 180,
         "rtsports": 158,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 180,
         "underdog": null,
         "yahoo": 126
       }
@@ -9892,17 +9892,17 @@
       "tier": 17,
       "posRank": 14,
       "adp": {
-        "bestball10s": 227,
+        "bestball10s": 224,
         "cbs": null,
-        "consensus": 242,
+        "consensus": 241,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 154,
         "mfl": null,
         "nffc": 233,
-        "nfl": null,
+        "nfl": 241,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 241,
         "underdog": null,
         "yahoo": 211
       }
@@ -9915,17 +9915,17 @@
       "tier": 17,
       "posRank": 15,
       "adp": {
-        "bestball10s": 200,
+        "bestball10s": 202,
         "cbs": null,
-        "consensus": 217,
+        "consensus": 216,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 134,
         "mfl": null,
         "nffc": 207,
-        "nfl": null,
+        "nfl": 216,
         "rtsports": 236,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 216,
         "underdog": null,
         "yahoo": 202
       }
@@ -9961,17 +9961,17 @@
       "tier": 17,
       "posRank": 16,
       "adp": {
-        "bestball10s": 211,
+        "bestball10s": 213,
         "cbs": null,
-        "consensus": 248,
+        "consensus": 244,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 191,
         "mfl": null,
         "nffc": 238,
-        "nfl": null,
-        "rtsports": 241,
-        "sleeper-redraft": null,
+        "nfl": 244,
+        "rtsports": 227,
+        "sleeper-redraft": 244,
         "underdog": null,
         "yahoo": 212
       }
@@ -9984,7 +9984,7 @@
       "tier": 17,
       "posRank": 17,
       "adp": {
-        "bestball10s": 216,
+        "bestball10s": 217,
         "cbs": null,
         "consensus": 255,
         "draftkings-bestball": null,
@@ -9992,9 +9992,9 @@
         "espn": null,
         "mfl": null,
         "nffc": 185,
-        "nfl": null,
+        "nfl": 255,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 255,
         "underdog": null,
         "yahoo": 214
       }
@@ -10007,17 +10007,17 @@
       "tier": 17,
       "posRank": 18,
       "adp": {
-        "bestball10s": 184,
+        "bestball10s": 198,
         "cbs": null,
-        "consensus": 234,
+        "consensus": 238,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 158,
         "mfl": null,
         "nffc": 243,
-        "nfl": null,
+        "nfl": 238,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 238,
         "underdog": null,
         "yahoo": 210
       }
@@ -10032,15 +10032,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 296,
+        "consensus": 293,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 210,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 293,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 293,
         "underdog": null,
         "yahoo": null
       }
@@ -10101,15 +10101,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": 196,
-        "consensus": 265,
+        "consensus": 266,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 175,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 266,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 266,
         "underdog": null,
         "yahoo": 220
       }
@@ -10124,15 +10124,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 244,
+        "consensus": 245,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 150,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": 250,
-        "sleeper-redraft": null,
+        "nfl": 245,
+        "rtsports": null,
+        "sleeper-redraft": 245,
         "underdog": null,
         "yahoo": 189
       }
@@ -10147,15 +10147,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 220,
+        "consensus": 219,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 133,
         "mfl": null,
         "nffc": 217,
-        "nfl": null,
-        "rtsports": 203,
-        "sleeper-redraft": null,
+        "nfl": 219,
+        "rtsports": 192,
+        "sleeper-redraft": 219,
         "underdog": null,
         "yahoo": 206
       }
@@ -10199,9 +10199,9 @@
         "espn": 198,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 272,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 272,
         "underdog": null,
         "yahoo": 221
       }
@@ -10239,15 +10239,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 277,
+        "consensus": 271,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": 230,
-        "nfl": null,
-        "rtsports": 239,
-        "sleeper-redraft": null,
+        "nfl": 271,
+        "rtsports": 223,
+        "sleeper-redraft": 271,
         "underdog": null,
         "yahoo": 222
       }
@@ -10285,15 +10285,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 240,
+        "consensus": 243,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 194,
         "mfl": null,
         "nffc": 231,
-        "nfl": null,
-        "rtsports": 224,
-        "sleeper-redraft": null,
+        "nfl": 243,
+        "rtsports": 233,
+        "sleeper-redraft": 243,
         "underdog": null,
         "yahoo": 161
       }
@@ -10406,9 +10406,9 @@
         "espn": 226,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 254,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 254,
         "underdog": null,
         "yahoo": 142
       }
@@ -10446,15 +10446,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 324,
+        "consensus": 323,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 237,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 323,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 323,
         "underdog": null,
         "yahoo": null
       }
@@ -10513,17 +10513,17 @@
       "tier": 17,
       "posRank": 21,
       "adp": {
-        "bestball10s": 235,
+        "bestball10s": 238,
         "cbs": null,
-        "consensus": 329,
+        "consensus": 328,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 328,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 328,
         "underdog": null,
         "yahoo": null
       }
@@ -10536,17 +10536,17 @@
       "tier": 17,
       "posRank": 22,
       "adp": {
-        "bestball10s": 220,
+        "bestball10s": 219,
         "cbs": null,
-        "consensus": 243,
+        "consensus": 242,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 205,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": 234,
-        "sleeper-redraft": null,
+        "nfl": 242,
+        "rtsports": 230,
+        "sleeper-redraft": 242,
         "underdog": null,
         "yahoo": 166
       }
@@ -10559,17 +10559,17 @@
       "tier": 17,
       "posRank": 23,
       "adp": {
-        "bestball10s": 224,
+        "bestball10s": 221,
         "cbs": null,
-        "consensus": 250,
+        "consensus": 248,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 178,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": 245,
-        "sleeper-redraft": null,
+        "nfl": 248,
+        "rtsports": 241,
+        "sleeper-redraft": 248,
         "underdog": null,
         "yahoo": 204
       }
@@ -10613,9 +10613,9 @@
         "espn": 203,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 249,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 249,
         "underdog": null,
         "yahoo": 143
       }
@@ -10791,15 +10791,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 283,
+        "consensus": 281,
         "draftkings-bestball": null,
         "drafters": 220,
         "espn": 224,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 281,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 281,
         "underdog": null,
         "yahoo": null
       }
@@ -10812,17 +10812,17 @@
       "tier": 17,
       "posRank": 119,
       "adp": {
-        "bestball10s": 212,
+        "bestball10s": 232,
         "cbs": null,
-        "consensus": 289,
+        "consensus": 313,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 313,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 313,
         "underdog": null,
         "yahoo": null
       }
@@ -10929,15 +10929,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 276,
+        "consensus": 277,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 277,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 277,
         "underdog": null,
         "yahoo": 184
       }
@@ -10973,17 +10973,17 @@
       "tier": 17,
       "posRank": 24,
       "adp": {
-        "bestball10s": 243,
+        "bestball10s": null,
         "cbs": null,
-        "consensus": 288,
+        "consensus": 291,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 212,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 291,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 291,
         "underdog": null,
         "yahoo": null
       }
@@ -11021,15 +11021,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 305,
+        "consensus": 303,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 215,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 303,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 303,
         "underdog": null,
         "yahoo": null
       }
@@ -11044,15 +11044,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 310,
+        "consensus": 307,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 228,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 307,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 307,
         "underdog": null,
         "yahoo": null
       }
@@ -11065,17 +11065,17 @@
       "tier": 17,
       "posRank": 26,
       "adp": {
-        "bestball10s": null,
+        "bestball10s": 246,
         "cbs": null,
-        "consensus": 238,
+        "consensus": 235,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 182,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
-        "rtsports": 227,
-        "sleeper-redraft": null,
+        "nfl": 235,
+        "rtsports": 222,
+        "sleeper-redraft": 235,
         "underdog": null,
         "yahoo": 146
       }
@@ -11274,15 +11274,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 286,
+        "consensus": 283,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 206,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 283,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 283,
         "underdog": null,
         "yahoo": null
       }
@@ -11389,15 +11389,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 313,
+        "consensus": 311,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 225,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 311,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 311,
         "underdog": null,
         "yahoo": null
       }
@@ -11734,15 +11734,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 337,
+        "consensus": 336,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 336,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 336,
         "underdog": null,
         "yahoo": null
       }
@@ -11757,15 +11757,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 348,
+        "consensus": 347,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 249,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 347,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 347,
         "underdog": null,
         "yahoo": null
       }
@@ -12010,15 +12010,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 349,
+        "consensus": 348,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 348,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 348,
         "underdog": null,
         "yahoo": null
       }
@@ -12516,15 +12516,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 330,
+        "consensus": 329,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 232,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 329,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 329,
         "underdog": null,
         "yahoo": null
       }
@@ -12539,15 +12539,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 307,
+        "consensus": 305,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 216,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 305,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 305,
         "underdog": null,
         "yahoo": null
       }
@@ -12562,15 +12562,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 295,
+        "consensus": 292,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 214,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 292,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 292,
         "underdog": null,
         "yahoo": null
       }
@@ -12930,15 +12930,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 293,
+        "consensus": 289,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 211,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 289,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 289,
         "underdog": null,
         "yahoo": null
       }
@@ -12999,15 +12999,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 322,
+        "consensus": 321,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 231,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 321,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 321,
         "underdog": null,
         "yahoo": null
       }
@@ -13022,15 +13022,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 331,
+        "consensus": 330,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 233,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 330,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 330,
         "underdog": null,
         "yahoo": null
       }
@@ -13045,15 +13045,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 343,
+        "consensus": 342,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": null,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 342,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 342,
         "underdog": null,
         "yahoo": null
       }
@@ -13114,15 +13114,15 @@
       "adp": {
         "bestball10s": null,
         "cbs": null,
-        "consensus": 314,
+        "consensus": 312,
         "draftkings-bestball": null,
         "drafters": null,
         "espn": 230,
         "mfl": null,
         "nffc": null,
-        "nfl": null,
+        "nfl": 312,
         "rtsports": null,
-        "sleeper-redraft": null,
+        "sleeper-redraft": 312,
         "underdog": null,
         "yahoo": null
       }
