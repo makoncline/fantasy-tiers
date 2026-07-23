@@ -1,11 +1,10 @@
 {
   "expert_samples": {
     "fantasypros:STD:draft": {
-      "included": 83,
-      "available": 105,
-      "coverage_pct": 79,
+      "included": 84,
+      "available": 106,
+      "coverage_pct": 79.2,
       "included_ids": [
-        692,
         4307,
         4317,
         5446,
@@ -16,12 +15,13 @@
         96,
         1139,
         22,
+        692,
         2598,
         1080,
         4338,
-        6274,
         3688,
         1402,
+        6274,
         747,
         7666,
         9,
@@ -39,6 +39,7 @@
         279,
         835,
         4616,
+        4224,
         1091,
         7254,
         1152,
@@ -114,7 +115,6 @@
         7542
       ],
       "filter_ids": [
-        692,
         4307,
         4317,
         5446,
@@ -125,12 +125,13 @@
         96,
         1139,
         22,
+        692,
         2598,
         1080,
         4338,
-        6274,
         3688,
         1402,
+        6274,
         747,
         7666,
         9,
@@ -148,6 +149,7 @@
         279,
         835,
         4616,
+        4224,
         1091,
         7254,
         1152,
@@ -198,15 +200,14 @@
         6293,
         7553
       ],
-      "last_updated": "2026-07-22T21:31:26.000Z",
+      "last_updated": "2026-07-23T12:16:48.000Z",
       "sample_size": "normal"
     },
     "fantasypros:HALF:draft": {
-      "included": 86,
-      "available": 107,
-      "coverage_pct": 80.4,
+      "included": 87,
+      "available": 108,
+      "coverage_pct": 80.6,
       "included_ids": [
-        692,
         4307,
         4317,
         5446,
@@ -217,6 +218,7 @@
         96,
         1139,
         22,
+        692,
         2598,
         317,
         747,
@@ -226,9 +228,9 @@
         1080,
         4338,
         960,
-        6274,
         3688,
         1402,
+        6274,
         2373,
         7,
         285,
@@ -243,6 +245,7 @@
         835,
         1576,
         4616,
+        4224,
         1091,
         7254,
         1152,
@@ -317,7 +320,6 @@
         7542
       ],
       "filter_ids": [
-        692,
         4307,
         4317,
         5446,
@@ -328,6 +330,7 @@
         96,
         1139,
         22,
+        692,
         2598,
         317,
         747,
@@ -337,9 +340,9 @@
         1080,
         4338,
         960,
-        6274,
         3688,
         1402,
+        6274,
         2373,
         7,
         285,
@@ -354,6 +357,7 @@
         835,
         1576,
         4616,
+        4224,
         1091,
         7254,
         1152,
@@ -404,15 +408,14 @@
         6293,
         7553
       ],
-      "last_updated": "2026-07-22T21:31:22.000Z",
+      "last_updated": "2026-07-23T12:16:47.000Z",
       "sample_size": "normal"
     },
     "fantasypros:PPR:draft": {
-      "included": 83,
-      "available": 105,
-      "coverage_pct": 79,
+      "included": 84,
+      "available": 106,
+      "coverage_pct": 79.2,
       "included_ids": [
-        692,
         4307,
         4317,
         5446,
@@ -423,6 +426,7 @@
         96,
         1139,
         22,
+        692,
         2598,
         317,
         747,
@@ -431,9 +435,9 @@
         7604,
         1080,
         4338,
-        6274,
         3688,
         1402,
+        6274,
         2373,
         7,
         285,
@@ -447,6 +451,7 @@
         279,
         835,
         4616,
+        4224,
         1091,
         7254,
         1152,
@@ -521,7 +526,6 @@
         7542
       ],
       "filter_ids": [
-        692,
         4307,
         4317,
         5446,
@@ -532,6 +536,7 @@
         96,
         1139,
         22,
+        692,
         2598,
         317,
         747,
@@ -540,9 +545,9 @@
         7604,
         1080,
         4338,
-        6274,
         3688,
         1402,
+        6274,
         2373,
         7,
         285,
@@ -556,6 +561,7 @@
         279,
         835,
         4616,
+        4224,
         1091,
         7254,
         1152,
@@ -605,22 +611,22 @@
         6293,
         7553
       ],
-      "last_updated": "2026-07-22T21:31:24.000Z",
+      "last_updated": "2026-07-23T12:16:48.000Z",
       "sample_size": "normal"
     }
   },
   "fp": {
     "STD": {
       "QB": {
-        "fetched_at": "2026-07-22T22:02:26.000Z",
-        "last_updated": "2026-07-22T21:31:26.000Z",
-        "total_experts": 83,
+        "fetched_at": "2026-07-23T13:20:37.000Z",
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:26.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "scoring": "STD",
@@ -633,15 +639,15 @@
         "projections_fetched": false
       },
       "RB": {
-        "fetched_at": "2026-07-22T22:02:26.000Z",
-        "last_updated": "2026-07-22T21:31:26.000Z",
-        "total_experts": 83,
+        "fetched_at": "2026-07-23T13:20:37.000Z",
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:26.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "scoring": "STD",
@@ -654,15 +660,15 @@
         "projections_fetched": false
       },
       "WR": {
-        "fetched_at": "2026-07-22T22:02:26.000Z",
-        "last_updated": "2026-07-22T21:31:26.000Z",
-        "total_experts": 83,
+        "fetched_at": "2026-07-23T13:20:37.000Z",
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:26.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "scoring": "STD",
@@ -675,15 +681,15 @@
         "projections_fetched": false
       },
       "TE": {
-        "fetched_at": "2026-07-22T22:02:26.000Z",
-        "last_updated": "2026-07-22T21:31:26.000Z",
-        "total_experts": 83,
+        "fetched_at": "2026-07-23T13:20:37.000Z",
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:26.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "scoring": "STD",
@@ -696,15 +702,15 @@
         "projections_fetched": false
       },
       "FLEX": {
-        "fetched_at": "2026-07-22T22:02:26.000Z",
-        "last_updated": "2026-07-22T21:31:26.000Z",
-        "total_experts": 83,
+        "fetched_at": "2026-07-23T13:20:37.000Z",
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:26.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "scoring": "STD",
@@ -717,15 +723,15 @@
         "projections_fetched": false
       },
       "K": {
-        "fetched_at": "2026-07-22T22:02:26.000Z",
-        "last_updated": "2026-07-22T21:31:26.000Z",
-        "total_experts": 83,
+        "fetched_at": "2026-07-23T13:20:37.000Z",
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:26.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "scoring": "STD",
@@ -738,15 +744,15 @@
         "projections_fetched": false
       },
       "DST": {
-        "fetched_at": "2026-07-22T22:02:26.000Z",
-        "last_updated": "2026-07-22T21:31:26.000Z",
-        "total_experts": 83,
+        "fetched_at": "2026-07-23T13:20:37.000Z",
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:26.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "scoring": "STD",
@@ -761,15 +767,15 @@
     },
     "HALF": {
       "RB": {
-        "fetched_at": "2026-07-22T22:02:27.000Z",
-        "last_updated": "2026-07-22T21:31:22.000Z",
-        "total_experts": 86,
+        "fetched_at": "2026-07-23T13:20:38.000Z",
+        "last_updated": "2026-07-23T12:16:47.000Z",
+        "total_experts": 87,
         "experts": {
-          "included": 86,
-          "available": 107,
-          "coverage_pct": 80.4,
+          "included": 87,
+          "available": 108,
+          "coverage_pct": 80.6,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:22.000Z",
+          "last_updated": "2026-07-23T12:16:47.000Z",
           "sample_key": "fantasypros:HALF:draft"
         },
         "scoring": "HALF",
@@ -782,15 +788,15 @@
         "projections_fetched": false
       },
       "WR": {
-        "fetched_at": "2026-07-22T22:02:27.000Z",
-        "last_updated": "2026-07-22T21:31:22.000Z",
-        "total_experts": 86,
+        "fetched_at": "2026-07-23T13:20:38.000Z",
+        "last_updated": "2026-07-23T12:16:47.000Z",
+        "total_experts": 87,
         "experts": {
-          "included": 86,
-          "available": 107,
-          "coverage_pct": 80.4,
+          "included": 87,
+          "available": 108,
+          "coverage_pct": 80.6,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:22.000Z",
+          "last_updated": "2026-07-23T12:16:47.000Z",
           "sample_key": "fantasypros:HALF:draft"
         },
         "scoring": "HALF",
@@ -803,15 +809,15 @@
         "projections_fetched": false
       },
       "TE": {
-        "fetched_at": "2026-07-22T22:02:27.000Z",
-        "last_updated": "2026-07-22T21:31:22.000Z",
-        "total_experts": 86,
+        "fetched_at": "2026-07-23T13:20:38.000Z",
+        "last_updated": "2026-07-23T12:16:47.000Z",
+        "total_experts": 87,
         "experts": {
-          "included": 86,
-          "available": 107,
-          "coverage_pct": 80.4,
+          "included": 87,
+          "available": 108,
+          "coverage_pct": 80.6,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:22.000Z",
+          "last_updated": "2026-07-23T12:16:47.000Z",
           "sample_key": "fantasypros:HALF:draft"
         },
         "scoring": "HALF",
@@ -824,15 +830,15 @@
         "projections_fetched": false
       },
       "FLEX": {
-        "fetched_at": "2026-07-22T22:02:27.000Z",
-        "last_updated": "2026-07-22T21:31:22.000Z",
-        "total_experts": 86,
+        "fetched_at": "2026-07-23T13:20:38.000Z",
+        "last_updated": "2026-07-23T12:16:47.000Z",
+        "total_experts": 87,
         "experts": {
-          "included": 86,
-          "available": 107,
-          "coverage_pct": 80.4,
+          "included": 87,
+          "available": 108,
+          "coverage_pct": 80.6,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:22.000Z",
+          "last_updated": "2026-07-23T12:16:47.000Z",
           "sample_key": "fantasypros:HALF:draft"
         },
         "scoring": "HALF",
@@ -847,15 +853,15 @@
     },
     "PPR": {
       "RB": {
-        "fetched_at": "2026-07-22T22:02:27.000Z",
-        "last_updated": "2026-07-22T21:31:24.000Z",
-        "total_experts": 83,
+        "fetched_at": "2026-07-23T13:20:38.000Z",
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:24.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:PPR:draft"
         },
         "scoring": "PPR",
@@ -868,15 +874,15 @@
         "projections_fetched": false
       },
       "WR": {
-        "fetched_at": "2026-07-22T22:02:27.000Z",
-        "last_updated": "2026-07-22T21:31:24.000Z",
-        "total_experts": 83,
+        "fetched_at": "2026-07-23T13:20:38.000Z",
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:24.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:PPR:draft"
         },
         "scoring": "PPR",
@@ -889,15 +895,15 @@
         "projections_fetched": false
       },
       "TE": {
-        "fetched_at": "2026-07-22T22:02:27.000Z",
-        "last_updated": "2026-07-22T21:31:24.000Z",
-        "total_experts": 83,
+        "fetched_at": "2026-07-23T13:20:38.000Z",
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:24.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:PPR:draft"
         },
         "scoring": "PPR",
@@ -910,15 +916,15 @@
         "projections_fetched": false
       },
       "FLEX": {
-        "fetched_at": "2026-07-22T22:02:27.000Z",
-        "last_updated": "2026-07-22T21:31:24.000Z",
-        "total_experts": 83,
+        "fetched_at": "2026-07-23T13:20:38.000Z",
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:24.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:PPR:draft"
         },
         "scoring": "PPR",
@@ -935,15 +941,15 @@
   "tiers": {
     "STD": {
       "QB": {
-        "last_updated": "2026-07-22T21:31:26.000Z",
-        "fetched_at": "2026-07-22T22:02:29.860Z",
-        "total_experts": 83,
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "fetched_at": "2026-07-23T13:20:40.695Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:26.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -952,15 +958,15 @@
         "year": 2026
       },
       "RB": {
-        "last_updated": "2026-07-22T21:31:26.000Z",
-        "fetched_at": "2026-07-22T22:02:29.860Z",
-        "total_experts": 83,
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "fetched_at": "2026-07-23T13:20:40.695Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:26.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -969,15 +975,15 @@
         "year": 2026
       },
       "WR": {
-        "last_updated": "2026-07-22T21:31:26.000Z",
-        "fetched_at": "2026-07-22T22:02:29.860Z",
-        "total_experts": 83,
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "fetched_at": "2026-07-23T13:20:40.695Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:26.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -986,15 +992,15 @@
         "year": 2026
       },
       "TE": {
-        "last_updated": "2026-07-22T21:31:26.000Z",
-        "fetched_at": "2026-07-22T22:02:29.860Z",
-        "total_experts": 83,
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "fetched_at": "2026-07-23T13:20:40.695Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:26.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1003,15 +1009,15 @@
         "year": 2026
       },
       "FLEX": {
-        "last_updated": "2026-07-22T21:31:26.000Z",
-        "fetched_at": "2026-07-22T22:02:29.860Z",
-        "total_experts": 83,
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "fetched_at": "2026-07-23T13:20:40.695Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:26.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1020,15 +1026,15 @@
         "year": 2026
       },
       "K": {
-        "last_updated": "2026-07-22T21:31:26.000Z",
-        "fetched_at": "2026-07-22T22:02:29.860Z",
-        "total_experts": 83,
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "fetched_at": "2026-07-23T13:20:40.695Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:26.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1037,15 +1043,15 @@
         "year": 2026
       },
       "DST": {
-        "last_updated": "2026-07-22T21:31:26.000Z",
-        "fetched_at": "2026-07-22T22:02:29.860Z",
-        "total_experts": 83,
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "fetched_at": "2026-07-23T13:20:40.695Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:26.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:STD:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1056,15 +1062,15 @@
     },
     "HALF": {
       "RB": {
-        "last_updated": "2026-07-22T21:31:22.000Z",
-        "fetched_at": "2026-07-22T22:02:29.860Z",
-        "total_experts": 86,
+        "last_updated": "2026-07-23T12:16:47.000Z",
+        "fetched_at": "2026-07-23T13:20:40.695Z",
+        "total_experts": 87,
         "experts": {
-          "included": 86,
-          "available": 107,
-          "coverage_pct": 80.4,
+          "included": 87,
+          "available": 108,
+          "coverage_pct": 80.6,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:22.000Z",
+          "last_updated": "2026-07-23T12:16:47.000Z",
           "sample_key": "fantasypros:HALF:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1073,15 +1079,15 @@
         "year": 2026
       },
       "WR": {
-        "last_updated": "2026-07-22T21:31:22.000Z",
-        "fetched_at": "2026-07-22T22:02:29.860Z",
-        "total_experts": 86,
+        "last_updated": "2026-07-23T12:16:47.000Z",
+        "fetched_at": "2026-07-23T13:20:40.695Z",
+        "total_experts": 87,
         "experts": {
-          "included": 86,
-          "available": 107,
-          "coverage_pct": 80.4,
+          "included": 87,
+          "available": 108,
+          "coverage_pct": 80.6,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:22.000Z",
+          "last_updated": "2026-07-23T12:16:47.000Z",
           "sample_key": "fantasypros:HALF:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1090,15 +1096,15 @@
         "year": 2026
       },
       "TE": {
-        "last_updated": "2026-07-22T21:31:22.000Z",
-        "fetched_at": "2026-07-22T22:02:29.860Z",
-        "total_experts": 86,
+        "last_updated": "2026-07-23T12:16:47.000Z",
+        "fetched_at": "2026-07-23T13:20:40.695Z",
+        "total_experts": 87,
         "experts": {
-          "included": 86,
-          "available": 107,
-          "coverage_pct": 80.4,
+          "included": 87,
+          "available": 108,
+          "coverage_pct": 80.6,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:22.000Z",
+          "last_updated": "2026-07-23T12:16:47.000Z",
           "sample_key": "fantasypros:HALF:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1107,15 +1113,15 @@
         "year": 2026
       },
       "FLEX": {
-        "last_updated": "2026-07-22T21:31:22.000Z",
-        "fetched_at": "2026-07-22T22:02:29.860Z",
-        "total_experts": 86,
+        "last_updated": "2026-07-23T12:16:47.000Z",
+        "fetched_at": "2026-07-23T13:20:40.695Z",
+        "total_experts": 87,
         "experts": {
-          "included": 86,
-          "available": 107,
-          "coverage_pct": 80.4,
+          "included": 87,
+          "available": 108,
+          "coverage_pct": 80.6,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:22.000Z",
+          "last_updated": "2026-07-23T12:16:47.000Z",
           "sample_key": "fantasypros:HALF:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1126,15 +1132,15 @@
     },
     "PPR": {
       "RB": {
-        "last_updated": "2026-07-22T21:31:24.000Z",
-        "fetched_at": "2026-07-22T22:02:29.860Z",
-        "total_experts": 83,
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "fetched_at": "2026-07-23T13:20:40.695Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:24.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:PPR:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1143,15 +1149,15 @@
         "year": 2026
       },
       "WR": {
-        "last_updated": "2026-07-22T21:31:24.000Z",
-        "fetched_at": "2026-07-22T22:02:29.860Z",
-        "total_experts": 83,
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "fetched_at": "2026-07-23T13:20:40.695Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:24.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:PPR:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1160,15 +1166,15 @@
         "year": 2026
       },
       "TE": {
-        "last_updated": "2026-07-22T21:31:24.000Z",
-        "fetched_at": "2026-07-22T22:02:29.860Z",
-        "total_experts": 83,
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "fetched_at": "2026-07-23T13:20:40.695Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:24.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:PPR:draft"
         },
         "source": "FantasyPros draft ECR tier generation",
@@ -1177,15 +1183,15 @@
         "year": 2026
       },
       "FLEX": {
-        "last_updated": "2026-07-22T21:31:24.000Z",
-        "fetched_at": "2026-07-22T22:02:29.860Z",
-        "total_experts": 83,
+        "last_updated": "2026-07-23T12:16:48.000Z",
+        "fetched_at": "2026-07-23T13:20:40.695Z",
+        "total_experts": 84,
         "experts": {
-          "included": 83,
-          "available": 105,
-          "coverage_pct": 79,
+          "included": 84,
+          "available": 106,
+          "coverage_pct": 79.2,
           "sample_size": "normal",
-          "last_updated": "2026-07-22T21:31:24.000Z",
+          "last_updated": "2026-07-23T12:16:48.000Z",
           "sample_key": "fantasypros:PPR:draft"
         },
         "source": "FantasyPros draft ECR tier generation",

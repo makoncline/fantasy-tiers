@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "fetchedAt": "2026-07-22T22:02:35.962Z",
+  "fetchedAt": "2026-07-23T13:20:46.545Z",
   "season": "2026",
   "scoring": "ppr",
   "teams": 12,
@@ -8,81 +8,81 @@
   "sources": [
     {
       "source": "bestball10s",
-      "rowCount": 568,
+      "rowCount": 567,
       "adpRowCount": 250,
-      "adpCoveragePct": 44
+      "adpCoveragePct": 44.1
     },
     {
       "source": "cbs",
-      "rowCount": 568,
+      "rowCount": 567,
       "adpRowCount": 197,
       "adpCoveragePct": 34.7
     },
     {
       "source": "consensus",
-      "rowCount": 568,
+      "rowCount": 567,
       "adpRowCount": 340,
-      "adpCoveragePct": 59.9
+      "adpCoveragePct": 60
     },
     {
       "source": "draftkings-bestball",
-      "rowCount": 568,
+      "rowCount": 567,
       "adpRowCount": 0,
       "adpCoveragePct": 0
     },
     {
       "source": "drafters",
-      "rowCount": 568,
+      "rowCount": 567,
       "adpRowCount": 250,
-      "adpCoveragePct": 44
+      "adpCoveragePct": 44.1
     },
     {
       "source": "espn",
-      "rowCount": 568,
+      "rowCount": 567,
       "adpRowCount": 242,
-      "adpCoveragePct": 42.6
+      "adpCoveragePct": 42.7
     },
     {
       "source": "mfl",
-      "rowCount": 568,
+      "rowCount": 567,
       "adpRowCount": 0,
       "adpCoveragePct": 0
     },
     {
       "source": "nffc",
-      "rowCount": 568,
+      "rowCount": 567,
       "adpRowCount": 249,
-      "adpCoveragePct": 43.8
+      "adpCoveragePct": 43.9
     },
     {
       "source": "nfl",
-      "rowCount": 568,
+      "rowCount": 567,
       "adpRowCount": 340,
-      "adpCoveragePct": 59.9
+      "adpCoveragePct": 60
     },
     {
       "source": "rtsports",
-      "rowCount": 568,
+      "rowCount": 567,
       "adpRowCount": 249,
-      "adpCoveragePct": 43.8
+      "adpCoveragePct": 43.9
     },
     {
       "source": "sleeper-redraft",
-      "rowCount": 568,
+      "rowCount": 567,
       "adpRowCount": 340,
-      "adpCoveragePct": 59.9
+      "adpCoveragePct": 60
     },
     {
       "source": "underdog",
-      "rowCount": 568,
+      "rowCount": 567,
       "adpRowCount": 249,
-      "adpCoveragePct": 43.8
+      "adpCoveragePct": 43.9
     },
     {
       "source": "yahoo",
-      "rowCount": 568,
+      "rowCount": 567,
       "adpRowCount": 250,
-      "adpCoveragePct": 44
+      "adpCoveragePct": 44.1
     }
   ],
   "rows": [
@@ -11679,8 +11679,8 @@
       }
     },
     {
-      "id": "ChanTy00",
-      "name": "Ty Chandler",
+      "id": "ChesJu00",
+      "name": "Julius Chestnut",
       "position": "RB",
       "rank": 505,
       "tier": 17,
@@ -11702,35 +11702,12 @@
       }
     },
     {
-      "id": "ChesJu00",
-      "name": "Julius Chestnut",
+      "id": "ChubNi00",
+      "name": "Nick Chubb",
       "position": "RB",
       "rank": 506,
       "tier": 17,
       "posRank": 134,
-      "adp": {
-        "bestball10s": null,
-        "cbs": null,
-        "consensus": null,
-        "draftkings-bestball": null,
-        "drafters": null,
-        "espn": null,
-        "mfl": null,
-        "nffc": null,
-        "nfl": null,
-        "rtsports": null,
-        "sleeper-redraft": null,
-        "underdog": null,
-        "yahoo": null
-      }
-    },
-    {
-      "id": "ChubNi00",
-      "name": "Nick Chubb",
-      "position": "RB",
-      "rank": 507,
-      "tier": 17,
-      "posRank": 135,
       "adp": {
         "bestball10s": null,
         "cbs": null,
@@ -11751,9 +11728,9 @@
       "id": "CollCh00",
       "name": "Chris Collier",
       "position": "RB",
-      "rank": 508,
+      "rank": 507,
       "tier": 17,
-      "posRank": 136,
+      "posRank": 135,
       "adp": {
         "bestball10s": null,
         "cbs": null,
@@ -11773,6 +11750,29 @@
     {
       "id": "DonaCJ00",
       "name": "CJ Donaldson",
+      "position": "RB",
+      "rank": 508,
+      "tier": 17,
+      "posRank": 136,
+      "adp": {
+        "bestball10s": null,
+        "cbs": null,
+        "consensus": null,
+        "draftkings-bestball": null,
+        "drafters": null,
+        "espn": null,
+        "mfl": null,
+        "nffc": null,
+        "nfl": null,
+        "rtsports": null,
+        "sleeper-redraft": null,
+        "underdog": null,
+        "yahoo": null
+      }
+    },
+    {
+      "id": "EdwaCl00",
+      "name": "Clyde Edwards-Helaire",
       "position": "RB",
       "rank": 509,
       "tier": 17,
@@ -11794,8 +11794,8 @@
       }
     },
     {
-      "id": "EdwaCl00",
-      "name": "Clyde Edwards-Helaire",
+      "id": "EdwaDo00",
+      "name": "Donovan Edwards",
       "position": "RB",
       "rank": 510,
       "tier": 17,
@@ -11817,8 +11817,8 @@
       }
     },
     {
-      "id": "EdwaDo00",
-      "name": "Donovan Edwards",
+      "id": "FaisRa00",
+      "name": "Rahsul Faison",
       "position": "RB",
       "rank": 511,
       "tier": 17,
@@ -11840,8 +11840,8 @@
       }
     },
     {
-      "id": "FaisRa00",
-      "name": "Rahsul Faison",
+      "id": "GillRe00",
+      "name": "Reggie Gilliam",
       "position": "RB",
       "rank": 512,
       "tier": 17,
@@ -11863,8 +11863,8 @@
       }
     },
     {
-      "id": "GillRe00",
-      "name": "Reggie Gilliam",
+      "id": "GrayEr00",
+      "name": "Eric Gray",
       "position": "RB",
       "rank": 513,
       "tier": 17,
@@ -11886,8 +11886,8 @@
       }
     },
     {
-      "id": "GrayEr00",
-      "name": "Eric Gray",
+      "id": "HamxC-00",
+      "name": "C.J. Ham",
       "position": "RB",
       "rank": 514,
       "tier": 17,
@@ -11909,8 +11909,8 @@
       }
     },
     {
-      "id": "HamxC-00",
-      "name": "C.J. Ham",
+      "id": "HardTJ00",
+      "name": "TJ Harden",
       "position": "RB",
       "rank": 515,
       "tier": 17,
@@ -11932,8 +11932,8 @@
       }
     },
     {
-      "id": "HardTJ00",
-      "name": "TJ Harden",
+      "id": "HaynJa01",
+      "name": "Jamal Haynes",
       "position": "RB",
       "rank": 516,
       "tier": 17,
@@ -11955,8 +11955,8 @@
       }
     },
     {
-      "id": "HaynJa01",
-      "name": "Jamal Haynes",
+      "id": "HeidEl00",
+      "name": "Eli Heidenreich",
       "position": "RB",
       "rank": 517,
       "tier": 17,
@@ -11978,35 +11978,12 @@
       }
     },
     {
-      "id": "HeidEl00",
-      "name": "Eli Heidenreich",
+      "id": "HembRo00",
+      "name": "Roman Hemby",
       "position": "RB",
       "rank": 518,
       "tier": 17,
       "posRank": 146,
-      "adp": {
-        "bestball10s": null,
-        "cbs": null,
-        "consensus": null,
-        "draftkings-bestball": null,
-        "drafters": null,
-        "espn": null,
-        "mfl": null,
-        "nffc": null,
-        "nfl": null,
-        "rtsports": null,
-        "sleeper-redraft": null,
-        "underdog": null,
-        "yahoo": null
-      }
-    },
-    {
-      "id": "HembRo00",
-      "name": "Roman Hemby",
-      "position": "RB",
-      "rank": 519,
-      "tier": 17,
-      "posRank": 147,
       "adp": {
         "bestball10s": null,
         "cbs": null,
@@ -12026,6 +12003,29 @@
     {
       "id": "HenrRo00",
       "name": "Robert Henry Jr.",
+      "position": "RB",
+      "rank": 519,
+      "tier": 17,
+      "posRank": 147,
+      "adp": {
+        "bestball10s": null,
+        "cbs": null,
+        "consensus": null,
+        "draftkings-bestball": null,
+        "drafters": null,
+        "espn": null,
+        "mfl": null,
+        "nffc": null,
+        "nfl": null,
+        "rtsports": null,
+        "sleeper-redraft": null,
+        "underdog": null,
+        "yahoo": null
+      }
+    },
+    {
+      "id": "HomeTr00",
+      "name": "Travis Homer",
       "position": "RB",
       "rank": 520,
       "tier": 17,
@@ -12047,8 +12047,8 @@
       }
     },
     {
-      "id": "HomeTr00",
-      "name": "Travis Homer",
+      "id": "JennTe00",
+      "name": "Terrell Jennings",
       "position": "RB",
       "rank": 521,
       "tier": 17,
@@ -12070,8 +12070,8 @@
       }
     },
     {
-      "id": "JennTe00",
-      "name": "Terrell Jennings",
+      "id": "LariLa00",
+      "name": "Lan Larison",
       "position": "RB",
       "rank": 522,
       "tier": 17,
@@ -12093,8 +12093,8 @@
       }
     },
     {
-      "id": "LariLa00",
-      "name": "Lan Larison",
+      "id": "MartDa02",
+      "name": "Damien Martinez",
       "position": "RB",
       "rank": 523,
       "tier": 17,
@@ -12116,8 +12116,8 @@
       }
     },
     {
-      "id": "MartDa02",
-      "name": "Damien Martinez",
+      "id": "McInKe00",
+      "name": "Kenny McIntosh",
       "position": "RB",
       "rank": 524,
       "tier": 17,
@@ -12139,8 +12139,8 @@
       }
     },
     {
-      "id": "McInKe00",
-      "name": "Kenny McIntosh",
+      "id": "MontMy00",
+      "name": "Myles Montgomery",
       "position": "RB",
       "rank": 525,
       "tier": 17,
@@ -12162,8 +12162,8 @@
       }
     },
     {
-      "id": "MontMy00",
-      "name": "Myles Montgomery",
+      "id": "MossLe00",
+      "name": "Le'Veon Moss",
       "position": "RB",
       "rank": 526,
       "tier": 17,
@@ -12185,8 +12185,8 @@
       }
     },
     {
-      "id": "MossLe00",
-      "name": "Le'Veon Moss",
+      "id": "NwanKe00",
+      "name": "Kene Nwangwu",
       "position": "RB",
       "rank": 527,
       "tier": 17,
@@ -12208,8 +12208,8 @@
       }
     },
     {
-      "id": "NwanKe00",
-      "name": "Kene Nwangwu",
+      "id": "OttxJa00",
+      "name": "Jaydn Ott",
       "position": "RB",
       "rank": 528,
       "tier": 17,
@@ -12231,8 +12231,8 @@
       }
     },
     {
-      "id": "OttxJa00",
-      "name": "Jaydn Ott",
+      "id": "PierDa01",
+      "name": "Dameon Pierce",
       "position": "RB",
       "rank": 529,
       "tier": 17,
@@ -12254,8 +12254,8 @@
       }
     },
     {
-      "id": "PierDa01",
-      "name": "Dameon Pierce",
+      "id": "PrenAd00",
+      "name": "Adam Prentice",
       "position": "RB",
       "rank": 530,
       "tier": 17,
@@ -12277,8 +12277,8 @@
       }
     },
     {
-      "id": "PrenAd00",
-      "name": "Adam Prentice",
+      "id": "ReidDe00",
+      "name": "Desmond Reid",
       "position": "RB",
       "rank": 531,
       "tier": 17,
@@ -12300,8 +12300,8 @@
       }
     },
     {
-      "id": "ReidDe00",
-      "name": "Desmond Reid",
+      "id": "ReynCr00",
+      "name": "Craig Reynolds",
       "position": "RB",
       "rank": 532,
       "tier": 17,
@@ -12323,8 +12323,8 @@
       }
     },
     {
-      "id": "ReynCr00",
-      "name": "Craig Reynolds",
+      "id": "RiveRo01",
+      "name": "Ronnie Rivers",
       "position": "RB",
       "rank": 533,
       "tier": 17,
@@ -12346,8 +12346,8 @@
       }
     },
     {
-      "id": "RiveRo01",
-      "name": "Ronnie Rivers",
+      "id": "SaylJa00",
+      "name": "Jacob Saylors",
       "position": "RB",
       "rank": 534,
       "tier": 17,
@@ -12369,8 +12369,8 @@
       }
     },
     {
-      "id": "SaylJa00",
-      "name": "Jacob Saylors",
+      "id": "ScotZa00",
+      "name": "Zavier Scott",
       "position": "RB",
       "rank": 535,
       "tier": 17,
@@ -12392,8 +12392,8 @@
       }
     },
     {
-      "id": "ScotZa00",
-      "name": "Zavier Scott",
+      "id": "TaylJM00",
+      "name": "J'Mari Taylor",
       "position": "RB",
       "rank": 536,
       "tier": 17,
@@ -12415,8 +12415,8 @@
       }
     },
     {
-      "id": "TaylJM00",
-      "name": "J'Mari Taylor",
+      "id": "TaylPa00",
+      "name": "Patrick Taylor Jr.",
       "position": "RB",
       "rank": 537,
       "tier": 17,
@@ -12438,8 +12438,8 @@
       }
     },
     {
-      "id": "TaylPa00",
-      "name": "Patrick Taylor Jr.",
+      "id": "WashCa00",
+      "name": "Carlos Washington Jr.",
       "position": "RB",
       "rank": 538,
       "tier": 17,
@@ -12461,8 +12461,8 @@
       }
     },
     {
-      "id": "WashCa00",
-      "name": "Carlos Washington Jr.",
+      "id": "WhitNo00",
+      "name": "Noah Whittington",
       "position": "RB",
       "rank": 539,
       "tier": 17,
@@ -12484,33 +12484,10 @@
       }
     },
     {
-      "id": "WhitNo00",
-      "name": "Noah Whittington",
-      "position": "RB",
-      "rank": 540,
-      "tier": 17,
-      "posRank": 168,
-      "adp": {
-        "bestball10s": null,
-        "cbs": null,
-        "consensus": null,
-        "draftkings-bestball": null,
-        "drafters": null,
-        "espn": null,
-        "mfl": null,
-        "nffc": null,
-        "nfl": null,
-        "rtsports": null,
-        "sleeper-redraft": null,
-        "underdog": null,
-        "yahoo": null
-      }
-    },
-    {
       "id": "otixxx99",
       "name": "Tennessee Titans",
       "position": "TD",
-      "rank": 541,
+      "rank": 540,
       "tier": 17,
       "posRank": 28,
       "adp": {
@@ -12533,7 +12510,7 @@
       "id": "wasxxx99",
       "name": "Washington Commanders",
       "position": "TD",
-      "rank": 542,
+      "rank": 541,
       "tier": 17,
       "posRank": 29,
       "adp": {
@@ -12556,7 +12533,7 @@
       "id": "miaxxx99",
       "name": "Miami Dolphins",
       "position": "TD",
-      "rank": 543,
+      "rank": 542,
       "tier": 17,
       "posRank": 30,
       "adp": {
@@ -12579,7 +12556,7 @@
       "id": "AnthVi00",
       "name": "Vinny Anthony II",
       "position": "WR",
-      "rank": 544,
+      "rank": 543,
       "tier": 17,
       "posRank": 191,
       "adp": {
@@ -12602,7 +12579,7 @@
       "id": "AustKe00",
       "name": "Kevin Austin Jr",
       "position": "WR",
-      "rank": 545,
+      "rank": 544,
       "tier": 17,
       "posRank": 192,
       "adp": {
@@ -12625,7 +12602,7 @@
       "id": "BrowNo00",
       "name": "Noah Brown",
       "position": "WR",
-      "rank": 546,
+      "rank": 545,
       "tier": 17,
       "posRank": 193,
       "adp": {
@@ -12648,7 +12625,7 @@
       "id": "CaldJe00",
       "name": "Jeff Caldwell",
       "position": "WR",
-      "rank": 547,
+      "rank": 546,
       "tier": 17,
       "posRank": 194,
       "adp": {
@@ -12671,7 +12648,7 @@
       "id": "CameJo01",
       "name": "Josh Cameron",
       "position": "WR",
-      "rank": 548,
+      "rank": 547,
       "tier": 17,
       "posRank": 195,
       "adp": {
@@ -12694,7 +12671,7 @@
       "id": "ChisEf00",
       "name": "Efton Chism III",
       "position": "WR",
-      "rank": 549,
+      "rank": 548,
       "tier": 17,
       "posRank": 196,
       "adp": {
@@ -12717,7 +12694,7 @@
       "id": "CookBr01",
       "name": "Brandin Cooks",
       "position": "WR",
-      "rank": 550,
+      "rank": 549,
       "tier": 17,
       "posRank": 197,
       "adp": {
@@ -12740,7 +12717,7 @@
       "id": "CoopDa00",
       "name": "Darius Cooper",
       "position": "WR",
-      "rank": 551,
+      "rank": 550,
       "tier": 17,
       "posRank": 198,
       "adp": {
@@ -12763,7 +12740,7 @@
       "id": "CorlMa00",
       "name": "Malachi Corley",
       "position": "WR",
-      "rank": 552,
+      "rank": 551,
       "tier": 17,
       "posRank": 199,
       "adp": {
@@ -12786,7 +12763,7 @@
       "id": "DaviGa01",
       "name": "Gabe Davis",
       "position": "WR",
-      "rank": 553,
+      "rank": 552,
       "tier": 17,
       "posRank": 200,
       "adp": {
@@ -12809,7 +12786,7 @@
       "id": "DuveDe00",
       "name": "Devin Duvernay",
       "position": "WR",
-      "rank": 554,
+      "rank": 553,
       "tier": 17,
       "posRank": 201,
       "adp": {
@@ -12832,7 +12809,7 @@
       "id": "EskrDW00",
       "name": "Dee Eskridge",
       "position": "WR",
-      "rank": 555,
+      "rank": 554,
       "tier": 17,
       "posRank": 202,
       "adp": {
@@ -12855,7 +12832,7 @@
       "id": "FehoSi00",
       "name": "Simi Fehoko",
       "position": "WR",
-      "rank": 556,
+      "rank": 555,
       "tier": 17,
       "posRank": 203,
       "adp": {
@@ -12878,7 +12855,7 @@
       "id": "GuilXa00",
       "name": "Xavier Guillory",
       "position": "WR",
-      "rank": 557,
+      "rank": 556,
       "tier": 17,
       "posRank": 204,
       "adp": {
@@ -12901,7 +12878,7 @@
       "id": "BridTe00",
       "name": "Teddy Bridgewater",
       "position": "QB",
-      "rank": 558,
+      "rank": 557,
       "tier": 17,
       "posRank": 62,
       "adp": {
@@ -12924,7 +12901,7 @@
       "id": "SmacTr00",
       "name": "Trey Smack",
       "position": "PK",
-      "rank": 559,
+      "rank": 558,
       "tier": 17,
       "posRank": 27,
       "adp": {
@@ -12947,7 +12924,7 @@
       "id": "GrupBl00",
       "name": "Blake Grupe",
       "position": "PK",
-      "rank": 560,
+      "rank": 559,
       "tier": 17,
       "posRank": 28,
       "adp": {
@@ -12970,7 +12947,7 @@
       "id": "BartGa00",
       "name": "Gavin Bartholomew",
       "position": "TE",
-      "rank": 561,
+      "rank": 560,
       "tier": 17,
       "posRank": 69,
       "adp": {
@@ -12993,7 +12970,7 @@
       "id": "SaulBe00",
       "name": "Ben Sauls",
       "position": "PK",
-      "rank": 562,
+      "rank": 561,
       "tier": 17,
       "posRank": 29,
       "adp": {
@@ -13016,7 +12993,7 @@
       "id": "raixxx99",
       "name": "Las Vegas Raiders",
       "position": "TD",
-      "rank": 563,
+      "rank": 562,
       "tier": 17,
       "posRank": 31,
       "adp": {
@@ -13039,7 +13016,7 @@
       "id": "RattSp00",
       "name": "Spencer Rattler",
       "position": "QB",
-      "rank": 564,
+      "rank": 563,
       "tier": 17,
       "posRank": 63,
       "adp": {
@@ -13062,7 +13039,7 @@
       "id": "GonzZa99",
       "name": "Zane Gonzalez",
       "position": "PK",
-      "rank": 565,
+      "rank": 564,
       "tier": 17,
       "posRank": 30,
       "adp": {
@@ -13085,7 +13062,7 @@
       "id": "McMaBr44",
       "name": "Brandon McManus",
       "position": "PK",
-      "rank": 566,
+      "rank": 565,
       "tier": 17,
       "posRank": 31,
       "adp": {
@@ -13108,7 +13085,7 @@
       "id": "crdxxx99",
       "name": "Arizona Cardinals",
       "position": "TD",
-      "rank": 567,
+      "rank": 566,
       "tier": 17,
       "posRank": 32,
       "adp": {
@@ -13131,7 +13108,7 @@
       "id": "SandJa44",
       "name": "Jason Sanders",
       "position": "PK",
-      "rank": 568,
+      "rank": 567,
       "tier": 17,
       "posRank": 32,
       "adp": {
