@@ -2,7 +2,7 @@
   "version": 1,
   "mode": "draft",
   "season": "2026",
-  "generatedAt": "2026-07-29T22:00:11.711Z",
+  "generatedAt": "2026-07-30T13:23:36.881Z",
   "status": "healthy",
   "shards": {
     "ALL": 3220,
@@ -18,6 +18,28 @@
     "std": {
       "ecrRows": 494,
       "topCandidates": 180,
+      "sleeperAdpCovered": 171,
+      "sleeperAdpCoveragePct": 95,
+      "tierCovered": 179,
+      "tierCoveragePct": 99.4,
+      "expertsIncluded": 73,
+      "expertsAvailable": 114,
+      "expertCoveragePct": 64
+    },
+    "half": {
+      "ecrRows": 560,
+      "topCandidates": 180,
+      "sleeperAdpCovered": 173,
+      "sleeperAdpCoveragePct": 96.1,
+      "tierCovered": 178,
+      "tierCoveragePct": 98.9,
+      "expertsIncluded": 73,
+      "expertsAvailable": 116,
+      "expertCoveragePct": 62.9
+    },
+    "ppr": {
+      "ecrRows": 499,
+      "topCandidates": 180,
       "sleeperAdpCovered": 170,
       "sleeperAdpCoveragePct": 94.4,
       "tierCovered": 180,
@@ -25,34 +47,12 @@
       "expertsIncluded": 72,
       "expertsAvailable": 114,
       "expertCoveragePct": 63.2
-    },
-    "half": {
-      "ecrRows": 544,
-      "topCandidates": 180,
-      "sleeperAdpCovered": 173,
-      "sleeperAdpCoveragePct": 96.1,
-      "tierCovered": 178,
-      "tierCoveragePct": 98.9,
-      "expertsIncluded": 72,
-      "expertsAvailable": 116,
-      "expertCoveragePct": 62.1
-    },
-    "ppr": {
-      "ecrRows": 504,
-      "topCandidates": 180,
-      "sleeperAdpCovered": 170,
-      "sleeperAdpCoveragePct": 94.4,
-      "tierCovered": 180,
-      "tierCoveragePct": 100,
-      "expertsIncluded": 71,
-      "expertsAvailable": 114,
-      "expertCoveragePct": 62.3
     }
   },
   "sources": {
-    "fantasyprosUpdatedAt": "2026-07-29T21:54:04.000Z",
-    "sleeperUpdatedAt": "2026-07-29T07:50:22.479Z",
-    "tiersUpdatedAt": "2026-07-29T21:54:04.000Z"
+    "fantasyprosUpdatedAt": "2026-07-30T12:47:05.000Z",
+    "sleeperUpdatedAt": "2026-07-30T07:50:33.344Z",
+    "tiersUpdatedAt": "2026-07-30T12:47:05.000Z"
   },
   "warnings": [],
   "errors": []
