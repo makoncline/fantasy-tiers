@@ -2,57 +2,57 @@
   "version": 1,
   "mode": "draft",
   "season": "2026",
-  "generatedAt": "2026-07-31T13:28:19.022Z",
+  "generatedAt": "2026-07-31T22:09:33.361Z",
   "status": "healthy",
   "shards": {
-    "ALL": 3221,
+    "ALL": 3222,
     "QB": 355,
-    "RB": 674,
+    "RB": 675,
     "WR": 1365,
     "TE": 642,
     "K": 153,
     "DEF": 32,
-    "FLEX": 2681
+    "FLEX": 2682
   },
   "scoring": {
     "std": {
-      "ecrRows": 501,
+      "ecrRows": 499,
       "topCandidates": 180,
-      "sleeperAdpCovered": 171,
-      "sleeperAdpCoveragePct": 95,
-      "tierCovered": 179,
-      "tierCoveragePct": 99.4,
-      "expertsIncluded": 75,
-      "expertsAvailable": 116,
-      "expertCoveragePct": 64.7
-    },
-    "half": {
-      "ecrRows": 586,
-      "topCandidates": 180,
-      "sleeperAdpCovered": 174,
-      "sleeperAdpCoveragePct": 96.7,
-      "tierCovered": 179,
-      "tierCoveragePct": 99.4,
-      "expertsIncluded": 75,
-      "expertsAvailable": 118,
-      "expertCoveragePct": 63.6
-    },
-    "ppr": {
-      "ecrRows": 508,
-      "topCandidates": 180,
-      "sleeperAdpCovered": 171,
-      "sleeperAdpCoveragePct": 95,
+      "sleeperAdpCovered": 180,
+      "sleeperAdpCoveragePct": 100,
       "tierCovered": 180,
       "tierCoveragePct": 100,
-      "expertsIncluded": 74,
-      "expertsAvailable": 116,
-      "expertCoveragePct": 63.8
+      "expertsIncluded": 77,
+      "expertsAvailable": 117,
+      "expertCoveragePct": 65.8
+    },
+    "half": {
+      "ecrRows": 722,
+      "topCandidates": 180,
+      "sleeperAdpCovered": 180,
+      "sleeperAdpCoveragePct": 100,
+      "tierCovered": 179,
+      "tierCoveragePct": 99.4,
+      "expertsIncluded": 78,
+      "expertsAvailable": 119,
+      "expertCoveragePct": 65.5
+    },
+    "ppr": {
+      "ecrRows": 507,
+      "topCandidates": 180,
+      "sleeperAdpCovered": 180,
+      "sleeperAdpCoveragePct": 100,
+      "tierCovered": 180,
+      "tierCoveragePct": 100,
+      "expertsIncluded": 76,
+      "expertsAvailable": 117,
+      "expertCoveragePct": 65
     }
   },
   "sources": {
-    "fantasyprosUpdatedAt": "2026-07-31T13:17:26.000Z",
-    "sleeperUpdatedAt": "2026-07-31T07:50:46.951Z",
-    "tiersUpdatedAt": "2026-07-31T13:17:26.000Z"
+    "fantasyprosUpdatedAt": "2026-07-31T20:56:31.000Z",
+    "sleeperUpdatedAt": "2026-07-31T18:30:57.923Z",
+    "tiersUpdatedAt": "2026-07-31T20:56:31.000Z"
   },
   "warnings": [],
   "errors": []
