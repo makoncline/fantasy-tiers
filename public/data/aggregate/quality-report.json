@@ -2,7 +2,7 @@
   "version": 1,
   "mode": "draft",
   "season": "2026",
-  "generatedAt": "2026-07-31T22:09:33.361Z",
+  "generatedAt": "2026-08-01T12:52:36.748Z",
   "status": "healthy",
   "shards": {
     "ALL": 3222,
@@ -16,43 +16,43 @@
   },
   "scoring": {
     "std": {
-      "ecrRows": 499,
+      "ecrRows": 506,
+      "topCandidates": 180,
+      "sleeperAdpCovered": 180,
+      "sleeperAdpCoveragePct": 100,
+      "tierCovered": 180,
+      "tierCoveragePct": 100,
+      "expertsIncluded": 78,
+      "expertsAvailable": 118,
+      "expertCoveragePct": 66.1
+    },
+    "half": {
+      "ecrRows": 723,
+      "topCandidates": 180,
+      "sleeperAdpCovered": 180,
+      "sleeperAdpCoveragePct": 100,
+      "tierCovered": 178,
+      "tierCoveragePct": 98.9,
+      "expertsIncluded": 80,
+      "expertsAvailable": 121,
+      "expertCoveragePct": 66.1
+    },
+    "ppr": {
+      "ecrRows": 511,
       "topCandidates": 180,
       "sleeperAdpCovered": 180,
       "sleeperAdpCoveragePct": 100,
       "tierCovered": 180,
       "tierCoveragePct": 100,
       "expertsIncluded": 77,
-      "expertsAvailable": 117,
-      "expertCoveragePct": 65.8
-    },
-    "half": {
-      "ecrRows": 722,
-      "topCandidates": 180,
-      "sleeperAdpCovered": 180,
-      "sleeperAdpCoveragePct": 100,
-      "tierCovered": 179,
-      "tierCoveragePct": 99.4,
-      "expertsIncluded": 78,
-      "expertsAvailable": 119,
-      "expertCoveragePct": 65.5
-    },
-    "ppr": {
-      "ecrRows": 507,
-      "topCandidates": 180,
-      "sleeperAdpCovered": 180,
-      "sleeperAdpCoveragePct": 100,
-      "tierCovered": 180,
-      "tierCoveragePct": 100,
-      "expertsIncluded": 76,
-      "expertsAvailable": 117,
-      "expertCoveragePct": 65
+      "expertsAvailable": 118,
+      "expertCoveragePct": 65.3
     }
   },
   "sources": {
-    "fantasyprosUpdatedAt": "2026-07-31T20:56:31.000Z",
-    "sleeperUpdatedAt": "2026-07-31T18:30:57.923Z",
-    "tiersUpdatedAt": "2026-07-31T20:56:31.000Z"
+    "fantasyprosUpdatedAt": "2026-08-01T10:54:36.000Z",
+    "sleeperUpdatedAt": "2026-08-01T07:50:54.246Z",
+    "tiersUpdatedAt": "2026-08-01T10:54:36.000Z"
   },
   "warnings": [],
   "errors": []
