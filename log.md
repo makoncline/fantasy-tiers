@@ -1,0 +1,1 @@
+- [2026-08-05] Next.js 16.3 upgrade codemod scope: The default upgrade selection can add `instant = false` to routes even when `cacheComponents` is disabled. During a 16.3 upgrade, keep this codemod only for an intentional Cache Components adoption; otherwise remove the route opt-outs.
