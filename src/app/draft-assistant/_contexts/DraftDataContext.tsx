@@ -542,11 +542,9 @@ export function DraftDataProvider({
   // Log errors to console to aid debugging
   React.useEffect(() => {
     if (errorUser) {
-      // eslint-disable-next-line no-console
       console.error("user error", { username, error: errorUser });
     }
     if (errorDrafts) {
-      // eslint-disable-next-line no-console
       console.error("drafts error", {
         userId: user?.user_id,
         season: draftSeason,
@@ -554,21 +552,18 @@ export function DraftDataProvider({
       });
     }
     if (errorDraftDetails) {
-      // eslint-disable-next-line no-console
       console.error("draftDetails error", {
         draftId: selectedDraftId,
         error: errorDraftDetails,
       });
     }
     if (errorPicks) {
-      // eslint-disable-next-line no-console
       console.error("draftPicks error", {
         draftId: selectedDraftId,
         error: errorPicks,
       });
     }
     if (errorPlayers) {
-      // eslint-disable-next-line no-console
       console.error("players error", { error: errorPlayers });
     }
   }, [
