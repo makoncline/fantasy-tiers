@@ -1,854 +1,854 @@
 {
   "totals": {
     "totalPlayers": 3232,
-    "totalSourceRuns": 3884,
-    "totalRatingVersions": 166695,
+    "totalSourceRuns": 3944,
+    "totalRatingVersions": 170370,
     "currentRatingVersions": 46857,
-    "closedRatingVersions": 119838,
-    "changedRatingScopes": 11315,
+    "closedRatingVersions": 123513,
+    "changedRatingScopes": 11361,
     "currentAbsentRatings": 32920,
-    "latestFetchedAt": "2026-08-29T23:05:48.505Z",
-    "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+    "latestFetchedAt": "2026-08-30T15:43:03.987Z",
+    "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
   },
   "latestSourceRuns": [
     {
-      "id": 3884,
+      "id": 3944,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "DEF",
-      "fetchedAt": "2026-08-29T23:05:48.505Z",
-      "sourceLastUpdated": "2026-08-29T07:51:06.171Z",
+      "fetchedAt": "2026-08-30T15:43:03.987Z",
+      "sourceLastUpdated": "2026-08-30T07:51:09.022Z",
       "rowCount": 32,
-      "contentHash": "fd344cc121f4017031a6b82c81b7a12d9b557cbe523ecf6480f4614fce8f81a4",
+      "contentHash": "816e6461a21fbb6cda1cf1c8e91a162ef2b3e20fce071ac2ef3633b28308efa4",
       "status": "success"
     },
     {
-      "id": 3883,
+      "id": 3943,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "DEF",
-      "fetchedAt": "2026-08-29T22:59:36.000Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
-      "rowCount": 511,
-      "contentHash": "cf95595fabf0fba2135454ccdfc0b3ff4fc710ac489a2771c6635c85844c9ae2",
+      "fetchedAt": "2026-08-30T15:38:14.000Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
+      "rowCount": 510,
+      "contentHash": "ff0f5d612f487a3b7f25c74dd474e2bfaf9aa7eacb9cb2767823164453d384f4",
       "status": "success"
     },
     {
-      "id": 3882,
+      "id": 3942,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "K",
-      "fetchedAt": "2026-08-29T23:05:44.432Z",
-      "sourceLastUpdated": "2026-08-29T07:51:05.446Z",
+      "fetchedAt": "2026-08-30T15:42:59.787Z",
+      "sourceLastUpdated": "2026-08-30T07:51:08.435Z",
       "rowCount": 153,
-      "contentHash": "3f2dc20e0aeceaf152d4d3e137b99676d22926f2b3cc7677fb72af1d173d08aa",
+      "contentHash": "3a363de82672671d27a2c570c9ff4f2a1c14bc5a6914bf97c34b0f4032185255",
       "status": "success"
     },
     {
-      "id": 3881,
+      "id": 3941,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "K",
-      "fetchedAt": "2026-08-29T22:59:36.000Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
-      "rowCount": 511,
-      "contentHash": "237d2b02b3957747cce50cf0bd4cf9d6d5a94c874f83435cc399a373abb8d193",
+      "fetchedAt": "2026-08-30T15:38:14.000Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
+      "rowCount": 510,
+      "contentHash": "9a61ee795c778903a3e4a63c33cf48b5b90e7202368e60f824426d2a4c08eefb",
       "status": "success"
     },
     {
-      "id": 3880,
+      "id": 3940,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "TE",
-      "fetchedAt": "2026-08-29T23:05:39.812Z",
-      "sourceLastUpdated": "2026-08-29T07:51:05.559Z",
+      "fetchedAt": "2026-08-30T15:42:48.308Z",
+      "sourceLastUpdated": "2026-08-30T07:51:08.508Z",
       "rowCount": 644,
-      "contentHash": "8247027c099b15b10d7cb5389bbcc835e66b49fa8829cdae1eae7f87a938c23a",
+      "contentHash": "5127a7f9a6fb94ecdb5a6b6ba8ddca4fa180a739ce362f0b7cead48a2df88539",
       "status": "success"
     },
     {
-      "id": 3879,
+      "id": 3939,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "TE",
-      "fetchedAt": "2026-08-29T22:59:37.000Z",
-      "sourceLastUpdated": "2026-08-29T22:45:15.000Z",
+      "fetchedAt": "2026-08-30T15:38:14.000Z",
+      "sourceLastUpdated": "2026-08-30T15:21:24.000Z",
       "rowCount": 518,
-      "contentHash": "a6421ebde1057baea89b3be3d5c05e23156f5536bca480566cb75b91fe998d24",
+      "contentHash": "aa29e086469947906d79fbdc80432d202f688758bb35fb395c8fd499fb01b295",
       "status": "success"
     },
     {
-      "id": 3878,
+      "id": 3938,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "WR",
-      "fetchedAt": "2026-08-29T23:05:28.432Z",
-      "sourceLastUpdated": "2026-08-29T07:51:05.605Z",
+      "fetchedAt": "2026-08-30T15:42:26.107Z",
+      "sourceLastUpdated": "2026-08-30T07:51:08.538Z",
       "rowCount": 1366,
-      "contentHash": "e9469d3a56b20a516a381f5c1cf7317f95225c00b8517643a9abc8cd343f89b8",
+      "contentHash": "27061201d38a482af6aa17bae64966a91f12a923f47172c52772c30e92a027dc",
       "status": "success"
     },
     {
-      "id": 3877,
+      "id": 3937,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "WR",
-      "fetchedAt": "2026-08-29T22:59:37.000Z",
-      "sourceLastUpdated": "2026-08-29T22:45:15.000Z",
+      "fetchedAt": "2026-08-30T15:38:14.000Z",
+      "sourceLastUpdated": "2026-08-30T15:21:24.000Z",
       "rowCount": 518,
-      "contentHash": "c0dfa6437709f0a1e4d4c5b0b51d49d52b7ec0cfcf4356fdec1cae40f97ab441",
+      "contentHash": "c522ba7f272c88309b697c5e833c9390f880446069afc584d925bd18466dda02",
       "status": "success"
     },
     {
-      "id": 3876,
+      "id": 3936,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "RB",
-      "fetchedAt": "2026-08-29T23:05:05.507Z",
-      "sourceLastUpdated": "2026-08-29T07:51:05.609Z",
+      "fetchedAt": "2026-08-30T15:42:01.562Z",
+      "sourceLastUpdated": "2026-08-30T07:51:08.544Z",
       "rowCount": 678,
-      "contentHash": "6bb835303d0826972316855fc7f83360d3f7ab5b0ef11071f9c792d5ee3903fb",
+      "contentHash": "082f856827a26d77dc8281e66214f73c6d9fff0f9789eed56c29c625bc147ae8",
       "status": "success"
     },
     {
-      "id": 3875,
+      "id": 3935,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "RB",
-      "fetchedAt": "2026-08-29T22:59:37.000Z",
-      "sourceLastUpdated": "2026-08-29T22:45:15.000Z",
+      "fetchedAt": "2026-08-30T15:38:14.000Z",
+      "sourceLastUpdated": "2026-08-30T15:21:24.000Z",
       "rowCount": 518,
-      "contentHash": "fd66bb3ee850a7cb7d53fb6f473f1311cd6142ebed86fe877ee729b034d6139c",
+      "contentHash": "792775f30f257e545fe05c8c6821aa87d700f23780fd95157df6add3f2e0f222",
       "status": "success"
     },
     {
-      "id": 3874,
+      "id": 3934,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "QB",
-      "fetchedAt": "2026-08-29T23:04:48.881Z",
-      "sourceLastUpdated": "2026-08-29T07:51:05.611Z",
+      "fetchedAt": "2026-08-30T15:41:48.209Z",
+      "sourceLastUpdated": "2026-08-30T07:51:08.545Z",
       "rowCount": 355,
-      "contentHash": "dff836f621869e191e09d1b455d0833040da45550aac93eb0e8810f8fa9e3e2a",
+      "contentHash": "bda622a944b55f3cf8d6d045b64c3ef693d932d5ad52faba9011ea788b2265d2",
       "status": "success"
     },
     {
-      "id": 3873,
+      "id": 3933,
       "source": "fantasypros",
       "mode": "draft",
       "season": null,
       "week": null,
       "scoring": "ppr",
       "position": "QB",
-      "fetchedAt": "2026-08-29T23:04:41.726Z",
+      "fetchedAt": "2026-08-30T15:41:44.377Z",
       "sourceLastUpdated": null,
       "rowCount": 355,
-      "contentHash": "30b8fdcf1b5fe6697948805145efa4a2f054c510e3b1fd59516802238a57616f",
+      "contentHash": "fe0235967a17459a04be93f41f535c3ee158dd00aae82107094564c76bf08c65",
       "status": "success"
     },
     {
-      "id": 3872,
+      "id": 3932,
       "source": "tiers",
       "mode": "draft",
       "season": null,
       "week": null,
       "scoring": "ppr",
       "position": "ALL",
-      "fetchedAt": "2026-08-29T23:04:30.912Z",
+      "fetchedAt": "2026-08-30T15:41:37.596Z",
       "sourceLastUpdated": null,
       "rowCount": 3228,
-      "contentHash": "c8348e64307bef2eae320a4c32c4c71f56b6481d8ec808f5ed171d75ad42cb16",
+      "contentHash": "7e842274bed728c3c3b1049610bc4285b2c63ee64282d0d81ce8948ac4e4ca3f",
       "status": "success"
     },
     {
-      "id": 3871,
+      "id": 3931,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "FLEX",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:15.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:24.000Z",
       "rowCount": 95,
-      "contentHash": "d3e796ec6593db4badad27968a811d7e064b98ef0121a04985ca91ea783e9df9",
+      "contentHash": "d238887e787860c896f0c6cb9dd5d1dcc05cc56ffdacb1f1fb053a042c60cd19",
       "status": "success"
     },
     {
-      "id": 3870,
+      "id": 3930,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "DEF",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
       "rowCount": 20,
-      "contentHash": "477a3c2814d37b730e3d432c44df3a66d94bce13dfab299e4935b0d40680cd43",
+      "contentHash": "472c9d6f43905eced774f3a0ea64f502c423134dea756b3e7e82cc156176b351",
       "status": "success"
     },
     {
-      "id": 3869,
+      "id": 3929,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "K",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
       "rowCount": 20,
-      "contentHash": "bbbbe59a2e3b507a8bf83423485eb0f6443b8ff21d0fd1947c78880603e6ac3a",
+      "contentHash": "4ade997719e82d0d8b67da3453914e1e955cd438828c942089dcdd0007f58cef",
       "status": "success"
     },
     {
-      "id": 3868,
+      "id": 3928,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "TE",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:15.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:24.000Z",
       "rowCount": 25,
-      "contentHash": "ac15929b94f8ddff75edb816451a4518a2a486b7b583cdc1625bd3edbddb2538",
+      "contentHash": "1948fdc0ef15fc89582e2a378161f2eee045df5d32335c5e1d21935d7f2a6a43",
       "status": "success"
     },
     {
-      "id": 3867,
+      "id": 3927,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "WR",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:15.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:24.000Z",
       "rowCount": 60,
-      "contentHash": "9849f7e425192c45ca6f1e3bcc4fe912fbdec45434db8db0edab1176230b424d",
+      "contentHash": "9757a00c4672dfdcc1da2072366268710c8174b0a68ca9867d10a0689dd69ef8",
       "status": "success"
     },
     {
-      "id": 3866,
+      "id": 3926,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "ppr",
       "position": "RB",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:15.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:24.000Z",
       "rowCount": 40,
-      "contentHash": "1eb78d09edc24ab24f3435586eef2c911fcaab50193aa382b3666e34f6b42b0e",
+      "contentHash": "9dc26482b87f45b8fea410c3ec1797ac689632e2d531dfcfc63ac61b70269052",
       "status": "success"
     },
     {
-      "id": 3865,
+      "id": 3925,
       "source": "tiers",
       "mode": "draft",
       "season": null,
       "week": null,
       "scoring": "ppr",
       "position": "QB",
-      "fetchedAt": "2026-08-29T23:04:26.070Z",
+      "fetchedAt": "2026-08-30T15:41:34.183Z",
       "sourceLastUpdated": null,
       "rowCount": 355,
-      "contentHash": "65f18285ae68ca075bb90ab5672f2c74e523948801cac813c03de1308e12442d",
+      "contentHash": "65cbe32c6c381655c52ffda180a2aa4b1dbd2783bd2dc60079ae078aac4ebb90",
       "status": "success"
     },
     {
-      "id": 3864,
+      "id": 3924,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "DEF",
-      "fetchedAt": "2026-08-29T23:04:25.996Z",
-      "sourceLastUpdated": "2026-08-29T07:51:06.171Z",
+      "fetchedAt": "2026-08-30T15:41:32.994Z",
+      "sourceLastUpdated": "2026-08-30T07:51:09.022Z",
       "rowCount": 32,
-      "contentHash": "ce279ecd2b797ca23326c05eaa91a2cbcde27fd7b17fa8027afa0fa4c89c394a",
+      "contentHash": "89325b7a8642d216592f116ccd5243ceb72c261b0aad332a634a9adcee98768f",
       "status": "success"
     },
     {
-      "id": 3863,
+      "id": 3923,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "DEF",
-      "fetchedAt": "2026-08-29T22:59:36.000Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
-      "rowCount": 511,
-      "contentHash": "db3d1514f2dfda50f0c3ed558268a25510f4ae25d3f1a9505b6799b42fad1259",
+      "fetchedAt": "2026-08-30T15:38:14.000Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
+      "rowCount": 510,
+      "contentHash": "a1ea83b589bfea1382ffdb18939474984811f8f935bc0ffac96820e91aa98ef5",
       "status": "success"
     },
     {
-      "id": 3862,
+      "id": 3922,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "K",
-      "fetchedAt": "2026-08-29T23:04:21.140Z",
-      "sourceLastUpdated": "2026-08-29T07:51:05.446Z",
+      "fetchedAt": "2026-08-30T15:41:26.610Z",
+      "sourceLastUpdated": "2026-08-30T07:51:08.435Z",
       "rowCount": 153,
-      "contentHash": "8ae03e2f393d59ad00f8c4a905e0137656b8e1ceaae3dd5b51ceea240b7f58fe",
+      "contentHash": "df0f48aa5cb419c9df7cd217e2bfef77c7fa34a6ff212f1111f3d5af45bf309d",
       "status": "success"
     },
     {
-      "id": 3861,
+      "id": 3921,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "K",
-      "fetchedAt": "2026-08-29T22:59:36.000Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
-      "rowCount": 511,
-      "contentHash": "7b4021d91f5f312585d722dfe2ef815bac5ae617969933024f3ba6ce92a3c229",
+      "fetchedAt": "2026-08-30T15:38:14.000Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
+      "rowCount": 510,
+      "contentHash": "468b98a6d0f71d56fe337367e001a66f4ad6adf4d66adade636fd24d7c0ace93",
       "status": "success"
     },
     {
-      "id": 3860,
+      "id": 3920,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "TE",
-      "fetchedAt": "2026-08-29T23:04:14.420Z",
-      "sourceLastUpdated": "2026-08-29T07:51:05.559Z",
+      "fetchedAt": "2026-08-30T15:41:15.245Z",
+      "sourceLastUpdated": "2026-08-30T07:51:08.508Z",
       "rowCount": 644,
-      "contentHash": "452b375e11dc3e95cdb1059d65b440ef61b40a76653e61b3612c0796e640f80d",
+      "contentHash": "d5773c7f20fafa567f3b0745bb40096b4eda66cd7cbe94eaf626cd9942502c49",
       "status": "success"
     },
     {
-      "id": 3859,
+      "id": 3919,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "TE",
-      "fetchedAt": "2026-08-29T22:59:36.000Z",
-      "sourceLastUpdated": "2026-08-29T22:45:14.000Z",
+      "fetchedAt": "2026-08-30T15:38:14.000Z",
+      "sourceLastUpdated": "2026-08-30T15:21:24.000Z",
       "rowCount": 941,
-      "contentHash": "877ea641e591ee9e46b8eef1350eb4eece86efb84f98a83a1b8efd98074453b6",
+      "contentHash": "3ca30efeaaa4b2df73a7c5f84d9cd67a8b66fe4a1f205b0d2ba4ea21d7ab7dd4",
       "status": "success"
     },
     {
-      "id": 3858,
+      "id": 3918,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "WR",
-      "fetchedAt": "2026-08-29T23:03:44.558Z",
-      "sourceLastUpdated": "2026-08-29T07:51:05.605Z",
+      "fetchedAt": "2026-08-30T15:40:52.700Z",
+      "sourceLastUpdated": "2026-08-30T07:51:08.538Z",
       "rowCount": 1366,
-      "contentHash": "73394fb9efbb67e7583b631d42255eab2b28e463079640a5dedf4afb5b6b4263",
+      "contentHash": "5eb4110448fc6f743dfb2943ebc80ad5c0952f2b26bdb7d1cdb7b9edb556ccd1",
       "status": "success"
     },
     {
-      "id": 3857,
+      "id": 3917,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "WR",
-      "fetchedAt": "2026-08-29T22:59:36.000Z",
-      "sourceLastUpdated": "2026-08-29T22:45:14.000Z",
+      "fetchedAt": "2026-08-30T15:38:14.000Z",
+      "sourceLastUpdated": "2026-08-30T15:21:24.000Z",
       "rowCount": 941,
-      "contentHash": "3bf61d11a8f39aa7a1c575a4dbdb77dce4261fda1c2511bab40d855c82c8f3c5",
+      "contentHash": "6972d24dbd6011654991003d6331bd2e9ecdcc56551f7e6594af74da9dc28ce6",
       "status": "success"
     },
     {
-      "id": 3856,
+      "id": 3916,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "RB",
-      "fetchedAt": "2026-08-29T23:03:06.656Z",
-      "sourceLastUpdated": "2026-08-29T07:51:05.609Z",
+      "fetchedAt": "2026-08-30T15:40:23.255Z",
+      "sourceLastUpdated": "2026-08-30T07:51:08.544Z",
       "rowCount": 678,
-      "contentHash": "fc929d05d2bb88d7bb1ae00115a74f3d80e1300bb53763d442597ee688bb42be",
+      "contentHash": "2d1f7c7a78c8a8137c227822f3a4ee57e21f8da6e1381460a6610dbaf2f99eac",
       "status": "success"
     },
     {
-      "id": 3855,
+      "id": 3915,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "RB",
-      "fetchedAt": "2026-08-29T22:59:36.000Z",
-      "sourceLastUpdated": "2026-08-29T22:45:14.000Z",
+      "fetchedAt": "2026-08-30T15:38:14.000Z",
+      "sourceLastUpdated": "2026-08-30T15:21:24.000Z",
       "rowCount": 941,
-      "contentHash": "9df769069047de257d811ee65a32017bae50ab2f04cc002f962c0c940b2b9f65",
+      "contentHash": "b038215b48b21006c2e662283a9883e6d05e87cde713cb398c234ec6b9ee9d07",
       "status": "success"
     },
     {
-      "id": 3854,
+      "id": 3914,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "QB",
-      "fetchedAt": "2026-08-29T23:02:40.487Z",
-      "sourceLastUpdated": "2026-08-29T07:51:05.611Z",
+      "fetchedAt": "2026-08-30T15:40:03.105Z",
+      "sourceLastUpdated": "2026-08-30T07:51:08.545Z",
       "rowCount": 355,
-      "contentHash": "98b8d91870dbfff19c8c10ee60609d2f90829834b859a3af7ae93c352c28124f",
+      "contentHash": "828c8adcb60169160f2ff22cf156701ba32c1d07cbd3e6dc9dd3cb6b4a9c32da",
       "status": "success"
     },
     {
-      "id": 3853,
+      "id": 3913,
       "source": "fantasypros",
       "mode": "draft",
       "season": null,
       "week": null,
       "scoring": "half",
       "position": "QB",
-      "fetchedAt": "2026-08-29T23:02:26.608Z",
+      "fetchedAt": "2026-08-30T15:39:57.037Z",
       "sourceLastUpdated": null,
       "rowCount": 355,
-      "contentHash": "620d6556491b4b35a92c95336b33cd1d66b1243dcd7df99fdebb8b25dde5141a",
+      "contentHash": "c89d890b0a4fb0eef1bcaec47a54c60e124fbad31f5af6c88b4d3964a8663dcd",
       "status": "success"
     },
     {
-      "id": 3852,
+      "id": 3912,
       "source": "tiers",
       "mode": "draft",
       "season": null,
       "week": null,
       "scoring": "half",
       "position": "ALL",
-      "fetchedAt": "2026-08-29T23:02:04.138Z",
+      "fetchedAt": "2026-08-30T15:39:47.557Z",
       "sourceLastUpdated": null,
       "rowCount": 3228,
-      "contentHash": "129129717a390528ff71a39d982d6ad454b51cc098e0d3224a3cdbfe39dd1395",
+      "contentHash": "a00254a76e19d20990866baa802763c2fe6e9f99ecf4b2e092922ef3b269f409",
       "status": "success"
     },
     {
-      "id": 3851,
+      "id": 3911,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "FLEX",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:14.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:24.000Z",
       "rowCount": 95,
-      "contentHash": "a7ced9eb7f0357e6141419e73258a5fa5a4725a6d9ac45075bdbf0ccf864330f",
+      "contentHash": "855d75402d33eb1c71147b46ff159d819fc4b2680334e7e051ddf7d19d2cce27",
       "status": "success"
     },
     {
-      "id": 3850,
+      "id": 3910,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "DEF",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
       "rowCount": 20,
-      "contentHash": "200685a4aa79e46e0e813bf755103035615c5b290ab62a327c8fb00f51300133",
+      "contentHash": "d3985c54d17c363925ea4b628a22fd786b83c8b7a6bd32c8c411ca147e45f402",
       "status": "success"
     },
     {
-      "id": 3849,
+      "id": 3909,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "K",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
       "rowCount": 20,
-      "contentHash": "ab468731ac7027eed1521d4d94382873dd8be202d8ff6983903f1a1e465dcf4a",
+      "contentHash": "a8d78f5cf595759d7376c81203b211a92aeaebdf84f7e6e948de405b5a52d241",
       "status": "success"
     },
     {
-      "id": 3848,
+      "id": 3908,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "TE",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:14.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:24.000Z",
       "rowCount": 25,
-      "contentHash": "c20ec85d57fe70e20d95a8b22431ed4def9d58ebeb80613b0b65fc94824aa816",
+      "contentHash": "186558122a1252c3f5f1bd4c2f08abe2aea245102d9856fa2f1155a31080c944",
       "status": "success"
     },
     {
-      "id": 3847,
+      "id": 3907,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "WR",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:14.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:24.000Z",
       "rowCount": 60,
-      "contentHash": "d8079ac4403ffd65ad2540fbb8a4ad30e45c283ca275762b66a948be838fb11b",
+      "contentHash": "9367dcbde28fc5f77ee8bc6eed37e37e5662bb71993e3848df17bc9225643170",
       "status": "success"
     },
     {
-      "id": 3846,
+      "id": 3906,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "half",
       "position": "RB",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:14.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:24.000Z",
       "rowCount": 40,
-      "contentHash": "87350f3cbdea9cb7f2ef097c3a8984c368330d06e7c18e5fa610334098b3cd71",
+      "contentHash": "ae6b01c3e1f5768ccb09b96ca06aec02e28c30915489d47c82e3c0bcee18cda7",
       "status": "success"
     },
     {
-      "id": 3845,
+      "id": 3905,
       "source": "tiers",
       "mode": "draft",
       "season": null,
       "week": null,
       "scoring": "half",
       "position": "QB",
-      "fetchedAt": "2026-08-29T23:01:56.012Z",
+      "fetchedAt": "2026-08-30T15:39:43.567Z",
       "sourceLastUpdated": null,
       "rowCount": 355,
-      "contentHash": "a29627523ddc3293ab16ac62f708ef94b71dab60fae577aba020c27f0f090056",
+      "contentHash": "fea8130b2940650d21ae84583e069e0df4e31c687c1109970b8f4c6476593884",
       "status": "success"
     },
     {
-      "id": 3844,
+      "id": 3904,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "DEF",
-      "fetchedAt": "2026-08-29T23:01:55.938Z",
-      "sourceLastUpdated": "2026-08-29T07:51:06.171Z",
+      "fetchedAt": "2026-08-30T15:39:43.522Z",
+      "sourceLastUpdated": "2026-08-30T07:51:09.022Z",
       "rowCount": 32,
-      "contentHash": "510738f7b8b1bfabbc740fac41dbf6e18b588674bbab9ff717c2efe0ed8cd549",
+      "contentHash": "87b2dc632ec34388b6a69d293c775d2481b8b295d75d5bf9c284ec1e6e0e89cc",
       "status": "success"
     },
     {
-      "id": 3843,
+      "id": 3903,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "DEF",
-      "fetchedAt": "2026-08-29T22:59:36.000Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
-      "rowCount": 511,
-      "contentHash": "65678e5056177cafa42af409352dab42a0d201f78352b5b43f7bd86ed7b3441c",
+      "fetchedAt": "2026-08-30T15:38:14.000Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
+      "rowCount": 510,
+      "contentHash": "ee7b9864998e6f7f917b29c642f695dd3fdbe54493087a3b19eb3f07659599d3",
       "status": "success"
     },
     {
-      "id": 3842,
+      "id": 3902,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "K",
-      "fetchedAt": "2026-08-29T23:01:52.344Z",
-      "sourceLastUpdated": "2026-08-29T07:51:05.446Z",
+      "fetchedAt": "2026-08-30T15:39:41.829Z",
+      "sourceLastUpdated": "2026-08-30T07:51:08.435Z",
       "rowCount": 153,
       "contentHash": "4f7eedfc1e9342db99238b0a60ecdf27b9c0bd8eb91d59daeb30d4c0207dc6a0",
       "status": "success"
     },
     {
-      "id": 3841,
+      "id": 3901,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "K",
-      "fetchedAt": "2026-08-29T22:59:36.000Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
-      "rowCount": 511,
-      "contentHash": "14d930f34365dc7edac605efd8f987f384fc707b519a18e9526fe50e8a58aec0",
+      "fetchedAt": "2026-08-30T15:38:14.000Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
+      "rowCount": 510,
+      "contentHash": "4b7217cb03d9937325a5b9565f093acf94aa9d87767f5c5f5ef1c82d22f92d12",
       "status": "success"
     },
     {
-      "id": 3840,
+      "id": 3900,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "TE",
-      "fetchedAt": "2026-08-29T23:01:47.399Z",
-      "sourceLastUpdated": "2026-08-29T07:51:05.559Z",
+      "fetchedAt": "2026-08-30T15:39:39.641Z",
+      "sourceLastUpdated": "2026-08-30T07:51:08.508Z",
       "rowCount": 644,
       "contentHash": "75ff285596a817aa3abcb343530be9c3d6997f532a37b083fccc5bf48fbce1c1",
       "status": "success"
     },
     {
-      "id": 3839,
+      "id": 3899,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "TE",
-      "fetchedAt": "2026-08-29T22:59:36.000Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
-      "rowCount": 511,
-      "contentHash": "5472041a3927baaeb7f9670e712c4a126912b350514c5af10ddc50a0a5883b38",
+      "fetchedAt": "2026-08-30T15:38:14.000Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
+      "rowCount": 510,
+      "contentHash": "1d13e3a423791604897a371358833811d9ba24b7bccae2c41a909aa355cd8fcb",
       "status": "success"
     },
     {
-      "id": 3838,
+      "id": 3898,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "WR",
-      "fetchedAt": "2026-08-29T23:01:34.213Z",
-      "sourceLastUpdated": "2026-08-29T07:51:05.605Z",
+      "fetchedAt": "2026-08-30T15:39:33.838Z",
+      "sourceLastUpdated": "2026-08-30T07:51:08.538Z",
       "rowCount": 1366,
       "contentHash": "133184f7bc425260968a4f3aeea269a6877a84d1eb3ae39065cc0b05e7d25357",
       "status": "success"
     },
     {
-      "id": 3837,
+      "id": 3897,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "WR",
-      "fetchedAt": "2026-08-29T22:59:36.000Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
-      "rowCount": 511,
-      "contentHash": "fafe806019bdb9d7cb63cdfcd72779e66492a1614954d7103d284da8e56cb26d",
+      "fetchedAt": "2026-08-30T15:38:14.000Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
+      "rowCount": 510,
+      "contentHash": "8c9fcc67ac6f55777cfbf4cfed93af132a61f2ecbcb315d9bcf369f3967a38ae",
       "status": "success"
     },
     {
-      "id": 3836,
+      "id": 3896,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "RB",
-      "fetchedAt": "2026-08-29T23:01:06.739Z",
-      "sourceLastUpdated": "2026-08-29T07:51:05.609Z",
+      "fetchedAt": "2026-08-30T15:39:17.507Z",
+      "sourceLastUpdated": "2026-08-30T07:51:08.544Z",
       "rowCount": 678,
       "contentHash": "69f47e26ccc6cac238034367baba1de26b550499fb313b3530c24bc9489cb622",
       "status": "success"
     },
     {
-      "id": 3835,
+      "id": 3895,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "RB",
-      "fetchedAt": "2026-08-29T22:59:36.000Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
-      "rowCount": 511,
-      "contentHash": "0ec00076b129b6d2c34f2deb1b68b42f1a023d1c16b80a606bb6be5192afa48f",
+      "fetchedAt": "2026-08-30T15:38:14.000Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
+      "rowCount": 510,
+      "contentHash": "be3f980820ca41e440597c0400f755b16910027e7e713ce7971469add2866a10",
       "status": "success"
     },
     {
-      "id": 3834,
+      "id": 3894,
       "source": "sleeper",
       "mode": "projection",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "QB",
-      "fetchedAt": "2026-08-29T23:00:48.022Z",
-      "sourceLastUpdated": "2026-08-29T07:51:05.611Z",
+      "fetchedAt": "2026-08-30T15:39:08.884Z",
+      "sourceLastUpdated": "2026-08-30T07:51:08.545Z",
       "rowCount": 355,
       "contentHash": "a80d890a5e5abd730ffed321da8d05f45dc7e16c5ac6d5eafcf6b8cee1c2f2c0",
       "status": "success"
     },
     {
-      "id": 3833,
+      "id": 3893,
       "source": "fantasypros",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "QB",
-      "fetchedAt": "2026-08-29T22:59:36.000Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
-      "rowCount": 511,
-      "contentHash": "9467e1dadb540e157f67485c329b082ad225e00220337b0cce792737854575fe",
+      "fetchedAt": "2026-08-30T15:38:14.000Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
+      "rowCount": 510,
+      "contentHash": "954f98889a423087a6e99b89937ab21aead502ef25221a23765f46b47adffb38",
       "status": "success"
     },
     {
-      "id": 3832,
+      "id": 3892,
       "source": "tiers",
       "mode": "draft",
       "season": null,
       "week": null,
       "scoring": "std",
       "position": "ALL",
-      "fetchedAt": "2026-08-29T23:00:25.007Z",
+      "fetchedAt": "2026-08-30T15:38:58.677Z",
       "sourceLastUpdated": null,
       "rowCount": 3228,
-      "contentHash": "9063a0e0390ccaa4af035b18280e9c161f95bce648b59e65f1dc1dad3076ef4c",
+      "contentHash": "8a86074fdfe32ecb23cdbd85fa660622a9e7b2bbf8597a2488ff5190505d8b3d",
       "status": "success"
     },
     {
-      "id": 3831,
+      "id": 3891,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "FLEX",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
       "rowCount": 95,
-      "contentHash": "f5c1c06d9eb697fe53e5c6f37c624fa9753d041753d6a3d1843d3a2bc0fc1060",
+      "contentHash": "9b777995bd652317cb7317eaef1cb25a7fe62159687b04bc8a1767cfbfb8b948",
       "status": "success"
     },
     {
-      "id": 3830,
+      "id": 3890,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "DEF",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
       "rowCount": 20,
-      "contentHash": "6f29820702619d3e18c6ca5a320879027da8ae3a947d6c4e8378a4a6bc36c1ac",
+      "contentHash": "26d258737a3ac2e1bf72580de556162dd5f43a677369c288ccfa398222d7a67f",
       "status": "success"
     },
     {
-      "id": 3829,
+      "id": 3889,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "K",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
       "rowCount": 20,
-      "contentHash": "95a3ff01ea87b351aa140a33c4c2a425118693d8ac7b2337635a59631a7c2e35",
+      "contentHash": "ddbf06a38fe5c13baddd8f698b4fa21f0a726536537eb268428cfa45499c4170",
       "status": "success"
     },
     {
-      "id": 3828,
+      "id": 3888,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "TE",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
       "rowCount": 24,
-      "contentHash": "d8f063997851122864e372aa005d211064feac691027d619ec78564d338b46af",
+      "contentHash": "288e9948ca46caea7557ab92bc8362e1fe2f02ba8c6a7d9496bcc5f76840506d",
       "status": "success"
     },
     {
-      "id": 3827,
+      "id": 3887,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "WR",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
       "rowCount": 60,
-      "contentHash": "4d013ded3c8208bbf6a2e03802a2f1d89651d8ebdd2a74447ca4279ccebb7ac2",
+      "contentHash": "e9cd23bca08869b7d7477f8968309afa57a8d63aba8422e7a23b7ef4f63a2ddf",
       "status": "success"
     },
     {
-      "id": 3826,
+      "id": 3886,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "RB",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
       "rowCount": 40,
-      "contentHash": "99516f974bdbb3d98c749444fcee641bfb2216f7ba415ca946a00b9e4390c279",
+      "contentHash": "dc0658e701328591e478fc8db25439ecbd77869236b1014452dcaa47634dbb25",
       "status": "success"
     },
     {
-      "id": 3825,
+      "id": 3885,
       "source": "tiers",
       "mode": "draft",
       "season": 2026,
       "week": null,
       "scoring": "std",
       "position": "QB",
-      "fetchedAt": "2026-08-29T22:59:39.318Z",
-      "sourceLastUpdated": "2026-08-29T22:45:16.000Z",
+      "fetchedAt": "2026-08-30T15:38:16.929Z",
+      "sourceLastUpdated": "2026-08-30T15:21:25.000Z",
       "rowCount": 26,
-      "contentHash": "8d6b02ef760dfb8264648c0fadb6eb187edeee944f8873d7a7ef4507bbe94db4",
+      "contentHash": "0ff3039d4d9cf04c02185d5692ad61de3ccc5b44cb3ff31fd8d1b94e1ed43ba8",
       "status": "success"
     }
   ],
@@ -861,7 +861,7 @@
       "currentCount": 32,
       "presentCount": 32,
       "absentCount": 0,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "fantasypros",
@@ -871,7 +871,7 @@
       "currentCount": 154,
       "presentCount": 40,
       "absentCount": 114,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "fantasypros",
@@ -881,7 +881,7 @@
       "currentCount": 355,
       "presentCount": 96,
       "absentCount": 259,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "fantasypros",
@@ -891,7 +891,7 @@
       "currentCount": 679,
       "presentCount": 214,
       "absentCount": 465,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "fantasypros",
@@ -901,7 +901,7 @@
       "currentCount": 644,
       "presentCount": 197,
       "absentCount": 447,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "fantasypros",
@@ -911,7 +911,7 @@
       "currentCount": 1368,
       "presentCount": 349,
       "absentCount": 1019,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "fantasypros",
@@ -921,7 +921,7 @@
       "currentCount": 32,
       "presentCount": 32,
       "absentCount": 0,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "fantasypros",
@@ -931,7 +931,7 @@
       "currentCount": 154,
       "presentCount": 40,
       "absentCount": 114,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "fantasypros",
@@ -941,7 +941,7 @@
       "currentCount": 355,
       "presentCount": 96,
       "absentCount": 259,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "fantasypros",
@@ -951,7 +951,7 @@
       "currentCount": 679,
       "presentCount": 214,
       "absentCount": 465,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "fantasypros",
@@ -961,7 +961,7 @@
       "currentCount": 644,
       "presentCount": 197,
       "absentCount": 447,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "fantasypros",
@@ -971,7 +971,7 @@
       "currentCount": 1368,
       "presentCount": 349,
       "absentCount": 1019,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "fantasypros",
@@ -981,7 +981,7 @@
       "currentCount": 32,
       "presentCount": 32,
       "absentCount": 0,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "fantasypros",
@@ -991,7 +991,7 @@
       "currentCount": 154,
       "presentCount": 40,
       "absentCount": 114,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "fantasypros",
@@ -1001,7 +1001,7 @@
       "currentCount": 355,
       "presentCount": 96,
       "absentCount": 259,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "fantasypros",
@@ -1011,7 +1011,7 @@
       "currentCount": 679,
       "presentCount": 214,
       "absentCount": 465,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "fantasypros",
@@ -1021,7 +1021,7 @@
       "currentCount": 644,
       "presentCount": 197,
       "absentCount": 447,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "fantasypros",
@@ -1031,7 +1031,7 @@
       "currentCount": 1368,
       "presentCount": 349,
       "absentCount": 1019,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "sleeper",
@@ -1101,7 +1101,7 @@
       "currentCount": 32,
       "presentCount": 32,
       "absentCount": 0,
-      "latestEffectiveFrom": "2026-08-29T15:53:14.138Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "sleeper",
@@ -1111,7 +1111,7 @@
       "currentCount": 154,
       "presentCount": 154,
       "absentCount": 0,
-      "latestEffectiveFrom": "2026-08-29T15:53:14.138Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "sleeper",
@@ -1121,7 +1121,7 @@
       "currentCount": 355,
       "presentCount": 355,
       "absentCount": 0,
-      "latestEffectiveFrom": "2026-08-29T15:53:14.138Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "sleeper",
@@ -1131,7 +1131,7 @@
       "currentCount": 679,
       "presentCount": 679,
       "absentCount": 0,
-      "latestEffectiveFrom": "2026-08-29T15:53:14.138Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "sleeper",
@@ -1141,7 +1141,7 @@
       "currentCount": 644,
       "presentCount": 644,
       "absentCount": 0,
-      "latestEffectiveFrom": "2026-08-29T15:53:14.138Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "sleeper",
@@ -1151,7 +1151,7 @@
       "currentCount": 1368,
       "presentCount": 1368,
       "absentCount": 0,
-      "latestEffectiveFrom": "2026-08-29T15:53:14.138Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "sleeper",
@@ -1161,7 +1161,7 @@
       "currentCount": 32,
       "presentCount": 32,
       "absentCount": 0,
-      "latestEffectiveFrom": "2026-08-29T15:53:14.138Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "sleeper",
@@ -1171,7 +1171,7 @@
       "currentCount": 154,
       "presentCount": 154,
       "absentCount": 0,
-      "latestEffectiveFrom": "2026-08-29T15:53:14.138Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "sleeper",
@@ -1181,7 +1181,7 @@
       "currentCount": 355,
       "presentCount": 355,
       "absentCount": 0,
-      "latestEffectiveFrom": "2026-08-29T15:53:14.138Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "sleeper",
@@ -1191,7 +1191,7 @@
       "currentCount": 679,
       "presentCount": 679,
       "absentCount": 0,
-      "latestEffectiveFrom": "2026-08-29T15:53:14.138Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "sleeper",
@@ -1201,7 +1201,7 @@
       "currentCount": 644,
       "presentCount": 644,
       "absentCount": 0,
-      "latestEffectiveFrom": "2026-08-29T15:53:14.138Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "sleeper",
@@ -1211,7 +1211,7 @@
       "currentCount": 1368,
       "presentCount": 1368,
       "absentCount": 0,
-      "latestEffectiveFrom": "2026-08-29T15:53:14.138Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1221,7 +1221,7 @@
       "currentCount": 3232,
       "presentCount": 200,
       "absentCount": 3032,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1231,7 +1231,7 @@
       "currentCount": 32,
       "presentCount": 20,
       "absentCount": 12,
-      "latestEffectiveFrom": "2026-08-29T15:53:14.138Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1241,7 +1241,7 @@
       "currentCount": 2691,
       "presentCount": 95,
       "absentCount": 2596,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1251,7 +1251,7 @@
       "currentCount": 154,
       "presentCount": 20,
       "absentCount": 134,
-      "latestEffectiveFrom": "2026-08-29T03:05:37.121Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1261,7 +1261,7 @@
       "currentCount": 355,
       "presentCount": 26,
       "absentCount": 329,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1271,7 +1271,7 @@
       "currentCount": 679,
       "presentCount": 40,
       "absentCount": 639,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1281,7 +1281,7 @@
       "currentCount": 644,
       "presentCount": 24,
       "absentCount": 620,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1291,7 +1291,7 @@
       "currentCount": 1368,
       "presentCount": 60,
       "absentCount": 1308,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1301,7 +1301,7 @@
       "currentCount": 3232,
       "presentCount": 200,
       "absentCount": 3032,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1311,7 +1311,7 @@
       "currentCount": 32,
       "presentCount": 20,
       "absentCount": 12,
-      "latestEffectiveFrom": "2026-08-29T15:53:14.138Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1321,7 +1321,7 @@
       "currentCount": 2691,
       "presentCount": 95,
       "absentCount": 2596,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1331,7 +1331,7 @@
       "currentCount": 154,
       "presentCount": 20,
       "absentCount": 134,
-      "latestEffectiveFrom": "2026-08-29T03:05:37.121Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1341,7 +1341,7 @@
       "currentCount": 355,
       "presentCount": 26,
       "absentCount": 329,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1351,7 +1351,7 @@
       "currentCount": 679,
       "presentCount": 40,
       "absentCount": 639,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1361,7 +1361,7 @@
       "currentCount": 644,
       "presentCount": 25,
       "absentCount": 619,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1371,7 +1371,7 @@
       "currentCount": 1368,
       "presentCount": 60,
       "absentCount": 1308,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1381,7 +1381,7 @@
       "currentCount": 3232,
       "presentCount": 200,
       "absentCount": 3032,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1391,7 +1391,7 @@
       "currentCount": 32,
       "presentCount": 20,
       "absentCount": 12,
-      "latestEffectiveFrom": "2026-08-29T15:53:14.138Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1401,7 +1401,7 @@
       "currentCount": 2691,
       "presentCount": 95,
       "absentCount": 2596,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1411,7 +1411,7 @@
       "currentCount": 154,
       "presentCount": 20,
       "absentCount": 134,
-      "latestEffectiveFrom": "2026-08-29T03:05:37.121Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1421,7 +1421,7 @@
       "currentCount": 355,
       "presentCount": 26,
       "absentCount": 329,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1431,7 +1431,7 @@
       "currentCount": 679,
       "presentCount": 40,
       "absentCount": 639,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1441,7 +1441,7 @@
       "currentCount": 644,
       "presentCount": 25,
       "absentCount": 619,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     },
     {
       "source": "tiers",
@@ -1451,10 +1451,67 @@
       "currentCount": 1368,
       "presentCount": 60,
       "absentCount": 1308,
-      "latestEffectiveFrom": "2026-08-29T23:00:14.411Z"
+      "latestEffectiveFrom": "2026-08-30T15:38:51.061Z"
     }
   ],
   "missingWithPrior": [
+    {
+      "id": 166807,
+      "playerId": "9506",
+      "name": "sean tucker",
+      "position": "RB",
+      "team": "TB",
+      "byeWeek": 10,
+      "source": "tiers",
+      "mode": "draft",
+      "scoring": "std",
+      "positionScope": "ALL",
+      "effectiveFrom": "2026-08-30T15:38:51.061Z",
+      "lastPresentAt": "2026-08-29T23:00:14.411Z",
+      "lastRankOverall": 200,
+      "lastRankPosition": null,
+      "lastTier": 26,
+      "lastPoints": null,
+      "lastAdp": null
+    },
+    {
+      "id": 167481,
+      "playerId": "4039",
+      "name": "cooper kupp",
+      "position": "WR",
+      "team": "SEA",
+      "byeWeek": 11,
+      "source": "tiers",
+      "mode": "draft",
+      "scoring": "half",
+      "positionScope": "ALL",
+      "effectiveFrom": "2026-08-30T15:38:51.061Z",
+      "lastPresentAt": "2026-08-29T23:00:14.411Z",
+      "lastRankOverall": 200,
+      "lastRankPosition": null,
+      "lastTier": 26,
+      "lastPoints": null,
+      "lastAdp": null
+    },
+    {
+      "id": 167471,
+      "playerId": "13294",
+      "name": "makai lemon",
+      "position": "WR",
+      "team": "PHI",
+      "byeWeek": 10,
+      "source": "tiers",
+      "mode": "draft",
+      "scoring": "half",
+      "positionScope": "FLEX",
+      "effectiveFrom": "2026-08-30T15:38:51.061Z",
+      "lastPresentAt": "2026-08-29T15:53:14.138Z",
+      "lastRankOverall": 95,
+      "lastRankPosition": null,
+      "lastTier": 15,
+      "lastPoints": null,
+      "lastAdp": null
+    },
     {
       "id": 165470,
       "playerId": "11533",
@@ -1469,25 +1526,6 @@
       "effectiveFrom": "2026-08-29T23:00:14.411Z",
       "lastPresentAt": "2026-08-29T15:53:14.138Z",
       "lastRankOverall": 198,
-      "lastRankPosition": null,
-      "lastTier": 26,
-      "lastPoints": null,
-      "lastAdp": null
-    },
-    {
-      "id": 164838,
-      "playerId": "3257",
-      "name": "jacoby brissett",
-      "position": "QB",
-      "team": "ARI",
-      "byeWeek": 14,
-      "source": "tiers",
-      "mode": "draft",
-      "scoring": "std",
-      "positionScope": "ALL",
-      "effectiveFrom": "2026-08-29T23:00:14.411Z",
-      "lastPresentAt": "2026-08-29T03:05:37.121Z",
-      "lastRankOverall": 200,
       "lastRankPosition": null,
       "lastTier": 26,
       "lastPoints": null,
@@ -1718,25 +1756,6 @@
       "lastRankOverall": 489,
       "lastRankPosition": 132,
       "lastTier": 16,
-      "lastPoints": null,
-      "lastAdp": null
-    },
-    {
-      "id": 157486,
-      "playerId": "10236",
-      "name": "dalton kincaid",
-      "position": "TE",
-      "team": "BUF",
-      "byeWeek": 7,
-      "source": "tiers",
-      "mode": "draft",
-      "scoring": "half",
-      "positionScope": "FLEX",
-      "effectiveFrom": "2026-08-28T21:34:53.949Z",
-      "lastPresentAt": "2026-08-28T05:07:29.160Z",
-      "lastRankOverall": 95,
-      "lastRankPosition": null,
-      "lastTier": 15,
       "lastPoints": null,
       "lastAdp": null
     },
