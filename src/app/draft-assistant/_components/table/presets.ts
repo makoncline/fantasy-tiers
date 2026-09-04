@@ -1,6 +1,12 @@
+import { createElement } from "react";
+import {
+  formatComeback,
+  formatSleeperEcrEdge,
+  sleeperEcrEdge,
+} from "@/app/draft-assistant/_lib/draftBoardDisplay";
 import type { PlayerWithPick } from "@/lib/types.draft";
-import type { ColumnDef, ColumnGroup } from "./columns";
-import { fmt } from "@/lib/formatters";
+import type { ColumnGroup } from "./columns";
+import { PlayerSummaryCell } from "./PlayerSummaryCell";
 
 export const DRAFT_VALUE_DESCRIPTIONS = {
   raw:
@@ -15,56 +21,6 @@ export function formatDraftValue(value: number | string | null | undefined) {
     : "—";
 }
 
-const col = <K extends keyof PlayerWithPick>(
-  id: string,
-  key: K,
-  opts: Partial<ColumnDef<PlayerWithPick>> = {}
-): ColumnDef<PlayerWithPick> => ({
-  id,
-  header: id.toUpperCase(),
-  accessor: (r) => r[key] as number | string | null | undefined,
-  sortAs: "number",
-  nulls: "last",
-  ...opts,
-});
-
-function positionRank(row: PlayerWithPick) {
-  return typeof row.fp_rank_pos === "number" && row.position
-    ? `${String(row.position).toUpperCase()}${row.fp_rank_pos}`
-    : "—";
-}
-
-function nameWithPositionRank(name: unknown, row: PlayerWithPick) {
-  const rank = positionRank(row);
-  const suffix = rank === "—" ? row.position : rank;
-  return `${name} (${suffix})`;
-}
-
-function formatAdpWithDelta(row: PlayerWithPick) {
-  const adp = row.sleeper_adp_round_pick ?? "—";
-  if (
-    typeof row.draft_adp_delta_rounds !== "number" ||
-    Math.abs(row.draft_adp_delta_rounds) < 0.5
-  ) {
-    return adp;
-  }
-
-  const rounded = Number(row.draft_adp_delta_rounds.toFixed(1));
-  const delta = `${rounded > 0 ? "+" : ""}${rounded}`;
-  return `${adp} (${delta})`;
-}
-
-function formatOverallWithSleeperDelta(row: PlayerWithPick) {
-  const fpRank = row.fp_rank_ave;
-  if (typeof fpRank !== "number") return "—";
-  const formattedFpRank = fpRank % 1 === 0 ? String(fpRank) : fpRank.toFixed(1);
-  if (typeof row.sleeper_rank_overall !== "number") return formattedFpRank;
-
-  const delta = row.sleeper_rank_overall - fpRank;
-  const formattedDelta = delta % 1 === 0 ? String(delta) : delta.toFixed(1);
-  return `${formattedFpRank} (${delta > 0 ? "+" : ""}${formattedDelta})`;
-}
-
 function formatOverallAndPositionTier(row: PlayerWithPick) {
   const overallTier = row.tier_level ?? row.fp_tier ?? row.tier;
   const positionTier = row.position_tier_level;
@@ -76,51 +32,26 @@ function formatOverallAndPositionTier(row: PlayerWithPick) {
 
 export const GROUPS_FULL: ColumnGroup<PlayerWithPick>[] = [
   {
-    header: "Player",
+    header: "Draft board",
     children: [
       {
         id: "name",
-        header: "Name",
+        header: "Player",
         accessor: (r) => r.name,
         sortAs: "string",
-        width: "18ch",
-        render: (name, r) => nameWithPositionRank(name, r),
-      },
-      {
-        id: "ovr",
-        header: "ECR (Sleeper Δ)",
-        description:
-          "FantasyPros ECR average, with Sleeper overall rank delta in parentheses.",
-        accessor: (r) => r.fp_rank_ave ?? null,
-        sortable: true,
-        sortAs: "number",
-        width: "9ch",
-        render: (_, r) => formatOverallWithSleeperDelta(r),
-      },
-      {
-        id: "tm_bw",
-        header: "Team / Bye",
-        accessor: (r) => fmt.teamBye(r),
-        sortable: true,
-        sortAs: "string",
-        width: "7ch",
+        width: "22ch",
+        render: (_, row) => createElement(PlayerSummaryCell, { row }),
       },
       {
         id: "tier_level",
-        header: "Tier (overall / pos)",
-        description:
-          "FantasyPros overall tier / FantasyPros position tier.",
+        header: "Tier",
+        description: "FantasyPros overall tier / position tier.",
         accessor: (r) => r.tier_level ?? r.fp_tier ?? r.tier ?? null,
-        sortAs: "number",
         sortable: true,
-        width: "8ch",
-        render: (_, r) => formatOverallAndPositionTier(r),
+        sortAs: "number",
+        width: "6ch",
+        render: (_, row) => formatOverallAndPositionTier(row),
       },
-    ],
-  },
-  {
-    header: "Pick",
-    children: [
       {
         id: "raw",
         header: "VAL",
@@ -145,44 +76,48 @@ export const GROUPS_FULL: ColumnGroup<PlayerWithPick>[] = [
         render: formatDraftValue,
       },
       {
-        id: "adp",
-        header: "ADP (delta)",
-        description:
-          "Sleeper ADP round/pick. Delta only appears at 0.5+ rounds: +N means the player might be drafted later, -N means the player might go earlier.",
+        id: "ecr",
+        header: "ECR",
+        description: "FantasyPros expert consensus rank.",
+        accessor: (r) => r.fp_rank_ave ?? null,
+        sortable: true,
+        sortAs: "number",
+        width: "6ch",
+        render: formatDraftValue,
+      },
+      {
+        id: "sleeper_adp",
+        header: "Sleeper ADP",
+        description: "Sleeper average draft position as round.pick.",
         accessor: (r) => r.sleeper_adp ?? null,
         sortable: true,
         sortAs: "number",
-        width: "12ch",
-        render: (_, r) => formatAdpWithDelta(r),
+        nulls: "last",
+        width: "9ch",
+        render: (_, row) => row.sleeper_adp_round_pick ?? "—",
       },
-    ],
-  },
-];
-
-export const GROUPS_COMPACT_FULL: ColumnGroup<PlayerWithPick>[] = [
-  {
-    header: "Player",
-    children: GROUPS_FULL[0]?.children ?? [],
-  },
-  {
-    header: "Pick",
-    children: GROUPS_FULL[1]?.children ?? [],
-  },
-];
-
-export const GROUPS_COMPACT_NAMEONLY: ColumnGroup<PlayerWithPick>[] = [
-  {
-    header: " ",
-    children: [
-      col("tier_rnk", "tier_rank", { header: "RNK", width: "4ch" }),
       {
-        id: "name",
-        header: "Name",
-        accessor: (r) => r.name,
+        id: "market_edge",
+        header: "Sleeper vs ECR",
+        description:
+          "Sleeper ADP minus FantasyPros ECR. Later means Sleeper drafters may wait longer than expert consensus.",
+        accessor: sleeperEcrEdge,
         sortable: true,
-        sortAs: "string",
-        width: "16ch",
-        render: (name, r) => nameWithPositionRank(name, r),
+        sortAs: "number",
+        nulls: "last",
+        width: "11ch",
+        render: (_, row) => formatSleeperEcrEdge(row),
+      },
+      {
+        id: "back",
+        header: "Back?",
+        description: "Chance that the player is available at your next pick.",
+        accessor: (row) => row.draft_comeback_probability ?? null,
+        sortable: true,
+        sortAs: "number",
+        nulls: "last",
+        width: "10ch",
+        render: (_, row) => formatComeback(row),
       },
     ],
   },

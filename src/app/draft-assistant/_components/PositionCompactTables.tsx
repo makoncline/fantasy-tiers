@@ -1,6 +1,20 @@
 import React from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { EyeIcon } from "lucide-react";
+
+import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
+import {
+  DRAFT_BOARD_POSITIONS,
+  draftBoardRows,
+  formatComeback,
+  formatSleeperEcrEdge,
+  isRosterLegalPlayer,
+  isRosterLegalPosition,
+  POSITION_PLAYER_LIMIT,
+  sleeperEcrEdge,
+} from "@/app/draft-assistant/_lib/draftBoardDisplay";
+import type { DraftPickAction } from "@/app/draft-assistant/_lib/types";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -8,42 +22,69 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
-import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
-import { normalizePosition } from "@/lib/util";
-import { PlayerTable } from "./PlayerTable";
-
+import type { Position, RosterSlot } from "@/lib/schemas";
 import type { PlayerWithPick } from "@/lib/types.draft";
+
+import { PlayerTable } from "./PlayerTable";
+import PreviewPickDialog, { type PreviewPickPlayer } from "./PreviewPickDialog";
 import PlayersTableBase from "./table/PlayersTableBase";
+import { PlayerSummaryCell } from "./table/PlayerSummaryCell";
 import type { ColumnGroup } from "./table/columns";
 import {
   DRAFT_VALUE_DESCRIPTIONS,
   formatDraftValue,
 } from "./table/presets";
 
-import PreviewPickDialog, { type PreviewPickPlayer } from "./PreviewPickDialog";
-import { CheckIcon, EyeIcon } from "lucide-react";
-import type { DraftPickAction } from "@/app/draft-assistant/_lib/types";
-import { canAddPositionToRoster } from "@/lib/draftRosterPolicy";
-
-// Compact position tables: fixed columns and non-sortable, grouped by Tiers tiers
 interface PositionCompactTablesProps {
-  showAll?: boolean;
-  setShowAll?: (value: boolean) => void;
-  showDrafted?: boolean;
-  setShowDrafted?: (value: boolean) => void;
-  showUnranked?: boolean;
-  setShowUnranked?: (value: boolean) => void;
   pickAction?: DraftPickAction | undefined;
 }
 
+type PositionSection = {
+  position: Position;
+  rows: PlayerWithPick[];
+  rosterCount: number;
+  rosterRequirement: number;
+  leagueNeeds: number;
+  tierRemaining: number;
+};
+
+function isConfiguredPosition(
+  position: Position,
+  requirements: Partial<Record<RosterSlot, number>>
+) {
+  if (position === "RB" || position === "WR" || position === "TE") {
+    return (
+      (requirements[position] ?? 0) > 0 || (requirements.FLEX ?? 0) > 0
+    );
+  }
+  return (requirements[position] ?? 0) > 0;
+}
+
+function tierRemaining(rows: readonly PlayerWithPick[]) {
+  const sorted = [...rows].sort(
+    (a, b) =>
+      (b.draft_value_score ?? Number.NEGATIVE_INFINITY) -
+      (a.draft_value_score ?? Number.NEGATIVE_INFINITY)
+  );
+  const tier = sorted[0]?.position_tier_level;
+  if (tier == null) return 0;
+  return sorted.filter((row) => row.position_tier_level === tier).length;
+}
+
+function toPreviewPlayer(row: PlayerWithPick): PreviewPickPlayer {
+  return {
+    ...row,
+    bye_week: row.bye_week != null ? String(row.bye_week) : null,
+    rank: row.tier_rank ?? row.rank ?? 0,
+    tier: row.tier_level ?? row.tier ?? 0,
+  };
+}
+
+function formatCount(value: number) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+}
+
 export default function PositionCompactTables({
-  showAll: externalShowAll,
-  setShowAll: externalSetShowAll,
-  showDrafted: externalShowDrafted,
-  setShowDrafted: externalSetShowDrafted,
-  showUnranked: externalShowUnranked,
-  setShowUnranked: externalSetShowUnranked,
   pickAction,
 }: PositionCompactTablesProps = {}) {
   const {
@@ -52,171 +93,165 @@ export default function PositionCompactTables({
     userPositionCounts,
     userPositionRequirements,
     getRosterStatus,
-    showAll,
-    setShowAll,
-    showDrafted,
-    setShowDrafted,
-    showUnranked,
-    setShowUnranked,
+    draftContext,
+    showDiagnostics,
   } = useDraftData();
-  const valueColorDomainRef = React.useRef<PlayerWithPick[]>([]);
-  if (
-    valueColorDomainRef.current.length === 0 &&
-    playersByPosition?.ALL?.some(
-      (player) => typeof player.draft_value_score === "number"
-    )
-  ) {
-    valueColorDomainRef.current = playersByPosition.ALL;
-  }
-
-  // Use drafted lookups hook
-  // Remove useDraftedLookups - using enriched data from context
-
-  const DEFAULT_POS_TABLE_LIMIT = 10;
-  const [openLabel, setOpenLabel] = React.useState<string | null>(null);
+  const [openPosition, setOpenPosition] = React.useState<Position | null>(null);
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const [previewPlayer, setPreviewPlayer] =
     React.useState<PreviewPickPlayer | null>(null);
 
-  // Use external state if provided, otherwise use context state
-  const actualShowAll = externalShowAll ?? showAll;
-  const actualSetShowAll = externalSetShowAll ?? setShowAll;
-  const actualShowDrafted = externalShowDrafted ?? showDrafted;
-  const actualSetShowDrafted = externalSetShowDrafted ?? setShowDrafted;
-  const actualShowUnranked = externalShowUnranked ?? showUnranked;
-  const actualSetShowUnranked = externalSetShowUnranked ?? setShowUnranked;
+  const openPreview = React.useCallback((row: PlayerWithPick) => {
+    setPreviewPlayer(toPreviewPlayer(row));
+    setPreviewOpen(true);
+  }, []);
 
-  const onPreview = React.useCallback(
-    (row: PlayerWithPick) => {
-      // Use the enriched row directly since it already has pick data
-      let found = row;
+  const sections = React.useMemo<PositionSection[]>(() => {
+    if (!playersByPosition) return [];
 
-      if (found && userRosterSlots && userRosterSlots.length > 0) {
-        // Convert found player to RankedPlayer format
-        const rankedPlayer: PreviewPickPlayer = {
-          ...found,
-          player_id: found.player_id,
-          name: found.name,
-          position: found.position,
-          team: found.team,
-          bye_week: found.bye_week != null ? String(found.bye_week) : null,
-          rank: found.rank || 0,
-          tier: found.tier || 0,
-        };
-        setPreviewPlayer(rankedPlayer);
-        setPreviewOpen(true);
-      } else {
-        // If we can't find the player, try to create a basic player object for preview
-        if (userRosterSlots && userRosterSlots.length > 0) {
-          const fallbackPlayer: PreviewPickPlayer = {
-            ...row,
-            player_id: row.player_id,
-            name: row.name,
-            position: row.position,
-            team: row.team,
-            bye_week:
-              typeof row.bye_week === "number"
-                ? row.bye_week.toString()
-                : row.bye_week,
-            rank: row.rank || 0,
-            tier: row.tier || 0,
-          };
-          setPreviewPlayer(fallbackPlayer);
-          setPreviewOpen(true);
-        }
+    return DRAFT_BOARD_POSITIONS.flatMap((position) => {
+      if (!isConfiguredPosition(position, userPositionRequirements)) return [];
+      if (
+        !showDiagnostics &&
+        !isRosterLegalPosition(
+          position,
+          userPositionCounts,
+          userPositionRequirements
+        )
+      ) {
+        return [];
       }
-    },
-    [userRosterSlots]
+
+      const rows = draftBoardRows({
+        rows: playersByPosition[position],
+        diagnostics: showDiagnostics,
+        counts: userPositionCounts,
+        requirements: userPositionRequirements,
+      });
+      if (rows.length === 0) return [];
+
+      const roster = getRosterStatus(position);
+      const outlook = draftContext?.positionOutlook.find(
+        (item) => item.position === position
+      );
+      return [
+        {
+          position,
+          rows,
+          rosterCount: roster.count,
+          rosterRequirement: roster.requirement,
+          leagueNeeds: outlook?.leagueStarterSlotsRemaining ?? 0,
+          tierRemaining: tierRemaining(rows),
+        },
+      ];
+    });
+  }, [
+    draftContext,
+    getRosterStatus,
+    playersByPosition,
+    showDiagnostics,
+    userPositionCounts,
+    userPositionRequirements,
+  ]);
+
+  const compactGroups = React.useMemo<ColumnGroup<PlayerWithPick>[]>(
+    () => [
+      {
+        header: "Position",
+        children: [
+          {
+            id: "name",
+            header: "Player",
+            accessor: (row) => row.name,
+            sortable: true,
+            sortAs: "string",
+            width: "18ch",
+            render: (_, row) => <PlayerSummaryCell row={row} />,
+          },
+          {
+            id: "position_tier",
+            header: "Tier",
+            description: "FantasyPros position tier.",
+            accessor: (row) => row.position_tier_level ?? null,
+            sortable: true,
+            sortAs: "number",
+            nulls: "last",
+            width: "5ch",
+          },
+          {
+            id: "raw",
+            header: "VAL",
+            description: DRAFT_VALUE_DESCRIPTIONS.raw,
+            accessor: (row) => row.draft_raw_value_score ?? null,
+            sortable: true,
+            sortAs: "number",
+            nulls: "last",
+            width: "6ch",
+            render: formatDraftValue,
+          },
+          {
+            id: "adj",
+            header: "ADJ",
+            description: DRAFT_VALUE_DESCRIPTIONS.adjusted,
+            accessor: (row) => row.draft_value_score ?? null,
+            sortable: true,
+            sortAs: "number",
+            nulls: "last",
+            defaultDir: "desc",
+            heat: { scale: "val" },
+            width: "6ch",
+            render: formatDraftValue,
+          },
+          {
+            id: "ecr",
+            header: "ECR",
+            description: "FantasyPros expert consensus rank.",
+            accessor: (row) => row.fp_rank_ave ?? null,
+            sortable: true,
+            sortAs: "number",
+            nulls: "last",
+            width: "6ch",
+            render: formatDraftValue,
+          },
+          {
+            id: "adp",
+            header: "ADP",
+            description: "Sleeper average draft position.",
+            accessor: (row) => row.sleeper_adp ?? null,
+            sortable: true,
+            sortAs: "number",
+            nulls: "last",
+            width: "6ch",
+            render: (_, row) => row.sleeper_adp_round_pick ?? "—",
+          },
+          {
+            id: "market_edge",
+            header: "Edge",
+            description:
+              "Sleeper ADP minus FantasyPros ECR. Later can be a market value.",
+            accessor: sleeperEcrEdge,
+            sortable: true,
+            sortAs: "number",
+            nulls: "last",
+            width: "9ch",
+            render: (_, row) => formatSleeperEcrEdge(row),
+          },
+          {
+            id: "back",
+            header: "Back?",
+            description: "Chance that the player is available at your next pick.",
+            accessor: (row) => row.draft_comeback_probability ?? null,
+            sortable: true,
+            sortAs: "number",
+            nulls: "last",
+            width: "9ch",
+            render: (_, row) => formatComeback(row),
+          },
+        ],
+      },
+    ],
+    []
   );
-
-  const sections: [string, PlayerWithPick[]][] = [
-    ["QB", playersByPosition?.QB ?? []],
-    ["RB", playersByPosition?.RB ?? []],
-    ["WR", playersByPosition?.WR ?? []],
-    ["FLEX", playersByPosition?.FLEX ?? []],
-    ["TE", playersByPosition?.TE ?? []],
-    ["DEF", playersByPosition?.DEF ?? []],
-    ["K", playersByPosition?.K ?? []],
-  ];
-
-  const compactGroups: ColumnGroup<PlayerWithPick>[] = [
-    {
-      header: "Players",
-      children: [
-        {
-          id: "name",
-          header: "Name",
-          accessor: (row) => row.name,
-          sortable: true,
-          sortAs: "string",
-          width: "16ch",
-        },
-        {
-          id: "position_tier",
-          header: "Tier",
-          description: "FantasyPros position tier.",
-          accessor: (row) => row.position_tier_level ?? null,
-          sortable: true,
-          sortAs: "number",
-          nulls: "last",
-          width: "5ch",
-        },
-        {
-          id: "raw",
-          header: "VAL",
-          description: DRAFT_VALUE_DESCRIPTIONS.raw,
-          accessor: (row) => row.draft_raw_value_score ?? null,
-          sortable: true,
-          sortAs: "number",
-          nulls: "last",
-          width: "6ch",
-          render: formatDraftValue,
-        },
-        {
-          id: "adj",
-          header: "ADJ",
-          description: DRAFT_VALUE_DESCRIPTIONS.adjusted,
-          accessor: (row) => row.draft_value_score ?? null,
-          sortable: true,
-          sortAs: "number",
-          nulls: "last",
-          defaultDir: "desc",
-          heat: { scale: "val" },
-          width: "6ch",
-          render: formatDraftValue,
-        },
-        {
-          id: "adp",
-          header: "ADP",
-          description: "Sleeper average draft position.",
-          accessor: (row) => row.sleeper_adp ?? null,
-          sortable: true,
-          sortAs: "number",
-          nulls: "last",
-          width: "6ch",
-          render: (_, row) => row.sleeper_adp_round_pick ?? "—",
-        },
-        {
-          id: "preview",
-          header: "Preview",
-          accessor: () => null,
-          width: "5ch",
-          render: (_, row) => (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6"
-              onClick={() => onPreview(row)}
-              aria-label={`Preview ${row.name}`}
-              title="Preview"
-            >
-              <EyeIcon className="h-4 w-4" />
-            </Button>
-          ),
-        },
-      ],
-    },
-  ];
 
   const renderActions = React.useCallback(
     (row: PlayerWithPick) => (
@@ -224,8 +259,8 @@ export default function PositionCompactTables({
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6"
-          onClick={() => onPreview(row)}
+          className="h-7 w-7"
+          onClick={() => openPreview(row)}
           aria-label={`Preview ${row.name}`}
           title="Preview"
         >
@@ -235,15 +270,15 @@ export default function PositionCompactTables({
           <Button
             type="button"
             size="sm"
-            className="h-6 px-2 text-xs"
+            className="h-7 px-2 text-xs"
             disabled={
               pickAction.disabled ||
               Boolean(row.picked) ||
-              !canAddPositionToRoster({
-                position: row.position,
-                counts: userPositionCounts,
-                requirements: userPositionRequirements,
-              })
+              !isRosterLegalPlayer(
+                row,
+                userPositionCounts,
+                userPositionRequirements
+              )
             }
             aria-label={`${pickAction.label ?? "Pick"} ${row.name}`}
             data-testid={`mock-pick-${row.player_id}`}
@@ -254,237 +289,117 @@ export default function PositionCompactTables({
         ) : null}
       </div>
     ),
-    [onPreview, pickAction, userPositionCounts, userPositionRequirements]
+    [
+      openPreview,
+      pickAction,
+      userPositionCounts,
+      userPositionRequirements,
+    ]
   );
 
-  const renderPickAction = React.useCallback(
-    (row: PlayerWithPick) =>
-      pickAction ? (
-        <Button
-          type="button"
-          size="sm"
-          className="h-6 px-2 text-xs"
-          disabled={
-            pickAction.disabled ||
-            Boolean(row.picked) ||
-            !canAddPositionToRoster({
-              position: row.position,
-              counts: userPositionCounts,
-              requirements: userPositionRequirements,
-            })
-          }
-          aria-label={`${pickAction.label ?? "Pick"} ${row.name}`}
-          data-testid={`mock-pick-${row.player_id}`}
-          onClick={() => pickAction.onPick(row)}
-        >
-          {pickAction.label ?? "Pick"}
-        </Button>
-      ) : null,
-    [pickAction, userPositionCounts, userPositionRequirements]
-  );
-
-  // Show loading state if bundle data is not loaded
   if (!playersByPosition) {
     return (
-      <div className="space-y-2">
-        <div className="flex items-center justify-center py-8">
-          <p className="text-muted-foreground" aria-live="polite">
-            Loading player data...
-          </p>
-        </div>
-      </div>
+      <p className="py-8 text-center text-muted-foreground" aria-live="polite">
+        Loading player data...
+      </p>
     );
   }
 
+  const openSection = sections.find(
+    (section) => section.position === openPosition
+  );
+
   return (
     <div className="space-y-2">
-      <div className="flex items-center px-1 py-1">
-        <label className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Switch
-            checked={actualShowAll}
-            onCheckedChange={actualSetShowAll}
-            data-testid="positions-toggle-show-all"
-          />
-          <span>Show all rows</span>
-        </label>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-1">
-        {sections.map(([label, rows]) => {
-          const limit = DEFAULT_POS_TABLE_LIMIT;
-          const eligible = actualShowUnranked
-            ? rows
-            : rows.filter(
-                (row) =>
-                  typeof row.fp_rank_ave === "number" ||
-                  typeof row.position_tier_level === "number"
-              );
-          const allRows = actualShowDrafted
-            ? eligible
-            : eligible.filter((r) => !r.picked);
-          return (
-            <div key={label}>
-              <Card className="block w-full" data-testid={`pos-card-${label}`}>
-                <CardHeader className="py-1 px-2">
-                  <CardTitle className="text-sm flex items-baseline gap-2">
-                    {label}
-                  </CardTitle>
-                  {(() => {
-                    const pos = normalizePosition(label);
-                    if (!pos) return null;
-                    const {
-                      count: rosterCount,
-                      requirement: rosterReq,
-                      met,
-                    } = getRosterStatus(pos);
-                    return (
-                      <div className="text-xs text-muted-foreground flex flex-col gap-0.5 mt-0.5">
-                        <div className="flex items-center gap-1">
-                          <span>
-                            roster {rosterCount}/{rosterReq}
-                          </span>
-                          {met ? (
-                            <svg
-                              aria-label="met"
-                              className="h-3 w-3 text-green-500"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="3"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <path d="M20 6 9 17l-5-5" />
-                            </svg>
-                          ) : null}
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </CardHeader>
-                <CardContent className="pt-0 px-2 pb-2">
-                  <div className="overflow-x-auto">
-                    <PlayersTableBase
-                      rows={allRows}
-                      groups={compactGroups}
-                      sortable
-                      maxRows={actualShowAll ? undefined : limit}
-                      colorize={true}
-                      dimDrafted={true}
-                      tierRowColors={true}
-                      defaultSortId="adj"
-                      defaultSortDir="desc"
-                      heatDomainRows={valueColorDomainRef.current}
-                      {...(pickAction
-                        ? { renderActions: renderPickAction }
-                        : {})}
-                    />
-                  </div>
-                  {!actualShowAll && allRows.length > limit ? (
-                    <div className="mt-3">
-                      <button
-                        type="button"
-                        className="w-full text-sm underline-offset-2 hover:underline"
-                        onClick={() => setOpenLabel(label)}
-                      >
-                        Show More
-                      </button>
-                    </div>
-                  ) : null}
-                </CardContent>
-              </Card>
-            </div>
-          );
-        })}
-      </div>
-      <Dialog
-        open={openLabel != null}
-        onOpenChange={(o) => !o && setOpenLabel(null)}
-      >
-        <DialogContent className="max-w-6xl w-[92vw] max-h-[90vh] overflow-hidden">
-          <DialogHeader>
-            <DialogTitle className="flex items-baseline gap-2">
-              {openLabel}
-            </DialogTitle>
-            {(() => {
-              const pos = openLabel ? normalizePosition(openLabel) : null;
-              if (!pos) return null;
-              const {
-                count: rosterCount,
-                requirement: rosterReq,
-                met,
-              } = getRosterStatus(pos);
-              return (
-                <div className="text-xs text-muted-foreground flex flex-col gap-1 mt-1">
-                  <div className="flex items-center gap-1">
-                    <span>
-                      roster {rosterCount}/{rosterReq}
-                    </span>
-                    {met ? (
-                      <CheckIcon className="h-3 w-3 text-green-500" />
-                    ) : null}
-                  </div>
-                  {/* Dialog toggles - use global context switches */}
-                  <div className="flex flex-wrap items-center gap-3">
-                    <label className="flex items-center gap-2">
-                      <Switch
-                        checked={actualShowDrafted}
-                        onCheckedChange={actualSetShowDrafted}
-                      />{" "}
-                      <span>Show drafted</span>
-                    </label>
-                    <label className="flex items-center gap-2">
-                      <Switch
-                        checked={actualShowUnranked}
-                        onCheckedChange={actualSetShowUnranked}
-                      />{" "}
-                      <span>Show unranked</span>
-                    </label>
-                  </div>
-                </div>
-              );
-            })()}
-            <DialogDescription>
-              Compare {openLabel} draft value, position tier, and ADP.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="overflow-x-auto max-h-[70vh] overflow-y-auto pr-2">
-            {(() => {
-              const tuple = sections.find(([lab]) => lab === openLabel);
-              if (!tuple) return null;
-              const [, fullRowsRaw] = tuple;
-              // Respect dialog toggles in the dialog view
-              const dlgEligible = (fullRowsRaw || []).filter((r) =>
-                actualShowUnranked
-                  ? true
-                  : typeof r.fp_rank_ave === "number" ||
-                    typeof r.position_tier_level === "number"
-              );
-              const fullRows = actualShowDrafted
-                ? dlgEligible
-                : dlgEligible.filter((r) => !r.picked);
-              return (
-                <PlayerTable
-                  rows={fullRows}
+      {showDiagnostics ? (
+        <p className="px-1 text-xs text-muted-foreground">
+          Diagnostic rows only. Turn off Diagnostics above to return to the draft
+          board.
+        </p>
+      ) : null}
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+        {sections.map((section) => (
+          <Card
+            key={section.position}
+            className="min-w-0"
+            data-testid={`pos-card-${section.position}`}
+          >
+            <CardHeader className="px-3 py-2">
+              <CardTitle className="text-sm">{section.position}</CardTitle>
+              <p className="text-xs text-muted-foreground">
+                You: {section.rosterCount}/{section.rosterRequirement}
+                {" · "}
+                League needs: {formatCount(section.leagueNeeds)}
+                {" · "}
+                {section.tierRemaining} left in tier
+              </p>
+            </CardHeader>
+            <CardContent className="px-2 pb-2 pt-0">
+              <div className="overflow-x-auto">
+                <PlayersTableBase
+                  rows={section.rows}
+                  groups={compactGroups}
                   sortable
-                  colorizeValuePs
-                  dimDrafted={actualShowDrafted}
-                  hideDrafted={!actualShowDrafted}
+                  maxRows={POSITION_PLAYER_LIMIT}
+                  colorize
+                  dimDrafted={showDiagnostics}
+                  tierRowColors
                   defaultSortId="adj"
                   defaultSortDir="desc"
-                  heatDomainRows={valueColorDomainRef.current}
+                  heatDomainRows={section.rows}
                   renderActions={renderActions}
                 />
-              );
-            })()}
+              </div>
+              {section.rows.length > POSITION_PLAYER_LIMIT ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="mt-2 w-full"
+                  onClick={() => setOpenPosition(section.position)}
+                >
+                  Show all {section.position}
+                </Button>
+              ) : null}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Dialog
+        open={openSection != null}
+        onOpenChange={(isOpen) => !isOpen && setOpenPosition(null)}
+      >
+        <DialogContent className="max-h-[90vh] w-[92vw] max-w-6xl overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>{openSection?.position} draft board</DialogTitle>
+            <DialogDescription>
+              {openSection
+                ? `You: ${openSection.rosterCount}/${openSection.rosterRequirement} · League needs: ${formatCount(openSection.leagueNeeds)} · ${openSection.tierRemaining} left in tier`
+                : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[70vh] overflow-auto pr-2">
+            {openSection ? (
+              <PlayerTable
+                rows={openSection.rows}
+                sortable
+                colorizeValuePs
+                dimDrafted={showDiagnostics}
+                defaultSortId="adj"
+                defaultSortDir="desc"
+                heatDomainRows={openSection.rows}
+                renderActions={renderActions}
+              />
+            ) : null}
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Lineup preview modal */}
       <PreviewPickDialog
         open={previewOpen}
         onOpenChange={setPreviewOpen}
-        baseSlots={userRosterSlots || []}
+        baseSlots={userRosterSlots}
         player={previewPlayer}
       />
     </div>

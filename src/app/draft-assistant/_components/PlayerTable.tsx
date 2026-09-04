@@ -16,6 +16,7 @@ export function PlayerTable({
   defaultSortId,
   defaultSortDir,
   heatDomainRows,
+  maxRows,
 }: {
   rows: PlayerWithPick[];
   renderActions?: (row: PlayerWithPick) => React.ReactNode;
@@ -26,6 +27,7 @@ export function PlayerTable({
   defaultSortId?: string;
   defaultSortDir?: "asc" | "desc";
   heatDomainRows?: PlayerWithPick[];
+  maxRows?: number;
 }) {
   return (
     <PlayersTableBase
@@ -38,6 +40,7 @@ export function PlayerTable({
       defaultSortId={defaultSortId}
       defaultSortDir={defaultSortDir}
       heatDomainRows={heatDomainRows}
+      maxRows={maxRows}
       {...(renderActions && { renderActions })}
     />
   );

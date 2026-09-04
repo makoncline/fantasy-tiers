@@ -125,12 +125,8 @@ export interface DraftDataContextType extends ProcessedData {
   picks: DraftPick[];
 
   // UI state
-  showAll: boolean;
-  setShowAll: (show: boolean) => void;
-  showDrafted: boolean;
-  setShowDrafted: (show: boolean) => void;
-  showUnranked: boolean;
-  setShowUnranked: (show: boolean) => void;
+  showDiagnostics: boolean;
+  setShowDiagnostics: (show: boolean) => void;
 
   // Loading states
   loading: {
@@ -209,12 +205,8 @@ const defaultContextValue: DraftDataContextType = {
   picks: [],
 
   // UI state
-  showAll: false,
-  setShowAll: () => {},
-  showDrafted: false,
-  setShowDrafted: () => {},
-  showUnranked: false,
-  setShowUnranked: () => {},
+  showDiagnostics: false,
+  setShowDiagnostics: () => {},
 
   // Processed data
   availablePlayers: [],
@@ -288,22 +280,18 @@ export function DraftDataStaticProvider({
   children: React.ReactNode;
   value: Partial<DraftDataContextType>;
 }) {
-  const [showAll, setShowAll] = useState(value.showAll ?? false);
-  const [showDrafted, setShowDrafted] = useState(value.showDrafted ?? false);
-  const [showUnranked, setShowUnranked] = useState(value.showUnranked ?? false);
+  const [showDiagnostics, setShowDiagnostics] = useState(
+    value.showDiagnostics ?? false
+  );
 
   const contextValue = useMemo(
     () => ({
       ...defaultContextValue,
       ...value,
-      showAll,
-      setShowAll,
-      showDrafted,
-      setShowDrafted,
-      showUnranked,
-      setShowUnranked,
+      showDiagnostics,
+      setShowDiagnostics,
     }),
-    [showAll, showDrafted, showUnranked, value]
+    [showDiagnostics, value]
   );
 
   return (
@@ -355,9 +343,7 @@ export function DraftDataProvider({
   );
 
   // UI state
-  const [showAll, setShowAll] = useState(false);
-  const [showDrafted, setShowDrafted] = useState(false);
-  const [showUnranked, setShowUnranked] = useState(false);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
 
   // Trigger state for user/drafts loading
   const [shouldLoadUser, setShouldLoadUser] = useState(false);
@@ -1018,12 +1004,8 @@ export function DraftDataProvider({
       picks: picks || [],
 
       // UI state
-      showAll,
-      setShowAll,
-      showDrafted,
-      setShowDrafted,
-      showUnranked,
-      setShowUnranked,
+      showDiagnostics,
+      setShowDiagnostics,
 
       // Processed data - build view model when all data is available
       ...processedData,
@@ -1067,9 +1049,7 @@ export function DraftDataProvider({
       formatNotices,
       playersBundle,
       picks,
-      showAll,
-      showDrafted,
-      showUnranked,
+      showDiagnostics,
       loading,
       error,
       league,

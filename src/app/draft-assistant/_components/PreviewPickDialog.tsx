@@ -24,6 +24,11 @@ import {
 } from "@/lib/sleeperNews";
 import type { PlayerWithPick } from "@/lib/types.draft";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
+import {
+  formatComeback,
+  formatSleeperEcrEdge,
+} from "@/app/draft-assistant/_lib/draftBoardDisplay";
+import type { DraftRecommendationComponentKey } from "@/lib/draftValue";
 
 type PreviewExtras = Partial<
   Omit<
@@ -63,45 +68,30 @@ function fmtNumber(value: number) {
   return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
 
-function fmtSignedRounds(value: number) {
-  return `${value > 0 ? "+" : ""}${value} rd`;
-}
+const COMPONENT_LABELS = {
+  value: "League value",
+  timing: "Pick timing",
+  starterNeed: "Starter need",
+  construction: "Roster construction",
+  onesie: "QB/TE strategy",
+  depth: "Bench balance",
+  demand: "League demand",
+  risk: "Data/news risk",
+} satisfies Record<DraftRecommendationComponentKey, string>;
 
-function fmtProbability(value: number) {
-  return `${Math.round(value * 100)}%`;
-}
+const COMPONENT_KEYS = [
+  "value",
+  "timing",
+  "starterNeed",
+  "construction",
+  "onesie",
+  "depth",
+  "demand",
+  "risk",
+] as const satisfies readonly DraftRecommendationComponentKey[];
 
-function isUsefulCopy(value: string | null | undefined) {
-  if (!value) return false;
-  const normalized = value.trim().toLowerCase();
-  return normalized !== "unknown" && normalized !== "—";
-}
-
-function isSpecificDataNote(value: string) {
-  return isUsefulCopy(value) && !/^source warning\b/i.test(value.trim());
-}
-
-function ExplanationList({
-  label,
-  values,
-}: {
-  label: string;
-  values: readonly string[] | undefined;
-}) {
-  const visibleValues = values?.filter((value) =>
-    label === "Data" ? isSpecificDataNote(value) : isUsefulCopy(value)
-  );
-  if (!visibleValues?.length) return null;
-  return (
-    <div className="space-y-1">
-      <div className="text-xs font-medium text-muted-foreground">{label}</div>
-      <ul className="list-disc space-y-0.5 pl-4 text-xs text-muted-foreground">
-        {visibleValues.map((value) => (
-          <li key={`${label}-${value}`}>{value}</li>
-        ))}
-      </ul>
-    </div>
-  );
+function formatSignedScore(value: number) {
+  return `${value >= 0 ? "+" : ""}${fmtNumber(value)}`;
 }
 
 function PlayerDecisionPanel({
@@ -109,7 +99,7 @@ function PlayerDecisionPanel({
 }: {
   player: PreviewPickPlayer | null;
 }) {
-  const { decisionRows } = useDraftData();
+  const { decisionRows, draftContext } = useDraftData();
   if (!player) return null;
 
   const decisionIndex = decisionRows.findIndex(
@@ -127,32 +117,20 @@ function PlayerDecisionPanel({
     player.draft_value_score != null && nextOption?.draft_value_score != null
       ? player.draft_value_score - nextOption.draft_value_score
       : null;
+  const components = COMPONENT_KEYS.flatMap((key) => {
+    const value = player.draft_component_scores?.[key];
+    return typeof value === "number" && Number.isFinite(value)
+      ? [{ key, label: COMPONENT_LABELS[key], value }]
+      : [];
+  });
+  const outlook = draftContext?.positionOutlook.find(
+    (item) => item.position === player.position
+  );
 
   return (
     <section className="space-y-3 rounded-lg border bg-muted/20 p-3">
-      <div className="flex items-start gap-3">
-        <div>
-          <h3 className="text-sm font-semibold">Draft Value</h3>
-          {isUsefulCopy(player.draft_action_label) ||
-          (player.draft_comeback_label &&
-            player.draft_comeback_probability != null) ? (
-            <p className="text-xs text-muted-foreground">
-              {[
-                isUsefulCopy(player.draft_action_label)
-                  ? player.draft_action_label
-                  : null,
-                player.draft_comeback_label &&
-                player.draft_comeback_probability != null
-                  ? `comeback ${player.draft_comeback_label} ${fmtProbability(player.draft_comeback_probability)}`
-                  : null,
-              ]
-                .filter((value): value is string => Boolean(value))
-                .join(" · ")}
-            </p>
-          ) : null}
-        </div>
-      </div>
-      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+      <h3 className="text-sm font-semibold">Draft value</h3>
+      <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
         {player.draft_raw_value_score != null ? (
           <div>
             <div className="text-xs text-muted-foreground">VAL</div>
@@ -173,20 +151,18 @@ function PlayerDecisionPanel({
             <div className="font-mono">{fmtNumber(player.fp_rank_ave)}</div>
           </div>
         ) : null}
-        {player.sleeper_rank_overall != null ? (
+        {player.sleeper_adp != null ? (
           <div>
-            <div className="text-xs text-muted-foreground">Sleeper</div>
+            <div className="text-xs text-muted-foreground">Sleeper ADP</div>
             <div className="font-mono">
-              #{fmtNumber(player.sleeper_rank_overall)}
+              {player.sleeper_adp_round_pick ?? fmtNumber(player.sleeper_adp)}
             </div>
           </div>
         ) : null}
-        {player.draft_adp_delta_rounds != null ? (
+        {player.fp_rank_ave != null && player.sleeper_adp != null ? (
           <div>
-            <div className="text-xs text-muted-foreground">ADP Δ</div>
-            <div className="font-mono">
-              {fmtSignedRounds(player.draft_adp_delta_rounds)}
-            </div>
+            <div className="text-xs text-muted-foreground">Sleeper vs ECR</div>
+            <div className="font-mono">{formatSleeperEcrEdge(player)}</div>
           </div>
         ) : null}
         {(player.tier_level ?? player.fp_tier ?? player.tier) > 0 ? (
@@ -203,32 +179,50 @@ function PlayerDecisionPanel({
             <div className="font-mono">{fmtNumber(player.position_tier_level)}</div>
           </div>
         ) : null}
+        {player.draft_comeback_label ? (
+          <div>
+            <div className="text-xs text-muted-foreground">Back?</div>
+            <div className="font-mono">{formatComeback(player)}</div>
+          </div>
+        ) : null}
+        {outlook ? (
+          <div>
+            <div className="text-xs text-muted-foreground">League needs</div>
+            <div className="font-mono">
+              {fmtNumber(outlook.leagueStarterSlotsRemaining)} {player.position}
+            </div>
+          </div>
+        ) : null}
       </div>
-      <div className="flex flex-wrap gap-1">
-        {(player.draft_reason_labels ?? [])
-          .filter(isUsefulCopy)
-          .map((reason) => (
-          <Badge key={reason} variant="outline">
-            {reason}
-          </Badge>
-          ))}
-      </div>
-      {player.draft_recommendation_edge_detail ? (
-        <p className="text-xs text-muted-foreground">
-          {player.draft_recommendation_edge_detail}
-        </p>
+      {components.length ? (
+        <div
+          className="rounded-md border bg-background/60"
+          data-testid="preview-adj-breakdown"
+        >
+          <div className="border-b px-3 py-2 text-xs font-medium">
+            Adj breakdown
+          </div>
+          <div className="divide-y text-xs">
+            {components.map((component) => (
+              <div
+                key={component.key}
+                className="flex items-center justify-between gap-4 px-3 py-1.5"
+              >
+                <span className="text-muted-foreground">{component.label}</span>
+                <span className="font-mono">
+                  {formatSignedScore(component.value)}
+                </span>
+              </div>
+            ))}
+            {player.draft_value_score != null ? (
+              <div className="flex items-center justify-between gap-4 px-3 py-2 font-medium">
+                <span>ADJ total</span>
+                <span className="font-mono">{fmtNumber(player.draft_value_score)}</span>
+              </div>
+            ) : null}
+          </div>
+        </div>
       ) : null}
-      <div className="grid gap-2 md:grid-cols-2">
-        <ExplanationList
-          label="Pros"
-          values={player.draft_recommendation_pros}
-        />
-        <ExplanationList
-          label="Cons"
-          values={player.draft_recommendation_cons}
-        />
-      </div>
-      <ExplanationList label="Data" values={player.draft_data_quality_notes} />
       {nextOption ? (
         <div
           className="rounded-md border bg-background/60 p-2 text-xs text-muted-foreground"

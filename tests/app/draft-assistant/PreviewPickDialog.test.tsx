@@ -31,7 +31,8 @@ const selected = {
   rank: 12,
   tier: 3,
   fp_rank_ave: 18.4,
-  sleeper_rank_overall: 27,
+  sleeper_adp: 27,
+  sleeper_adp_round_pick: "3.03",
   sleeper_depth_chart_position: "WR",
   sleeper_depth_chart_order: 1,
   draft_raw_value_score: 83,
@@ -48,6 +49,19 @@ const selected = {
   draft_rankings_may_be_stale: false,
   draft_action_label: "unknown",
   draft_reason_labels: ["Best value"],
+  draft_comeback_label: "likely",
+  draft_comeback_probability: 0.72,
+  position_tier_level: 2,
+  draft_component_scores: {
+    value: 80,
+    timing: 4,
+    starterNeed: 5,
+    construction: 3,
+    onesie: 0,
+    depth: 0,
+    demand: 1,
+    risk: -2,
+  },
 } satisfies PreviewPickPlayer;
 
 function decisionPlayer(id: string, name: string, score: number): PlayerWithPick {
@@ -84,6 +98,11 @@ describe("PreviewPickDialog", () => {
         selected,
         decisionPlayer("next", "Next Receiver", 89),
       ],
+      draftContext: {
+        positionOutlook: [
+          { position: "WR", leagueStarterSlotsRemaining: 7 },
+        ],
+      },
       sourceHealth: {
         sources: [{ source: "hidden-source", status: "stale" }],
         warnings: ["hidden source warning"],
@@ -161,9 +180,18 @@ describe("PreviewPickDialog", () => {
     expect(text).toContain("VAL83");
     expect(text).toContain("ADJ91");
     expect(text).toContain("ECR18.4");
-    expect(text).toContain("Sleeper#27");
-    expect(text).toContain("ADP Δ+1.2 rd");
+    expect(text).toContain("Sleeper ADP3.03");
+    expect(text).toContain("Sleeper vs ECR+8.6 later");
     expect(text).toContain("Overall tier3");
+    expect(text).toContain("Position tier2");
+    expect(text).toContain("Back?Likely 72%");
+    expect(text).toContain("League needs7 WR");
+    expect(text).toContain("Adj breakdown");
+    expect(text).toContain("Pick timing+4");
+    expect(text).toContain("Data/news risk-2");
+    expect(text).toContain("ADJ total91");
+    expect(text).not.toContain("Pros");
+    expect(text).not.toContain("Cons");
     expect(text).toContain("Why over Next Receiver");
     expect(text).not.toContain("Why over Top Running Back");
     expect(text).not.toContain("durable value");

@@ -70,7 +70,7 @@ describe("PlayersTableBase", () => {
     expect(values).toEqual(["20", "10", "—"]);
   });
 
-  it("labels overall and position rankings and tiers explicitly", () => {
+  it("shows one clear Sleeper versus ECR edge", () => {
     act(() => {
       root.render(
         <PlayersTableBase
@@ -80,7 +80,8 @@ describe("PlayersTableBase", () => {
               name: "Ranked Player",
               fp_rank_ave: 8,
               fp_rank_pos: 3,
-              sleeper_rank_overall: 11,
+              sleeper_adp: 11,
+              sleeper_adp_round_pick: "1.11",
               tier_level: 2,
               position_tier_level: 1,
             },
@@ -90,10 +91,11 @@ describe("PlayersTableBase", () => {
       );
     });
 
-    expect(container.textContent).toContain("ECR (Sleeper Δ)");
-    expect(container.textContent).toContain("Tier (overall / pos)");
-    expect(container.textContent).toContain("Ranked Player (RB3)");
-    expect(container.textContent).toContain("8 (+3)");
+    expect(container.textContent).toContain("PlayerTierVALADJECRSleeper ADPSleeper vs ECRBack?");
+    expect(container.textContent).not.toContain("Draft board");
+    expect(container.textContent).toContain("Ranked PlayerRB3");
+    expect(container.textContent).toContain("1.11");
+    expect(container.textContent).toContain("+3.0 later");
     expect(container.textContent).toContain("2/1");
   });
 

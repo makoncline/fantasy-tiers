@@ -2,8 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
-import { filterAvailableRows } from "@/app/draft-assistant/_lib/filterAvailableRows";
-import type { PlayerRow } from "@/lib/playerRows";
 
 // Mock the hooks
 vi.mock("@/app/draft-assistant/_lib/useSleeper", () => ({
@@ -87,7 +85,7 @@ describe("DraftDataContext mocks setup", () => {
     if ((mod as any).defaultContextValue) {
       const dv = (mod as any).defaultContextValue;
       expect(dv.username).toBeTypeOf("string");
-      expect(dv.showDrafted).toBeTypeOf("boolean");
+      expect(dv.showDiagnostics).toBeTypeOf("boolean");
     }
   });
 
@@ -114,187 +112,6 @@ describe("DraftDataContext mocks setup", () => {
         expect(typeof DraftDataProvider).toBe("function");
       }
     );
-  });
-});
-
-describe("filterAvailableRows", () => {
-  const mockPlayers: PlayerWithPick[] = [
-    {
-      player_id: "1",
-      name: "Jonathan Taylor",
-      position: "RB",
-      team: "IND",
-      bye_week: 14,
-      tier_rank: 1,
-      tier_level: 1,
-      sleeper_rank_overall: 1,
-      fp_rank_pos: 1,
-      fp_pts: 350,
-      fp_player_owned_avg: 95,
-      picked: true, // Jonathan Taylor is drafted
-    },
-    {
-      player_id: "2",
-      name: "Christian McCaffrey",
-      position: "RB",
-      team: "SF",
-      bye_week: 9,
-      tier_rank: 2,
-      tier_level: 1,
-      sleeper_rank_overall: 2,
-      fp_rank_pos: 2,
-      fp_pts: 340,
-      fp_player_owned_avg: 90,
-      picked: false,
-    },
-    {
-      player_id: "3",
-      name: "Austin Ekeler",
-      position: "RB",
-      team: "LAC",
-      bye_week: 8,
-      tier_rank: 3,
-      tier_level: 1,
-      sleeper_rank_overall: 3,
-      fp_rank_pos: 3,
-      fp_pts: 330,
-      fp_player_owned_avg: 85,
-      picked: false,
-    },
-    {
-      player_id: "4",
-      name: "Unranked Player",
-      position: "RB",
-      team: "TB",
-      bye_week: 11,
-      tier_rank: undefined,
-      tier_level: undefined,
-      sleeper_rank_overall: undefined,
-      fp_rank_pos: undefined,
-      fp_pts: undefined,
-      fp_player_owned_avg: undefined,
-      picked: true, // Unranked but drafted player
-    },
-  ];
-
-  it("should filter by position correctly", () => {
-    const result = filterAvailableRows(mockPlayers, {
-      showDrafted: true,
-      showUnranked: true,
-    });
-
-    expect(result).toHaveLength(4); // All players are RB
-    expect(result.every((p) => p.position === "RB")).toBe(true);
-  });
-
-  it("should filter out unranked players when showUnranked is false", () => {
-    const result = filterAvailableRows(mockPlayers, {
-      showDrafted: true,
-      showUnranked: false,
-    });
-
-    expect(result).toHaveLength(4); // 3 ranked players + 1 drafted unranked player
-    // All players should either be ranked OR drafted (drafted unranked players are allowed)
-    expect(
-      result.every((p) => typeof p.tier_rank === "number" || p.picked === true)
-    ).toBe(true);
-    expect(result.find((p) => p.name === "Unranked Player")).toBeDefined(); // Should be included as drafted unranked
-  });
-
-  it("should filter out drafted players when showDrafted is false", () => {
-    const result = filterAvailableRows(mockPlayers, {
-      showDrafted: false,
-      showUnranked: true,
-    });
-
-    expect(result).toHaveLength(2); // All except drafted players (Jonathan Taylor and Unranked Player)
-    expect(result.find((p) => p.player_id === "1")).toBeUndefined();
-    expect(result.some((p) => p.player_id !== "1")).toBe(true);
-  });
-
-  it("should include drafted players when showDrafted is true", () => {
-    const result = filterAvailableRows(mockPlayers, {
-      showDrafted: true,
-      showUnranked: true,
-    });
-
-    expect(result).toHaveLength(4); // All players including drafted
-    expect(result.find((p) => p.player_id === "1")).toBeDefined();
-  });
-
-  it("should handle mixed position players", () => {
-    const mixedPlayers = [
-      ...mockPlayers,
-      {
-        ...mockPlayers[0],
-        player_id: "5",
-        name: "Cooper Kupp",
-        position: "WR",
-        tier_rank: 4,
-        tier_level: 1,
-        picked: false,
-      },
-      {
-        ...mockPlayers[0],
-        player_id: "6",
-        name: "Patrick Mahomes",
-        position: "QB",
-        tier_rank: 5,
-        tier_level: 1,
-        picked: false,
-      },
-    ];
-
-    const result = filterAvailableRows(mixedPlayers, {
-      showDrafted: true,
-      showUnranked: true,
-    });
-
-    expect(result).toHaveLength(6); // All players regardless of position
-    expect(result.find((p) => p.position === "QB")).toBeDefined();
-    expect(result.find((p) => p.position === "WR")).toBeDefined();
-  });
-
-  it("should sort by Tier rank ascending", () => {
-    const result = filterAvailableRows(mockPlayers, {
-      showDrafted: true,
-      showUnranked: true,
-    });
-
-    expect(result[0].tier_rank).toBe(1); // Jonathan Taylor
-    expect(result[1].tier_rank).toBe(2); // Christian McCaffrey
-    expect(result[2].tier_rank).toBe(3); // Austin Ekeler
-  });
-
-  it("should handle empty drafted sets", () => {
-    const result = filterAvailableRows(mockPlayers, {
-      showDrafted: false,
-      showUnranked: true,
-    });
-
-    expect(result).toHaveLength(2); // Jonathan Taylor and Unranked Player filtered out (both picked), others included
-  });
-
-  it("should handle drafted players", () => {
-    const result = filterAvailableRows(mockPlayers, {
-      showDrafted: false,
-      showUnranked: true,
-    });
-
-    expect(result).toHaveLength(2); // All except drafted players (Jonathan Taylor and Unranked Player)
-    expect(result.find((p) => p.name === "Jonathan Taylor")).toBeUndefined();
-  });
-
-  it("should include drafted players in unranked filter when showUnranked is false", () => {
-    const result = filterAvailableRows(mockPlayers, {
-      showDrafted: true,
-      showUnranked: false,
-    });
-
-    // Should include the drafted unranked player (player 4)
-    expect(result.find((p) => p.player_id === "4")).toBeDefined();
-    // Should exclude other unranked players, include ranked players
-    expect(result).toHaveLength(4); // 3 ranked + 1 drafted unranked
   });
 });
 

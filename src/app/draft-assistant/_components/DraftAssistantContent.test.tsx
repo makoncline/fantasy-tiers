@@ -12,6 +12,26 @@ import { DraftDataStaticProvider } from "@/app/draft-assistant/_contexts/DraftDa
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
 describe("DraftAssistantContent", () => {
+  it("can hide recommendations for table-only mock studies", () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(
+        <DraftDataStaticProvider value={{}}>
+          <DraftAssistantContent showRecommendations={false} />
+        </DraftDataStaticProvider>
+      );
+    });
+
+    expect(container.querySelector('[data-testid="decision-board"]')).toBeNull();
+    expect(container.textContent).toContain("Overall Value Pool");
+
+    act(() => root.unmount());
+    container.remove();
+  });
+
   it("blocks the last board after a refresh error", () => {
     const container = document.createElement("div");
     document.body.appendChild(container);

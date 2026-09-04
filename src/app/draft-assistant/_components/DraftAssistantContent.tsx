@@ -13,11 +13,12 @@ import type { DraftPickAction } from "@/app/draft-assistant/_lib/types";
 
 export default function DraftAssistantContent({
   pickAction,
+  showRecommendations = true,
 }: {
   pickAction?: DraftPickAction | undefined;
+  showRecommendations?: boolean | undefined;
 } = {}) {
   const {
-    availablePlayers,
     loading,
     error,
     userRosterSlots,
@@ -156,7 +157,11 @@ export default function DraftAssistantContent({
 
       <DraftStatusCard />
 
-      {!isComplete && draftValueStatus?.available !== false ? <DecisionBoard /> : null}
+      {showRecommendations &&
+      !isComplete &&
+      draftValueStatus?.available !== false ? (
+        <DecisionBoard />
+      ) : null}
 
       <Card id="roster-section">
         <CardHeader>
@@ -175,7 +180,6 @@ export default function DraftAssistantContent({
         </CardHeader>
         <CardContent>
           <AvailablePlayers
-            availablePlayers={availablePlayers}
             loading={isLoading}
             pickAction={pickAction}
           />

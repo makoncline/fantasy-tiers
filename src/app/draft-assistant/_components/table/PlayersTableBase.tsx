@@ -153,20 +153,6 @@ export default function PlayersTableBase({
   return (
     <Table>
       <TableHeader className="sticky top-0 z-30">
-        {/* group row */}
-        <TableRow>
-          {groups.map((g, i) => (
-            <TableHead
-              key={i}
-              colSpan={g.children.length}
-              className="whitespace-nowrap"
-            >
-              {g.header}
-            </TableHead>
-          ))}
-          {renderActions ? <TableHead /> : null}
-        </TableRow>
-        {/* header row */}
         <TableRow>
           {allColumns.map((c) => (
             <TableHead

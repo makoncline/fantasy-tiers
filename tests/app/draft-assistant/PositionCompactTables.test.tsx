@@ -61,15 +61,15 @@ describe("PositionCompactTables", () => {
         K: [],
       },
       userRosterSlots: [],
-      userPositionCounts: { QB: 1 },
-      userPositionRequirements: { QB: 1 },
+      userPositionCounts: { QB: 0 },
+      userPositionRequirements: { QB: 1, K: 0 },
       getRosterStatus: () => ({ count: 0, requirement: 1, met: false }),
-      showAll: false,
-      setShowAll: vi.fn(),
-      showDrafted: false,
-      setShowDrafted: vi.fn(),
-      showUnranked: false,
-      setShowUnranked: vi.fn(),
+      draftContext: {
+        positionOutlook: [
+          { position: "QB", leagueStarterSlotsRemaining: 7 },
+        ],
+      },
+      showDiagnostics: false,
     } as never);
     container = document.createElement("div");
     document.body.appendChild(container);
@@ -92,7 +92,20 @@ describe("PositionCompactTables", () => {
     const headers = Array.from(qbCard?.querySelectorAll("thead tr:last-child th") ?? []).map(
       (header) => header.textContent
     );
-    expect(headers).toEqual(["Name", "Tier", "VAL", "ADJ ▼", "ADP", "Preview"]);
+    expect(headers).toEqual([
+      "Player",
+      "Tier",
+      "VAL",
+      "ADJ ▼",
+      "ECR",
+      "ADP",
+      "Edge",
+      "Back?",
+      "",
+    ]);
+    expect(qbCard?.textContent).toContain("You: 0/1 · League needs: 7 · 1 left in tier");
+    expect(container.querySelector('[data-testid="pos-card-K"]')).toBeNull();
+    expect(container.textContent).not.toContain("Show all rows");
     expect(qbCard?.textContent).not.toContain("baseline");
     expect(qbCard?.textContent).not.toContain("pts");
     expect(container.querySelector('[data-testid="data-last-updated"]')).toBeNull();
@@ -100,16 +113,19 @@ describe("PositionCompactTables", () => {
   });
 
   it("disables a pick after the one-player position maximum is filled", () => {
+    const current = mockUseDraftData();
+    mockUseDraftData.mockReturnValue({
+      ...current,
+      userPositionCounts: { QB: 1 },
+      getRosterStatus: () => ({ count: 1, requirement: 1, met: true }),
+    } as never);
+
     act(() => root.render(
       <PositionCompactTables
         pickAction={{ disabled: false, label: "Pick", onPick: vi.fn() }}
       />
     ));
 
-    expect(
-      container.querySelector<HTMLButtonElement>(
-        'button[aria-label="Pick Current ECR"]'
-      )?.disabled
-    ).toBe(true);
+    expect(container.querySelector('[data-testid="pos-card-QB"]')).toBeNull();
   });
 });
