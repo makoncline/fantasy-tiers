@@ -7,6 +7,7 @@
 - Vercel deploys each `main` commit.
 - GitHub Actions writes rating snapshots to Turso/libSQL.
 - `/api/health/data` proves the expected commit and data recency.
+- A second scheduled workflow checks production after each refresh window.
 
 ## Required Configuration
 
@@ -22,6 +23,12 @@ the `fantasy-tiers` group:
 FANTASY_HISTORY_DATABASE_URL
 FANTASY_HISTORY_DATABASE_AUTH_TOKEN
 ```
+
+The data workflows call the deployed send-to-makon `/api/send-telegram`
+endpoint on every failed check and once when health recovers. Failed checks run
+twice daily, so a failed Telegram delivery is retried on the next check. The
+endpoint URL is not secret and is stored in each workflow. The Telegram
+credentials remain only in the send-to-makon project.
 
 Vercel does not read rating history and should not have these credentials.
 Never put secret values in git, logs, screenshots, plans, or shell history.
@@ -81,3 +88,6 @@ requires healthy current data, then parses one aggregate bundle response.
   times out, inspect the deployment associated with the expected SHA.
 - **History is unconfigured:** install both required variables in GitHub
   Actions. Vercel does not require history credentials.
+- **Telegram message is absent:** verify the send-to-makon deployment, then run
+  the production health workflow manually. Do not send provider payloads or
+  secret values in the message.

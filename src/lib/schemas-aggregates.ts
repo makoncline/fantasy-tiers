@@ -28,6 +28,15 @@ export const SleeperStatsSubset = z
 
 export const SleeperCombined = z.object({
   stats: SleeperStatsSubset, // required object; keys optional
+  draft_values: z.object({
+    std: z.number().finite().nullable(),
+    half: z.number().finite().nullable(),
+    ppr: z.number().finite().nullable(),
+  }),
+  active_player: z.object({
+    depth_chart_position: z.string().nullable(),
+    depth_chart_order: z.number().int().positive().nullable(),
+  }),
   week: z.union([z.number(), z.null()]),
   player: z.object({
     injury_body_part: z.union([z.string(), z.null()]),
@@ -54,20 +63,7 @@ export const FantasyProsCombined = z.object({
   rankings: z.record(z.string(), z.unknown()),
 });
 
-function withLegacyTiersKey(value: unknown): unknown {
-  if (value === null || typeof value !== "object" || Array.isArray(value)) {
-    return value;
-  }
-  const record = value as Record<string, unknown>;
-  if ("tiers" in record || !("borischen" in record)) {
-    return value;
-  }
-  return { ...record, tiers: record.borischen };
-}
-
-export const CombinedEntry = z.preprocess(
-  withLegacyTiersKey,
-  z.object({
+export const CombinedEntry = z.object({
     player_id: z.string(),
     name: z.string(),
     position: PositionEnum, // Required PositionEnum for fantasy positions only
@@ -76,8 +72,7 @@ export const CombinedEntry = z.preprocess(
     tiers: RankTiersByScoring,
     sleeper: SleeperCombined,
     fantasypros: z.union([FantasyProsCombined, z.null()]), // nullable: observed in RB data
-  })
-);
+});
 
 export const CombinedShard = z.record(z.string(), CombinedEntry);
 export type CombinedEntryT = z.infer<typeof CombinedEntry>;

@@ -31,6 +31,10 @@ const selected = {
   rank: 12,
   tier: 3,
   fp_rank_ave: 18.4,
+  sleeper_rank_overall: 27,
+  sleeper_depth_chart_position: "WR",
+  sleeper_depth_chart_order: 1,
+  draft_raw_value_score: 83,
   draft_value_score: 91,
   draft_adp_delta_rounds: 1.2,
   draft_recommendation_summary: "Strong roster fit at this point in the draft.",
@@ -38,6 +42,10 @@ const selected = {
   draft_recommendation_cons: ["Bye overlap"],
   sleeper_injury_status: "Questionable",
   sleeper_injury_notes: "Limited at practice.",
+  draft_availability: "short-term-concern",
+  draft_availability_label: "Short-term concern",
+  draft_availability_eligible: true,
+  draft_rankings_may_be_stale: false,
   draft_action_label: "unknown",
   draft_reason_labels: ["Best value"],
 } satisfies PreviewPickPlayer;
@@ -50,6 +58,7 @@ function decisionPlayer(id: string, name: string, score: number): PlayerWithPick
     team: "TEST",
     bye_week: 8,
     fp_rank_pos: 1,
+    draft_raw_value_score: score - 10,
     draft_value_score: score,
   };
 }
@@ -147,8 +156,12 @@ describe("PreviewPickDialog", () => {
     expect(text).toContain("Team DEN");
     expect(text).toContain("Bye conflicts Rostered Receiver");
     expect(text).toContain("Questionable");
-    expect(text).toContain("VAL91");
+    expect(text).toContain("Availability Short-term concern");
+    expect(text).toContain("Depth WR1");
+    expect(text).toContain("VAL83");
+    expect(text).toContain("ADJ91");
     expect(text).toContain("ECR18.4");
+    expect(text).toContain("Sleeper#27");
     expect(text).toContain("ADP Δ+1.2 rd");
     expect(text).toContain("Overall tier3");
     expect(text).toContain("Why over Next Receiver");
@@ -161,5 +174,35 @@ describe("PreviewPickDialog", () => {
     expect(text).toContain("Headline 3");
     expect(text).not.toContain("Headline 4");
     expect(text).not.toContain("x".repeat(180));
+  });
+
+  it("shows unknown news status when the news request fails", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: "unavailable" }), { status: 503 })
+    );
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <PreviewPickDialog
+            open
+            onOpenChange={vi.fn()}
+            player={selected}
+            baseSlots={[]}
+          />
+        </QueryClientProvider>
+      );
+    });
+
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      if (document.body.textContent?.includes("News status is unknown")) break;
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 5));
+      });
+    }
+
+    const text = document.body.textContent ?? "";
+    expect(text).toContain("News status is unknown");
+    expect(text).not.toContain("News status is healthy");
   });
 });

@@ -30,9 +30,7 @@ describe("/api/aggregates/bundle", () => {
     const mockReadFileSync = vi.mocked(fs.readFileSync);
 
     mockResolve.mockImplementation((...segments) => segments.join("/"));
-    mockExistsSync.mockImplementation(
-      (file) => !String(file).endsWith("/aggregate/footballguys-rankings.json")
-    );
+    mockExistsSync.mockReturnValue(true);
     mockReadFileSync.mockReturnValue(
       JSON.stringify({
         player1: {
@@ -54,6 +52,11 @@ describe("/api/aggregates/bundle", () => {
               pts_std: 450,
               pts_ppr: 450,
               pts_half_ppr: 450,
+            },
+            draft_values: { std: 1, half: 1, ppr: 1 },
+            active_player: {
+              depth_chart_position: "QB",
+              depth_chart_order: 1,
             },
             week: null,
             player: {
@@ -132,9 +135,7 @@ describe("/api/aggregates/bundle", () => {
     const mockReadFileSync = vi.mocked(fs.readFileSync);
 
     mockResolve.mockImplementation((...segments) => segments.join("/"));
-    mockExistsSync.mockImplementation(
-      (file) => !String(file).endsWith("/aggregate/footballguys-rankings.json")
-    );
+    mockExistsSync.mockReturnValue(true);
     mockReadFileSync.mockReturnValue(JSON.stringify({}));
 
     const { getAggregatesLastModifiedServer } = await import(

@@ -1,6 +1,6 @@
 # TapThatDraft / Hold-My-BeerSheets Research Notes
 
-Last updated: 2026-07-01
+Last updated: 2026-09-03
 
 ## Scope
 
@@ -24,6 +24,22 @@ These notes cover the TapThatDraft page, the 2026 Reddit relaunch post, and the 
 - Snake Value: https://subvertadown.com/article/fantasy-snake-drafts-and-strategizing-for-scarcity----snake-value-based-drafting
 - Upside: https://subvertadown.com/article/drafting-for-upside-potential-in-fantasy-football---analysis-of-upside-potential-of-fantasy-positions-and-dependence-on-pre-draft-player-rank
 - Project background philosophy: https://subvertadown.com/article/subvertadown-overview
+- 2026 ADP-referencing update: https://subvertadown.com/article/timing-your-draft-picks-with-adp-referencing---understanding-tapthatdraft-s-time-priority-ordering-of-players-to-help-you-lead-in-your-draft
+- 2026 unsupported features: https://subvertadown.com/article/a-list-of-features-not-supported-in-tapthatdraft-2026-
+
+## September 2026 Refresh
+
+The August 2026 updates reinforce three ideas that matter to this project:
+
+- The opponent reference list is a core timing input, separate from the user's
+  preferred player order.
+- Live recommendations combine opponent timing with roster-aware priority.
+- Keeper pick assignment, custom snake order, and traded picks remain gaps in
+  TapThatDraft. These can differentiate this project only after our configured
+  policy becomes executable draft state.
+
+The canonical mapping from these sources to product rules now lives in
+`docs/draft-strategy-research-contract.md`.
 
 ## What People Seem To Like
 
@@ -213,7 +229,7 @@ Potential app implication:
 - Live Sleeper draft state and local mock draft state share schemas/view-model paths.
 - Source health/freshness exists and is visible, though it should be less visually dominant.
 - Recommendation reason codes, comeback labels, and roster-context fields already point toward dynamic snake logic.
-- Mock draft result saving and Footballguys analyzer reports give us a way to calibrate outcomes.
+- Mock draft result saving, local quality gates, and Sleeper board replays give us a way to calibrate outcomes.
 - Position tables plus available/overall lists exist; the next step is making them easier to toggle/sort/filter.
 
 ## Gaps To Discuss

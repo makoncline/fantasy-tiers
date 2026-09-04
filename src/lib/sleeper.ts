@@ -19,6 +19,7 @@ export const SleeperDraftSummarySchema = z.object({
   metadata: z
     .object({
       name: z.string().optional(),
+      league_id: z.string().optional(),
       scoring_type: z.string().optional(),
       description: z.string().optional(),
       show_team_names: z.string().optional(),
@@ -88,6 +89,20 @@ export const SleeperLeagueSchema = z.object({
   settings: z.record(z.string(), z.unknown()).optional(),
 });
 export type SleeperLeague = z.infer<typeof SleeperLeagueSchema>;
+
+export async function fetchSleeperLeagueById(
+  leagueId: string
+): Promise<SleeperLeague> {
+  const url = new URL(
+    `https://api.sleeper.app/v1/league/${encodeURIComponent(leagueId)}`
+  );
+  url.searchParams.set("_", String(Date.now()));
+  const res = await fetch(url.toString(), { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch Sleeper league: ${leagueId}`);
+  }
+  return SleeperLeagueSchema.parse(await res.json());
+}
 
 export async function fetchLeaguesForUserYear(
   userId: string,
@@ -229,8 +244,7 @@ export async function fetchSleeperProjections(
         years_exp:
           ((item?.player as Record<string, unknown>)?.years_exp as number) ??
           undefined,
-        news_updated:
-          (item as Record<string, unknown>)?.news_updated ?? undefined,
+        news_updated: readPlayerNewsUpdated(item.player),
         injury_body_part:
           ((item as Record<string, unknown>)?.injury_body_part as string) ??
           null,
@@ -251,6 +265,16 @@ export async function fetchSleeperProjections(
       opponent: item?.opponent ?? null,
     } as SleeperProjection;
   });
+}
+
+function readPlayerNewsUpdated(value: unknown) {
+  if (value == null || typeof value !== "object" || Array.isArray(value)) {
+    return undefined;
+  }
+  const newsUpdated = Reflect.get(value, "news_updated");
+  return typeof newsUpdated === "number" && Number.isFinite(newsUpdated)
+    ? newsUpdated
+    : undefined;
 }
 
 // NFL state (season/week)

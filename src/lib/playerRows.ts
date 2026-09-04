@@ -9,6 +9,7 @@ import type {
   DraftRecommendationWeightProfileId,
   DraftSourceConfidence,
 } from "./draftValue";
+import type { DraftAvailabilityClass } from "./draftAvailability";
 import type { EnrichedPlayer } from "./enrichPlayers";
 import { normalizePlayerName, ecrToRoundPick, normalizePosition } from "./util";
 import type {
@@ -36,11 +37,14 @@ export type PlayerRow = {
   sleeper_pts?: number | null;
   sleeper_adp?: number | null;
   sleeper_adp_round_pick?: string | undefined;
+  sleeper_board_value?: number | null;
   sleeper_rank_overall?: number | null;
   sleeper_rank_pos?: number | null;
   sleeper_tier_level?: number | null;
   sleeper_injury_status?: string | null;
   sleeper_injury_notes?: string | null;
+  sleeper_depth_chart_position?: string | null;
+  sleeper_depth_chart_order?: number | null;
   fp_adp?: number | null;
   fp_rank_overall?: number | null;
   fp_rank_ave?: number | null;
@@ -48,16 +52,13 @@ export type PlayerRow = {
   fp_rank_pos?: number | null;
   fp_baseline_pts?: number | null;
   fp_player_owned_avg?: number | null;
-  fbg_rank?: number | null;
-  fbg_tier?: number | null;
-  fbg_rank_pos?: number | null;
-  fbg_adp_consensus?: number | null;
-  fbg_settings?: string;
   market_delta?: number | null;
   // Extra fields for beer sheets integration
   val?: number | null;
   ps?: number | null;
   // Dynamic draft-assistant fields
+  draft_raw_value_score?: number | null;
+  draft_value_label?: string;
   draft_value_score?: number | null;
   draft_tier_cliff?: number | null;
   draft_adp_delta_rounds?: number | null;
@@ -91,6 +92,10 @@ export type PlayerRow = {
   draft_roster_fit?: number | null;
   draft_source_confidence?: DraftSourceConfidence;
   draft_missing_fields?: string[];
+  draft_availability?: DraftAvailabilityClass;
+  draft_availability_label?: string;
+  draft_availability_eligible?: boolean;
+  draft_rankings_may_be_stale?: boolean;
   draft_reason_labels?: string[];
   draft_reason_details?: string[];
   draft_recommendation_rank?: number | null;
@@ -175,9 +180,13 @@ export function toPlayerRows(
         sleeper_pts: p.sleeper_pts,
         sleeper_adp: draftableAdp(p.sleeper_adp),
         sleeper_adp_round_pick: adpToRoundPick(p.sleeper_adp, leagueTeams),
+        sleeper_board_value: p.sleeper_board_value,
         sleeper_rank_overall: p.sleeper_rank_overall,
         sleeper_injury_status: p.sleeper.player.injury_status,
         sleeper_injury_notes: p.sleeper.player.injury_notes,
+        sleeper_depth_chart_position:
+          p.sleeper.active_player.depth_chart_position,
+        sleeper_depth_chart_order: p.sleeper.active_player.depth_chart_order,
         fp_pts: p.fp_pts,
         fp_adp: p.fp_adp,
         fp_rank_overall: p.fp_rank_overall,
@@ -347,20 +356,13 @@ export function toPlayerRowFromBundle(
     sleeper_pts: p.sleeper.pts,
     sleeper_adp: draftableAdp(p.sleeper.adp),
     sleeper_adp_round_pick: adpToRoundPick(p.sleeper.adp, leagueTeams),
-    sleeper_rank_overall:
-      p.sleeper.adp != null && p.sleeper.adp >= 900 ? null : p.sleeper.rank,
+    sleeper_board_value: p.sleeper.boardValue,
+    sleeper_rank_overall: p.sleeper.rank,
     sleeper_injury_status: p.sleeper.injuryStatus,
     sleeper_injury_notes: p.sleeper.injuryNotes,
+    sleeper_depth_chart_position: p.sleeper.depthChartPosition,
+    sleeper_depth_chart_order: p.sleeper.depthChartOrder,
     fp_adp: p.fantasypros.adp,
-    ...(p.footballguys
-      ? {
-          fbg_rank: p.footballguys.rank,
-          fbg_tier: p.footballguys.tier,
-          fbg_rank_pos: p.footballguys.pos_rank,
-          fbg_adp_consensus: p.footballguys.adp.consensus ?? null,
-          fbg_settings: p.footballguys.settings,
-        }
-      : {}),
     market_delta: p.calc.market_delta,
   };
 

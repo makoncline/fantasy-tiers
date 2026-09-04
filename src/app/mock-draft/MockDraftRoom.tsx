@@ -20,7 +20,24 @@ import {
   type DraftDataContextType,
 } from "@/app/draft-assistant/_contexts/DraftDataContext";
 import type { Position as DraftAssistantPosition } from "@/app/draft-assistant/_lib/types";
+import {
+  defaultMockDraftSetup,
+  mockDraftConfigFromSetup,
+  mockDraftRosterSlotOrder,
+  mockDraftScoringFields,
+  mockDraftSettingsFromLeague,
+  mockDraftSetupSchema,
+  mockDraftSetupToRosterSlots,
+  mockDraftSetupToScoringRules,
+  type MockDraftSetupValues,
+  type NumericMockDraftSetupField,
+} from "@/app/mock-draft/mockDraftSetup";
 import { Badge } from "@/components/ui/badge";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -47,7 +64,13 @@ import {
 } from "@/components/ui/select";
 import { useAggregateBundle } from "@/hooks/useAggregateBundle";
 import { buildRosterRequirementsFromDraftSettings } from "@/lib/draftHelpers";
+import {
+  calculateDraftRounds,
+  rankingScoringFromRules,
+  type UnsupportedDraftFormatNotice,
+} from "@/lib/draftLeagueConfig";
 import { createMockDraftResultArtifact } from "@/lib/draftResults";
+import { createDraftSourceSnapshot } from "@/lib/draftDecisionLog.client";
 import {
   useSleeperLeaguesForYear,
   useSleeperNflState,
@@ -57,21 +80,23 @@ import {
 import { buildDraftViewModel } from "@/lib/draftState";
 import { attachDraftValueMetrics } from "@/lib/draftValue";
 import { draftCandidateMapFromBundle } from "@/lib/draftCandidate";
+import { draftReadinessShardCountsFromBundle } from "@/lib/draftReadiness";
 import { normalizePick } from "@/lib/normalizePick";
 import {
   buildPositionTierMapFromBundle,
   toPlayerRowsFromBundle,
 } from "@/lib/playerRows";
 import type { PlayerWithPick } from "@/lib/types.draft";
-import { scoringTypeFromReceptionPoints } from "@/lib/scoring";
 import {
   type DraftedPlayer,
   type Position,
   type RosterSlot,
-  type ScoringType,
 } from "@/lib/schemas";
 import type { AggregatesBundleResponseT } from "@/lib/schemas-bundle";
 import type { SleeperLeague } from "@/lib/sleeper";
+import {
+  buildStarterAwareStrategy,
+} from "@/lib/beerPlusStrategy";
 import {
   advanceUntilUserTurn,
   bundleToSimPlayers,
@@ -87,28 +112,7 @@ import {
   type SimDraftPlayer,
   type SimDraftSnapshot,
   type SimDraftState,
-  type SimRosterSlots,
 } from "@/lib/simDraft";
-
-const setupSchema = z.object({
-  sleeperIdentifier: z.string().trim().optional(),
-  teams: z.number().int().min(2).max(20),
-  rounds: z.number().int().min(1).max(30),
-  userSlot: z.number().int().min(1).max(20),
-  scoring: z.enum(["std", "half", "ppr"]),
-  draftType: z.enum(["snake", "linear"]),
-  botStrategy: z.enum(["sleeper-adp-needs", "sleeper-market-v1"]),
-  seed: z.string().trim().min(1),
-  QB: z.number().int().min(0).max(4),
-  RB: z.number().int().min(0).max(8),
-  WR: z.number().int().min(0).max(8),
-  TE: z.number().int().min(0).max(4),
-  K: z.number().int().min(0).max(4),
-  DEF: z.number().int().min(0).max(4),
-  FLEX: z.number().int().min(0).max(6),
-});
-
-type SetupValues = z.infer<typeof setupSchema>;
 
 const SaveDraftResultResponseSchema = z.object({
   ok: z.boolean(),
@@ -122,29 +126,7 @@ type SaveResultState = {
   resultDir?: string;
 };
 
-const defaultRosterSlots = {
-  QB: 1,
-  RB: 2,
-  WR: 2,
-  TE: 1,
-  K: 1,
-  DEF: 1,
-  FLEX: 1,
-} satisfies SimRosterSlots;
-
-const defaultSetup = {
-  sleeperIdentifier: "",
-  teams: 10,
-  rounds: 15,
-  userSlot: 5,
-  scoring: "std",
-  draftType: "snake",
-  botStrategy: "sleeper-market-v1",
-  seed: "slot-5-2026",
-  ...defaultRosterSlots,
-} satisfies SetupValues;
-
-const rosterSlotOrder = ["QB", "RB", "WR", "TE", "FLEX", "K", "DEF"] as const;
+const assistantRosterSlotOrder = ["QB", "RB", "WR", "TE", "FLEX", "K", "DEF"] as const;
 
 type DraftViewModel = ReturnType<typeof buildDraftViewModel>;
 
@@ -156,16 +138,18 @@ export default function MockDraftRoom() {
     status: "idle",
   });
 
-  const form = useForm<SetupValues>({
-    resolver: zodResolver(setupSchema),
-    defaultValues: defaultSetup,
+  const form = useForm<MockDraftSetupValues>({
+    resolver: zodResolver(mockDraftSetupSchema),
+    defaultValues: defaultMockDraftSetup,
   });
 
   const watched = useWatch({ control: form.control });
-  const watchedTeams = watched.teams ?? defaultSetup.teams;
-  const watchedRounds = watched.rounds ?? defaultSetup.rounds;
-  const watchedScoring = watched.scoring ?? defaultSetup.scoring;
-  const watchedRosterSlots = setupToRosterSlots(watched);
+  const watchedTeams = watched.teams ?? defaultMockDraftSetup.teams;
+  const watchedRosterSlots = mockDraftSetupToRosterSlots(watched);
+  const watchedRounds = calculateDraftRounds(watchedRosterSlots);
+  const watchedScoring = rankingScoringFromRules(
+    mockDraftSetupToScoringRules(watched)
+  );
   const isUserIdLookup = /^\d+$/.test(lookupIdentifier);
 
   const nflState = useSleeperNflState();
@@ -185,6 +169,12 @@ export default function MockDraftRoom() {
     activeSeason,
     Boolean(sleeperUser?.user_id)
   );
+  const importedLeagueNotices = useMemo(() => {
+    const league = leagues.data?.find(
+      (item) => item.league_id === selectedLeagueId
+    );
+    return league ? mockDraftSettingsFromLeague(league).notices : [];
+  }, [leagues.data, selectedLeagueId]);
 
   const bundle = useAggregateBundle({
     scoring: watchedScoring,
@@ -197,6 +187,22 @@ export default function MockDraftRoom() {
     () => (bundle.data ? bundleToSimPlayers(bundle.data) : []),
     [bundle.data]
   );
+  const starterAwareStatus = useMemo(() => {
+    if (!bundle.data) return null;
+    const candidates = Object.values(draftCandidateMapFromBundle(bundle.data));
+    return buildStarterAwareStrategy({
+      artifact: bundle.data.draftProjections,
+      players: candidates.map((player) => ({
+        playerId: player.player_id,
+        position: player.position,
+        ecr: player.fp_rank_ave,
+      })),
+      teams: watchedTeams,
+      rounds: watchedRounds,
+      rosterSlots: watchedRosterSlots,
+      scoringRules: mockDraftSetupToScoringRules(watched),
+    }).status;
+  }, [bundle.data, watched, watchedRosterSlots, watchedRounds, watchedTeams]);
 
   const snapshot = useMemo(
     () => (draftState ? getSimDraftSnapshot(draftState, players) : null),
@@ -220,12 +226,16 @@ export default function MockDraftRoom() {
       picks: draftPicks,
       userId: draftState.config.userId,
       topLimit: 4,
+      scoringRules: draftState.config.scoringRules,
+      projectionArtifact: bundle.data.draftProjections,
+      sourceHealth: bundle.data.sourceHealth ?? null,
+      shardCounts: draftReadinessShardCountsFromBundle(bundle.data),
     });
   }, [bundle.data, draftDetails, draftPicks, draftState, players.length]);
 
-  function startDraft(values: SetupValues) {
+  function startDraft(values: MockDraftSetupValues) {
     if (players.length === 0) return;
-    const config = valuesToConfig(values, {
+    const config = mockDraftConfigFromSetup(values, {
       season: activeSeason,
       userId: sleeperUser?.user_id ?? "sim-user",
       leagueName: selectedLeagueName(selectedLeagueId, leagues.data),
@@ -274,6 +284,10 @@ export default function MockDraftRoom() {
         draftPicks,
         viewModel,
         sourceHealth: bundle.data?.sourceHealth,
+        sourceSnapshot: bundle.data
+          ? await createDraftSourceSnapshot({ bundle: bundle.data, players })
+          : null,
+        readiness: viewModel?.readiness ?? null,
       });
       const response = await fetch("/api/draft-results", {
         method: "POST",
@@ -304,13 +318,15 @@ export default function MockDraftRoom() {
     setSelectedLeagueId(leagueId);
     const league = leagues.data?.find((item) => item.league_id === leagueId);
     if (!league) return;
-    const imported = settingsFromLeague(league);
+    const imported = mockDraftSettingsFromLeague(league);
     form.setValue("teams", imported.teams);
-    form.setValue("rounds", imported.rounds);
-    form.setValue("scoring", imported.scoring);
-    for (const slot of rosterSlotOrder) {
+    for (const slot of mockDraftRosterSlotOrder) {
       form.setValue(slot, imported.rosterSlots[slot]);
     }
+    for (const [field] of mockDraftScoringFields) {
+      form.setValue(field, imported.scoringRules[field]);
+    }
+    form.setValue("defense", imported.scoringRules.defense);
     form.setValue(
       "userSlot",
       Math.min(form.getValues("userSlot"), imported.teams)
@@ -357,7 +373,7 @@ export default function MockDraftRoom() {
             />
             <StatusTile
               label="Made"
-              value={`${draftPicks.length}/${watchedTeams * (watched.rounds ?? 0)}`}
+              value={`${draftPicks.length}/${watchedTeams * watchedRounds}`}
             />
           </div>
         </header>
@@ -386,7 +402,12 @@ export default function MockDraftRoom() {
                 ? "error"
                 : `${players.length} players`
             }
-            canStart={players.length > 0}
+            canStart={
+              players.length > 0 &&
+              starterAwareStatus?.available === true
+            }
+            beerPlusStatus={starterAwareStatus}
+            importedLeagueNotices={importedLeagueNotices}
             onLookup={() =>
               setLookupIdentifier(form.getValues("sleeperIdentifier") ?? "")
             }
@@ -429,7 +450,7 @@ export default function MockDraftRoom() {
 }
 
 function SetupPanel(props: {
-  form: ReturnType<typeof useForm<SetupValues>>;
+  form: ReturnType<typeof useForm<MockDraftSetupValues>>;
   lookupIdentifier: string;
   selectedLeagueId: string;
   activeSeason: string;
@@ -439,6 +460,8 @@ function SetupPanel(props: {
   lookupError: string | null;
   bundleStatus: string;
   canStart: boolean;
+  beerPlusStatus: ReturnType<typeof buildStarterAwareStrategy>["status"] | null;
+  importedLeagueNotices: UnsupportedDraftFormatNotice[];
   onLookup: () => void;
   onApplyLeague: (leagueId: string) => void;
   onStart: () => void;
@@ -472,6 +495,13 @@ function SetupPanel(props: {
                 </FormItem>
               )}
             />
+
+            {props.beerPlusStatus?.available === false ? (
+              <Alert variant="destructive">
+                <AlertTitle>Draft recommendations unavailable</AlertTitle>
+                <AlertDescription>{props.beerPlusStatus.reason}</AlertDescription>
+              </Alert>
+            ) : null}
 
             <div className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
               <div className="flex items-center justify-between gap-3">
@@ -513,34 +543,41 @@ function SetupPanel(props: {
                   ))}
                 </SelectContent>
               </Select>
+              {props.importedLeagueNotices.length > 0 ? (
+                <Alert
+                  variant="destructive"
+                  data-testid="mock-import-limitations"
+                >
+                  <AlertTitle>Imported league limitations</AlertTitle>
+                  <AlertDescription>
+                    <ul className="list-disc space-y-1 pl-4">
+                      {props.importedLeagueNotices.map((notice) => (
+                        <li key={notice.code}>{notice.message}</li>
+                      ))}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              ) : null}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <NumberField form={props.form} name="teams" label="Teams" />
-              <NumberField form={props.form} name="rounds" label="Rounds" />
-              <NumberField form={props.form} name="userSlot" label="Draft slot" />
-              <FormField
-                control={props.form.control}
-                name="scoring"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Scoring</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="std">Standard</SelectItem>
-                        <SelectItem value="half">Half PPR</SelectItem>
-                        <SelectItem value="ppr">PPR</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              <NumberField form={props.form} name="userSlot" label="Your slot" />
+              <NumberField
+                form={props.form}
+                name="pickTimerSeconds"
+                label="Pick timer (seconds)"
               />
+              <FormItem>
+                <FormLabel>Draft rounds</FormLabel>
+                <Input
+                  value={calculateDraftRounds(
+                    mockDraftSetupToRosterSlots(props.form.getValues())
+                  )}
+                  readOnly
+                  aria-label="Draft rounds"
+                />
+              </FormItem>
             </div>
 
             <FormField
@@ -564,6 +601,11 @@ function SetupPanel(props: {
                 </FormItem>
               )}
             />
+
+            <p className="text-xs leading-5 text-muted-foreground">
+              Draft order is manual. Change your slot when the league finalizes the
+              order. The mock uses snake order from that slot.
+            </p>
 
             <FormField
               control={props.form.control}
@@ -591,10 +633,109 @@ function SetupPanel(props: {
               )}
             />
 
-            <div className="grid grid-cols-4 gap-2">
-              {rosterSlotOrder.map((slot) => (
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Roster</div>
+              <p className="text-xs text-muted-foreground">
+                Rounds equal all starter and bench slots. IR is not drafted.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              {mockDraftRosterSlotOrder.map((slot) => (
                 <NumberField key={slot} form={props.form} name={slot} label={slot} />
               ))}
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Scoring</div>
+              <p className="text-xs text-muted-foreground">
+                {props.form.watch("defense") === "unsupported-custom"
+                  ? "Imported custom D/ST scoring is not modeled, so draft recommendations are unavailable."
+                  : "D/ST uses standard Sleeper scoring. The reception value selects the closest aggregate ranking set."}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {mockDraftScoringFields.map(([field, label]) => (
+                <NumberField
+                  key={field}
+                  form={props.form}
+                  name={field}
+                  label={label}
+                  minimum={null}
+                  step="any"
+                />
+              ))}
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <div className="text-sm font-medium">Keeper policy</div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  The 2026 preset has no incoming keepers. Future policy is saved
+                  as planning metadata only; this mock does not place keeper picks
+                  or apply round costs.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <NumberField
+                  form={props.form}
+                  name="keeperStartsInSeason"
+                  label="Starts in season"
+                />
+                <NumberField
+                  form={props.form}
+                  name="keeperMaxPerTeam"
+                  label="Max per team"
+                />
+              </div>
+              <FormField
+                control={props.form.control}
+                name="keeperEligibility"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Eligibility</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="drafted-only">Drafted players only</SelectItem>
+                        <SelectItem value="any-rostered">Any rostered player</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={props.form.control}
+                name="keeperCost"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Keeper cost</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">No draft cost</SelectItem>
+                        <SelectItem value="same-round">Original draft round</SelectItem>
+                        <SelectItem value="previous-round">Previous round</SelectItem>
+                        <SelectItem value="custom-round-penalty">Custom round penalty</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {props.form.watch("keeperCost") === "custom-round-penalty" ? (
+                <NumberField
+                  form={props.form}
+                  name="keeperCustomRoundPenalty"
+                  label="Round penalty"
+                />
+              ) : null}
             </div>
 
             <FormField
@@ -628,12 +769,11 @@ function SetupPanel(props: {
 }
 
 function NumberField(props: {
-  form: ReturnType<typeof useForm<SetupValues>>;
-  name: keyof Pick<
-    SetupValues,
-    "teams" | "rounds" | "userSlot" | "QB" | "RB" | "WR" | "TE" | "K" | "DEF" | "FLEX"
-  >;
+  form: ReturnType<typeof useForm<MockDraftSetupValues>>;
+  name: NumericMockDraftSetupField;
   label: string;
+  minimum?: number | null;
+  step?: number | "any";
 }) {
   return (
     <FormField
@@ -645,7 +785,8 @@ function NumberField(props: {
           <FormControl>
             <Input
               type="number"
-              min={0}
+              min={props.minimum === null ? undefined : props.minimum ?? 0}
+              step={props.step}
               {...field}
               onChange={(event) => field.onChange(Number(event.target.value))}
             />
@@ -1092,6 +1233,8 @@ function useMockDraftContextValue(props: {
     return {
       username: "mock-user",
       selectedDraftId: draftState.config.draftId,
+      draftValueStatus: viewModel.draftValueStatus,
+      readiness: viewModel.readiness,
       user,
       drafts: [],
       draftDetails,
@@ -1188,38 +1331,6 @@ function StatusTile(props: { label: string; value: string }) {
   );
 }
 
-function setupToRosterSlots(values: Partial<SetupValues>): SimRosterSlots {
-  return {
-    QB: values.QB ?? defaultRosterSlots.QB,
-    RB: values.RB ?? defaultRosterSlots.RB,
-    WR: values.WR ?? defaultRosterSlots.WR,
-    TE: values.TE ?? defaultRosterSlots.TE,
-    K: values.K ?? defaultRosterSlots.K,
-    DEF: values.DEF ?? defaultRosterSlots.DEF,
-    FLEX: values.FLEX ?? defaultRosterSlots.FLEX,
-  };
-}
-
-function valuesToConfig(
-  values: SetupValues,
-  extra: { season: string; userId: string; leagueName: string }
-): SimDraftConfig {
-  return createDefaultSimDraftConfig({
-    draftId: `sim-${values.seed}`,
-    userId: extra.userId,
-    season: extra.season,
-    leagueName: extra.leagueName,
-    teams: values.teams,
-    rounds: values.rounds,
-    userSlot: Math.min(values.userSlot, values.teams),
-    scoring: values.scoring,
-    draftType: values.draftType,
-    seed: values.seed,
-    botStrategy: values.botStrategy,
-    rosterSlots: setupToRosterSlots(values),
-  });
-}
-
 function selectedLeagueName(
   leagueId: string,
   leagues: SleeperLeague[] | undefined
@@ -1228,60 +1339,6 @@ function selectedLeagueName(
     leagues?.find((league) => league.league_id === leagueId)?.name ??
     "Local Mock Draft"
   );
-}
-
-function settingsFromLeague(league: SleeperLeague): {
-  teams: number;
-  rounds: number;
-  scoring: ScoringType;
-  rosterSlots: SimRosterSlots;
-} {
-  const rosterSlots = countRosterSlotsFromSleeper(league.roster_positions);
-  const rounds =
-    league.roster_positions?.length ??
-    readNumber(league.settings, "draft_rounds") ??
-    defaultSetup.rounds;
-  const rec = readNumber(league.scoring_settings, "rec") ?? 0;
-  return {
-    teams:
-      league.total_rosters ??
-      readNumber(league.settings, "num_teams") ??
-      defaultSetup.teams,
-    rounds,
-    scoring: scoringTypeFromReceptionPoints(rec),
-    rosterSlots,
-  };
-}
-
-function countRosterSlotsFromSleeper(
-  rosterPositions: readonly string[] | undefined
-) {
-  if (!rosterPositions?.length) return defaultRosterSlots;
-  const counts = { QB: 0, RB: 0, WR: 0, TE: 0, K: 0, DEF: 0, FLEX: 0 };
-  for (const raw of rosterPositions) {
-    if (raw === "BN" || raw === "BE" || raw === "IR") continue;
-    if (raw === "SUPER_FLEX" || raw === "REC_FLEX") {
-      counts.FLEX += 1;
-      continue;
-    }
-    if (raw in counts) {
-      counts[raw as keyof SimRosterSlots] += 1;
-    }
-  }
-  return counts;
-}
-
-function readNumber(
-  record: Record<string, unknown> | undefined,
-  key: string
-) {
-  const value = record?.[key];
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string") {
-    const numeric = Number(value);
-    return Number.isFinite(numeric) ? numeric : null;
-  }
-  return null;
 }
 
 function pickNoForRoundSlot(
@@ -1301,7 +1358,7 @@ function buildUserRosterSlots(viewModel: DraftViewModel) {
   const players = [...(viewModel.userRoster?.players ?? [])] as DraftedPlayer[];
   const slots: { slot: RosterSlot; player: DraftedPlayer | null }[] = [];
 
-  for (const slot of rosterSlotOrder) {
+  for (const slot of assistantRosterSlotOrder) {
     for (let index = 0; index < (requirements[slot] ?? 0); index += 1) {
       const playerIndex = players.findIndex((player) =>
         fitsRosterSlot(player.position, slot)

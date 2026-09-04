@@ -19,23 +19,6 @@ function roundPickLabel(overall: number, teams: number) {
   return `${r}.${String(p).padStart(width, "0")}`;
 }
 
-function shortDate(value: string | null | undefined) {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toISOString().slice(0, 16).replace("T", " ");
-}
-
-function coverageLabel(
-  coveragePct: number | null | undefined,
-  coverageBasis: string | null | undefined
-) {
-  if (coveragePct == null) return null;
-  return coverageBasis
-    ? `${coveragePct}% ${coverageBasis} coverage`
-    : `${coveragePct}% coverage`;
-}
-
 export default function DraftStatusCard() {
   const {
     user,
@@ -47,7 +30,7 @@ export default function DraftStatusCard() {
     lastUpdatedAt,
     league,
     positionRows,
-    sourceHealth,
+    readiness,
   } = useDraftData();
 
   const teams = draftDetails?.settings?.teams ?? league?.teams ?? 0;
@@ -126,9 +109,6 @@ export default function DraftStatusCard() {
   }
 
   const [collapsed, setCollapsed] = React.useState(false);
-  const draftSources = sourceHealth?.sources ?? [];
-  const sourceWarnings = sourceHealth?.warnings ?? [];
-  const sourceWarningCount = sourceWarnings.length;
 
   return (
     <Card
@@ -221,81 +201,40 @@ export default function DraftStatusCard() {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              {draftSources.length ? (
+              {readiness?.status === "ready" ? (
                 <details
-                  aria-label="Draft source health"
+                  aria-label="Draft data readiness"
                   className="relative"
-                  data-testid="draft-source-health"
+                  data-testid="draft-data-ready"
                 >
                   <summary className="inline-flex cursor-pointer list-none items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground hover:text-foreground">
-                    Sources{" "}
-                    {sourceWarningCount
-                      ? `${sourceWarningCount} warning${
-                          sourceWarningCount === 1 ? "" : "s"
-                        }`
-                      : "OK"}
+                    Data ready · Core {readiness.cohorts.core.ready}/
+                    {readiness.cohorts.core.total} · Draft pool{" "}
+                    {readiness.cohorts.expected.ready}/
+                    {readiness.cohorts.expected.total}
                   </summary>
                   <div className="absolute left-0 top-7 z-50 w-[min(46rem,calc(100vw-2rem))] rounded-md border bg-background p-2 shadow-lg">
                     <div className="grid gap-1.5 md:grid-cols-3">
-                      {draftSources.map((source) => {
-                        const variant =
-                          source.status === "ok"
-                            ? "secondary"
-                            : source.status === "warning"
-                            ? "outline"
-                            : "destructive";
-                        const coverage = coverageLabel(
-                          source.coveragePct,
-                          source.coverageBasis
-                        );
-                        return (
-                          <div
-                            key={source.source}
-                            className="rounded-md border bg-background px-2 py-1"
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <Badge variant={variant}>{source.source}</Badge>
-                              <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                                {source.status}
-                              </span>
-                            </div>
-                            <div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-[11px] leading-4 text-muted-foreground">
-                              <span>
-                                updated {shortDate(source.lastUpdated)}
-                              </span>
-                              <span>{source.rowCount ?? "—"} rows</span>
-                              {source.relevantRowCount != null &&
-                              source.relevantRowCount !== source.rowCount ? (
-                                <span>{source.relevantRowCount} relevant</span>
-                              ) : null}
-                              {coverage ? (
-                                <span>{coverage}</span>
-                              ) : null}
-                              {source.sampleSize ? (
-                                <span>{source.sampleSize} sample</span>
-                              ) : null}
-                            </div>
+                      {Object.values(readiness.cohorts).map((cohort) => (
+                        <div
+                          key={cohort.id}
+                          className="rounded-md border bg-background px-2 py-1"
+                        >
+                          <div className="font-medium">{cohort.label}</div>
+                          <div className="text-[11px] text-muted-foreground">
+                            {cohort.ready}/{cohort.total} ready ·{" "}
+                            {cohort.coveragePct}%
                           </div>
-                        );
-                      })}
+                        </div>
+                      ))}
                     </div>
-                    {sourceWarnings.length ? (
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {sourceWarnings.slice(0, 4).map((warning) => (
-                          <Badge
-                            key={warning}
-                            variant="outline"
-                            className="border-amber-300 bg-amber-50 text-[11px] font-normal text-amber-900"
-                          >
-                            {warning}
-                          </Badge>
-                        ))}
-                        {sourceWarnings.length > 4 ? (
-                          <Badge variant="outline" className="text-[11px]">
-                            +{sourceWarnings.length - 4} more
-                          </Badge>
-                        ) : null}
-                      </div>
+                    {readiness.playerIssues.length ? (
+                      <p className="mt-2 text-[11px] text-muted-foreground">
+                        Reserve exceptions: {readiness.playerIssues
+                          .filter((issue) => issue.cohorts.includes("reserve"))
+                          .map((issue) => issue.name)
+                          .join(", ") || "none"}
+                      </p>
                     ) : null}
                   </div>
                 </details>

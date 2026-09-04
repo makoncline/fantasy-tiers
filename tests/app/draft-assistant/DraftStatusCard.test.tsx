@@ -53,46 +53,37 @@ function draftDataContext() {
     showUnranked: false,
     setShowUnranked: vi.fn(),
     positionRows: { ALL: [] },
-    sourceHealth: {
-      generatedAt: "2026-06-30T12:40:00.000Z",
-      scoring: "half",
-      sources: [
-        {
-          source: "Sleeper",
-          status: "ok",
-          lastUpdated: "2026-06-30T12:34:00.000Z",
-          fetchedAt: null,
-          rowCount: 600,
-          coveragePct: 92,
-          sampleSize: null,
-          projectionsFetched: true,
-          warnings: [],
+    readiness: {
+      status: "ready",
+      cohorts: {
+        core: {
+          id: "core",
+          label: "Core",
+          ready: 120,
+          total: 120,
+          coveragePct: 100,
         },
-        {
-          source: "FantasyPros",
-          status: "warning",
-          lastUpdated: "2026-06-30T11:00:00.000Z",
-          fetchedAt: "2026-06-30T12:00:00.000Z",
-          rowCount: 360,
-          coveragePct: 42,
-          sampleSize: "limited",
-          projectionsFetched: false,
-          warnings: ["FantasyPros expert coverage is below 50%."],
+        expected: {
+          id: "expected",
+          label: "Expected draft pool",
+          ready: 176,
+          total: 176,
+          coveragePct: 100,
         },
-        {
-          source: "Tiers",
-          status: "ok",
-          lastUpdated: "2026-06-30T11:30:00.000Z",
-          fetchedAt: "2026-06-30T12:05:00.000Z",
-          rowCount: 360,
-          coveragePct: 88,
-          sampleSize: "normal",
-          projectionsFetched: null,
-          warnings: [],
+        reserve: {
+          id: "reserve",
+          label: "Reserve pool",
+          ready: 35,
+          total: 36,
+          coveragePct: 97.2,
         },
-      ],
-      warnings: [
-        "FantasyPros: FantasyPros expert coverage is below 50%.",
+      },
+      playerIssues: [
+        {
+          playerId: "reserve-1",
+          name: "Reserve Player",
+          cohorts: ["reserve"],
+        },
       ],
     },
   };
@@ -117,29 +108,19 @@ describe("DraftStatusCard", () => {
     container.remove();
   });
 
-  it("renders source freshness, coverage, and warnings", () => {
+  it("renders compact draft-readiness coverage", () => {
     act(() => {
       root.render(<DraftStatusCard />);
     });
 
-    const health = container.querySelector('[data-testid="draft-source-health"]');
+    const health = container.querySelector('[data-testid="draft-data-ready"]');
     expect(health).not.toBeNull();
     const text = health?.textContent ?? "";
 
-    expect(text).toContain("Sleeper");
-    expect(text).toContain("updated 2026-06-30 12:34");
-    expect(text).toContain("600 rows");
-    expect(text).toContain("92% coverage");
-    expect(text).not.toContain("proj yes");
-
-    expect(text).toContain("FantasyPros");
-    expect(text).toContain("360 rows");
-    expect(text).toContain("42% coverage");
-    expect(text).toContain("limited sample");
-    expect(text).not.toContain("proj no");
-    expect(text).toContain(
-      "FantasyPros: FantasyPros expert coverage is below 50%."
-    );
+    expect(text).toContain("Data ready · Core 120/120 · Draft pool 176/176");
+    expect(text).toContain("Reserve pool");
+    expect(text).toContain("35/36 ready");
+    expect(text).toContain("Reserve exceptions: Reserve Player");
   });
 
   it("counts picks to the user's slot across a snake turn", () => {

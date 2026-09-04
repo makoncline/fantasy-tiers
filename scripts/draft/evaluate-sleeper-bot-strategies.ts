@@ -50,19 +50,30 @@ async function main() {
 
   const results: BoardResult[] = [];
   for (const [boardIndex, board] of completeBoards.entries()) {
+    const rosterSlots = {
+      QB: 1,
+      RB: 2,
+      WR: 2,
+      TE: 1,
+      K: 1,
+      DEF: 1,
+      FLEX: 1,
+      BENCH: Math.max(0, board.rounds - 9),
+      IR: 0,
+    };
     const bundle = buildAggregateBundle({
       scoring: "std",
       teams: board.teams,
-      rosterSlots: { QB: 1, RB: 2, WR: 2, TE: 1, K: 1, DEF: 1, FLEX: 1, BENCH: 6 },
+      rosterSlots,
     });
     const currentPlayers = bundleToSimPlayers(bundle);
     const players = mergeBoardPlayers(currentPlayers, board.picks);
     const config = createDefaultSimDraftConfig({
       draftId: `evaluation-${boardIndex}`,
       teams: board.teams,
-      rounds: board.rounds,
       userSlot: 1,
       seed: `evaluation-${boardIndex}`,
+      rosterSlots,
     });
     let state = createSimDraft(config);
     const strategyMetrics: Record<SimBotStrategyId, number[]> = {
@@ -101,7 +112,7 @@ async function main() {
     holdout: aggregate(results.filter((result) => result.split === "holdout")),
     boards: results,
   };
-  const output = "data/draft-results/sleeper-strategy-evaluation.json";
+  const output = "data/draft-results/sleeper-bot-strategy-evaluation.json";
   await writeFile(output, `${JSON.stringify(summary, null, 2)}\n`);
   console.log(JSON.stringify({ output, ...summary }, null, 2));
 }

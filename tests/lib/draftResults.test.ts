@@ -32,7 +32,6 @@ describe("draft result artifacts", () => {
     const config = createDefaultSimDraftConfig({
       draftId: "sim result/1",
       teams: 4,
-      rounds: 2,
       userSlot: 2,
       userId: "agent-user",
       seed: "result-test",
@@ -44,6 +43,8 @@ describe("draft result artifacts", () => {
         K: 0,
         DEF: 0,
         FLEX: 0,
+        BENCH: 0,
+        IR: 1,
       },
     });
     const waiting = advanceUntilUserTurn(createSimDraft(config), players);
@@ -67,18 +68,20 @@ describe("draft result artifacts", () => {
         scoring: "ppr",
         sources: [
           {
-            source: "Footballguys",
-            status: "warning",
+            source: "Sleeper",
+            status: "missing",
+            season: "2026",
             lastUpdated: null,
             fetchedAt: "2026-07-01T11:00:00.000Z",
             rowCount: 500,
-            coveragePct: null,
-            sampleSize: null,
-            projectionsFetched: null,
-            warnings: ["Legacy snapshot warning."],
+            expertsIncluded: null,
+            expertsAvailable: null,
+            expertCoveragePct: null,
+            problems: ["Source data is missing."],
           },
         ],
-        warnings: ["Footballguys: Legacy snapshot warning."],
+        fantasyProsPlayers: [],
+        sleeperPlayers: [],
       },
       exportedAt: "2026-07-01T12:00:00.000Z",
     });

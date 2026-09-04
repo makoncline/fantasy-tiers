@@ -2,6 +2,13 @@ import type { PlayerWithPick } from "@/lib/types.draft";
 import type { ColumnDef, ColumnGroup } from "./columns";
 import { fmt } from "@/lib/formatters";
 
+export const DRAFT_VALUE_DESCRIPTIONS = {
+  raw:
+    "Starter-aware value for this league's scoring and lineup. It does not use your roster or current draft state.",
+  adjusted:
+    "VAL adjusted for your roster, pick timing, league demand, and current draft state.",
+} as const;
+
 const col = <K extends keyof PlayerWithPick>(
   id: string,
   key: K,
@@ -109,10 +116,19 @@ export const GROUPS_FULL: ColumnGroup<PlayerWithPick>[] = [
     header: "Pick",
     children: [
       {
-        id: "val",
+        id: "raw",
         header: "VAL",
-        description:
-          "Canonical pick value score from FantasyPros ECR, roster fit, timing, ADP, and draft strategy.",
+        description: DRAFT_VALUE_DESCRIPTIONS.raw,
+        accessor: (r) => r.draft_raw_value_score ?? null,
+        sortable: true,
+        defaultDir: "desc",
+        sortAs: "number",
+        width: "6ch",
+      },
+      {
+        id: "adj",
+        header: "ADJ",
+        description: DRAFT_VALUE_DESCRIPTIONS.adjusted,
         accessor: (r) => r.draft_value_score ?? null,
         sortable: true,
         heat: { scale: "val" },

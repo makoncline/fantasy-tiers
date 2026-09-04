@@ -17,19 +17,22 @@ import type {
   SimDraftSnapshot,
   SimDraftState,
 } from "@/lib/simDraft";
+import {
+  DraftRosterSlotsSchema,
+  DraftScoringRulesSchema,
+  KeeperPolicySchema,
+} from "@/lib/draftLeagueConfig";
 import { SIM_BOT_STRATEGY_IDS } from "@/lib/simDraft/botStrategies";
+import {
+  DraftSourceSnapshotSchema,
+  type DraftSourceSnapshot,
+} from "@/lib/draftDecisionLog";
+import {
+  DraftReadinessReportSchema,
+  type DraftReadinessReport,
+} from "@/lib/draftReadiness";
 
-export const DRAFT_RESULT_SCHEMA_VERSION = 1;
-
-const SimRosterSlotsSchema = z.object({
-  QB: z.number().int().min(0),
-  RB: z.number().int().min(0),
-  WR: z.number().int().min(0),
-  TE: z.number().int().min(0),
-  K: z.number().int().min(0),
-  DEF: z.number().int().min(0),
-  FLEX: z.number().int().min(0),
-});
+export const DRAFT_RESULT_SCHEMA_VERSION = 3;
 
 const SimDraftConfigSchema = z.object({
   draftId: z.string().min(1),
@@ -39,14 +42,18 @@ const SimDraftConfigSchema = z.object({
   teams: z.number().int().min(2),
   rounds: z.number().int().min(1),
   userSlot: z.number().int().min(1),
+  draftOrderMode: z.literal("manual"),
+  pickTimerSeconds: z.number().int().min(1),
   scoring: scoringTypeSchema,
+  scoringRules: DraftScoringRulesSchema,
+  keeperPolicy: KeeperPolicySchema,
   draftType: z.enum(["snake", "linear"]),
   seed: z.string().min(1),
   botStrategy: z.enum(SIM_BOT_STRATEGY_IDS),
   botStrategiesBySlot: z
     .record(z.string(), z.enum(SIM_BOT_STRATEGY_IDS))
     .default({}),
-  rosterSlots: SimRosterSlotsSchema,
+  rosterSlots: DraftRosterSlotsSchema,
 });
 
 const DraftResultPlayerSchema = DraftedPlayerSchema.extend({
@@ -56,9 +63,10 @@ const DraftResultPlayerSchema = DraftedPlayerSchema.extend({
   fp_rank_ave: z.number().nullable().optional(),
   fp_rank_pos: z.number().nullable().optional(),
   position_tier_level: z.number().nullable().optional(),
-  fbg_rank: z.number().nullable().optional(),
-  fbg_rank_pos: z.number().nullable().optional(),
-  fbg_tier: z.number().nullable().optional(),
+  sleeper_injury_status: z.string().nullable().optional(),
+  sleeper_injury_notes: z.string().nullable().optional(),
+  sleeper_news_updated: z.number().nullable().optional(),
+  fp_rank_updated_at: z.number().nullable().optional(),
 }).passthrough();
 
 const SimDraftEventSchema = z.object({
@@ -102,20 +110,10 @@ const DraftResultSummarySchema = z.object({
   userRosterPlayerIds: z.array(z.string()),
 });
 
-export const DraftAnalysisReportSchema = z.object({
-  provider: z.string().min(1),
-  fetchedAt: z.string().datetime(),
-  sourceUrl: z.string().url().optional(),
-  format: z.enum(["html", "json", "markdown", "text"]),
-  fileName: z.string().regex(/^[A-Za-z0-9._-]+$/),
-  content: z.string(),
-  summary: z.unknown().optional(),
-});
-
 export const DraftResultArtifactSchema = z.object({
   schemaVersion: z.literal(DRAFT_RESULT_SCHEMA_VERSION),
   exportedAt: z.string().datetime(),
-  source: z.enum(["mock-draft", "sleeper-live"]),
+  source: z.enum(["mock-draft", "sleeper-live", "sleeper-picks-import"]),
   summary: DraftResultSummarySchema,
   state: SimDraftStateArtifactSchema,
   sleeper: z.object({
@@ -132,16 +130,16 @@ export const DraftResultArtifactSchema = z.object({
   assistant: z.object({
     viewModel: z.unknown().optional(),
     sourceHealth: AggregateSourceHealth.optional(),
+    sourceSnapshot: DraftSourceSnapshotSchema.nullable(),
+    readiness: DraftReadinessReportSchema.nullable(),
   }),
   notes: z.array(z.string()),
 });
 
 export const SaveDraftResultRequestSchema = z.object({
   artifact: DraftResultArtifactSchema,
-  analysisReports: z.array(DraftAnalysisReportSchema).optional().default([]),
 });
 
-export type DraftAnalysisReport = z.infer<typeof DraftAnalysisReportSchema>;
 export type DraftResultArtifact = z.infer<typeof DraftResultArtifactSchema>;
 export type SaveDraftResultRequest = z.infer<typeof SaveDraftResultRequestSchema>;
 
@@ -153,9 +151,11 @@ export function createMockDraftResultArtifact(input: {
   draftPicks: readonly DraftPick[];
   viewModel?: unknown;
   sourceHealth?: AggregateSourceHealthT | undefined;
+  sourceSnapshot?: DraftSourceSnapshot | null | undefined;
+  readiness?: DraftReadinessReport | null | undefined;
   notes?: readonly string[] | undefined;
   exportedAt?: string | undefined;
-  source?: "mock-draft" | "sleeper-live" | undefined;
+  source?: "mock-draft" | "sleeper-live" | "sleeper-picks-import" | undefined;
 }): DraftResultArtifact {
   const playersById = new Map(
     input.players.map((player) => [player.player_id, player])
@@ -207,6 +207,8 @@ export function createMockDraftResultArtifact(input: {
     assistant: {
       viewModel: input.viewModel,
       sourceHealth: input.sourceHealth,
+      sourceSnapshot: input.sourceSnapshot ?? null,
+      readiness: input.readiness ?? null,
     },
     notes: [...(input.notes ?? [])],
   };

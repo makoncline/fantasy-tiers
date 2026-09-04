@@ -53,7 +53,7 @@ export function buildRosterRequirementsFromDraftSettings(
 
   return {
     ...requirements,
-    BN: Math.max(0, rounds - starterCount),
+    BN: settings?.slots_bn ?? Math.max(0, rounds - starterCount),
   };
 }
 

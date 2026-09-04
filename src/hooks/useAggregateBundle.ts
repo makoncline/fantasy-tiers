@@ -15,15 +15,18 @@ export function useAggregateBundle(args: {
   rosterSlots: SimRosterSlots;
   enabled?: boolean;
 }) {
-  const benchSlots = Math.max(
-    0,
-    args.rounds - Object.values(args.rosterSlots).reduce((sum, value) => sum + value, 0)
-  );
+  const aggregateRoster = {
+    QB: args.rosterSlots.QB,
+    RB: args.rosterSlots.RB,
+    WR: args.rosterSlots.WR,
+    TE: args.rosterSlots.TE,
+    K: args.rosterSlots.K,
+    DEF: args.rosterSlots.DEF,
+    FLEX: args.rosterSlots.FLEX,
+    BENCH: args.rosterSlots.BENCH,
+  };
   return useQuery<AggregatesBundleResponseT, Error>({
-    queryKey: qk.aggregates.bundle(args.scoring, args.teams, {
-      ...args.rosterSlots,
-      BENCH: benchSlots,
-    }),
+    queryKey: qk.aggregates.bundle(args.scoring, args.teams, aggregateRoster),
     queryFn: async () => {
       const params = new URLSearchParams({
         scoring: args.scoring,
@@ -35,7 +38,7 @@ export function useAggregateBundle(args: {
         slots_k: String(args.rosterSlots.K),
         slots_def: String(args.rosterSlots.DEF),
         slots_flex: String(args.rosterSlots.FLEX),
-        slots_bench: String(benchSlots),
+        slots_bench: String(args.rosterSlots.BENCH),
       });
       const response = await fetch(`/api/aggregates/bundle?${params}`);
       if (!response.ok) {

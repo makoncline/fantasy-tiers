@@ -7,6 +7,7 @@ import {
 } from "@/lib/playerRows";
 import type { AggregatesBundleResponseT } from "@/lib/schemas-bundle";
 import { PositionEnum } from "@/lib/schemas";
+import { DraftProjectionInputSchema } from "@/lib/beerPlusStrategy";
 
 const nullableFiniteNumber = z.number().finite().nullable();
 
@@ -25,8 +26,14 @@ export const DraftCandidateSchema = z.object({
   fp_rank_ave: nullableFiniteNumber,
   fp_rank_pos: nullableFiniteNumber,
   sleeper_adp: nullableFiniteNumber,
+  sleeper_board_rank: nullableFiniteNumber,
+  sleeper_board_value: nullableFiniteNumber,
   sleeper_injury_status: z.string().nullable(),
   sleeper_injury_notes: z.string().nullable(),
+  sleeper_depth_chart_position: z.string().nullable(),
+  sleeper_depth_chart_order: nullableFiniteNumber,
+  fp_rank_updated_at: nullableFiniteNumber,
+  sleeper_projection: DraftProjectionInputSchema.nullable().default(null),
 });
 
 export type DraftCandidate = z.infer<typeof DraftCandidateSchema>;
@@ -35,7 +42,11 @@ function validSleeperAdp(value: number | null | undefined) {
   return value == null || value >= 900 ? null : value;
 }
 
-export function draftCandidateFromPlayerRow(row: PlayerRow): DraftCandidate {
+export function draftCandidateFromPlayerRow(
+  row: PlayerRow,
+  projection: z.infer<typeof DraftProjectionInputSchema> | null = null,
+  fpRankUpdatedAt: number | null = null
+): DraftCandidate {
   return DraftCandidateSchema.parse({
     player_id: row.player_id,
     name: row.name,
@@ -51,17 +62,29 @@ export function draftCandidateFromPlayerRow(row: PlayerRow): DraftCandidate {
     fp_rank_ave: row.fp_rank_ave ?? null,
     fp_rank_pos: row.fp_rank_pos ?? null,
     sleeper_adp: validSleeperAdp(row.sleeper_adp),
+    sleeper_board_rank: row.sleeper_rank_overall ?? null,
+    sleeper_board_value: row.sleeper_board_value ?? null,
     sleeper_injury_status: row.sleeper_injury_status ?? null,
     sleeper_injury_notes: row.sleeper_injury_notes ?? null,
+    sleeper_depth_chart_position: row.sleeper_depth_chart_position ?? null,
+    sleeper_depth_chart_order: row.sleeper_depth_chart_order ?? null,
+    fp_rank_updated_at: fpRankUpdatedAt,
+    sleeper_projection: projection,
   });
 }
 
 export function draftCandidateMapFromRows(
-  rows: readonly PlayerRow[]
+  rows: readonly PlayerRow[],
+  projections: Record<string, z.infer<typeof DraftProjectionInputSchema>> = {},
+  fpRankUpdatedAt: number | null = null
 ): Record<string, DraftCandidate> {
   return Object.fromEntries(
     rows.map((row) => {
-      const candidate = draftCandidateFromPlayerRow(row);
+      const candidate = draftCandidateFromPlayerRow(
+        row,
+        projections[row.player_id] ?? null,
+        fpRankUpdatedAt
+      );
       return [candidate.player_id, candidate];
     })
   );
@@ -74,5 +97,21 @@ export function draftCandidateMapFromBundle(
   const rows = toPlayerRowsFromBundle(bundle.shards.ALL, bundle.teams, {
     positionTierByPlayerId,
   });
-  return draftCandidateMapFromRows(rows);
+  return draftCandidateMapFromRows(
+    rows,
+    bundle.draftProjections?.players ?? {},
+    fantasyProsRankingsUpdatedAt(bundle)
+  );
+}
+
+export function fantasyProsRankingsUpdatedAt(
+  bundle: Pick<AggregatesBundleResponseT, "sourceHealth">
+) {
+  const source = bundle.sourceHealth?.sources.find(
+    (item) => item.source === "FantasyPros"
+  );
+  const value = source?.lastUpdated ?? source?.fetchedAt ?? null;
+  if (!value) return null;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : null;
 }

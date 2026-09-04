@@ -9,6 +9,7 @@ import {
   validateSleeperDraftRows,
   writeJsonAtomic,
 } from "../../src/lib/sourceDataQuality";
+import { fetchSleeperDraftMarket } from "../../src/lib/sleeperDraftMarket";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,16 +37,18 @@ async function main() {
 
   const startedAt = new Date();
 
-  const projections: SleeperProjection[] = await fetchSleeperProjections(
-    season,
-    {
+  const [projections, draftMarket]: [SleeperProjection[], Awaited<
+    ReturnType<typeof fetchSleeperDraftMarket>
+  >] = await Promise.all([
+    fetchSleeperProjections(season, {
       seasonType,
       positions,
       orderBy,
       ...(week !== undefined && { week }),
       sport: "nfl",
-    }
-  );
+    }),
+    fetchSleeperDraftMarket(season, startedAt),
+  ]);
   validateSleeperDraftRows(projections, season);
 
   const stamp = startedAt.toISOString().replace(/[:.]/g, "-");
@@ -54,11 +57,13 @@ async function main() {
     : `projections-${season}`;
   const rawFile = path.join(rawDir, `${baseName}-${stamp}.json`);
   const latestFile = path.join(outDir, `projections-latest.json`);
+  const draftMarketFile = path.join(outDir, "draft-market-latest.json");
   const metaFile = path.join(rawDir, `metadata-${baseName}-${stamp}.json`);
 
   await Promise.all([
     writeJsonPretty(rawFile, projections),
     writeJsonAtomic(latestFile, projections),
+    writeJsonAtomic(draftMarketFile, draftMarket),
     writeJsonPretty(metaFile, {
       provider: "sleeper",
       type: "projections",
@@ -70,9 +75,21 @@ async function main() {
       recordCount: projections.length,
       updatedAt: new Date().toISOString(),
       source: "https://api.sleeper.com/projections/nfl",
+      draftMarket: {
+        fetchedAt: draftMarket.fetchedAt,
+        boardValueCounts: Object.fromEntries(
+          Object.entries(draftMarket.boardValues).map(([scoring, values]) => [
+            scoring,
+            Object.keys(values).length,
+          ])
+        ),
+        activePlayerCount: Object.keys(draftMarket.activePlayers).length,
+        injuryCount: Object.keys(draftMarket.injuries).length,
+      },
       files: {
         raw: path.relative(root, rawFile),
         latest: path.relative(root, latestFile),
+        draftMarket: path.relative(root, draftMarketFile),
       },
     }),
   ]);

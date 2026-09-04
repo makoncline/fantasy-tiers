@@ -4,6 +4,20 @@ import {
   calculateTeamNeedsAndCountsForSingleTeam,
 } from "@/lib/draftHelpers";
 import { DraftPickSchema, DraftPicksSchema, PositionEnum } from "@/lib/schemas";
+import {
+  DEFAULT_DRAFT_ROSTER_SLOTS,
+  DEFAULT_DRAFT_SCORING_RULES,
+  DEFAULT_KEEPER_POLICY,
+  SLEEPER_STANDARD_DEFENSE_SCORING,
+  DraftRosterSlotsSchema,
+  DraftScoringRulesSchema,
+  KeeperPolicySchema,
+  calculateDraftRounds,
+  rankingScoringFromRules,
+  type DraftRosterSlots,
+  type DraftScoringRules,
+  type KeeperPolicy,
+} from "@/lib/draftLeagueConfig";
 import type {
   AggregatesBundlePlayerT,
   AggregatesBundleResponseT,
@@ -20,6 +34,8 @@ import {
   getSimBotStrategy,
 } from "@/lib/simDraft/botStrategies";
 import type { SIM_BOT_STRATEGY_IDS } from "@/lib/simDraft/botStrategies";
+import { canAddPositionToRoster } from "@/lib/draftRosterPolicy";
+import { fantasyProsRankingsUpdatedAt } from "@/lib/draftCandidate";
 
 const FLEX_POSITIONS = ["RB", "WR", "TE"] as const satisfies readonly Position[];
 const SIM_DRAFT_ID_PREFIX = "sim-draft";
@@ -27,15 +43,7 @@ const SIM_DRAFT_ID_PREFIX = "sim-draft";
 export type SimDraftType = "snake" | "linear";
 export type SimBotStrategyId = (typeof SIM_BOT_STRATEGY_IDS)[number];
 
-export type SimRosterSlots = {
-  QB: number;
-  RB: number;
-  WR: number;
-  TE: number;
-  K: number;
-  DEF: number;
-  FLEX: number;
-};
+export type SimRosterSlots = DraftRosterSlots;
 
 export type SimDraftConfig = {
   draftId: string;
@@ -45,7 +53,11 @@ export type SimDraftConfig = {
   teams: number;
   rounds: number;
   userSlot: number;
+  draftOrderMode: "manual";
+  pickTimerSeconds: number;
   scoring: ScoringType;
+  scoringRules: DraftScoringRules;
+  keeperPolicy: KeeperPolicy;
   draftType: SimDraftType;
   seed: string;
   botStrategy: SimBotStrategyId;
@@ -60,9 +72,10 @@ export type SimDraftPlayer = DraftedPlayer & {
   fp_rank_ave?: number | null;
   fp_rank_pos?: number | null;
   position_tier_level?: number | null;
-  fbg_rank?: number | null;
-  fbg_rank_pos?: number | null;
-  fbg_tier?: number | null;
+  sleeper_injury_status?: string | null;
+  sleeper_injury_notes?: string | null;
+  sleeper_news_updated?: number | null;
+  fp_rank_updated_at?: number | null;
 };
 
 export type SimDraftEvent = {
@@ -93,11 +106,17 @@ export type SimDraftSnapshot = SimDraftState & {
 };
 
 export function createDefaultSimDraftConfig(
-  overrides: Partial<SimDraftConfig> = {}
+  overrides: Partial<Omit<SimDraftConfig, "rounds" | "scoring">> = {}
 ): SimDraftConfig {
-  const teams = overrides.teams ?? 10;
-  const rounds = overrides.rounds ?? 15;
-  const userSlot = overrides.userSlot ?? Math.ceil(teams / 2);
+  const teams = overrides.teams ?? 12;
+  const rosterSlots = DraftRosterSlotsSchema.parse(
+    overrides.rosterSlots ?? DEFAULT_DRAFT_ROSTER_SLOTS
+  );
+  const scoringRules = DraftScoringRulesSchema.parse(
+    overrides.scoringRules ?? DEFAULT_DRAFT_SCORING_RULES
+  );
+  const rounds = calculateDraftRounds(rosterSlots);
+  const userSlot = overrides.userSlot ?? 4;
   const seed = overrides.seed ?? "fantasy-tiers-2026";
 
   return {
@@ -108,20 +127,18 @@ export function createDefaultSimDraftConfig(
     teams,
     rounds,
     userSlot,
-    scoring: overrides.scoring ?? "std",
+    draftOrderMode: "manual",
+    pickTimerSeconds: overrides.pickTimerSeconds ?? 60,
+    scoring: rankingScoringFromRules(scoringRules),
+    scoringRules,
+    keeperPolicy: KeeperPolicySchema.parse(
+      overrides.keeperPolicy ?? DEFAULT_KEEPER_POLICY
+    ),
     draftType: overrides.draftType ?? "snake",
     seed,
-    botStrategy: overrides.botStrategy ?? "sleeper-adp-needs",
+    botStrategy: overrides.botStrategy ?? "sleeper-market-v1",
     botStrategiesBySlot: overrides.botStrategiesBySlot ?? {},
-    rosterSlots: overrides.rosterSlots ?? {
-      QB: 1,
-      RB: 2,
-      WR: 2,
-      TE: 1,
-      K: 1,
-      DEF: 1,
-      FLEX: 1,
-    },
+    rosterSlots,
   };
 }
 
@@ -279,6 +296,7 @@ export function toSleeperDraftDetails(state: SimDraftState): DraftDetails {
     settings: {
       teams: state.config.teams,
       rounds: state.config.rounds,
+      pick_timer: state.config.pickTimerSeconds,
       slots_qb: state.config.rosterSlots.QB,
       slots_rb: state.config.rosterSlots.RB,
       slots_wr: state.config.rosterSlots.WR,
@@ -286,7 +304,10 @@ export function toSleeperDraftDetails(state: SimDraftState): DraftDetails {
       slots_k: state.config.rosterSlots.K,
       slots_def: state.config.rosterSlots.DEF,
       slots_flex: state.config.rosterSlots.FLEX,
+      slots_bn: state.config.rosterSlots.BENCH,
+      slots_ir: state.config.rosterSlots.IR,
     },
+    scoring_settings: toSleeperScoringSettings(state.config.scoringRules),
     slot_to_roster_id: Object.fromEntries(
       Array.from({ length: state.config.teams }, (_, index) => {
         const slot = index + 1;
@@ -325,10 +346,15 @@ export function bundleToSimPlayers(
   bundle: AggregatesBundleResponseT
 ): SimDraftPlayer[] {
   const baseLimit = Math.max(220, bundle.teams * 30);
+  const fpRankUpdatedAt = fantasyProsRankingsUpdatedAt(bundle);
   const playersById = new Map<string, SimDraftPlayer>();
   const addPlayers = (rows: readonly AggregatesBundlePlayerT[]) => {
     for (const player of rows) {
-      const simPlayer = bundlePlayerToSimPlayer(player);
+      const simPlayer = bundlePlayerToSimPlayer(player, {
+        newsUpdated:
+          bundle.draftProjections?.players[player.player_id]?.newsUpdated ?? null,
+        fpRankUpdatedAt,
+      });
       if (simPlayer && !playersById.has(simPlayer.player_id)) {
         playersById.set(simPlayer.player_id, simPlayer);
       }
@@ -340,6 +366,16 @@ export function bundleToSimPlayers(
       .sort((a, b) => botSortValueFromBundle(a) - botSortValueFromBundle(b))
       .slice(0, baseLimit)
   );
+  addPlayers(
+    [...bundle.shards.ALL]
+      .filter((player) => player.fantasypros.ecr_average != null)
+      .sort(
+        (left, right) =>
+          (left.fantasypros.ecr_average ?? Number.MAX_SAFE_INTEGER) -
+          (right.fantasypros.ecr_average ?? Number.MAX_SAFE_INTEGER)
+      )
+      .slice(0, baseLimit)
+  );
   addPlayers(bundle.shards.K.slice(0, 40));
   addPlayers(bundle.shards.DEF.slice(0, 40));
 
@@ -349,7 +385,11 @@ export function bundleToSimPlayers(
 }
 
 export function bundlePlayerToSimPlayer(
-  player: AggregatesBundlePlayerT
+  player: AggregatesBundlePlayerT,
+  availabilityTimestamps: {
+    newsUpdated: number | null;
+    fpRankUpdatedAt: number | null;
+  } = { newsUpdated: null, fpRankUpdatedAt: null }
 ): SimDraftPlayer | null {
   const position = PositionEnum.safeParse(player.position);
   if (!position.success) return null;
@@ -366,14 +406,15 @@ export function bundlePlayerToSimPlayer(
     rank,
     tier,
     sleeperAdp,
-    sleeperRank: sleeperAdp ?? rank,
+    sleeperRank: player.sleeper.rank ?? sleeperAdp ?? rank,
     sleeper_adp: sleeperAdp,
     fp_rank_ave: player.fantasypros.ecr_average,
     fp_rank_pos: parsePositionRank(player.fantasypros.pos_rank),
     position_tier_level: player.fantasypros.tier,
-    fbg_rank: player.footballguys?.rank ?? null,
-    fbg_rank_pos: player.footballguys?.pos_rank ?? null,
-    fbg_tier: player.footballguys?.tier ?? null,
+    sleeper_injury_status: player.sleeper.injuryStatus,
+    sleeper_injury_notes: player.sleeper.injuryNotes,
+    sleeper_news_updated: availabilityTimestamps.newsUpdated,
+    fp_rank_updated_at: availabilityTimestamps.fpRankUpdatedAt,
   };
 }
 
@@ -431,6 +472,14 @@ function makePick(
     state.config.teams,
     state.config.draftType
   );
+  const rosterPolicy = getRosterPolicyContext(state, players, draftSlot);
+  if (!canAddPositionToRoster({
+    position: player.position,
+    counts: rosterPolicy.positionCounts,
+    requirements: rosterPolicy.requirements,
+  })) {
+    throw new Error(`${player.position} is limited to one player on this roster`);
+  }
   const pick = DraftPickSchema.parse({
     draft_slot: draftSlot,
     round,
@@ -470,7 +519,7 @@ function chooseBotPlayer(
   players: readonly SimDraftPlayer[],
   draftSlot: number
 ) {
-  const available = getAvailablePlayers(state, players);
+  const available = getEligiblePlayersForSlot(state, players, draftSlot);
   if (available.length === 0) {
     throw new Error("No players are available for the simulated pick");
   }
@@ -494,9 +543,13 @@ export function getBotStrategyContext(
   if (currentPickNo == null) {
     throw new Error("Cannot build bot strategy context after the draft is complete");
   }
+  const rosterRequirements = buildRosterRequirementsFromDraftSettings(
+    toSleeperDraftDetails(state).settings
+  );
   return {
-    available: getAvailablePlayers(state, players),
+    available: getEligiblePlayersForSlot(state, players, draftSlot),
     needs: getRosterNeedsForSlot(state, players, draftSlot),
+    rosterRequirements,
     roster: buildRostersBySlot(state, players)[draftSlot] ?? [],
     round: getRoundPick(currentPickNo, state.config.teams).round,
     rounds: state.config.rounds,
@@ -505,7 +558,7 @@ export function getBotStrategyContext(
 }
 
 function botSortValue(player: SimDraftPlayer) {
-  return player.sleeper_adp ?? player.sleeperRank ?? player.rank ?? 99999;
+  return player.sleeperRank ?? player.sleeper_adp ?? player.rank ?? 99999;
 }
 
 function botSortValueFromBundle(player: AggregatesBundlePlayerT) {
@@ -517,12 +570,10 @@ function validSleeperAdp(adp: number | null) {
 }
 
 function draftRankForBundlePlayer(player: AggregatesBundlePlayerT) {
+  if (player.sleeper.rank != null) return player.sleeper.rank;
   const adp = validSleeperAdp(player.sleeper.adp);
   if (adp != null) return adp;
-  if (player.position === "K" || player.position === "DEF") {
-    return player.tiers.rank;
-  }
-  return null;
+  return player.fantasypros.ecr_average ?? player.tiers.rank;
 }
 
 function getAvailablePlayers(
@@ -533,6 +584,37 @@ function getAvailablePlayers(
   return players.filter((player) => !pickedIds.has(player.player_id));
 }
 
+function getEligiblePlayersForSlot(
+  state: SimDraftState,
+  players: readonly SimDraftPlayer[],
+  draftSlot: number
+) {
+  const rosterPolicy = getRosterPolicyContext(state, players, draftSlot);
+  return getAvailablePlayers(state, players).filter((player) =>
+    canAddPositionToRoster({
+      position: player.position,
+      counts: rosterPolicy.positionCounts,
+      requirements: rosterPolicy.requirements,
+    })
+  );
+}
+
+function getRosterPolicyContext(
+  state: SimDraftState,
+  players: readonly SimDraftPlayer[],
+  draftSlot: number
+) {
+  const requirements = buildRosterRequirementsFromDraftSettings(
+    toSleeperDraftDetails(state).settings
+  );
+  const roster = buildRostersBySlot(state, players)[draftSlot] ?? [];
+  const { positionCounts } = calculateTeamNeedsAndCountsForSingleTeam(
+    roster,
+    requirements
+  );
+  return { positionCounts, requirements };
+}
+
 function buildRostersBySlot(
   state: SimDraftState,
   players: readonly SimDraftPlayer[]
@@ -540,9 +622,10 @@ function buildRostersBySlot(
   const playersById = new Map(
     players.map((player) => [player.player_id, player])
   );
-  const rosters = Object.fromEntries(
-    Array.from({ length: state.config.teams }, (_, index) => [index + 1, []])
-  ) as Record<number, SimDraftPlayer[]>;
+  const rosters: Record<number, SimDraftPlayer[]> = {};
+  for (let draftSlot = 1; draftSlot <= state.config.teams; draftSlot += 1) {
+    rosters[draftSlot] = [];
+  }
 
   for (const pick of state.picks) {
     const player = playersById.get(pick.player_id);
@@ -589,6 +672,38 @@ function assertValidConfig(config: SimDraftConfig) {
   if (config.userSlot < 1 || config.userSlot > config.teams) {
     throw new Error("User slot must be within the configured team count");
   }
+  if (config.rounds !== calculateDraftRounds(config.rosterSlots)) {
+    throw new Error("Draft rounds must equal the drafted roster size");
+  }
+  if (config.pickTimerSeconds < 1) {
+    throw new Error("Pick timer must be at least one second");
+  }
+}
+
+function toSleeperScoringSettings(rules: DraftScoringRules) {
+  return {
+    rec: rules.reception,
+    rush_yd: rules.rushingYard,
+    rec_yd: rules.receivingYard,
+    rush_td: rules.rushingTouchdown,
+    rec_td: rules.receivingTouchdown,
+    pass_yd: rules.passingYard,
+    pass_td: rules.passingTouchdown,
+    pass_int: rules.interception,
+    fum_lost: rules.lostFumble,
+    rush_att: rules.pointsPerCarry,
+    fgm_0_19: rules.fieldGoalUnder50,
+    fgm_20_29: rules.fieldGoalUnder50,
+    fgm_30_39: rules.fieldGoalUnder50,
+    fgm_40_49: rules.fieldGoalUnder50,
+    fgm_50p: rules.fieldGoal50Plus,
+    xpm: rules.extraPoint,
+    fgmiss: rules.missedFieldGoal,
+    xpmiss: rules.missedExtraPoint,
+    ...(rules.defense === "sleeper-standard"
+      ? SLEEPER_STANDARD_DEFENSE_SCORING
+      : {}),
+  };
 }
 
 function assertPlayerCapacity(

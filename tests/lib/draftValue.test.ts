@@ -7,7 +7,9 @@ import {
 } from "@/lib/draftValue";
 
 function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
-  input: DraftValueBoardInput<TPlayer>
+  input: Omit<DraftValueBoardInput<TPlayer>, "staticValuesByPlayerId"> & {
+    staticValuesByPlayerId?: Readonly<Record<string, number>>;
+  }
 ) {
   const players = input.players.map((player, index) => ({
     ...player,
@@ -17,7 +19,15 @@ function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     position_tier_level:
       player.position_tier_level ?? player.tier_level ?? player.tier ?? 1,
   }));
-  return buildProductionDraftValueBoard({ ...input, players });
+  const staticValuesByPlayerId = input.staticValuesByPlayerId ??
+    Object.fromEntries(
+      players.map((player) => [player.player_id, 200 - (player.fp_rank_ave ?? 200)])
+    );
+  return buildProductionDraftValueBoard({
+    ...input,
+    players,
+    staticValuesByPlayerId,
+  });
 }
 
 describe("buildDraftValueBoard", () => {
@@ -31,6 +41,84 @@ describe("buildDraftValueBoard", () => {
     DEF: 1,
     BN: 6,
   };
+
+  it("keeps Val static while roster state changes Adj", () => {
+    const base = {
+      players: [
+        { player_id: "rb1", name: "Runner", position: "RB", tier_rank: 4, tier_level: 1 },
+        { player_id: "wr1", name: "Receiver", position: "WR", tier_rank: 5, tier_level: 1 },
+      ],
+      teams: 12,
+      rounds: 14,
+      draftType: "snake",
+      userSlot: 4,
+      rosterRequirements,
+      staticValuesByPlayerId: { rb1: 42, wr1: 40 },
+    } as const;
+    const early = buildDraftValueBoard({
+      ...base,
+      currentPick: 4,
+      userPositionCounts: {},
+      userPositionNeeds: { RB: 2, WR: 2, FLEX: 1 },
+    });
+    const later = buildDraftValueBoard({
+      ...base,
+      currentPick: 52,
+      userPositionCounts: { RB: 3, WR: 0 },
+      userPositionNeeds: { RB: 0, WR: 2, FLEX: 1 },
+    });
+    expect(early.metricsByPlayerId.rb1?.staticValue).toBe(42);
+    expect(later.metricsByPlayerId.rb1?.staticValue).toBe(42);
+    expect(later.metricsByPlayerId.rb1?.recommendationScore).not.toBe(
+      early.metricsByPlayerId.rb1?.recommendationScore
+    );
+  });
+
+  it("preserves the raw Beer+ gap when it builds the adjusted value score", () => {
+    const board = buildDraftValueBoard({
+      players: [
+        {
+          player_id: "wr1",
+          name: "Best Raw Value",
+          position: "WR",
+          tier_rank: 1,
+          tier_level: 1,
+          fp_rank_pos: 1,
+          sleeper_adp: 1,
+        },
+        {
+          player_id: "rb1",
+          name: "Lower Raw Value",
+          position: "RB",
+          tier_rank: 4,
+          tier_level: 2,
+          fp_rank_pos: 2,
+          sleeper_adp: 4,
+        },
+      ],
+      teams: 12,
+      rounds: 14,
+      draftType: "snake",
+      currentPick: 4,
+      userSlot: 4,
+      rosterRequirements,
+      userPositionCounts: {},
+      userPositionNeeds: {
+        RB: 2,
+        WR: 2,
+        FLEX: 1,
+        QB: 1,
+        TE: 1,
+        K: 1,
+        DEF: 1,
+      },
+      staticValuesByPlayerId: { wr1: 122.4, rb1: 109.6 },
+    });
+
+    expect(board.metricsByPlayerId.wr1?.rawScores.value).toBe(100);
+    expect(board.metricsByPlayerId.rb1?.rawScores.value).toBe(87.2);
+    expect(board.recommendations[0]?.player_id).toBe("wr1");
+  });
 
   it("ranks a needed tier-cliff value as a take-now recommendation", () => {
     const players = [
@@ -128,7 +216,270 @@ describe("buildDraftValueBoard", () => {
     expect(board.metricsByPlayerId.wr1?.comebackLabel).toBe("unlikely");
   });
 
-  it("builds VAL from named recommendation components and exposes one top pick", () => {
+  it("does not recommend special-team positions beyond configured starters", () => {
+    const board = buildDraftValueBoard({
+      players: [
+        { player_id: "k1", name: "Kicker", position: "K", tier_rank: 1, tier_level: 1 },
+        { player_id: "def1", name: "Defense", position: "DEF", tier_rank: 2, tier_level: 1 },
+        { player_id: "wr1", name: "Wideout", position: "WR", tier_rank: 3, tier_level: 1 },
+      ],
+      teams: 12,
+      rounds: 14,
+      draftType: "snake",
+      currentPick: 168,
+      userSlot: 4,
+      rosterRequirements: { ...rosterRequirements, K: 0, DEF: 1, BN: 5 },
+      userPositionCounts: { K: 0, DEF: 1, WR: 4 },
+      userPositionNeeds: { K: 0, DEF: 0, BN: 1 },
+    });
+
+    expect(board.recommendations.map((player) => player.player_id)).toEqual(["wr1"]);
+  });
+
+  it("keeps DEF out of the pool until the final two rounds", () => {
+      const base = {
+        players: [
+          {
+            player_id: "def1",
+            name: "Top Defense",
+            position: "DEF",
+            fp_rank_ave: 150,
+            fp_rank_pos: 1,
+            sleeper_adp: 140,
+          },
+          {
+            player_id: "wr1",
+            name: "Bench Receiver",
+            position: "WR",
+            fp_rank_ave: 151,
+            fp_rank_pos: 60,
+            sleeper_adp: 141,
+          },
+        ],
+        teams: 12,
+        rounds: 14,
+        draftType: "snake",
+        userSlot: 4,
+        rosterRequirements: { ...rosterRequirements, K: 0, DEF: 1, BN: 5 },
+        userPositionCounts: { QB: 1, RB: 4, WR: 4, TE: 1, DEF: 0 },
+        userPositionNeeds: { QB: 0, RB: 0, WR: 0, TE: 0, FLEX: 0, K: 0, DEF: 1, BN: 3 },
+        staticValuesByPlayerId: { def1: 200, wr1: 0 },
+      } as const;
+
+      const roundTen = buildDraftValueBoard({ ...base, currentPick: 110 });
+      const roundThirteen = buildDraftValueBoard({ ...base, currentPick: 150 });
+
+      expect(roundTen.recommendations.map((player) => player.player_id)).toEqual(["wr1"]);
+      expect(roundThirteen.recommendations.map((player) => player.player_id)).toContain("def1");
+  });
+
+  it("keeps K out of the pool until the final two rounds", () => {
+      const base = {
+        players: [
+          {
+            player_id: "k1",
+            name: "Top Kicker",
+            position: "K",
+            fp_rank_ave: 150,
+            fp_rank_pos: 1,
+            sleeper_adp: 140,
+          },
+          {
+            player_id: "rb1",
+            name: "Bench Runner",
+            position: "RB",
+            fp_rank_ave: 151,
+            fp_rank_pos: 60,
+            sleeper_adp: 141,
+          },
+        ],
+        teams: 12,
+        rounds: 15,
+        draftType: "snake",
+        userSlot: 4,
+        rosterRequirements: { ...rosterRequirements, K: 1, DEF: 1, BN: 6 },
+        userPositionCounts: { QB: 1, RB: 4, WR: 4, TE: 1, K: 0, DEF: 1 },
+        userPositionNeeds: { QB: 0, RB: 0, WR: 0, TE: 0, FLEX: 0, K: 1, DEF: 0, BN: 3 },
+        staticValuesByPlayerId: { k1: 200, rb1: 0 },
+      } as const;
+
+      const roundTwelve = buildDraftValueBoard({ ...base, currentPick: 140 });
+      const roundFourteen = buildDraftValueBoard({ ...base, currentPick: 160 });
+
+      expect(roundTwelve.recommendations.map((player) => player.player_id)).toEqual(["rb1"]);
+      expect(roundFourteen.recommendations.map((player) => player.player_id)).toContain("k1");
+  });
+
+  it("fills a required special-team slot when no other capacity remains", () => {
+      const board = buildDraftValueBoard({
+        players: [
+          {
+            player_id: "def1",
+            name: "Required Defense",
+            position: "DEF",
+            fp_rank_ave: 150,
+            fp_rank_pos: 1,
+            sleeper_adp: 140,
+          },
+        ],
+        teams: 12,
+        rounds: 14,
+        draftType: "snake",
+        currentPick: 110,
+        userSlot: 4,
+        rosterRequirements: { ...rosterRequirements, K: 0, DEF: 1, BN: 5 },
+        userPositionCounts: { QB: 1, RB: 5, WR: 5, TE: 1, DEF: 0, BN: 5 },
+        userPositionNeeds: { QB: 0, RB: 0, WR: 0, TE: 0, FLEX: 0, K: 0, DEF: 1, BN: 0 },
+        staticValuesByPlayerId: { def1: 200 },
+      });
+
+      expect(board.recommendations.map((player) => player.player_id)).toEqual(["def1"]);
+  });
+
+  it("hard-excludes a second QB, TE, K, or DEF", () => {
+      const board = buildDraftValueBoard({
+        players: [
+          {
+            player_id: "qb2",
+            name: "Second Quarterback",
+            position: "QB",
+            fp_rank_ave: 1,
+            fp_rank_pos: 1,
+          },
+          {
+            player_id: "te2",
+            name: "Second Tight End",
+            position: "TE",
+            fp_rank_ave: 2,
+            fp_rank_pos: 1,
+          },
+          {
+            player_id: "k2",
+            name: "Second Kicker",
+            position: "K",
+            fp_rank_ave: 3,
+            fp_rank_pos: 1,
+          },
+          {
+            player_id: "def2",
+            name: "Second Defense",
+            position: "DEF",
+            fp_rank_ave: 4,
+            fp_rank_pos: 1,
+          },
+          {
+            player_id: "wr5",
+            name: "Bench Receiver",
+            position: "WR",
+            fp_rank_ave: 100,
+            fp_rank_pos: 50,
+          },
+        ],
+        teams: 12,
+        rounds: 15,
+        draftType: "snake",
+        currentPick: 160,
+        userSlot: 4,
+        rosterRequirements,
+        userPositionCounts: {
+          QB: 1,
+          RB: 3,
+          WR: 3,
+          TE: 1,
+          K: 1,
+          DEF: 1,
+        },
+        userPositionNeeds: {
+          QB: 0,
+          RB: 0,
+          WR: 0,
+          TE: 0,
+          FLEX: 0,
+          K: 0,
+          DEF: 0,
+          BN: 4,
+        },
+        staticValuesByPlayerId: {
+          qb2: 500,
+          te2: 400,
+          k2: 300,
+          def2: 200,
+          wr5: 1,
+        },
+      });
+
+      expect(board.recommendations.map((player) => player.player_id)).toEqual([
+        "wr5",
+      ]);
+  });
+
+  it("reserves the final picks for unfinished RB/WR depth and required slots", () => {
+      const board = buildDraftValueBoard({
+        players: [
+          {
+            player_id: "rb7",
+            name: "Extra RB",
+            position: "RB",
+            fp_rank_ave: 100,
+            fp_rank_pos: 50,
+            sleeper_adp: 100,
+          },
+          {
+            player_id: "wr4",
+            name: "Required WR Depth",
+            position: "WR",
+            fp_rank_ave: 150,
+            fp_rank_pos: 70,
+            sleeper_adp: 150,
+          },
+          {
+            player_id: "def1",
+            name: "Required Defense",
+            position: "DEF",
+            fp_rank_ave: 160,
+            fp_rank_pos: 1,
+            sleeper_adp: 160,
+          },
+        ],
+        teams: 12,
+        rounds: 14,
+        draftType: "snake",
+        currentPick: 133,
+        userSlot: 1,
+        rosterRequirements: {
+          ...rosterRequirements,
+          FLEX: 2,
+          K: 0,
+          DEF: 1,
+          BN: 5,
+        },
+        userPositionCounts: {
+          QB: 1,
+          RB: 6,
+          WR: 3,
+          TE: 1,
+          K: 0,
+          DEF: 0,
+        },
+        userPositionNeeds: {
+          QB: 0,
+          RB: 0,
+          WR: 0,
+          TE: 0,
+          FLEX: 0,
+          K: 0,
+          DEF: 1,
+          BN: 2,
+        },
+        staticValuesByPlayerId: { rb7: 200, wr4: 0, def1: 100 },
+      });
+
+      expect(board.recommendations.map((player) => player.player_id)).toEqual([
+        "wr4",
+      ]);
+  });
+
+  it("exposes raw and adjusted values from one recommendation board", () => {
     const board = buildDraftValueBoard({
       players: [
         {
@@ -197,7 +548,7 @@ describe("buildDraftValueBoard", () => {
     expect(Math.round(componentTotal * 10) / 10).toBe(
       metrics?.recommendationScore
     );
-    expect(metrics?.topComponents[0]?.label).toBe("ECR value");
+    expect(metrics?.topComponents[0]?.label).toBe("Starter-aware value");
     expect(metrics.recommendationExplanation.edge.detail).toContain(
       "higher tier than Challenger RB (RB)"
     );
@@ -210,6 +561,8 @@ describe("buildDraftValueBoard", () => {
     expect(metrics.recommendationExplanation.dataQuality).toHaveLength(0);
 
     const attached = attachDraftValueMetrics(topPlayer, metrics);
+    expect(attached.draft_raw_value_score).toBe(metrics.staticValue);
+    expect(attached.draft_value_score).toBe(metrics.recommendationScore);
     expect(attached.draft_recommendation_summary).toBe(
       metrics.recommendationSummary
     );
@@ -221,7 +574,7 @@ describe("buildDraftValueBoard", () => {
     );
   });
 
-  it("preserves the ECR value gap between top players instead of flattening them at the cap", () => {
+  it("preserves the starter-aware value gap instead of flattening it at the cap", () => {
     const board = buildDraftValueBoard({
       players: [
         {
@@ -262,6 +615,10 @@ describe("buildDraftValueBoard", () => {
         DEF: 1,
       },
       draftWideNeeds: { RB: 22, WR: 22 },
+      staticValuesByPlayerId: {
+        "tier-one-wr": 110,
+        "tier-two-rb": 92,
+      },
     });
 
     expect(board.metricsByPlayerId["tier-one-wr"]?.rawScores.value).toBe(100);
@@ -326,7 +683,7 @@ describe("buildDraftValueBoard", () => {
     expect(wrComeback).toBeLessThan(qbComeback ?? 0);
   });
 
-  it("uses FantasyPros ECR average as the default static value baseline", () => {
+  it("uses the supplied starter-aware values as the static baseline", () => {
     const players = [
       {
         player_id: "rb1",
@@ -393,16 +750,13 @@ describe("buildDraftValueBoard", () => {
       },
       userPositionCounts: { RB: 0 },
       userPositionNeeds: { RB: 1, BN: 3 },
+      staticValuesByPlayerId: { rb1: 35, rb2: 20, rb3: 5, rb4: 0 },
     });
 
     const best = board.metricsByPlayerId.rb1;
     const worse = board.metricsByPlayerId.rb2;
     expect(board.recommendations[0]?.player_id).toBe("rb1");
     expect(best?.staticValue ?? 0).toBeGreaterThan(worse?.staticValue ?? 0);
-    expect("projectedPoints" in (best ?? {})).toBe(false);
-    expect("beer" in (best ?? {})).toBe(false);
-    expect("vols" in (best ?? {})).toBe(false);
-    expect("beerPlus" in (best ?? {})).toBe(false);
   });
 
   it("keeps players with missing ECR visible but recommendation-ineligible", () => {
@@ -438,6 +792,7 @@ describe("buildDraftValueBoard", () => {
       rosterRequirements,
       userPositionCounts: {},
       userPositionNeeds: { RB: 2, WR: 2, FLEX: 1, QB: 1, TE: 1 },
+      staticValuesByPlayerId: { missing: 100, ranked: 50 },
     });
 
     expect(board.recommendations.map((player) => player.player_id)).toEqual([
@@ -757,7 +1112,7 @@ describe("buildDraftValueBoard", () => {
     const reasons = board.metricsByPlayerId.wr1?.reasons.map(
       (reason) => reason.code
     );
-    expect(reasons).toContain("NEWS_RISK");
+    expect(reasons).toContain("AVAILABILITY_RISK");
     expect(board.rosterConstruction.byeWarnings).toContain(
       "3 RB/WR/TE players share Week 8 bye."
     );
@@ -863,6 +1218,82 @@ describe("buildDraftValueBoard", () => {
     expect(board.recommendations[0]?.player_id).toBe("rb1");
   });
 
+  it("does not let bench balance lift negative Beer+ value over a better tier", () => {
+    const fillerDefenses = Array.from({ length: 180 }, (_, index) => ({
+      player_id: `def-${index}`,
+      name: `Defense ${index}`,
+      position: "DEF" as const,
+      tier_rank: 200 + index,
+      tier_level: 20,
+      position_tier_level: 10,
+      fp_rank_ave: 200 + index,
+      fp_rank_pos: index + 1,
+      sleeper_adp: 200 + index,
+    }));
+    const staticValuesByPlayerId = Object.fromEntries([
+      ["rb-depth", -2.3],
+      ["wr-value", 25.2],
+      ...fillerDefenses.map((player, index) => [player.player_id, -20 - index]),
+    ]);
+    const board = buildDraftValueBoard({
+      players: [
+        {
+          player_id: "rb-depth",
+          name: "Below Baseline RB",
+          position: "RB",
+          tier_rank: 98,
+          tier_level: 12,
+          position_tier_level: 8,
+          fp_rank_ave: 98,
+          fp_rank_pos: 34,
+          sleeper_adp: 113,
+        },
+        {
+          player_id: "wr-value",
+          name: "Better Tier WR",
+          position: "WR",
+          tier_rank: 82,
+          tier_level: 10,
+          position_tier_level: 7,
+          fp_rank_ave: 82,
+          fp_rank_pos: 31,
+          sleeper_adp: 105,
+          sleeper_injury_status: "Questionable",
+        },
+        ...fillerDefenses,
+      ],
+      teams: 12,
+      rounds: 14,
+      draftType: "snake",
+      currentPick: 100,
+      userSlot: 4,
+      rosterRequirements: { ...rosterRequirements, FLEX: 2, K: 0, BN: 5 },
+      userPositionCounts: {
+        RB: 2,
+        WR: 4,
+        QB: 1,
+        TE: 1,
+        K: 0,
+        DEF: 0,
+        BN: 0,
+      },
+      userPositionNeeds: {
+        RB: 0,
+        WR: 0,
+        FLEX: 0,
+        QB: 0,
+        TE: 0,
+        K: 0,
+        DEF: 1,
+        BN: 5,
+      },
+      staticValuesByPlayerId,
+    });
+
+    expect(board.metricsByPlayerId["rb-depth"]?.staticValue).toBeLessThan(0);
+    expect(board.recommendations[0]?.player_id).toBe("wr-value");
+  });
+
   it("leans RB in the middle rounds when WR depth is adequate and RB depth is shallow", () => {
     const board = buildDraftValueBoard({
       players: [
@@ -904,6 +1335,7 @@ describe("buildDraftValueBoard", () => {
         DEF: 1,
         BN: 5,
       },
+      staticValuesByPlayerId: { wr4: -5, rb3: -6 },
     });
 
     expect(board.metricsByPlayerId.rb3?.reasons.map((reason) => reason.label))
@@ -1000,6 +1432,7 @@ describe("buildDraftValueBoard", () => {
         DEF: 1,
         BN: 2,
       },
+      staticValuesByPlayerId: { rb1: 20, wr1: 19 },
     });
 
     expect(board.rosterConstruction.benchBalance).toMatchObject({
@@ -1013,8 +1446,6 @@ describe("buildDraftValueBoard", () => {
     expect(board.rosterConstruction.warnings).toContain(
       "RB/WR bench depth is lopsided; prefer WR unless the value gap is clear."
     );
-    expect(board.metricsByPlayerId.rb1?.reasons.map((reason) => reason.label))
-      .toContain("Balance risk");
     expect(board.metricsByPlayerId.wr1?.reasons.map((reason) => reason.code))
       .toContain("BENCH_BALANCE");
   });
@@ -1174,6 +1605,7 @@ describe("buildDraftValueBoard", () => {
         BN: 3,
       },
       draftWideNeeds: { RB: 4, WR: 4, QB: 0, TE: 0, K: 10, DEF: 10 },
+      staticValuesByPlayerId: { qb2: -1, rb4: -5, k1: -10 },
     });
 
     expect(board.metricsByPlayerId.qb2?.benchPolicyScore).toBeLessThan(-10);
@@ -1348,7 +1780,162 @@ describe("buildDraftValueBoard", () => {
     expect(board.recommendations[0]?.player_id).toBe("te1");
   });
 
-  it("flags elite QB at ADP but waits on non-elite QB and TE while FLEX value is live", () => {
+  it("takes an acceptable TE when its starter tier will not reach the next turn", () => {
+    const board = buildDraftValueBoard({
+      players: [
+        {
+          player_id: "te5",
+          name: "Acceptable Starter TE",
+          position: "TE",
+          tier_rank: 53,
+          tier_level: 7,
+          position_tier_level: 3,
+          fp_rank_ave: 53,
+          fp_rank_pos: 5,
+          sleeper_adp: 54,
+        },
+        {
+          player_id: "wr25",
+          name: "Close FLEX WR",
+          position: "WR",
+          tier_rank: 52,
+          tier_level: 7,
+          position_tier_level: 6,
+          fp_rank_ave: 52,
+          fp_rank_pos: 25,
+          sleeper_adp: 58,
+        },
+      ],
+      teams: 12,
+      rounds: 14,
+      draftType: "snake",
+      currentPick: 55,
+      userSlot: 7,
+      rosterRequirements: { ...rosterRequirements, FLEX: 2, K: 0, BN: 5 },
+      userPositionCounts: { RB: 2, WR: 2, QB: 1, TE: 0, K: 0, DEF: 0 },
+      userPositionNeeds: { RB: 0, WR: 0, FLEX: 2, QB: 0, TE: 1, K: 0, DEF: 1 },
+    });
+
+    expect(board.metricsByPlayerId.te5?.comebackLabel).toBe("unlikely");
+    expect(board.metricsByPlayerId.te5?.reasons.map((reason) => reason.code))
+      .toContain("TE_QUALITY_WINDOW");
+    expect(board.recommendations[0]?.player_id).toBe("te5");
+  });
+
+  it("takes the last acceptable TE over a small FLEX value edge before the turn", () => {
+    const fillerDefenses = Array.from({ length: 180 }, (_, index) => ({
+      player_id: `te-window-def-${index}`,
+      name: `Defense ${index}`,
+      position: "DEF" as const,
+      tier_rank: 200 + index,
+      tier_level: 20,
+      position_tier_level: 10,
+      fp_rank_ave: 200 + index,
+      fp_rank_pos: index + 1,
+      sleeper_adp: 200 + index,
+    }));
+    const staticValuesByPlayerId = Object.fromEntries([
+      ["wr27", 55.5],
+      ["te5", 36.9],
+      ...fillerDefenses.map((player, index) => [
+        player.player_id,
+        -20 - index * 0.4,
+      ]),
+    ]);
+    const board = buildDraftValueBoard({
+      players: [
+        {
+          player_id: "wr27",
+          name: "Close FLEX WR",
+          position: "WR",
+          tier_rank: 56,
+          tier_level: 8,
+          position_tier_level: 5,
+          fp_rank_ave: 56,
+          fp_rank_pos: 27,
+          sleeper_adp: 69,
+        },
+        {
+          player_id: "te5",
+          name: "Last Acceptable TE",
+          position: "TE",
+          tier_rank: 76,
+          tier_level: 12,
+          position_tier_level: 3,
+          fp_rank_ave: 76,
+          fp_rank_pos: 5,
+          sleeper_adp: 70,
+        },
+        ...fillerDefenses,
+      ],
+      teams: 12,
+      rounds: 14,
+      draftType: "snake",
+      currentPick: 69,
+      userSlot: 4,
+      rosterRequirements: { ...rosterRequirements, FLEX: 2, K: 0, BN: 5 },
+      userPositionCounts: { RB: 2, WR: 2, QB: 1, TE: 0, K: 0, DEF: 0 },
+      userPositionNeeds: {
+        RB: 0,
+        WR: 0,
+        FLEX: 2,
+        QB: 0,
+        TE: 1,
+        K: 0,
+        DEF: 1,
+        BN: 5,
+      },
+      staticValuesByPlayerId,
+    });
+
+    expect(board.metricsByPlayerId.te5?.sameTierFallbackCount).toBe(0);
+    expect(board.metricsByPlayerId.te5?.reasons.map((reason) => reason.code))
+      .toContain("TE_QUALITY_WINDOW");
+    expect(board.recommendations[0]?.player_id).toBe("te5");
+  });
+
+  it("uses position rank instead of raw Beer-style units for the TE quality window", () => {
+    const board = buildDraftValueBoard({
+      players: [
+        {
+          player_id: "te5",
+          name: "Acceptable Starter TE",
+          position: "TE",
+          tier_rank: 53,
+          tier_level: 7,
+          position_tier_level: 3,
+          fp_rank_ave: 53,
+          fp_rank_pos: 5,
+          sleeper_adp: 54,
+        },
+        {
+          player_id: "wr25",
+          name: "Close FLEX WR",
+          position: "WR",
+          tier_rank: 52,
+          tier_level: 7,
+          position_tier_level: 6,
+          fp_rank_ave: 52,
+          fp_rank_pos: 25,
+          sleeper_adp: 58,
+        },
+      ],
+      teams: 12,
+      rounds: 14,
+      draftType: "snake",
+      currentPick: 55,
+      userSlot: 7,
+      rosterRequirements: { ...rosterRequirements, FLEX: 2, K: 0, BN: 5 },
+      userPositionCounts: { RB: 2, WR: 2, QB: 1, TE: 0, K: 0, DEF: 0 },
+      userPositionNeeds: { RB: 0, WR: 0, FLEX: 2, QB: 0, TE: 1, K: 0, DEF: 1 },
+      staticValuesByPlayerId: { te5: 35, wr25: 40 },
+    });
+
+    expect(board.metricsByPlayerId.te5?.reasons.map((reason) => reason.code))
+      .toContain("TE_QUALITY_WINDOW");
+  });
+
+  it("flags elite QB at ADP and completes TE by round seven", () => {
     const eliteBoard = buildDraftValueBoard({
       players: [
         {
@@ -1396,7 +1983,7 @@ describe("buildDraftValueBoard", () => {
           tier_level: 8,
           fp_value: 38,
           fp_rank_pos: 7,
-          sleeper_adp: 72,
+          sleeper_adp: 66,
         },
         {
           player_id: "wr3",
@@ -1520,7 +2107,7 @@ describe("buildDraftValueBoard", () => {
     expect(board.recommendations[0]?.player_id).toBe("wr1");
   });
 
-  it("penalizes non-elite TE before the round-six deadline", () => {
+  it("penalizes non-elite TE before a quality starter window", () => {
     const board = buildDraftValueBoard({
       players: [
         {
@@ -1614,7 +2201,7 @@ describe("buildDraftValueBoard", () => {
       .toBeLessThan(board.metricsByPlayerId[topPlayerId]?.recommendationScore ?? 0);
   });
 
-  it("treats round six as the TE starter deadline after RB and WR starters are set", () => {
+  it("starts TE completion in round six after RB and WR starters are set", () => {
     const board = buildDraftValueBoard({
       players: [
         {
@@ -1652,7 +2239,7 @@ describe("buildDraftValueBoard", () => {
     expect(board.recommendations[0]?.player_id).toBe("te1");
   });
 
-  it("takes a round-seven TE starter over close WR bench depth", () => {
+  it("takes the best remaining TE by round seven when the starter slot is open", () => {
     const board = buildDraftValueBoard({
       players: [
         {
@@ -1700,7 +2287,57 @@ describe("buildDraftValueBoard", () => {
     expect(board.recommendations[0]?.player_id).toBe("te1");
   });
 
-  it("waits on non-elite TE until the round six starter deadline", () => {
+  it("waits instead of reaching a full round for a non-elite TE", () => {
+      const board = buildDraftValueBoard({
+        players: [
+          {
+            player_id: "rb1",
+            name: "Best Available RB",
+            position: "RB",
+            tier_rank: 76,
+            tier_level: 9,
+            fp_rank_ave: 76,
+            fp_rank_pos: 30,
+            sleeper_adp: 76,
+          },
+          {
+            player_id: "te10",
+            name: "Reach TE",
+            position: "TE",
+            tier_rank: 98,
+            tier_level: 11,
+            position_tier_level: 5,
+            fp_rank_ave: 98,
+            fp_rank_pos: 10,
+            sleeper_adp: 90,
+          },
+        ],
+        teams: 12,
+        rounds: 14,
+        draftType: "snake",
+        currentPick: 75,
+        userSlot: 3,
+        rosterRequirements: { ...rosterRequirements, FLEX: 2, K: 0, BN: 5 },
+        userPositionCounts: { RB: 2, WR: 2, QB: 1, TE: 0, K: 0, DEF: 0 },
+        userPositionNeeds: {
+          RB: 0,
+          WR: 0,
+          FLEX: 2,
+          QB: 0,
+          TE: 1,
+          K: 0,
+          DEF: 1,
+          BN: 5,
+        },
+        staticValuesByPlayerId: { rb1: 100, te10: 35 },
+      });
+
+      expect(board.metricsByPlayerId.te10?.reasons.map((reason) => reason.code))
+        .toContain("ONESIE_PRICE_REACH");
+      expect(board.recommendations[0]?.player_id).toBe("rb1");
+  });
+
+  it("waits on non-elite TE before a quality starter window", () => {
     const board = buildDraftValueBoard({
       players: [
         {
@@ -1986,6 +2623,49 @@ describe("buildDraftValueBoard", () => {
     expect(board.metricsByPlayerId.qb1?.components.onesie ?? 0)
       .toBeLessThan(0);
     expect(board.recommendations[0]?.player_id).toBe("wr5");
+  });
+
+  it("does not treat a top-ten QB as low ceiling because Beer-style Val is negative", () => {
+    const board = buildDraftValueBoard({
+      players: [
+        {
+          player_id: "qb10",
+          name: "Top Ten QB",
+          position: "QB",
+          tier_rank: 96,
+          tier_level: 8,
+          position_tier_level: 4,
+          fp_rank_ave: 96,
+          fp_rank_pos: 10,
+          sleeper_adp: 97,
+        },
+        {
+          player_id: "wr50",
+          name: "Bench WR",
+          position: "WR",
+          tier_rank: 98,
+          tier_level: 9,
+          position_tier_level: 8,
+          fp_rank_ave: 98,
+          fp_rank_pos: 50,
+          sleeper_adp: 99,
+        },
+      ],
+      teams: 12,
+      rounds: 14,
+      draftType: "snake",
+      currentPick: 97,
+      userSlot: 1,
+      rosterRequirements: { ...rosterRequirements, FLEX: 2, K: 0, BN: 5 },
+      userPositionCounts: { RB: 4, WR: 4, QB: 0, TE: 1, DEF: 0 },
+      userPositionNeeds: { RB: 0, WR: 0, FLEX: 0, QB: 1, TE: 0, K: 0, DEF: 1, BN: 4 },
+      staticValuesByPlayerId: { qb10: -5, wr50: -10 },
+    });
+
+    expect(board.metricsByPlayerId.qb10?.reasons.map((reason) => reason.code))
+      .toContain("QB_VIABLE_STARTER");
+    expect(board.metricsByPlayerId.qb10?.reasons.map((reason) => reason.code))
+      .not.toContain("QB_LOW_CEILING");
   });
 
   it("does not recommend a pre-ADP QB reach over an elite TE window", () => {
@@ -2718,5 +3398,239 @@ describe("buildDraftValueBoard", () => {
     expect(board.metricsByPlayerId.def1?.adpDeltaRounds).toBeNull();
     expect(board.metricsByPlayerId.def1?.comebackProbability).toBeNull();
     expect(board.metricsByPlayerId.def1?.comebackLabel).toBe("unknown");
+  });
+
+  it("avoids a multi-round RB/WR bench reach when close value is near market price", () => {
+      const board = buildDraftValueBoard({
+        players: [
+          {
+            player_id: "early-rb",
+            name: "Early Depth RB",
+            position: "RB",
+            tier_rank: 110,
+            tier_level: 10,
+            position_tier_level: 8,
+            fp_rank_ave: 110,
+            fp_rank_pos: 35,
+            sleeper_adp: 160,
+          },
+          {
+            player_id: "market-wr",
+            name: "Market Depth WR",
+            position: "WR",
+            tier_rank: 112,
+            tier_level: 10,
+            position_tier_level: 8,
+            fp_rank_ave: 112,
+            fp_rank_pos: 40,
+            sleeper_adp: 120,
+          },
+        ],
+        teams: 12,
+        rounds: 14,
+        draftType: "snake",
+        currentPick: 109,
+        userSlot: 4,
+        rosterRequirements: {
+          ...rosterRequirements,
+          FLEX: 2,
+          K: 0,
+          BN: 5,
+        },
+        userPositionCounts: { RB: 4, WR: 4, QB: 1, TE: 1, K: 0, DEF: 0 },
+        userPositionNeeds: {
+          RB: 0,
+          WR: 0,
+          FLEX: 0,
+          QB: 0,
+          TE: 0,
+          K: 0,
+          DEF: 1,
+          BN: 4,
+        },
+        staticValuesByPlayerId: { "early-rb": 100, "market-wr": 96 },
+      });
+
+      expect(board.recommendations[0]?.player_id).toBe("market-wr");
+  });
+
+  it("lets a material RB/WR balance need override the depth price penalty", () => {
+      const board = buildDraftValueBoard({
+        players: [
+          {
+            player_id: "needed-wr",
+            name: "Needed Depth WR",
+            position: "WR",
+            tier_rank: 110,
+            tier_level: 10,
+            position_tier_level: 8,
+            fp_rank_ave: 110,
+            fp_rank_pos: 35,
+            sleeper_adp: 160,
+          },
+          {
+            player_id: "extra-rb",
+            name: "Extra Market RB",
+            position: "RB",
+            tier_rank: 112,
+            tier_level: 10,
+            position_tier_level: 8,
+            fp_rank_ave: 112,
+            fp_rank_pos: 40,
+            sleeper_adp: 120,
+          },
+        ],
+        teams: 12,
+        rounds: 14,
+        draftType: "snake",
+        currentPick: 109,
+        userSlot: 4,
+        rosterRequirements: {
+          ...rosterRequirements,
+          FLEX: 2,
+          K: 0,
+          BN: 5,
+        },
+        userPositionCounts: { RB: 6, WR: 3, QB: 1, TE: 1, K: 0, DEF: 0 },
+        userPositionNeeds: {
+          RB: 0,
+          WR: 0,
+          FLEX: 0,
+          QB: 0,
+          TE: 0,
+          K: 0,
+          DEF: 1,
+          BN: 3,
+        },
+        staticValuesByPlayerId: { "needed-wr": 100, "extra-rb": 96 },
+      });
+
+      expect(board.recommendations[0]?.player_id).toBe("needed-wr");
+      expect(
+        board.metricsByPlayerId["needed-wr"]?.reasons.map(
+          (reason) => reason.code
+        )
+      ).not.toContain("MARKET_PRICE_REACH");
+  });
+
+  it("excludes a player confirmed out for the season", () => {
+      const board = buildDraftValueBoard({
+        players: [
+          {
+            player_id: "unavailable-rb",
+            name: "Unavailable RB",
+            position: "RB",
+            tier_rank: 1,
+            tier_level: 1,
+            fp_rank_ave: 1,
+            fp_rank_pos: 1,
+            sleeper_adp: 1,
+            sleeper_injury_status: "IR",
+            sleeper_injury_notes: "Out for the season",
+          },
+          {
+            player_id: "healthy-rb",
+            name: "Healthy RB",
+            position: "RB",
+            tier_rank: 40,
+            tier_level: 5,
+            fp_rank_ave: 40,
+            fp_rank_pos: 18,
+            sleeper_adp: 40,
+          },
+        ],
+        teams: 12,
+        rounds: 14,
+        draftType: "snake",
+        currentPick: 1,
+        userSlot: 1,
+        rosterRequirements: { ...rosterRequirements, FLEX: 2, K: 0, BN: 5 },
+        userPositionCounts: { RB: 0, WR: 0, QB: 0, TE: 0, K: 0, DEF: 0 },
+        userPositionNeeds: { RB: 2, WR: 2, FLEX: 2, QB: 1, TE: 1, K: 0, DEF: 1, BN: 5 },
+        staticValuesByPlayerId: { "unavailable-rb": 100, "healthy-rb": 20 },
+      });
+
+      expect(board.metricsByPlayerId["unavailable-rb"]?.availability)
+        .toMatchObject({ classification: "unavailable", eligible: false });
+      expect(board.recommendations[0]?.player_id).toBe("healthy-rb");
+  });
+
+  it("keeps an ordinary questionable player available when value is clear", () => {
+      const board = buildDraftValueBoard({
+        players: [
+          {
+            player_id: "questionable-wr",
+            name: "Questionable WR",
+            position: "WR",
+            tier_rank: 10,
+            tier_level: 2,
+            fp_rank_ave: 10,
+            fp_rank_pos: 5,
+            sleeper_adp: 10,
+            sleeper_injury_status: "Questionable",
+          },
+          {
+            player_id: "healthy-wr",
+            name: "Healthy WR",
+            position: "WR",
+            tier_rank: 18,
+            tier_level: 3,
+            fp_rank_ave: 18,
+            fp_rank_pos: 9,
+            sleeper_adp: 18,
+          },
+        ],
+        teams: 12,
+        rounds: 14,
+        draftType: "snake",
+        currentPick: 10,
+        userSlot: 4,
+        rosterRequirements: { ...rosterRequirements, FLEX: 2, K: 0, BN: 5 },
+        userPositionCounts: { RB: 1, WR: 0, QB: 0, TE: 0, K: 0, DEF: 0 },
+        userPositionNeeds: { RB: 1, WR: 2, FLEX: 2, QB: 1, TE: 1, K: 0, DEF: 1, BN: 5 },
+        staticValuesByPlayerId: { "questionable-wr": 100, "healthy-wr": 92 },
+      });
+
+      expect(board.metricsByPlayerId["questionable-wr"]?.availability)
+        .toMatchObject({ classification: "short-term-concern", eligible: true });
+      expect(board.recommendations[0]?.player_id).toBe("questionable-wr");
+  });
+
+  it("flags concern news that is newer than the rankings without changing Val", () => {
+    const board = buildDraftValueBoard({
+      players: [
+        {
+          player_id: "fresh-news-wr",
+          name: "Fresh News WR",
+          position: "WR",
+          tier_rank: 10,
+          tier_level: 2,
+          fp_rank_ave: 10,
+          fp_rank_pos: 5,
+          sleeper_adp: 10,
+          sleeper_injury_status: "Questionable",
+          sleeper_projection: {
+            newsUpdated: Date.parse("2026-09-04T01:00:00Z"),
+          },
+          fp_rank_updated_at: Date.parse("2026-09-03T21:00:00Z"),
+        },
+      ],
+      teams: 12,
+      rounds: 14,
+      draftType: "snake",
+      currentPick: 10,
+      userSlot: 4,
+      rosterRequirements: { ...rosterRequirements, FLEX: 2, K: 0, BN: 5 },
+      userPositionCounts: { RB: 1, WR: 0, QB: 0, TE: 0, K: 0, DEF: 0 },
+      userPositionNeeds: { RB: 1, WR: 2, FLEX: 2, QB: 1, TE: 1, K: 0, DEF: 1, BN: 5 },
+      staticValuesByPlayerId: { "fresh-news-wr": 100 },
+    });
+    const metric = board.metricsByPlayerId["fresh-news-wr"];
+
+    expect(metric?.staticValue).toBe(100);
+    expect(metric?.availability.rankingsMayBeStale).toBe(true);
+    expect(metric?.reasons.map((reason) => reason.code))
+      .toContain("RANKINGS_MAY_BE_STALE");
+    expect(metric?.recommendationConfidence).toBe("low");
   });
 });

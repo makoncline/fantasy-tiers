@@ -16,10 +16,12 @@ import { PlayerTable } from "./PlayerTable";
 import type { PlayerWithPick } from "@/lib/types.draft";
 import PlayersTableBase from "./table/PlayersTableBase";
 import type { ColumnGroup } from "./table/columns";
+import { DRAFT_VALUE_DESCRIPTIONS } from "./table/presets";
 
 import PreviewPickDialog, { type PreviewPickPlayer } from "./PreviewPickDialog";
 import { CheckIcon, EyeIcon } from "lucide-react";
 import type { DraftPickAction } from "@/app/draft-assistant/_lib/types";
+import { canAddPositionToRoster } from "@/lib/draftRosterPolicy";
 
 // Compact position tables: fixed columns and non-sortable, grouped by Tiers tiers
 interface PositionCompactTablesProps {
@@ -44,6 +46,8 @@ export default function PositionCompactTables({
   const {
     playersByPosition,
     userRosterSlots,
+    userPositionCounts,
+    userPositionRequirements,
     getRosterStatus,
     showAll,
     setShowAll,
@@ -155,9 +159,19 @@ export default function PositionCompactTables({
           width: "5ch",
         },
         {
-          id: "val",
+          id: "raw",
           header: "VAL",
-          description: "Canonical pick value score.",
+          description: DRAFT_VALUE_DESCRIPTIONS.raw,
+          accessor: (row) => row.draft_raw_value_score ?? null,
+          sortable: true,
+          sortAs: "number",
+          nulls: "last",
+          width: "6ch",
+        },
+        {
+          id: "adj",
+          header: "ADJ",
+          description: DRAFT_VALUE_DESCRIPTIONS.adjusted,
           accessor: (row) => row.draft_value_score ?? null,
           sortable: true,
           sortAs: "number",
@@ -217,7 +231,15 @@ export default function PositionCompactTables({
             type="button"
             size="sm"
             className="h-6 px-2 text-xs"
-            disabled={pickAction.disabled || Boolean(row.picked)}
+            disabled={
+              pickAction.disabled ||
+              Boolean(row.picked) ||
+              !canAddPositionToRoster({
+                position: row.position,
+                counts: userPositionCounts,
+                requirements: userPositionRequirements,
+              })
+            }
             aria-label={`${pickAction.label ?? "Pick"} ${row.name}`}
             data-testid={`mock-pick-${row.player_id}`}
             onClick={() => pickAction.onPick(row)}
@@ -227,7 +249,7 @@ export default function PositionCompactTables({
         ) : null}
       </div>
     ),
-    [onPreview, pickAction]
+    [onPreview, pickAction, userPositionCounts, userPositionRequirements]
   );
 
   const renderPickAction = React.useCallback(
@@ -237,7 +259,15 @@ export default function PositionCompactTables({
           type="button"
           size="sm"
           className="h-6 px-2 text-xs"
-          disabled={pickAction.disabled || Boolean(row.picked)}
+          disabled={
+            pickAction.disabled ||
+            Boolean(row.picked) ||
+            !canAddPositionToRoster({
+              position: row.position,
+              counts: userPositionCounts,
+              requirements: userPositionRequirements,
+            })
+          }
           aria-label={`${pickAction.label ?? "Pick"} ${row.name}`}
           data-testid={`mock-pick-${row.player_id}`}
           onClick={() => pickAction.onPick(row)}
@@ -245,7 +275,7 @@ export default function PositionCompactTables({
           {pickAction.label ?? "Pick"}
         </Button>
       ) : null,
-    [pickAction]
+    [pickAction, userPositionCounts, userPositionRequirements]
   );
 
   // Show loading state if bundle data is not loaded
@@ -336,7 +366,7 @@ export default function PositionCompactTables({
                       colorize={true}
                       dimDrafted={true}
                       tierRowColors={true}
-                      defaultSortId="val"
+                      defaultSortId="adj"
                       defaultSortDir="desc"
                       heatDomainRows={valueColorDomainRef.current}
                       {...(pickAction
@@ -434,7 +464,7 @@ export default function PositionCompactTables({
                   colorizeValuePs
                   dimDrafted={actualShowDrafted}
                   hideDrafted={!actualShowDrafted}
-                  defaultSortId="val"
+                  defaultSortId="adj"
                   defaultSortDir="desc"
                   heatDomainRows={valueColorDomainRef.current}
                   renderActions={renderActions}

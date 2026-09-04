@@ -1,4 +1,13 @@
 import type { Position, RosterSlot } from "@/lib/schemas";
+import {
+  classifyDraftAvailability,
+  type DraftAvailability,
+  type DraftAvailabilityClass,
+} from "@/lib/draftAvailability";
+import {
+  canAddPositionToRoster,
+  getMinimumRbWrDepth,
+} from "@/lib/draftRosterPolicy";
 
 export type DraftComebackLabel = "likely" | "toss-up" | "unlikely" | "unknown";
 export type DraftActionLabel = "take now" | "can wait" | "queue fallback" | "unknown";
@@ -9,11 +18,13 @@ export type DraftValueReasonCode =
   | "TIER_CLIFF"
   | "LIKELY_GONE"
   | "ADP_BARGAIN"
+  | "MARKET_PRICE_REACH"
   | "ROSTER_NEED"
   | "ROOM_DEMAND"
   | "BENCH_BALANCE"
   | "ELITE_QB_STARTER"
   | "ELITE_TE_STARTER"
+  | "TE_QUALITY_WINDOW"
   | "RB_ANCHOR"
   | "WR2_ANCHOR"
   | "WR_STARTER_WINDOW"
@@ -26,9 +37,12 @@ export type DraftValueReasonCode =
   | "QB_LOW_CEILING"
   | "ONESIE_FILLED"
   | "ONESIE_WAIT"
+  | "ONESIE_PRICE_REACH"
+  | "BELOW_BASELINE_DEPTH"
   | "BENCH_UPSIDE"
   | "K_DEF_WAIT"
-  | "NEWS_RISK";
+  | "AVAILABILITY_RISK"
+  | "RANKINGS_MAY_BE_STALE";
 
 export type DraftValueReason = {
   code: DraftValueReasonCode;
@@ -117,6 +131,7 @@ export type DraftRosterConstruction = {
 };
 
 export type DraftValueMetrics = {
+  valueLabel: string;
   playerId: string;
   staticValue: number | null;
   recommendationScore: number;
@@ -127,6 +142,8 @@ export type DraftValueMetrics = {
   tierCliff: number | null;
   sameTierFallbackCount: number;
   sleeperAdp: number | null;
+  sleeperBoardRank: number | null;
+  sleeperBoardValue: number | null;
   adpDeltaPicks: number | null;
   adpDeltaRounds: number | null;
   comebackProbability: number | null;
@@ -149,6 +166,7 @@ export type DraftValueMetrics = {
   positionRunCount: number;
   sourceConfidence: DraftSourceConfidence;
   missingFields: string[];
+  availability: DraftAvailability;
   reasons: DraftValueReason[];
 };
 
@@ -167,8 +185,14 @@ export type DraftValuePlayerInput = {
   fp_rank_std?: number | null | undefined;
   fp_rank_pos?: number | null | undefined;
   sleeper_adp?: number | null | undefined;
+  sleeper_board_rank?: number | null | undefined;
+  sleeper_board_value?: number | null | undefined;
   sleeper_injury_status?: string | null | undefined;
   sleeper_injury_notes?: string | null | undefined;
+  sleeper_projection?: { newsUpdated?: number | null } | null | undefined;
+  fp_rank_updated_at?: number | null | undefined;
+  sleeper_depth_chart_position?: string | null | undefined;
+  sleeper_depth_chart_order?: number | null | undefined;
   picked?: { overall?: number | null | undefined } | boolean | null | undefined;
   draftedByMe?: boolean | null | undefined;
   drafted?: boolean | null | undefined;
@@ -202,6 +226,8 @@ export type DraftValueBoardInput<TPlayer extends DraftValuePlayerInput> = {
   draftWideNeeds?: Partial<Record<Position | "FLEX", number>> | undefined;
   teamRosterStates?: readonly DraftTeamRosterState[] | undefined;
   userRosterPlayers?: readonly DraftRosterPlayerInput[] | undefined;
+  staticValuesByPlayerId: Readonly<Record<string, number>>;
+  irSlots?: number | undefined;
 };
 
 export type DraftValueBoard<TPlayer extends DraftValuePlayerInput> = {
@@ -221,7 +247,7 @@ const CORE_POSITIONS = ["QB", "RB", "WR", "TE", "K", "DEF"] as const;
 const FLEX_POSITIONS = ["RB", "WR", "TE"] as const satisfies readonly Position[];
 
 const COMPONENT_LABELS = {
-  value: "ECR value",
+  value: "Starter-aware value",
   timing: "Pick timing",
   starterNeed: "Starter need",
   construction: "Roster construction",
@@ -354,25 +380,9 @@ function getAdp(player: DraftValuePlayerInput): number | null {
   return adp >= 900 ? null : adp;
 }
 
-function getInjuryRisk(player: DraftValuePlayerInput) {
-  const status =
-    player.sleeper_injury_status ??
-    readNestedString(player.sleeper, ["player", "injury_status"]);
-  const notes =
-    player.sleeper_injury_notes ??
-    readNestedString(player.sleeper, ["player", "injury_notes"]);
-  const normalized = status?.trim().toLowerCase() ?? "";
-  if (!normalized || normalized === "healthy" || normalized === "active") {
-    return { status: status ?? null, notes: notes ?? null, penalty: 0 };
-  }
-  const severe = ["out", "ir", "pup", "suspended", "doubtful"].some((needle) =>
-    normalized.includes(needle)
-  );
-  return {
-    status: status ?? null,
-    notes: notes ?? null,
-    penalty: severe ? 8 : 3,
-  };
+function getSleeperBoardRank(player: DraftValuePlayerInput): number | null {
+  const rank = toNumber(player.sleeper_board_rank);
+  return rank != null && rank > 0 ? rank : null;
 }
 
 function getRank(player: DraftValuePlayerInput): number | null {
@@ -1255,6 +1265,7 @@ function onesieStarterPolicy(args: {
   isViableQbStarter: boolean;
   isLowCeilingQbStarter: boolean;
   isQbPreAdpReach: boolean;
+  isTePriceReach: boolean;
   adpDeltaPicks: number | null;
 }): {
   score: number;
@@ -1274,6 +1285,7 @@ function onesieStarterPolicy(args: {
     isViableQbStarter,
     isLowCeilingQbStarter,
     isQbPreAdpReach,
+    isTePriceReach,
     adpDeltaPicks,
   } = args;
   const currentRound = teams > 0 ? Math.ceil(currentPick / teams) : 1;
@@ -1292,7 +1304,7 @@ function onesieStarterPolicy(args: {
     starterDeadlineOpen &&
     (needs.QB ?? 0) > 0 &&
     currentRound >= 8;
-  const teDeadlineWindow =
+  const teCompletionWindow =
     position === "TE" &&
     starterDeadlineOpen &&
     (needs.TE ?? 0) > 0 &&
@@ -1381,8 +1393,22 @@ function onesieStarterPolicy(args: {
     (requirements.TE ?? 0) <= 1 &&
     (needs.TE ?? 0) > 0 &&
     !isEliteTeStarter &&
+    isTePriceReach
+  ) {
+    score -= 48;
+    reasons.push({
+      code: "ONESIE_PRICE_REACH",
+      label: "TE price reach",
+      detail:
+        "This TE is at least a round ahead of the trusted market signals; take stronger RB/WR value and revisit TE later.",
+    });
+  } else if (
+    position === "TE" &&
+    (requirements.TE ?? 0) <= 1 &&
+    (needs.TE ?? 0) > 0 &&
+    !isEliteTeStarter &&
     !topSixStarterWindow &&
-    !teDeadlineWindow &&
+    !teCompletionWindow &&
     currentRound <= 8
   ) {
     const coreNeeds =
@@ -1402,7 +1428,7 @@ function onesieStarterPolicy(args: {
         code: "NON_ELITE_TE_TOO_EARLY",
         label: "TE too early",
         detail:
-          "Non-elite TE should usually wait until the round-six starter deadline.",
+          "Non-elite TE should wait for a quality or tier-closing starter window.",
       });
     }
     reasons.push({
@@ -1426,13 +1452,14 @@ function onesieStarterPolicy(args: {
     (requirements.TE ?? 0) <= 1 &&
     (needs.TE ?? 0) > 0 &&
     !isEliteTeStarter &&
-    teDeadlineWindow
+    teCompletionWindow
   ) {
     score += currentRound >= 7 ? 58 : 20;
     reasons.push({
       code: "STARTER_DEADLINE",
-      label: "TE deadline",
-      detail: "TE starter is still open; fill it before the remaining starter tier gets thin.",
+      label: "TE completion",
+      detail:
+        "The roster still needs a TE starter; fill the best remaining option before the pool gets worse.",
     });
   }
 
@@ -1444,9 +1471,34 @@ function onesieStarterPolicy(args: {
   };
 }
 
+type DraftStrategyValueProfile = {
+  label: string;
+  getStaticValue(playerId: string, rankValue: number | null): number | null;
+  normalizeValue(value: number, bestValue: number, floorValue: number | null): number;
+  isViableQb(positionRank: number | null, staticValue: number | null): boolean;
+  isPreferredQb(positionRank: number | null, staticValue: number | null): boolean;
+  isLowCeilingQb(positionRank: number | null, staticValue: number | null): boolean;
+  isAcceptableTe(positionRank: number | null, staticValue: number | null): boolean;
+};
+
+function buildDraftStrategyValueProfile(
+  staticValuesByPlayerId: Readonly<Record<string, number | null | undefined>>
+): DraftStrategyValueProfile {
+  return {
+    label: "Starter-aware value",
+    getStaticValue: (playerId) => staticValuesByPlayerId[playerId] ?? null,
+    normalizeValue: normalizeStarterAwareValue,
+    isViableQb: (positionRank) => positionRank != null && positionRank <= 10,
+    isPreferredQb: (positionRank) => positionRank != null && positionRank <= 8,
+    isLowCeilingQb: (positionRank) => positionRank != null && positionRank >= 18,
+    isAcceptableTe: (positionRank) => positionRank != null && positionRank <= 6,
+  };
+}
+
 function qbStarterQualityPolicy(args: {
   position: Position;
   currentRound: number;
+  valueProfile: DraftStrategyValueProfile;
   needs: Partial<Record<RosterSlot, number>>;
   requirements: Partial<Record<RosterSlot, number>>;
   positionalRank: number | null;
@@ -1477,14 +1529,11 @@ function qbStarterQualityPolicy(args: {
   }
 
   const isViable =
-    (args.positionalRank != null && args.positionalRank <= 10) ||
-    (args.staticValue != null && args.staticValue >= 85);
+    args.valueProfile.isViableQb(args.positionalRank, args.staticValue);
   const isPreferred =
-    (args.positionalRank != null && args.positionalRank <= 8) ||
-    (args.staticValue != null && args.staticValue >= 110);
+    args.valueProfile.isPreferredQb(args.positionalRank, args.staticValue);
   const isLowCeiling =
-    (args.positionalRank != null && args.positionalRank >= 18) ||
-    (args.staticValue != null && args.staticValue < 0);
+    args.valueProfile.isLowCeilingQb(args.positionalRank, args.staticValue);
   const reasons: DraftValueReason[] = [];
   let score = 0;
   let timingUrgency = 0;
@@ -1558,6 +1607,59 @@ function qbStarterQualityPolicy(args: {
     score: roundOne(score),
     timingUrgency: roundOne(timingUrgency),
     reasons,
+  };
+}
+
+function teStarterQualityPolicy(args: {
+  position: Position;
+  currentRound: number;
+  valueProfile: DraftStrategyValueProfile;
+  needs: Partial<Record<RosterSlot, number>>;
+  requirements: Partial<Record<RosterSlot, number>>;
+  positionalRank: number | null;
+  staticValue: number | null;
+  comebackLabel: DraftComebackLabel;
+  sameTierFallbackCount: number;
+  isEliteTeStarter: boolean;
+  ecrDeltaPicks: number | null;
+  teams: number;
+}): { score: number; reasons: DraftValueReason[] } {
+  const isOpenSingleTeStarter =
+    args.position === "TE" &&
+    (args.requirements.TE ?? 0) <= 1 &&
+    (args.needs.TE ?? 0) > 0;
+  if (!isOpenSingleTeStarter || args.isEliteTeStarter) {
+    return { score: 0, reasons: [] };
+  }
+
+  const directRbWrNeeds = (args.needs.RB ?? 0) + (args.needs.WR ?? 0);
+  const isAcceptableStarter = args.valueProfile.isAcceptableTe(
+    args.positionalRank,
+    args.staticValue
+  );
+  const tierWillNotReturn =
+    args.comebackLabel === "unlikely" && args.sameTierFallbackCount <= 1;
+  const qualityWindowOpen =
+    isAcceptableStarter &&
+    tierWillNotReturn &&
+    (args.ecrDeltaPicks == null || args.ecrDeltaPicks < args.teams) &&
+    directRbWrNeeds === 0 &&
+    args.currentRound >= 4;
+
+  if (!qualityWindowOpen) {
+    return { score: 0, reasons: [] };
+  }
+
+  return {
+    score: (args.ecrDeltaPicks ?? 0) > 0 ? 6 : 72,
+    reasons: [
+      {
+        code: "TE_QUALITY_WINDOW",
+        label: "TE starter window",
+        detail:
+          "This TE clears the starter-quality floor, and the tier is unlikely to reach the next turn.",
+      },
+    ],
   };
 }
 
@@ -1650,11 +1752,12 @@ function sumComponents(components: DraftRecommendationComponents) {
 }
 
 function topRecommendationComponents(
-  components: DraftRecommendationComponents
+  components: DraftRecommendationComponents,
+  valueLabel = COMPONENT_LABELS.value
 ): DraftRecommendationComponent[] {
   const entries = COMPONENT_KEYS.map((key) => ({
     key,
-    label: COMPONENT_LABELS[key],
+    label: key === "value" ? valueLabel : COMPONENT_LABELS[key],
     value: roundOne(components[key]),
   }));
   const positives = entries
@@ -1724,6 +1827,28 @@ function adpScore(adpDeltaRounds: number | null) {
   if (adpDeltaRounds >= 1.5) return -10;
   if (adpDeltaRounds >= 0.75) return -5;
   return 0;
+}
+
+function rbWrDepthMarketScore(args: {
+  position: Position;
+  adpDeltaRounds: number | null;
+  needs: Partial<Record<RosterSlot, number>>;
+  benchBalance: DraftBenchBalance;
+}) {
+  const isDepthPick =
+    (args.position === "RB" || args.position === "WR") &&
+    (args.needs[args.position] ?? 0) === 0 &&
+    (args.needs.FLEX ?? 0) === 0;
+  if (!isDepthPick || args.adpDeltaRounds == null || args.adpDeltaRounds < 1.5) {
+    return 0;
+  }
+  if (
+    args.benchBalance.status === "action" &&
+    args.benchBalance.targetPosition === args.position
+  ) {
+    return 0;
+  }
+  return -roundOne(Math.min(20, (args.adpDeltaRounds - 1) * 4));
 }
 
 function rosterNeedText(args: {
@@ -1808,15 +1933,20 @@ function byeCoverageText(args: {
 
 function dataQualityText(args: {
   missingFields: readonly string[];
-  injuryRisk: { penalty: number; status: string | null; notes: string | null };
+  availability: DraftAvailability;
 }) {
   return uniqueStrings([
     args.missingFields.includes("ecr") ? "FantasyPros ECR average missing." : null,
     args.missingFields.includes("position rank") ? "FantasyPros position rank missing." : null,
-    args.missingFields.includes("adp") ? "ADP missing." : null,
+    args.missingFields.includes("Sleeper market rank")
+      ? "Sleeper board rank and ADP are missing."
+      : null,
     args.missingFields.includes("tier") ? "Tier missing." : null,
-    args.injuryRisk.penalty > 0
-      ? `Injury/news flag: ${args.injuryRisk.status ?? "check player news"}.`
+    args.availability.classification !== "healthy"
+      ? `Availability: ${args.availability.label}.`
+      : null,
+    args.availability.rankingsMayBeStale
+      ? "Sleeper news is newer than the FantasyPros ranking update."
       : null,
   ]);
 }
@@ -1834,7 +1964,7 @@ function buildRecommendationExplanation(args: {
   benchBalance: DraftBenchBalance;
   rosterPlayers: readonly DraftRosterPlayerInput[];
   missingFields: readonly string[];
-  injuryRisk: { penalty: number; status: string | null; notes: string | null };
+  availability: DraftAvailability;
 }) {
   const pros: string[] = [];
   const cons: string[] = [];
@@ -1937,7 +2067,7 @@ function buildRecommendationExplanation(args: {
 
   const dataQuality = dataQualityText({
     missingFields: args.missingFields,
-    injuryRisk: args.injuryRisk,
+    availability: args.availability,
   });
 
   return {
@@ -2019,13 +2149,14 @@ function recommendationConfidence(args: {
   scoreGap: number | null;
   sourceConfidence: DraftSourceConfidence;
   missingFields: readonly string[];
-  injuryPenalty: number;
+  availability: DraftAvailability;
 }): DraftRecommendationConfidence {
   if (
     args.scoreGap != null &&
     args.scoreGap >= 12 &&
     args.sourceConfidence === "high" &&
-    args.injuryPenalty === 0
+    args.availability.classification === "healthy" &&
+    !args.availability.rankingsMayBeStale
   ) {
     return "high";
   }
@@ -2033,7 +2164,11 @@ function recommendationConfidence(args: {
     args.scoreGap != null &&
     args.scoreGap >= 5 &&
     args.sourceConfidence !== "low" &&
-    args.missingFields.length <= 1
+    args.missingFields.length <= 1 &&
+    args.availability.classification !== "material-risk" &&
+    args.availability.classification !== "unavailable" &&
+    args.availability.classification !== "unknown" &&
+    !args.availability.rankingsMayBeStale
   ) {
     return "medium";
   }
@@ -2099,6 +2234,10 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     rounds: input.rounds,
     needs: input.userPositionNeeds,
   });
+  const valueProfile = buildDraftStrategyValueProfile(
+    input.staticValuesByPlayerId
+  );
+  const valueLabel = valueProfile.label;
 
   const valueSeed = available.map((player) => {
     const rankValue = rankBasedValueScore({
@@ -2106,7 +2245,14 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       starters,
       teams,
     });
-    return { player, staticValue: rankValue.score, rankValue };
+    return {
+      player,
+      staticValue:
+        rankValue.overallRank == null
+          ? null
+          : valueProfile.getStaticValue(player.player_id, rankValue.score),
+      rankValue,
+    };
   });
   const bestStaticValue = valueSeed.reduce<number | null>(
     (best, entry) =>
@@ -2122,10 +2268,27 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     .sort((a, b) => (b.staticValue ?? -Infinity) - (a.staticValue ?? -Infinity))
     .map((entry, index) => [entry.player.player_id, index + 1] as const);
   const valueRankByPlayer = new Map(valueRanks);
+  const rankedStaticValues = valueSeed
+    .flatMap((entry) => entry.staticValue == null ? [] : [entry.staticValue])
+    .sort((left, right) => right - left);
+  const strategyValueFloor =
+    rankedStaticValues[Math.min(179, rankedStaticValues.length - 1)] ?? null;
 
   const metricsEntries = valueSeed.map((entry): [string, DraftValueMetrics] => {
     const { player, staticValue, rankValue } = entry;
-    const injuryRisk = getInjuryRisk(player);
+    const playerAvailability = classifyDraftAvailability({
+      injuryStatus:
+        player.sleeper_injury_status ??
+        readNestedString(player.sleeper, ["player", "injury_status"]),
+      injuryNotes:
+        player.sleeper_injury_notes ??
+        readNestedString(player.sleeper, ["player", "injury_notes"]),
+      newsUpdated: player.sleeper_projection?.newsUpdated ?? null,
+      rankingsUpdatedAt: player.fp_rank_updated_at ?? null,
+      currentRound,
+      rounds: input.rounds ?? currentRound,
+      irSlots: input.irSlots ?? 0,
+    });
     const samePosition = byPosition.get(player.position) ?? [];
     const tier = getTier(player);
     const positionTier = getPositionTier(player);
@@ -2161,11 +2324,20 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
         ? 1
         : 0;
     const adp = getAdp(player);
+    const sleeperBoardRank = getSleeperBoardRank(player);
+    const sleeperBoardValue = toNumber(player.sleeper_board_value);
+    const marketRank = sleeperBoardRank ?? adp;
     const adpDeltaPicks = adp == null ? null : roundOne(adp - currentPick);
     const adpDeltaRounds =
       adpDeltaPicks == null ? null : roundOne(adpDeltaPicks / teams);
+    const rbWrDepthMarket = rbWrDepthMarketScore({
+      position: player.position,
+      adpDeltaRounds,
+      needs: input.userPositionNeeds,
+      benchBalance: rosterConstruction.benchBalance,
+    });
     const availability = adjustedComebackProbability({
-      adp,
+      adp: marketRank,
       position: player.position,
       currentPick,
       nextPick,
@@ -2223,6 +2395,25 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       requirements: input.rosterRequirements,
       benchBalance: rosterConstruction.benchBalance,
     });
+    const isBelowBaselineBenchValue =
+      staticValue != null &&
+      staticValue < 0 &&
+      (player.position === "RB" || player.position === "WR") &&
+      (input.userPositionNeeds.RB ?? 0) === 0 &&
+      (input.userPositionNeeds.WR ?? 0) === 0 &&
+      (input.userPositionNeeds.FLEX ?? 0) === 0;
+    const protectsAboveBaselineValue =
+      staticValue != null &&
+      staticValue >= 0 &&
+      bench.score < 0;
+    const benchScore = isBelowBaselineBenchValue
+      ? Math.min(3, bench.score)
+      : protectsAboveBaselineValue
+        ? 0
+        : bench.score;
+    const benchReasons = isBelowBaselineBenchValue || protectsAboveBaselineValue
+      ? bench.reasons.filter((reason) => reason.code !== "BENCH_BALANCE")
+      : bench.reasons;
     const rbAnchor = rbAnchorPolicy({
       position: player.position,
       currentRound,
@@ -2232,7 +2423,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     const missingFields = [
       rankValue.overallRank == null ? "ecr" : null,
       rankValue.positionRank == null ? "position rank" : null,
-      adp == null ? "adp" : null,
+      marketRank == null ? "Sleeper market rank" : null,
       tier == null ? "tier" : null,
     ].filter((value): value is string => value != null);
     const confidence = sourceConfidence(missingFields);
@@ -2249,6 +2440,16 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       player.position === "QB" &&
       adpDeltaPicks != null &&
       adpDeltaPicks >= teams / 2;
+    const onesiePriceSignals = [ecrDeltaPicks, adpDeltaPicks].filter(
+      (value): value is number => value != null
+    );
+    const isTePriceReach =
+      player.position === "TE" &&
+      currentRound <= 8 &&
+      (onesiePriceSignals.length >= 2
+        ? onesiePriceSignals.every((value) => value >= teams / 2) &&
+          onesiePriceSignals.some((value) => value >= teams)
+        : (onesiePriceSignals[0] ?? 0) >= teams);
     const nonQbCoreStarterNeeds =
       (input.userPositionNeeds.RB ?? 0) +
       (input.userPositionNeeds.WR ?? 0) +
@@ -2256,6 +2457,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     const qbStarterQuality = qbStarterQualityPolicy({
       position: player.position,
       currentRound,
+      valueProfile,
       needs: input.userPositionNeeds,
       requirements: input.rosterRequirements,
       positionalRank,
@@ -2276,6 +2478,20 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       positionTier === 1 &&
       positionalRank != null &&
       positionalRank <= 2;
+    const teStarterQuality = teStarterQualityPolicy({
+      position: player.position,
+      currentRound,
+      valueProfile,
+      needs: input.userPositionNeeds,
+      requirements: input.rosterRequirements,
+      positionalRank,
+      staticValue,
+      comebackLabel: label,
+      sameTierFallbackCount,
+      isEliteTeStarter: eliteTeStarter,
+      ecrDeltaPicks,
+      teams,
+    });
     const onesieStarter = onesieStarterPolicy({
       position: player.position,
       currentPick,
@@ -2288,6 +2504,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       isViableQbStarter: qbStarterQuality.isViable,
       isLowCeilingQbStarter: qbStarterQuality.isLowCeiling,
       isQbPreAdpReach,
+      isTePriceReach,
       adpDeltaPicks,
     });
     const wrStarterWindow =
@@ -2359,6 +2576,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       onesieStarter.qbEarlyScore +
       onesieStarter.teEarlyScore +
       qbStarterQuality.score +
+      teStarterQuality.score +
       (isEarlyOnesieEcrReach
         ? -Math.min(60, 24 + (ecrDeltaPicks ?? 0) * 2)
         : 0) +
@@ -2368,15 +2586,18 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       value:
         staticValue == null || bestStaticValue == null
           ? 0
-          : normalizedComponent(
-              100 - Math.max(0, bestStaticValue - staticValue) / 2
+          : valueProfile.normalizeValue(
+              staticValue,
+              bestStaticValue,
+              strategyValueFloor
             ),
       timing: normalizedComponent(
         (availabilityUrgency +
           runUrgency +
           cliffUrgency +
           Math.min(tierCliff ?? 0, 20) * 0.2 +
-          adpScore(adpDeltaRounds)) *
+          adpScore(adpDeltaRounds) +
+          rbWrDepthMarket) *
           2
       ),
       starterNeed: normalizedComponent(fit * 4 + starterFragility),
@@ -2388,10 +2609,10 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       onesie: normalizedComponent(
         onesieSignal < 0 ? onesieSignal * 3 : onesieSignal
       ),
-      depth: normalizedComponent(bench.score),
+      depth: normalizedComponent(benchScore),
       demand: normalizedComponent(roomDemand * 12),
       risk: normalizedComponent(
-        -missingFields.length * 12 - injuryRisk.penalty * 5
+        -missingFields.length * 12 - playerAvailability.penalty * 5
       ),
     };
     const components = weightRecommendationComponents(
@@ -2399,7 +2620,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       weightProfile.weights
     );
     const recommendationScore = sumComponents(components);
-    const topComponents = topRecommendationComponents(components);
+    const topComponents = topRecommendationComponents(components, valueLabel);
     const actionLabel = buildActionLabel(
       availability,
       sameTierFallbackCount,
@@ -2465,6 +2686,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       });
     }
     reasons.push(...qbStarterQuality.reasons);
+    reasons.push(...teStarterQuality.reasons);
     if (sameTierFallbackCount <= 1 && scarcityTier != null) {
       reasons.push({
         code: "TIER_CLIFF",
@@ -2476,7 +2698,8 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       reasons.push({
         code: "LIKELY_GONE",
         label: "Likely gone",
-        detail: "ADP timing says this player probably will not return.",
+        detail:
+          "Sleeper room timing says this player probably will not return.",
       });
     }
     if (adp != null && adp <= currentPick - teams / 2) {
@@ -2484,6 +2707,13 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
         code: "ADP_BARGAIN",
         label: "ADP bargain",
         detail: `Still available ${roundOne((currentPick - adp) / teams)} rounds after market.`,
+      });
+    }
+    if (rbWrDepthMarket < 0) {
+      reasons.push({
+        code: "MARKET_PRICE_REACH",
+        label: "Depth price",
+        detail: `${player.position} depth is ${formatRoundCount(adpDeltaRounds ?? 0)} before Sleeper ADP; use close value nearer market price.`,
       });
     }
     if (fit >= 4) {
@@ -2495,7 +2725,15 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     }
     reasons.push(...onesieStarter.reasons);
     reasons.push(...rbAnchor.reasons);
-    reasons.push(...bench.reasons);
+    reasons.push(...benchReasons);
+    if (isBelowBaselineBenchValue) {
+      reasons.push({
+        code: "BELOW_BASELINE_DEPTH",
+        label: "Below baseline",
+        detail:
+          "This player is below the Beer+ baseline, so bench balance cannot carry the pick.",
+      });
+    }
     if (roomDemand >= 1) {
       const directNeeds = input.draftWideNeeds?.[player.position] ?? 0;
       reasons.push({
@@ -2504,13 +2742,19 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
         detail: `${directNeeds} open ${player.position} needs remain across the room.`,
       });
     }
-    if (injuryRisk.penalty > 0) {
+    if (playerAvailability.classification !== "healthy") {
       reasons.push({
-        code: "NEWS_RISK",
-        label: "News risk",
-        detail: injuryRisk.notes
-          ? `${injuryRisk.status ?? "Injury"}: ${injuryRisk.notes}`
-          : `Sleeper injury status: ${injuryRisk.status ?? "flagged"}.`,
+        code: "AVAILABILITY_RISK",
+        label: playerAvailability.label,
+        detail: playerAvailability.detail,
+      });
+    }
+    if (playerAvailability.rankingsMayBeStale) {
+      reasons.push({
+        code: "RANKINGS_MAY_BE_STALE",
+        label: "Fresh news",
+        detail:
+          "Sleeper news is newer than the FantasyPros ranking update; review the latest report.",
       });
     }
     const recommendationExplanation = buildRecommendationExplanation({
@@ -2526,12 +2770,13 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       benchBalance: rosterConstruction.benchBalance,
       rosterPlayers: input.userRosterPlayers ?? [],
       missingFields,
-      injuryRisk,
+      availability: playerAvailability,
     });
 
     return [
       player.player_id,
       {
+        valueLabel,
         playerId: player.player_id,
         staticValue: staticValue == null ? null : roundOne(staticValue),
         recommendationScore,
@@ -2542,6 +2787,10 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
         tierCliff: tierCliff == null ? null : roundOne(tierCliff),
         sameTierFallbackCount,
         sleeperAdp: adp == null ? null : roundOne(adp),
+        sleeperBoardRank:
+          sleeperBoardRank == null ? null : roundOne(sleeperBoardRank),
+        sleeperBoardValue:
+          sleeperBoardValue == null ? null : roundOne(sleeperBoardValue),
         adpDeltaPicks,
         adpDeltaRounds,
         comebackProbability:
@@ -2551,7 +2800,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
         urgencyScore,
         rosterFitScore: fit,
         roomDemandScore: roomDemand,
-        benchPolicyScore: bench.score,
+        benchPolicyScore: benchScore,
         rawScores,
         weights: weightProfile.weights,
         weightProfile: weightProfile.id,
@@ -2567,13 +2816,52 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
         positionRunCount,
         sourceConfidence: confidence,
         missingFields,
+        availability: playerAvailability,
         reasons,
       },
     ];
   });
 
   const metricsByPlayerId = Object.fromEntries(metricsEntries);
+  const finalTwoRounds =
+    input.rounds != null && currentRound >= Math.max(1, input.rounds - 1);
+  const openNonSpecialSlots =
+    (input.userPositionNeeds.QB ?? 0) +
+    (input.userPositionNeeds.RB ?? 0) +
+    (input.userPositionNeeds.WR ?? 0) +
+    (input.userPositionNeeds.TE ?? 0) +
+    (input.userPositionNeeds.FLEX ?? 0) +
+    (input.userPositionNeeds.BN ?? 0);
+  const requiredEndgamePositions = getRequiredEndgamePositions({
+    rounds: input.rounds,
+    counts: input.userPositionCounts,
+    needs: input.userPositionNeeds,
+    requirements: input.rosterRequirements,
+  });
   const recommendations = available
+    .filter((player) => {
+      if (!canAddPositionToRoster({
+        position: player.position,
+        counts: input.userPositionCounts,
+        requirements: input.rosterRequirements,
+      })) {
+        return false;
+      }
+      if (player.position !== "K" && player.position !== "DEF") return true;
+      if (!finalTwoRounds && openNonSpecialSlots > 0) {
+        return false;
+      }
+      return true;
+    })
+    .filter(
+      (player) =>
+        requiredEndgamePositions == null ||
+        requiredEndgamePositions.has(player.position)
+    )
+    .filter(
+      (player) =>
+        metricsByPlayerId[player.player_id]?.availability.eligible !== false
+    )
     .filter(
       (player) => metricsByPlayerId[player.player_id]?.staticValue != null
     )
@@ -2602,7 +2890,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       scoreGap,
       sourceConfidence: metric.sourceConfidence,
       missingFields: metric.missingFields,
-      injuryPenalty: Math.abs(metric.components.risk),
+      availability: metric.availability,
     });
     metric.recommendationExplanation = {
       ...metric.recommendationExplanation,
@@ -2653,6 +2941,55 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
   };
 }
 
+function getRequiredEndgamePositions(input: {
+  rounds: number | undefined;
+  counts: Partial<Record<Position | "FLEX" | "BN", number>>;
+  needs: Partial<Record<RosterSlot, number>>;
+  requirements: Partial<Record<RosterSlot, number>>;
+}) {
+  if (input.rounds == null) return null;
+  const draftedCount = CORE_POSITIONS.reduce(
+    (total, position) => total + (input.counts[position] ?? 0),
+    0
+  );
+  const remainingPicks = Math.max(0, input.rounds - draftedCount);
+  const minimumDepth = getMinimumRbWrDepth(input.requirements);
+  const rbDepthNeed = Math.max(
+    0,
+    minimumDepth.RB - (input.counts.RB ?? 0)
+  );
+  const wrDepthNeed = Math.max(
+    0,
+    minimumDepth.WR - (input.counts.WR ?? 0)
+  );
+  const requiredCounts = {
+    QB: input.needs.QB ?? 0,
+    RB: rbDepthNeed,
+    WR: wrDepthNeed,
+    TE: input.needs.TE ?? 0,
+    K: input.needs.K ?? 0,
+    DEF: input.needs.DEF ?? 0,
+  } satisfies Record<Position, number>;
+  const requiredPickCount = CORE_POSITIONS.reduce(
+    (total, position) => total + requiredCounts[position],
+    0
+  );
+  if (requiredPickCount === 0 || remainingPicks > requiredPickCount) {
+    return null;
+  }
+  return new Set(
+    CORE_POSITIONS.filter((position) => requiredCounts[position] > 0)
+  );
+}
+
+function normalizeStarterAwareValue(
+  value: number,
+  bestValue: number,
+  _floorValue: number | null
+) {
+  return normalizedComponent(100 - (bestValue - value));
+}
+
 function pickedOverall(player: DraftValuePlayerInput) {
   const picked = player.picked;
   if (!picked || typeof picked !== "object") return 0;
@@ -2663,6 +3000,8 @@ export function attachDraftValueMetrics<TPlayer extends DraftValuePlayerInput>(
   player: TPlayer,
   metrics: DraftValueMetrics | undefined
 ): TPlayer & {
+  draft_raw_value_score?: number | null;
+  draft_value_label?: string;
   draft_value_score?: number | null;
   draft_tier_cliff?: number | null;
   draft_adp_delta_rounds?: number | null;
@@ -2690,6 +3029,10 @@ export function attachDraftValueMetrics<TPlayer extends DraftValuePlayerInput>(
   draft_roster_fit?: number | null;
   draft_source_confidence?: DraftSourceConfidence;
   draft_missing_fields?: string[];
+  draft_availability?: DraftAvailabilityClass;
+  draft_availability_label?: string;
+  draft_availability_eligible?: boolean;
+  draft_rankings_may_be_stale?: boolean;
   draft_reason_labels?: string[];
   draft_reason_details?: string[];
   draft_recommendation_rank?: number | null;
@@ -2697,6 +3040,8 @@ export function attachDraftValueMetrics<TPlayer extends DraftValuePlayerInput>(
   if (!metrics) return { ...player };
   return {
     ...player,
+    draft_raw_value_score: metrics.staticValue,
+    draft_value_label: metrics.valueLabel,
     draft_value_score: metrics.recommendationScore,
     draft_tier_cliff: metrics.tierCliff,
     draft_adp_delta_rounds: metrics.adpDeltaRounds,
@@ -2727,6 +3072,10 @@ export function attachDraftValueMetrics<TPlayer extends DraftValuePlayerInput>(
     draft_roster_fit: metrics.rosterFitScore,
     draft_source_confidence: metrics.sourceConfidence,
     draft_missing_fields: metrics.missingFields,
+    draft_availability: metrics.availability.classification,
+    draft_availability_label: metrics.availability.label,
+    draft_availability_eligible: metrics.availability.eligible,
+    draft_rankings_may_be_stale: metrics.availability.rankingsMayBeStale,
     draft_reason_labels: metrics.reasons.map((reason) => reason.label),
     draft_reason_details: metrics.reasons.map((reason) => reason.detail),
     draft_recommendation_rank: metrics.recommendationRank,

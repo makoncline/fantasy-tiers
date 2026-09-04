@@ -103,7 +103,6 @@ const TIER_CONFIGS: Record<
 };
 
 const OVERALL_SUBTIER_COUNTS = [10, 8, 8] as const;
-const UPSTREAM_REFERENCE = "https://github.com/borisachen/fftiers";
 
 function finiteNumber(value: number | null | undefined): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
@@ -287,16 +286,29 @@ export function buildTierRows(
   const config = getTierConfig(options.outputPosition, options.scoring);
   const limit = options.limit ?? config.limit;
   const tierCount = options.tierCount ?? config.tierCount;
-  const selectedRows = rows
+  const eligibleRows = rows
     .filter((row) => isEligibleForOutput(row, options.outputPosition))
     .filter((row) => rankSortValue(row) != null)
-    .toSorted(compareRowsByRank)
-    .slice(0, limit);
+    .toSorted(compareRowsByRank);
+  const selectedRows = eligibleRows.slice(0, limit);
 
-  const tieredRows =
+  const primaryTieredRows =
     options.outputPosition === "ALL"
       ? attachOverallTiers(selectedRows)
       : attachTiers(selectedRows, tierCount);
+  const lastTier = Math.max(
+    0,
+    ...primaryTieredRows.map((entry) => entry.tier)
+  );
+  const tieredRows = options.limit == null
+    ? [
+        ...primaryTieredRows,
+        ...eligibleRows.slice(limit).map((row) => ({
+          row,
+          tier: lastTier + 1,
+        })),
+      ]
+    : primaryTieredRows;
 
   return tieredRows.map(({ row, tier }, index) => {
     const base = {
@@ -436,10 +448,9 @@ async function writeTierOutput({
         fetchedAt: generatedAt,
         source: "FantasyPros draft ECR tier generation",
         sourceUrl: tiersSourceUrl(outputPosition, scoring),
-        referenceImplementation: UPSTREAM_REFERENCE,
         generatedFrom: path.relative(process.cwd(), sourceFile),
         algorithm:
-          "Contiguous 1D k-means over FantasyPros Avg.Rank; ALL uses three coarse groups followed by 10/8/8 subtiers to mirror the fftiers predraft tier shape.",
+          "Contiguous 1D k-means over FantasyPros Avg.Rank; ALL uses three coarse groups followed by 10/8/8 subtiers.",
         position: outputPosition,
         scoring,
         rowCount: rows.length,

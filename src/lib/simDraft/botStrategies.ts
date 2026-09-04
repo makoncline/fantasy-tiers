@@ -10,6 +10,7 @@ export const SIM_BOT_STRATEGY_IDS = [
 export type BotStrategyContext = {
   available: readonly SimDraftPlayer[];
   needs: Partial<Record<RosterSlot, number>>;
+  rosterRequirements: Record<RosterSlot, number>;
   roster: readonly SimDraftPlayer[];
   round: number;
   rounds: number;
@@ -62,10 +63,13 @@ function rankAdpNeedsPlayers(context: BotStrategyContext) {
     (position) => position !== "K" && position !== "DEF"
   );
   const isLate = context.round >= Math.max(1, context.rounds - 1);
-  let pool = context.available;
+  const eligible = context.available.filter((player) =>
+    isEligibleForConfiguredRoster(player, context)
+  );
+  let pool = eligible;
 
   if (nonSpecialStarterPositions.length > 0) {
-    pool = context.available.filter((player) =>
+    pool = eligible.filter((player) =>
       nonSpecialStarterPositions.some((position) => position === player.position)
     );
   } else if (starterPositions.length > 0) {
@@ -75,18 +79,18 @@ function rankAdpNeedsPlayers(context: BotStrategyContext) {
           (position) => position !== "K" && position !== "DEF"
         );
     if (allowed.length > 0) {
-      pool = context.available.filter((player) =>
+      pool = eligible.filter((player) =>
         allowed.some((position) => position === player.position)
       );
     }
   } else if ((context.needs.BN ?? 0) > 0) {
-    const benchPool = context.available.filter((player) =>
+    const benchPool = eligible.filter((player) =>
       ["RB", "WR", "TE"].includes(player.position)
     );
     if (benchPool.length > 0) pool = benchPool;
   }
 
-  if (pool.length === 0) pool = context.available;
+  if (pool.length === 0) pool = eligible;
   return [...pool].sort(compareByMarket(context.round, context.rounds));
 }
 
@@ -104,12 +108,35 @@ function chooseMarketPlayer(context: BotStrategyContext) {
 
 function rankMarketPlayers(context: BotStrategyContext) {
   const rosterCounts = countPositions(context.roster);
-  return [...context.available].sort((a, b) => {
+  const eligible = context.available.filter((player) =>
+    isEligibleForConfiguredRoster(player, context)
+  );
+  const starterPositions = openStarterPositions(context.needs);
+  const starterNeeds = (["QB", "RB", "WR", "TE", "K", "DEF", "FLEX"] as const)
+    .reduce((total, slot) => total + (context.needs[slot] ?? 0), 0);
+  const remainingPicks = context.rounds - context.roster.length;
+  const mustFillStarter = starterNeeds > 0 && remainingPicks <= starterNeeds;
+  const pool = mustFillStarter
+    ? eligible.filter((player) => starterPositions.includes(player.position))
+    : eligible;
+  return pool.sort((a, b) => {
     const difference =
       marketScore(a, context, rosterCounts) -
       marketScore(b, context, rosterCounts);
     return difference || a.name.localeCompare(b.name);
   });
+}
+
+function isEligibleForConfiguredRoster(
+  player: SimDraftPlayer,
+  context: BotStrategyContext
+) {
+  if (player.position !== "K" && player.position !== "DEF") return true;
+  const required = context.rosterRequirements[player.position] ?? 0;
+  const drafted = context.roster.filter(
+    (rosterPlayer) => rosterPlayer.position === player.position
+  ).length;
+  return drafted < required;
 }
 
 function marketScore(
@@ -169,5 +196,5 @@ function specialTeamPenalty(position: Position, round: number, rounds: number) {
 }
 
 function botRank(player: SimDraftPlayer) {
-  return player.sleeperAdp ?? player.sleeperRank ?? player.rank ?? Number.MAX_SAFE_INTEGER;
+  return player.sleeperRank ?? player.sleeperAdp ?? player.rank ?? Number.MAX_SAFE_INTEGER;
 }

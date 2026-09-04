@@ -7,19 +7,28 @@ import { draftCandidateMapFromBundle } from "../../src/lib/draftCandidate";
 import { fetchDraftDetails } from "../../src/lib/draftDetails";
 import { fetchDraftPicks } from "../../src/lib/draftPicks";
 import { buildDraftViewModel } from "../../src/lib/draftState";
+import { draftReadinessShardCountsFromBundle } from "../../src/lib/draftReadiness";
+import { fetchSleeperLeagueById } from "../../src/lib/sleeper";
 
 vi.mock("../../src/lib/aggregateBundle", () => ({ buildAggregateBundle: vi.fn() }));
 vi.mock("../../src/lib/draftCandidate", () => ({ draftCandidateMapFromBundle: vi.fn() }));
 vi.mock("../../src/lib/draftDetails", () => ({ fetchDraftDetails: vi.fn() }));
 vi.mock("../../src/lib/draftPicks", () => ({ fetchDraftPicks: vi.fn() }));
 vi.mock("../../src/lib/draftState", () => ({ buildDraftViewModel: vi.fn() }));
+vi.mock("../../src/lib/draftReadiness", () => ({
+  draftReadinessShardCountsFromBundle: vi.fn(),
+}));
+vi.mock("../../src/lib/sleeper", () => ({ fetchSleeperLeagueById: vi.fn() }));
 
 const draft = {
   draft_id: "draft-1",
+  league_id: "league-1",
+  type: "snake",
   metadata: { scoring_type: "ppr" },
   settings: {
     teams: 10,
     rounds: 15,
+    pick_timer: 60,
     slots_qb: 1,
     slots_rb: 2,
     slots_wr: 2,
@@ -37,7 +46,11 @@ const picks = [
 ];
 
 const playersMap = { "player-1": { player_id: "player-1" } };
-const bundle = { sourceHealth: { warnings: ["stale"] } };
+const shardCounts = { ALL: 1, QB: 1, RB: 1, WR: 1, TE: 1, K: 1, DEF: 1, FLEX: 1 };
+const bundle = {
+  sourceHealth: { generatedAt: "2026-09-04T12:00:00.000Z" },
+  draftProjections: null,
+};
 const viewModel = {
   available: [],
   drafted: [{ player_id: "player-1" }],
@@ -48,6 +61,7 @@ const viewModel = {
     topRecommendation: null,
   },
   draftContext: { room: { currentPick: 2 } },
+  readiness: { status: "ready" },
 };
 
 function request(query = "draft_id=draft-1&user_id=user-1") {
@@ -59,9 +73,15 @@ describe("GET /api/draft/view-model", () => {
     vi.resetAllMocks();
     vi.mocked(fetchDraftDetails).mockResolvedValue(draft);
     vi.mocked(fetchDraftPicks).mockResolvedValue(picks);
+    vi.mocked(fetchSleeperLeagueById).mockResolvedValue({
+      league_id: "league-1",
+      name: "Public League",
+      scoring_settings: { rec: 1 },
+    });
     vi.mocked(buildAggregateBundle).mockReturnValue(bundle);
     vi.mocked(draftCandidateMapFromBundle).mockReturnValue(playersMap);
     vi.mocked(buildDraftViewModel).mockReturnValue(viewModel);
+    vi.mocked(draftReadinessShardCountsFromBundle).mockReturnValue(shardCounts);
   });
 
   it("builds and returns the current draft view-model shape", async () => {
@@ -69,7 +89,30 @@ describe("GET /api/draft/view-model", () => {
     const body: unknown = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body).toEqual(viewModel);
+    expect(body).toMatchObject(viewModel);
+    expect(body).toHaveProperty("leagueConfig", {
+      source: "sleeper-draft",
+      teams: 10,
+      rounds: 15,
+      userSlot: 5,
+      draftType: "snake",
+      draftOrderMode: "sleeper",
+      pickTimerSeconds: 60,
+      scoring: "ppr",
+      scoringSource: "league",
+      scoringRules: expect.objectContaining({ reception: 1 }),
+      rosterSlots: {
+        QB: 1,
+        RB: 2,
+        WR: 2,
+        TE: 1,
+        K: 1,
+        DEF: 1,
+        FLEX: 1,
+        BENCH: 6,
+        IR: 0,
+      },
+    });
     expect(body).toHaveProperty("recommendationBoard");
     expect(body).not.toHaveProperty("nextPickRecommendations");
     expect(body).not.toHaveProperty("dynamicRecommendations");
@@ -95,7 +138,67 @@ describe("GET /api/draft/view-model", () => {
       draft,
       picks,
       userId: "user-1",
+      scoringRules: expect.any(Object),
+      projectionArtifact: null,
+      sourceHealth: bundle.sourceHealth,
+      shardCounts,
     });
+  });
+
+  it("uses exact Sleeper scoring instead of the preset scoring bucket", async () => {
+    vi.mocked(fetchDraftDetails).mockResolvedValue({
+      ...draft,
+      scoring_settings: {
+        rec: 0.5,
+        rush_yd: 0.1,
+        rec_yd: 0.1,
+        rush_td: 6,
+        rec_td: 6,
+        pass_yd: 0.04,
+        pass_td: 6,
+        pass_int: -2,
+        fum_lost: -2,
+        rush_att: 0,
+      },
+    });
+
+    const response = await GET(request());
+
+    expect(response.status).toBe(200);
+    expect(buildAggregateBundle).toHaveBeenCalledWith(
+      expect.objectContaining({ scoring: "half" })
+    );
+  });
+
+  it("does not expose an alternate recommendation strategy through the URL", async () => {
+    const response = await GET(
+      request("draft_id=draft-1&user_id=user-1&strategy=current")
+    );
+
+    expect(response.status).toBe(200);
+    expect(buildDraftViewModel).toHaveBeenCalledWith(
+      expect.not.objectContaining({ strategy: expect.anything() })
+    );
+  });
+
+  it("loads exact scoring from the Sleeper league when the draft omits it", async () => {
+    vi.mocked(fetchSleeperLeagueById).mockResolvedValue({
+      league_id: "league-1",
+      name: "Public League",
+      scoring_settings: { rec: 0, pass_td: 6, pass_int: -3 },
+    });
+
+    const response = await GET(request());
+    const body: unknown = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(fetchSleeperLeagueById).toHaveBeenCalledWith("league-1");
+    expect(buildAggregateBundle).toHaveBeenCalledWith(
+      expect.objectContaining({ scoring: "std" })
+    );
+    expect(body).toHaveProperty("leagueConfig.scoringSource", "league");
+    expect(body).toHaveProperty("leagueConfig.scoringRules.passingTouchdown", 6);
+    expect(body).toHaveProperty("leagueConfig.scoringRules.interception", -3);
   });
 
   it("rejects requests missing either required identifier", async () => {
@@ -123,6 +226,26 @@ describe("GET /api/draft/view-model", () => {
     });
     expect(draftCandidateMapFromBundle).not.toHaveBeenCalled();
     expect(buildDraftViewModel).not.toHaveBeenCalled();
+  });
+
+  it("returns 503 without recommendations for a readiness incident", async () => {
+    vi.mocked(buildDraftViewModel).mockReturnValue({
+      ...viewModel,
+      readiness: {
+        status: "incident",
+        incidents: [{ message: "FantasyPros is stale." }],
+      },
+    });
+
+    const response = await GET(request());
+    const body: unknown = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(body).toMatchObject({
+      error: "Draft data is not ready.",
+      readiness: { status: "incident" },
+    });
+    expect(body).not.toHaveProperty("recommendationBoard");
   });
 
   it("returns a stable error response when a dependency fails", async () => {

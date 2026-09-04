@@ -2,16 +2,25 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
+
+import { buildAggregateBundle } from "../../src/lib/aggregateBundle";
+import { draftCandidateMapFromBundle } from "../../src/lib/draftCandidate";
 import {
-  buildDraftDataQualityReport,
-  DraftQualityMetadataSchema,
-  DraftDataQualityReportSchema,
-  type DraftDataQualityReport,
-} from "../../src/lib/draftDataQuality";
+  DEFAULT_DRAFT_ROSTER_SLOTS,
+  DEFAULT_DRAFT_SCORING_RULES,
+  calculateDraftRounds,
+  rankingScoringFromRules,
+} from "../../src/lib/draftLeagueConfig";
+import {
+  assessDraftReadiness,
+  draftReadinessShardCountsFromBundle,
+  DraftReadinessReportSchema,
+  type DraftReadinessReport,
+} from "../../src/lib/draftReadiness";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const POSITIONS = ["ALL", "QB", "RB", "WR", "TE", "K", "DEF", "FLEX"] as const;
+const POSITIONS = ["ALL", "QB", "RB", "WR", "TE", "K", "DEF", "FLEX"];
 
 const FetchModeSchema = z.object({
   mode: z.string(),
@@ -22,63 +31,82 @@ function readJson(filePath: string): unknown {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
-function writeReportAtomic(filePath: string, report: DraftDataQualityReport): void {
+function writeReportAtomic(
+  filePath: string,
+  report: DraftReadinessReport
+): void {
   const temporaryPath = `${filePath}.${process.pid}.tmp`;
   fs.writeFileSync(temporaryPath, JSON.stringify(report, null, 2), "utf8");
   fs.renameSync(temporaryPath, filePath);
 }
 
-function appendGithubSummary(report: DraftDataQualityReport): void {
+function appendGithubSummary(report: DraftReadinessReport): void {
   const summaryPath = process.env.GITHUB_STEP_SUMMARY;
   if (!summaryPath) return;
-  const rows = Object.entries(report.scoring)
+  const rows = Object.values(report.cohorts)
     .map(
-      ([scoring, quality]) =>
-        `| ${scoring.toUpperCase()} | ${quality.ecrRows} | ${quality.sleeperAdpCovered}/${quality.topCandidates} | ${quality.tierCovered}/${quality.topCandidates} | ${quality.expertsIncluded ?? "-"}/${quality.expertsAvailable ?? "-"} |`
+      (cohort) =>
+        `| ${cohort.label} | ${cohort.ready}/${cohort.total} | ${cohort.coveragePct}% | ${cohort.status} |`
     )
+    .join("\n");
+  const incidents = report.incidents
+    .map((incident) => `- ${incident.message}`)
     .join("\n");
   fs.appendFileSync(
     summaryPath,
-    `## Draft data quality\n\nStatus: **${report.status}**  \nGenerated: ${report.generatedAt}\n\n| Scoring | FP ECR | Sleeper ADP | Tiers | Experts |\n| --- | ---: | ---: | ---: | ---: |\n${rows}\n\n${report.warnings.map((warning) => `- Warning: ${warning}`).join("\n")}\n`,
+    `## Draft data readiness\n\nStatus: **${report.status}**  \nChecked: ${report.checkedAt}\n\n| Cohort | Ready | Coverage | Status |\n| --- | ---: | ---: | --- |\n${rows}\n\n${incidents}\n`,
     "utf8"
   );
 }
 
-export function validateAggregateFiles(root: string): DraftDataQualityReport {
+export function validateAggregateFiles(root: string): DraftReadinessReport {
   const aggregateDir = path.join(root, "public/data/aggregate");
   const reportPath = path.join(aggregateDir, "quality-report.json");
   const fetchModePath = path.join(
     root,
     "public/data/fantasypros/raw/fetch-mode.json"
   );
-  const metadataPath = path.join(aggregateDir, "metadata.json");
   const previous = fs.existsSync(reportPath)
-    ? DraftDataQualityReportSchema.parse(readJson(reportPath))
+    ? DraftReadinessReportSchema.safeParse(readJson(reportPath)).data ?? null
     : null;
   const fetchMode = FetchModeSchema.parse(readJson(fetchModePath));
-  const shards = Object.fromEntries(
-    POSITIONS.map((position) => {
-      const filePath = path.join(
-        aggregateDir,
-        `${position}-combined-aggregate.json`
-      );
-      if (!fs.existsSync(filePath)) {
-        throw new Error(`Missing aggregate file: ${path.basename(filePath)}`);
-      }
-      return [position, readJson(filePath)];
-    })
-  );
-  const report = buildDraftDataQualityReport({
-    mode: fetchMode.mode,
-    season: process.env.SEASON ?? fetchMode.season ?? "",
-    generatedAt: new Date(),
-    shards,
-    metadata: DraftQualityMetadataSchema.parse(readJson(metadataPath)),
-    previous,
+  for (const position of POSITIONS) {
+    const filePath = path.join(
+      aggregateDir,
+      `${position}-combined-aggregate.json`
+    );
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`Missing aggregate file: ${path.basename(filePath)}`);
+    }
+  }
+
+  const season = process.env.SEASON ?? fetchMode.season ?? "";
+  const teams = 12;
+  const rounds = calculateDraftRounds(DEFAULT_DRAFT_ROSTER_SLOTS);
+  const scoring = rankingScoringFromRules(DEFAULT_DRAFT_SCORING_RULES);
+  const bundle = buildAggregateBundle({
+    scoring,
+    teams,
+    rosterSlots: DEFAULT_DRAFT_ROSTER_SLOTS,
   });
-  writeReportAtomic(reportPath, report);
-  appendGithubSummary(report);
-  return report;
+  const assessment = assessDraftReadiness({
+    candidates: Object.values(draftCandidateMapFromBundle(bundle)),
+    sourceHealth: bundle.sourceHealth ?? null,
+    projectionArtifact: bundle.draftProjections,
+    teams,
+    rounds,
+    scoring,
+    scoringRules: DEFAULT_DRAFT_SCORING_RULES,
+    rosterSlots: DEFAULT_DRAFT_ROSTER_SLOTS,
+    mode: fetchMode.mode,
+    season,
+    shardCounts: draftReadinessShardCountsFromBundle(bundle),
+    previous,
+    requireAllShards: true,
+  });
+  writeReportAtomic(reportPath, assessment.report);
+  appendGithubSummary(assessment.report);
+  return assessment.report;
 }
 
 function main(): void {
@@ -87,17 +115,23 @@ function main(): void {
   for (const [position, count] of Object.entries(report.shards)) {
     console.log(`PASS ${position}: ${count} rows`);
   }
-  for (const [scoring, quality] of Object.entries(report.scoring)) {
+  for (const cohort of Object.values(report.cohorts)) {
     console.log(
-      `PASS ${scoring}: ${quality.ecrRows} ECR, ${quality.sleeperAdpCovered}/${quality.topCandidates} real ADP, ${quality.tierCovered}/${quality.topCandidates} tiers`
+      `${cohort.status.toUpperCase()} ${cohort.label}: ${cohort.ready}/${cohort.total} ready (${cohort.coveragePct}%)`
     );
   }
-  report.warnings.forEach((warning) => console.warn(`WARNING ${warning}`));
-  if (report.errors.length > 0) {
-    report.errors.forEach((error) => console.error(`BLOCKED ${error}`));
+  for (const issue of report.playerIssues) {
+    console.warn(
+      `PLAYER ${issue.name} (${issue.position}): ${issue.problems.join(" ")}`
+    );
+  }
+  if (report.incidents.length > 0) {
+    for (const incident of report.incidents) {
+      console.error(`BLOCKED ${incident.message}`);
+    }
     process.exit(1);
   }
-  console.log("All aggregate files passed semantic draft-data validation.");
+  console.log("Draft data is ready.");
 }
 
 try {

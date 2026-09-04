@@ -1,14 +1,16 @@
 import { buildDraftViewModel } from "@/lib/draftState";
 import {
   attachDraftValueMetrics,
-  type DraftRecommendationComponent,
-  type DraftRecommendationConfidence,
-  type DraftRecommendationWeightProfileId,
   type DraftValueMetrics,
 } from "@/lib/draftValue";
 import { draftCandidateMapFromBundle } from "@/lib/draftCandidate";
+import { draftReadinessShardCountsFromBundle } from "@/lib/draftReadiness";
 import { createMockDraftResultArtifact } from "@/lib/draftResults";
-import type { Position, RosterSlot } from "@/lib/schemas";
+import type {
+  AlgorithmDraftCandidate,
+  AlgorithmDraftDecision,
+} from "@/lib/draftDecisionLog";
+import { createDraftSourceSnapshot } from "@/lib/draftDecisionLog.server";
 import type { AggregatesBundleResponseT } from "@/lib/schemas-bundle";
 import {
   advanceUntilUserTurn,
@@ -25,47 +27,6 @@ import {
 type DraftViewModel = ReturnType<typeof buildDraftViewModel>;
 type RecommendationBoard = NonNullable<DraftViewModel["recommendationBoard"]>;
 type RecommendationPlayer = RecommendationBoard["recommendations"][number];
-
-export type AlgorithmDraftCandidate = {
-  playerId: string;
-  name: string;
-  position: Position;
-  team: string | null;
-  byeWeek: number | null;
-  recommendationRank: number;
-  recommendationScore: number;
-  recommendationEdge: string;
-  recommendationEdgeDetail: string;
-  recommendationPros: string[];
-  recommendationCons: string[];
-  dataQualityNotes: string[];
-  recommendationSummary: string;
-  confidence: DraftRecommendationConfidence | null;
-  scoreGap: number | null;
-  staticValue: number | null;
-  valueRank: number | null;
-  positionalValueRank: number | null;
-  positionTier: number | null;
-  comebackProbability: number | null;
-  comebackLabel: string;
-  weightProfile: DraftRecommendationWeightProfileId;
-  topComponents: DraftRecommendationComponent[];
-  reasonLabels: string[];
-  reasonDetails: string[];
-};
-
-export type AlgorithmDraftDecision = {
-  pickNo: number;
-  round: number;
-  pickInRound: number;
-  userSlot: number;
-  selected: AlgorithmDraftCandidate;
-  topOptions: AlgorithmDraftCandidate[];
-  challengers: { playerId: string; score: number; scoreGap: number }[];
-  rosterCountsBefore: Partial<Record<Position | "FLEX" | "BN", number>>;
-  rosterNeedsBefore: Partial<Record<RosterSlot | "BN", number>>;
-  availableCount: number;
-};
 
 export type AlgorithmMockDraftRun = {
   state: SimDraftState;
@@ -95,7 +56,18 @@ export function runAlgorithmMockDraft(input: {
     });
     const board = decisionContext.board;
     if (!board) {
-      throw new Error(`Recommendation board unavailable at pick ${snapshot.currentPickNo}`);
+      const incidents = decisionContext.viewModel.readiness?.incidents
+        .map((incident) => incident.message)
+        .join(" ");
+      const playerIssues = decisionContext.viewModel.readiness?.playerIssues
+        .slice(0, 3)
+        .map((issue) => `${issue.name}: ${issue.problems.join(" ")}`)
+        .join(" ");
+      throw new Error(
+        `Recommendation board unavailable at pick ${snapshot.currentPickNo}. ` +
+          (incidents || "No readiness incident was reported.") +
+          (playerIssues ? ` ${playerIssues}` : "")
+      );
     }
     const topRecommendation = board.topRecommendation;
     if (!topRecommendation) {
@@ -123,11 +95,15 @@ export function runAlgorithmMockDraft(input: {
   const finalDraftPicks = toSleeperDraftPicks(state);
   const finalSnapshot = getSimDraftSnapshot(state, input.players);
   const finalViewModel = buildDraftViewModel({
-    playersMap: draftCandidateMapFromBundle(input.bundle),
+    playersMap: candidateMapForSimPlayers(input.bundle, input.players),
     draft: finalDraftDetails,
     picks: finalDraftPicks,
     userId: state.config.userId,
     topLimit: 4,
+    scoringRules: state.config.scoringRules,
+    projectionArtifact: input.bundle.draftProjections,
+    sourceHealth: input.bundle.sourceHealth ?? null,
+    shardCounts: draftReadinessShardCountsFromBundle(input.bundle),
   });
   const artifact = createMockDraftResultArtifact({
     state,
@@ -137,6 +113,11 @@ export function runAlgorithmMockDraft(input: {
     draftPicks: finalDraftPicks,
     viewModel: finalViewModel,
     sourceHealth: input.bundle.sourceHealth,
+    sourceSnapshot: createDraftSourceSnapshot({
+      bundle: input.bundle,
+      players: input.players,
+    }),
+    readiness: finalViewModel.readiness,
     notes: [
       "User slot picks were made automatically from draftValueBoard.topRecommendation.",
       `Algorithm decision count: ${decisions.length}.`,
@@ -154,15 +135,31 @@ function buildAlgorithmDecisionContext(input: {
   const draftDetails = toSleeperDraftDetails(input.state);
   const draftPicks = toSleeperDraftPicks(input.state);
   const viewModel = buildDraftViewModel({
-    playersMap: draftCandidateMapFromBundle(input.bundle),
+    playersMap: candidateMapForSimPlayers(input.bundle, input.players),
     draft: draftDetails,
     picks: draftPicks,
     userId: input.state.config.userId,
     topLimit: 4,
+    scoringRules: input.state.config.scoringRules,
+    projectionArtifact: input.bundle.draftProjections,
+    sourceHealth: input.bundle.sourceHealth ?? null,
+    shardCounts: draftReadinessShardCountsFromBundle(input.bundle),
   });
   const board = viewModel.recommendationBoard;
 
   return { board, viewModel };
+}
+
+function candidateMapForSimPlayers(
+  bundle: AggregatesBundleResponseT,
+  players: readonly SimDraftPlayer[]
+) {
+  const availableIds = new Set(players.map((player) => player.player_id));
+  return Object.fromEntries(
+    Object.entries(draftCandidateMapFromBundle(bundle)).filter(([playerId]) =>
+      availableIds.has(playerId)
+    )
+  );
 }
 
 function buildDecisionRecord(input: {

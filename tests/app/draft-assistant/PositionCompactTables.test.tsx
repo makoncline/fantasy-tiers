@@ -35,6 +35,7 @@ describe("PositionCompactTables", () => {
       fp_rank_ave: 14,
       position_tier_level: 2,
       tier_rank: null,
+      draft_raw_value_score: 72,
       draft_value_score: 81,
       sleeper_adp: 18,
       sleeper_adp_round_pick: "2.08",
@@ -60,6 +61,8 @@ describe("PositionCompactTables", () => {
         K: [],
       },
       userRosterSlots: [],
+      userPositionCounts: { QB: 1 },
+      userPositionRequirements: { QB: 1 },
       getRosterStatus: () => ({ count: 0, requirement: 1, met: false }),
       showAll: false,
       setShowAll: vi.fn(),
@@ -89,10 +92,24 @@ describe("PositionCompactTables", () => {
     const headers = Array.from(qbCard?.querySelectorAll("thead tr:last-child th") ?? []).map(
       (header) => header.textContent
     );
-    expect(headers).toEqual(["Name", "Tier", "VAL ▼", "ADP", "Preview"]);
+    expect(headers).toEqual(["Name", "Tier", "VAL", "ADJ ▼", "ADP", "Preview"]);
     expect(qbCard?.textContent).not.toContain("baseline");
     expect(qbCard?.textContent).not.toContain("pts");
     expect(container.querySelector('[data-testid="data-last-updated"]')).toBeNull();
     expect(container.querySelector('button[aria-label="Preview Current ECR"]')).not.toBeNull();
+  });
+
+  it("disables a pick after the one-player position maximum is filled", () => {
+    act(() => root.render(
+      <PositionCompactTables
+        pickAction={{ disabled: false, label: "Pick", onPick: vi.fn() }}
+      />
+    ));
+
+    expect(
+      container.querySelector<HTMLButtonElement>(
+        'button[aria-label="Pick Current ECR"]'
+      )?.disabled
+    ).toBe(true);
   });
 });

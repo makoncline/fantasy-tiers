@@ -1,6 +1,6 @@
 # Draft Assistant Runbook
 
-Last updated: 2026-06-30
+Last updated: 2026-09-04
 
 This is the working runbook for future draft-assistant prep. Keep practical notes here while testing real Sleeper drafts so the next seasonal pass can skip the browser/API learning curve.
 
@@ -9,8 +9,12 @@ This is the working runbook for future draft-assistant prep. Keep practical note
 Use the draft assistant beside a live Sleeper draft room and verify three things:
 
 - Sleeper user, draft list, draft details, and picks still load.
-- Aggregate rankings render with source freshness visible enough to trust or distrust them.
+- The assistant reports `Data ready` before it renders the draft board.
 - Draft-room state changes in Sleeper, especially draft slot and picks, appear in the assistant within the polling window.
+
+If readiness fails, stop. The app replaces the board with the provider,
+derived-data, cohort, and player-specific incidents. Do not draft from a prior
+board. Refresh and repair the data pipeline first.
 
 ## Fast Startup
 
@@ -68,6 +72,39 @@ What was not fully explored:
 
 - We did not complete a full browser network-trace audit of every internal Sleeper live-room request, WebSocket, or GraphQL operation used by the Sleeper web app itself.
 
+### 2026-09-03 Sleeper Beta Draftboard Capture
+
+A short 12-team, slot-4 beta mock was recorded through Chrome's network
+protocol. This was an equivalent request-level trace, not a saved HAR file. The
+draft was paused after two user picks and retained as a browser handoff.
+
+- The beta room uses `/beta/draft/nfl/<draft-id>`.
+- The beta UI called `https://sleeper.app/graphql`, while the classic flow had
+  called `https://sleeper.com/graphql`.
+- The beta UI loaded public data from `https://api.sleeper.app`, including NFL
+  teams, bye weeks, state, players, injuries, projections, and player research.
+- Observed beta GraphQL operation names included `get_draft`, `draft_picks`,
+  `get_draft_timing`, `draft_queue`, `draft_autopickers`,
+  `update_draft_status`, and `draft_pick_player`.
+- The beta player table exposes separate `RK`, `ADP`, and projected-pick
+  information, plus bye, age, ROS percentage, projected points, and projected
+  statistics. Treat these as opponent-facing market signals until their exact
+  response contracts are verified.
+- Use accessible role and text locators for `Claim slot`, `START DRAFT`,
+  `Settings`, `Pause draft`, `Resume`, player search, queue, and row `DRAFT`
+  actions. Do not depend on classic-board coordinates.
+- Keep public, cache-busted draft details and picks as the assistant's live
+  authority. The private GraphQL operations above are observed UI behavior and
+  can change without notice.
+- Keep raw HAR or CDP captures outside the repository. They can contain session
+  headers, profile data, chat, and direct messages. Commit only sanitized
+  endpoint and schema fixtures after an explicit secret and personal-data scan.
+
+Before the next live draft, download one literal beta-board HAR to a temporary
+directory, sanitize it, compare its operation and response-shape manifest with
+this capture, and delete or retain the raw file only in an ignored private
+location.
+
 Update from 2026-07-11: Sleeper's loaded web bundle was inspected after the
 `START DRAFT` control repeatedly froze Chrome. The room uses authenticated
 GraphQL mutations at `https://sleeper.com/graphql`, including
@@ -122,9 +159,10 @@ Local app endpoints used during a live draft:
 
 | Endpoint | Purpose |
 |---|---|
-| `GET /api/draft/view-model?draft_id=<draft-id>&user_id=<user-id>` | Main agent endpoint. Combines Sleeper draft details, picks, aggregate rankings, one canonical `recommendationBoard`, `draftContext`, available players, and user roster. |
+| `GET /api/draft/view-model?draft_id=<draft-id>&user_id=<user-id>` | Main agent endpoint. Combines Sleeper draft details, picks, aggregate rankings, readiness, one canonical `recommendationBoard`, `draftContext`, available players, and user roster. Returns 503 with the readiness report and no recommendations when data is not ready. |
 | `GET /api/aggregates/bundle?...` | Loads ranking shards and source-health metadata for the draft room. This is static aggregate context, not live pick state. |
 | `GET /api/aggregates/last-modified` | Quick freshness smoke check for aggregate data. |
+| `GET /api/health/data` | Uncached deployed-commit and readiness check. A scheduled workflow checks it after both refresh windows. |
 | `GET /api/sleeper/player-news?playerId=<player-id>&limit=5` | Local wrapper around Sleeper GraphQL player news. Called only while a player preview is open. |
 
 Implementation files:
@@ -148,23 +186,34 @@ the mock UI:
 pnpm run draft:algo-mocks -- --runs 10 --slot 5
 ```
 
+Use `pnpm run draft:evaluate-sleeper-bot-strategies` only to compare simulated
+opponent pick models. The assistant itself has one starter-aware value model.
+Keep the accepted pre-switch batch only as historical regression evidence; do
+not restore the removed runtime selector or paired comparison command.
+
+`pnpm run draft:replay-sleeper` requires a sibling schema-v3
+`draft-result.json` with the original exact roster and scoring configuration.
+It skips old boards that do not have verified settings. Never reconstruct the
+settings from a directory name or apply one default configuration to all saved
+boards.
+
+Run `pnpm run draft:retrospective -- --result-dir <strategy-result-dir>` only
+against the versioned `algorithm-decisions.json` saved beside an algorithm
+draft. `strategyBestAvailable`, strategy rank, Val, Adj, score gap, and the
+explanation are canonical decision-time facts from that log.
+`marketBestAvailable` and market rank are separate FantasyPros ECR context.
+A live draft without a recorded canonical decision can produce only a
+market-only retrospective. It cannot prove what the assistant recommended.
+
 This saves each completed draft under ignored `data/draft-results/...` with:
 
 - `draft-result.json`: full Sleeper-shaped mock result artifact.
 - `algorithm-decisions.json`: every user pick, top recommendation, shortlist,
   score profile, score components, roster counts, and remaining needs.
 
-Optional Footballguys analysis can be run inline when a valid saved session env
-is available:
-
-```bash
-pnpm run draft:algo-mocks -- --runs 3 --slots 1,5,10 --analyze --fbg-env data/footballguys-session.env
-```
-
-The Footballguys analyzer should grade drafts, not hide malformed ones. Use the
-local algo mocks and quality gates to keep saved rosters complete; if a mock is
-missing direct starters, FLEX coverage, or the intended 1QB/1TE/1K/1DEF shape,
-fix the draft algorithm/tests first, then grade the saved result normally.
+Use the local quality gates to keep saved rosters complete. If a mock is missing
+direct starters, FLEX coverage, or the intended roster shape, fix the draft
+algorithm and tests before comparing strategy results.
 
 1. In Sleeper, go to Draftboards and create a new NFL mock draft.
 2. Record the draft id from the URL:
@@ -254,7 +303,7 @@ During the 2026 prep pass, the aggregate route worked but the source data was st
 
 After refreshing FantasyPros on 2026-06-30, draft ECR worked for 2026 and rebuilt the app aggregate. Unauthenticated FantasyPros projection requests can return short registration-fenced pages, but a temporary Chrome-cookie-backed run succeeded for all projection combinations: QB/RB/WR/TE/K/DST across STD/HALF/PPR. Treat FantasyPros projected-point/value fields as usable only when `fetch-mode.json` says `projectionsFetched: true` and the projection row counts are complete. To attempt all-position projection scraping, run with a valid session cookie, e.g. `FP_COOKIE=... FP_FETCH_PROJECTIONS=true DRAFT=true pnpm run fetch:fp`; keep the cookie in a local env var or secret store only.
 
-Tiers CSVs are generated locally for 2026 from the current FantasyPros draft ECR files. Run `pnpm run fetch:tiers` after refreshing FantasyPros; it writes tier raw CSV and metadata files for QB/RB/WR/TE/K/DEF/FLEX/ALL. The old S3 downloader remains available as `pnpm run fetch:borischen:remote` for manual comparison, but it should not be the default seasonal refresh path.
+Tiers CSVs are generated locally for 2026 from the current FantasyPros draft ECR files. Run `pnpm run fetch:tiers` after refreshing FantasyPros; it writes tier raw CSV and metadata files for QB/RB/WR/TE/K/DEF/FLEX/ALL.
 
 Check expert sample size before trusting weekly rankings. FantasyPros raw ECR files include the included/excluded expert IDs and counts; `pnpm run agg:combine` copies full ID lists into `public/data/aggregate/metadata.json` under top-level `expert_samples` and stores per-source summaries under `experts`. Early in a week, `experts.sample_size: "thin"` or `"limited"` means the ranking is structurally less reliable even if it is freshly fetched.
 
@@ -271,7 +320,7 @@ The initial ingest creates one version row for every tracked player/source/scori
 
 The draft assistant now has a top-level Decision Board above the roster and position tables. During mock-draft validation, use this as the primary pick surface, then compare positional tables when the recommendation is close.
 
-When using `/mock-draft`, the `Save result` action may visually land on a not-found-like response payload even though the draft artifact was written. Before rerunning a draft, check for the newest ignored `data/draft-results/<run>/draft-result.json` and any Footballguys summaries.
+When using `/mock-draft`, the `Save result` action may visually land on a not-found-like response payload even though the draft artifact was written. Before rerunning a draft, check for the newest ignored `data/draft-results/<run>/draft-result.json`.
 
 Before starting the Sleeper clock, capture a screenshot of the draft status and Decision Board. The status card should show source badges for Sleeper/FantasyPros/Tiers, while the Decision Board should show roster-construction label, open starter holes, open FLEX count, action labels, ADP delta, and reason chips.
 
@@ -286,11 +335,24 @@ For each user turn, record at least:
 
 The player preview eye button should preserve the same draft-value context. Check that the dialog shows the same canonical `VAL` score, recent news, and source confidence or missing fields.
 
+Player status and news are separate inputs. Structured Sleeper injury status and
+notes already affect the risk component. Recent news is currently fetched only
+when the player preview opens. Before the live draft, verify that a current
+status reaches the canonical candidate and that news loads for a known player.
+Do not interpret a failed news request as proof that the player is healthy.
+
+The next status layer should compare status/news recency with the FantasyPros
+ECR snapshot and prefetch only the active recommendation shortlist. A newer
+material update should lower confidence and request review. Only a confirmed
+season-long or non-player state should make a candidate ineligible. Treat
+questionable, out, IR, PUP, and suspension states according to expected missed
+time, price, and usable IR capacity rather than one hard exclusion rule.
+
 Future player-detail validation should treat the dialog as an agent-readable fact sheet, not just a ranking explanation. Useful context includes team/offense quality, role stability, bye-week overlap with the current roster, whether the pick solves a starter/flex/bench need, and the next few same-position alternatives with tier/comeback labels. The app does not need to answer every strategic question directly if this context is available in a structured way.
 
 When proving the assistant was valuable, do not just list final picks. Capture moments where the app changed the decision: passing on a player with a `can wait` label, taking a player before a tier cliff, avoiding stale/degraded source data, or drafting for roster construction instead of static rank.
 
-For local mock drafts, click `Save result` before starting post-draft review. The save route writes `draft-result.json` under ignored `data/draft-results/<timestamped-run>/`, including the simulator state, Sleeper-shaped draft details and picks, full player pool, all rosters, source health, and the draft view model. Put analyzer outputs such as `footballguys-slot-1-report.html`, `footballguys-slot-1-summary.json`, and `footballguys-all-teams-summary.json` in that same run directory so later review can compare what was visible during picks against the external final grade.
+For local mock drafts, click `Save result` before starting post-draft review. The save route writes `draft-result.json` under ignored `data/draft-results/<timestamped-run>/`, including the simulator state, Sleeper-shaped draft details and picks, full player pool, all rosters, source health, and the draft view model.
 
 The mock draft room should reuse the same draft-assistant pick surface as the live draft assistant. Keep the setup form, simulator controls, and local draft board as mock-only scaffolding, but render the shared Draft Status, roster, Position Rankings, and Available Ranked Players sections for pick review. A separate mini decision board can make the simulator easier to build but less useful for practicing the real workflow.
 
@@ -302,7 +364,7 @@ Do not rely on one blended "best available" list alone. During a pick, compare a
 - By position: useful for avoiding traps where QB1/TE1/K1/DEF1 look like global values and for checking starter-slot gaps.
 - FLEX pool: useful for RB/WR/TE replacement decisions and for comparing bench/flex upside without polluting the answer with QB/K/DEF.
 
-QB and TE need context. A top-tier QB or TE can be worth taking when the tier and price are right, but late-round projected-point spikes for backup QB/TE are often traps. Once the user has a viable starter at QB or TE, an additional QB/TE should require a visible reason such as elite tier value, very late draft cost, a superflex/TE-premium format, injury/bye contingency, or the absence of useful RB/WR/FLEX alternatives. This should be a soft decision aid, not a hard rule.
+QB and TE need context. A top-tier QB or TE can be worth taking when the tier and price are right. A round deadline alone must not force either position over clearly stronger RB/WR value. In the supported one-QB and one-TE formats, the roster has a hard maximum of one QB, one TE, one kicker, and one D/ST. The assistant shows a limitation notice for multi-QB, multi-TE, superflex, TE-premium, IDP, restricted-FLEX, or other unsupported league rules.
 
 ## 2026 Findings To Retain
 
@@ -324,12 +386,22 @@ QB and TE need context. A top-tier QB or TE can be worth taking when the tier an
 - Final manual roster for that mock: Patrick Mahomes; Saquon Barkley, Derrick Henry, Josh Jacobs, Chuba Hubbard, Rachaad White; Brian Thomas, Courtland Sutton, Mike Evans, Marvin Harrison, Quentin Johnston; Sam LaPorta, George Kittle; Houston Texans DEF; Brandon Aubrey.
 - The 2026 must-have implementation pass was revalidated against a completed local mock. The draft room showed source-health rows, the Decision Board, roster state, source confidence/reason chips, and the player preview with source rows, why-over-next comparison, history signal, and on-demand news.
 - The known `BN: 0` mismatch is fixed in the shared view-model path: bench slots now come from `rounds - starter slots`, and extra drafted players reduce remaining `BN` after starter/flex slots are filled.
-- Late-round bench policy is now part of draft-value scoring: 1QB redraft penalizes backup QB/K/DEF by default, delays K until the final pick, delays DEF until the final two rounds, and rewards RB/WR bench-upside picks while bench slots remain open.
+- Late-round bench policy is now part of draft-value scoring: supported redraft formats exclude a second QB, TE, K, or D/ST, delay K until the final pick, delay D/ST until the final two rounds, and reward RB/WR bench-upside picks while bench slots remain open.
 - The draft view-model now returns `draftContext`, a compact agent-readable packet with room totals, total picks remaining, league-wide starter and bench slots remaining, the user's open starter/FLEX/bench slots, drafted-position counts, recent positional run, per-position outlook, and reusable draft questions. Use this before adding one-off strategy rules; it often gives enough context for an agent to reason about the next target.
-- A restored original-pick-surface mock from slot 5 scored `A+` in Footballguys Rate My Team, but the position grades showed the strategic gap: RB starters/depth and TE were `A+`, while WR starters were only `C`. Treat this as evidence that the UI should keep overall value, by-position value, and RB/WR starter balance visible together.
-- The strategy used for that `A+` restored-UI mock was deliberately simple: build from the shared assistant table, prefer RB/WR early, allow elite TE from round 3 and QB from round 4 when value/tier timing justified it, avoid backup QB/TE/K/DEF by default, push K/DEF to the final rounds, and add urgency for tier cliffs plus players unlikely to come back. The lesson is not that this exact policy is optimal; it is a repeatable baseline to beat.
-- Table shorthand: `VAL` is the canonical tuned pick value score after FantasyPros ECR/tier value, roster fit, urgency, comeback timing, ADP timing, and strategy adjustments. Do not show a persistent comeback-probability column by default; timing should surface through `VAL`, ADP delta, and reason chips like `Likely gone`.
-- Do not split the draft-clock UI into raw value versus recommendation score. Tune `VAL` as the single score over time, and keep the draft value baseline on FantasyPros ECR average (`rank_ave`) rather than projected points. If `rank_ave` is missing, expose it as missing data instead of falling back to another rank field.
+- The strategy used for that `A+` restored-UI mock was deliberately simple: build from the shared assistant table, prefer RB/WR early, allow elite TE from round 3 and QB from round 4 when value/tier timing justified it, use one QB/TE/K/D/ST maximum, push K/D/ST to the final rounds, and add urgency for tier cliffs plus players unlikely to come back. The lesson is not that this exact policy is optimal; it is a repeatable baseline to beat.
+- Table shorthand: `VAL` is league-specific starter-aware replacement value.
+  It uses supported Sleeper scoring projections calibrated to FantasyPros ECR
+  order within each position. `ADJ` starts from `VAL` and adds roster fit,
+  urgency, comeback timing, room demand, and draft-state adjustments. Show
+  both. Do not show a persistent
+  comeback-probability column by default; timing can surface through `ADJ`, ADP
+  delta, and reason chips such as `Likely gone`.
+- If FantasyPros ECR average (`rank_ave`) is missing, expose it as missing data
+  and make the row recommendation-ineligible. Do not use another rank field.
+  D/ST and kicker use Sleeper standard projected points only when league
+  scoring matches the supported standard rules. If scoring rules, projection
+  freshness, or projection coverage fail their capability gates, replace the
+  draft board with a named incident and block recommendations.
 - The 2026 slot-5 UI iteration showed two separate RB failure modes: WR/WR/TE starts can create obvious RB-starter weakness, and WR/WR/RB can still grade poorly if the round-two RB tier was close enough to take earlier. The current baseline should prefer a close RB anchor after opening WR, while still allowing elite TE once RB is represented.
 - Team positional rank from TapThatDraft is not currently a default UI target. Position rank and ADP delta are more directly useful on the clock; the app already carries team/bye in the compact row.
 - A final live validation used refreshed Sleeper/FantasyPros/tier data from slot 2. The user team took the assistant's top recommendation at all 15 turns, never entered auto-pick, completed every required roster slot, and received an `A-` independent grade. The saved picks, request, report, and summary remain under ignored `data/draft-results/`.
@@ -340,10 +412,9 @@ QB and TE need context. A top-tier QB or TE can be worth taking when the tier an
 
 ## Current Rough Edges
 
-- Source freshness is not prominent enough in the draft room. The app should show per-source freshness and missing-field coverage, not only a broad aggregate timestamp.
+- Draft readiness replaces the board when a source, derived shard, or relevant player is stale or incomplete. Repair the named incident before drafting.
 - The available pool is effectively limited by ranked rows in parts of the view model; unranked current-season players need clearer handling.
 - FantasyPros projected points/value fields can exist in the aggregate, but draft recommendations should not depend on them. The schedule-safe draft path is ECR-only; missing FantasyPros projections should not create draft-room source warnings when ECR/tier data is healthy.
 - Starting a Sleeper mock can trigger a browser confirmation dialog. If automation hangs there, verify draft status through `GET /v1/draft/<draft-id>` before continuing.
 - Kicker and defense recommendations can be inflated by stale or invalid player/team data. In the completed mock, the final auto-picked kicker had no current team, so late K/DEF choices need live-room validation.
-- Footballguys can accept and resolve every roster player, then fail only while generating the report with a generic server-side 400. Retry once with unique league and team names before treating that as a grading failure; this recovered the final live validation report.
 - For long automated Sleeper mocks, split browser execution into bounded halves. A single 15-round browser-control call can exceed five minutes and reset the control session even while Sleeper remains safely paused. After a timeout, verify cache-busted pick count and draft status, reclaim the exact draft tab, and resume from the current turn rather than restarting.

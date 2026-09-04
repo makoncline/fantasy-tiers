@@ -19,10 +19,13 @@ The app defaults rating history to the ignored local database at
 
 ## Draft Data
 
-The draft assistant uses 2026 FantasyPros ECR, Sleeper ADP/player data, tiers
-generated locally from ECR, and a compact Footballguys public-default comparison
-artifact. Draft recommendations do not require point projections. Raw provider
-responses remain local and ignored by git.
+The draft assistant has two external providers: FantasyPros and Sleeper. It
+uses FantasyPros ECR, Sleeper ADP and draft-board data, and Sleeper season
+projections. Tiers are generated data from FantasyPros ECR. Its starter-aware
+`VAL` applies the selected league's supported scoring and lineup settings.
+The draft surface fails closed when either provider or any required derived
+data is stale or incomplete. Raw provider responses remain local and ignored
+by git.
 
 Run a complete refresh with:
 
@@ -32,10 +35,15 @@ pnpm run agg:all
 SEASON=2026 pnpm run validate:aggregates:ci
 ```
 
-The semantic validator writes
-`public/data/aggregate/quality-report.json` and blocks partial or stale source
-responses before publication. Position tables always consume their dedicated
-QB/RB/WR/TE/K/DEF/FLEX shards, not filtered ALL data.
+The readiness validator writes
+`public/data/aggregate/quality-report.json`. It checks both providers, all
+derived shards, the top 120 players, the expected draft pool, and a reserve
+slice for the next three rounds after the expected pool. It names each player with
+missing data and blocks partial or stale data before publication. Position
+tables always consume their dedicated QB/RB/WR/TE/K/DEF/FLEX shards, not
+filtered ALL data. The committed `draft-source-manifest.json` keeps the
+FantasyPros and Sleeper player universes independent until readiness checks
+finish, so a player cannot disappear because a merge failed.
 
 ## Automated Updates
 
@@ -48,6 +56,10 @@ started manually. It:
 4. Writes the snapshot to persistent rating history.
 5. Commits only validated aggregate artifacts.
 6. Waits for Vercel to serve that exact commit and verifies data health.
+
+`.github/workflows/check-data-health.yml` also checks the deployed readiness
+endpoint after each daily refresh window. Both workflows can send one incident
+message and one recovery message through the send-to-makon service.
 
 The workflow aborts if `main` advances while it is running. It never rebases
 stale generated output over newer source code.
@@ -90,6 +102,6 @@ pnpm run build
 pnpm run e2e:ci
 ```
 
-`GET /api/health/data` is read-only and uncached. It reports the deployed commit,
-committed source quality, and whether rating history is configured/queryable.
-It does not expose credentials, database URLs, SQL, or provider payloads.
+`GET /api/health/data` is read-only and uncached. It reports the deployed
+commit and the complete draft-readiness report. It does not expose credentials,
+database URLs, SQL, or provider payloads.

@@ -16,6 +16,14 @@ import {
   normalizeExpertSampleMetadata,
   type ExpertSampleMetadata,
 } from "../fp/fantasyprosExpertMetadata";
+import {
+  DraftProjectionArtifactSchema,
+  DraftProjectionInputSchema,
+  DraftProjectionStatsSchema,
+} from "../../src/lib/beerPlusStrategy";
+import { SleeperDraftMarketArtifactSchema } from "../../src/lib/sleeperDraftMarket";
+import { DraftSourceManifestSchema } from "../../src/lib/draftSourceManifest";
+import { PositionEnum } from "../../src/lib/schemas";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -162,6 +170,13 @@ async function main() {
     "sleeper",
     "projections-latest.json"
   );
+  const sleeperDraftMarketPath = path.join(
+    root,
+    "public",
+    "data",
+    "sleeper",
+    "draft-market-latest.json"
+  );
   const fpAggPath = path.join(
     root,
     "public",
@@ -174,6 +189,8 @@ async function main() {
   const outDir = path.join(root, "public", "data", "aggregate");
   const outFile = path.join(outDir, "combined-aggregate.json");
   const metaOutFile = path.join(outDir, "metadata.json");
+  const projectionOutFile = path.join(outDir, "sleeper-draft-projections.json");
+  const sourceManifestOutFile = path.join(outDir, "draft-source-manifest.json");
   const fpFetchMode = readFantasyProsFetchMode(root);
   const useFantasyProsWeeklyRaw = fpFetchMode?.mode !== "draft";
 
@@ -181,6 +198,12 @@ async function main() {
   if (!fs.existsSync(sleeperProjectionsPath)) {
     throw new Error(
       `Missing Sleeper projections: ${sleeperProjectionsPath}\n` +
+        `Run: pnpm run fetch:sleeper`
+    );
+  }
+  if (!fs.existsSync(sleeperDraftMarketPath)) {
+    throw new Error(
+      `Missing Sleeper draft market: ${sleeperDraftMarketPath}\n` +
         `Run: pnpm run fetch:sleeper`
     );
   }
@@ -194,6 +217,9 @@ async function main() {
   // Load Sleeper projections (season aggregate preferred)
   const projRaw = readJson(sleeperProjectionsPath);
   const projections: any[] = Array.isArray(projRaw) ? projRaw : [];
+  const draftMarket = SleeperDraftMarketArtifactSchema.parse(
+    readJson(sleeperDraftMarketPath)
+  );
 
   // Load FantasyPros aggregate and index by normalized name (used for team/bye and fallback)
   const fpRaw = readJson(fpAggPath);
@@ -363,14 +389,31 @@ async function main() {
         if (typeof n === "number" && Number.isFinite(n)) filteredStats[k] = n;
       }
     }
+    const currentInjury = draftMarket.injuries[pid];
+    const activePlayer = draftMarket.activePlayers[pid];
     const sleeper = {
       stats: filteredStats,
+      draft_values: {
+        std: draftMarket.boardValues.std[pid] ?? null,
+        half: draftMarket.boardValues.half[pid] ?? null,
+        ppr: draftMarket.boardValues.ppr[pid] ?? null,
+      },
+      active_player: {
+        depth_chart_position: activePlayer?.depth_chart_position ?? null,
+        depth_chart_order: activePlayer?.depth_chart_order ?? null,
+      },
       week: p.week ?? null,
       player: {
-        injury_body_part: p.player.injury_body_part ?? null,
-        injury_notes: p.player.injury_notes ?? null,
-        injury_start_date: p.player.injury_start_date ?? null,
-        injury_status: p.player.injury_status ?? null,
+        injury_body_part:
+          currentInjury?.injury_body_part ?? p.player.injury_body_part ?? null,
+        injury_notes:
+          currentInjury?.injury_notes ?? p.player.injury_notes ?? null,
+        injury_start_date:
+          currentInjury?.injury_start_date ??
+          p.player.injury_start_date ??
+          null,
+        injury_status:
+          currentInjury?.injury_status ?? p.player.injury_status ?? null,
       },
       updated_at: p.updated_at ?? null,
     };
@@ -453,6 +496,130 @@ async function main() {
   }
 
   ensureDir(outDir);
+  const sourceLastModified = projections.reduce<number | null>((latest, row) => {
+    const value = row.last_modified;
+    return value == null ? latest : latest == null ? value : Math.max(latest, value);
+  }, null);
+  const projectionPlayers = Object.fromEntries(
+    projections.flatMap((row) => {
+      const combinedPlayer = combined[String(row.player_id)];
+      if (!combinedPlayer) return [];
+      const projection = DraftProjectionInputSchema.parse({
+        playerId: String(row.player_id),
+        position: combinedPlayer.position,
+        stats: DraftProjectionStatsSchema.parse(row.stats),
+        lastModified: row.last_modified ?? null,
+        newsUpdated: row.player.news_updated ?? null,
+      });
+      return [[projection.playerId, projection] as const];
+    })
+  );
+  const projectionArtifact = DraftProjectionArtifactSchema.parse({
+    schemaVersion: 1,
+    source: "Sleeper season projections",
+    season: String(projections[0]?.season ?? new Date().getFullYear()),
+    fetchedAt: fs.statSync(sleeperProjectionsPath).mtime.toISOString(),
+    sourceLastModified:
+      sourceLastModified == null
+        ? null
+        : new Date(sourceLastModified).toISOString(),
+    players: projectionPlayers,
+  });
+  fs.writeFileSync(
+    projectionOutFile,
+    JSON.stringify(projectionArtifact, null, 2)
+  );
+  const scoringKeys = ["std", "half", "ppr"] as const;
+  const fantasyProsSourcePlayers = Object.fromEntries(
+    scoringKeys.map((scoring) => {
+      const scoringKey = scoring === "std" ? "standard" : scoring;
+      const players = fpRows.flatMap((row) => {
+        const parsedPosition = PositionEnum.safeParse(
+          normalizePosition(String(row.player_positions ?? ""))
+        );
+        const rankAve = row.rankings?.[scoringKey]?.rank_ave;
+        if (!parsedPosition.success || !Number.isFinite(rankAve)) return [];
+        const name = String(row.player_name ?? "").trim();
+        if (!name) return [];
+        const positionRank = String(row.pos_rank ?? "").match(/\d+/)?.[0];
+        return [{
+          sourcePlayerId: String(row.player_id),
+          name,
+          normalizedName: normalizePlayerName(name),
+          position: parsedPosition.data,
+          rankAve,
+          rankPos: positionRank ? Number(positionRank) : null,
+        }];
+      });
+      return [scoring, players] as const;
+    })
+  );
+  const sleeperSourcePlayers = Object.fromEntries(
+    scoringKeys.map((scoring) => {
+      const rankedPlayers = Object.entries(draftMarket.boardValues[scoring])
+        .filter(([, value]) => value > 0)
+        .toSorted(([, left], [, right]) => right - left)
+        .flatMap(([playerId], index) => {
+          const player = draftMarket.activePlayers[playerId];
+          const aggregatePlayer = combined[playerId];
+          if (
+            !player &&
+            aggregatePlayer?.position === "DEF"
+          ) {
+            const name = String(aggregatePlayer.name).trim();
+            return name
+              ? [{
+                  playerId,
+                  name,
+                  normalizedName: normalizePlayerName(name),
+                  position: "DEF" as const,
+                  marketRank: index + 1,
+                }]
+              : [];
+          }
+          const parsedPosition = PositionEnum.safeParse(
+            normalizePosition(player?.position ?? "")
+          );
+          if (!player || !parsedPosition.success) return [];
+          const name = `${player.first_name ?? ""} ${player.last_name ?? ""}`.trim();
+          if (!name) return [];
+          return [{
+            playerId,
+            name,
+            normalizedName: normalizePlayerName(name),
+            position: parsedPosition.data,
+            marketRank: index + 1,
+          }];
+        })
+        .toSorted((left, right) => left.marketRank - right.marketRank);
+      return [scoring, rankedPlayers] as const;
+    })
+  );
+  const sourceManifest = DraftSourceManifestSchema.parse({
+    schemaVersion: 1,
+    generatedAt: new Date().toISOString(),
+    sleeperMarket: {
+      season: draftMarket.season,
+      fetchedAt: draftMarket.fetchedAt,
+      boards: Object.fromEntries(
+        scoringKeys.map((scoring) => [
+          scoring,
+          {
+            rankedPlayerCount: Object.values(
+              draftMarket.boardValues[scoring]
+            ).filter((value) => value > 0).length,
+            matchedPlayerCount: sleeperSourcePlayers[scoring]?.length ?? 0,
+          },
+        ])
+      ),
+    },
+    fantasyPros: fantasyProsSourcePlayers,
+    sleeper: sleeperSourcePlayers,
+  });
+  fs.writeFileSync(
+    sourceManifestOutFile,
+    JSON.stringify(sourceManifest, null, 2)
+  );
   // Do not write combined-aggregate.json anymore; keep per-position only
   try {
     if (fs.existsSync(outFile)) fs.unlinkSync(outFile);

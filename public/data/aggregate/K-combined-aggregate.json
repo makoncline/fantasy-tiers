@@ -19,6 +19,15 @@
         "pts_ppr": 14,
         "pts_std": 14
       },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -46,6 +55,15 @@
         "adp_half_ppr": 627,
         "adp_ppr": 653.7,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": -44.71,
+        "half": -62.04,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -75,6 +93,15 @@
         "adp_ppr": 674,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -48.93,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -102,6 +129,15 @@
         "adp_half_ppr": 632.4,
         "adp_ppr": 625.5,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": -62.67,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -131,6 +167,15 @@
         "adp_ppr": 999,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -159,6 +204,15 @@
         "adp_ppr": 682.4,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": -61.54,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -186,6 +240,15 @@
         "adp_half_ppr": 279.6,
         "adp_ppr": 642.7,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": 0,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -218,10 +281,19 @@
         "pts_ppr": 14,
         "pts_std": 14
       },
+      "draft_values": {
+        "std": null,
+        "half": 0,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
-        "injury_body_part": null,
-        "injury_notes": null,
+        "injury_body_part": "Neck",
+        "injury_notes": "Soreness",
         "injury_start_date": null,
         "injury_status": "Questionable"
       },
@@ -236,9 +308,18 @@
     "team": "ATL",
     "bye_week": 11,
     "tiers": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 25,
+        "tier": 6
+      },
+      "ppr": {
+        "rank": 25,
+        "tier": 6
+      },
+      "half": {
+        "rank": 25,
+        "tier": 6
+      }
     },
     "sleeper": {
       "stats": {
@@ -248,6 +329,15 @@
         "pts_half_ppr": 95,
         "pts_ppr": 95,
         "pts_std": 95
+      },
+      "draft_values": {
+        "std": 0,
+        "half": -62.67,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
       },
       "week": null,
       "player": {
@@ -278,19 +368,19 @@
           "tier": 14
         },
         "half": {
-          "rank_ecr": 439,
+          "rank_ecr": 441,
           "rank_min": 215,
-          "rank_max": 360,
-          "rank_ave": 295.33,
-          "rank_std": 52.01,
+          "rank_max": 364,
+          "rank_ave": 296,
+          "rank_std": 52.86,
           "tier": 12
         },
         "ppr": {
           "rank_ecr": 402,
           "rank_min": 187,
           "rank_max": 365,
-          "rank_ave": 266.63,
-          "rank_std": 61.17,
+          "rank_ave": 266.75,
+          "rank_std": 61.16,
           "tier": 14
         }
       }
@@ -312,6 +402,15 @@
         "adp_half_ppr": 685.3,
         "adp_ppr": 999,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": -52.2,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -341,6 +440,15 @@
         "adp_ppr": 698.7,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -48.98,
+        "half": 0,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -368,6 +476,15 @@
         "adp_half_ppr": 675.7,
         "adp_ppr": 999,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -397,6 +514,15 @@
         "adp_ppr": 663.6,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -51.65,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -424,6 +550,15 @@
         "adp_half_ppr": 670.7,
         "adp_ppr": 999,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -453,9 +588,18 @@
         "adp_ppr": 669.8,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -2.88,
+        "half": -35.14,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
-        "injury_body_part": null,
+        "injury_body_part": "Knee",
         "injury_notes": null,
         "injury_start_date": null,
         "injury_status": "Questionable"
@@ -480,6 +624,15 @@
         "adp_half_ppr": 587.3,
         "adp_ppr": 675,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": -52.59,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -509,6 +662,15 @@
         "adp_ppr": 681.2,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -27.61,
+        "half": -62.67,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -527,9 +689,18 @@
     "team": "FA",
     "bye_week": null,
     "tiers": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 30,
+        "tier": 6
+      },
+      "ppr": {
+        "rank": 30,
+        "tier": 6
+      },
+      "half": {
+        "rank": 30,
+        "tier": 6
+      }
     },
     "sleeper": {
       "stats": {
@@ -539,6 +710,15 @@
         "pts_half_ppr": 36,
         "pts_ppr": 36,
         "pts_std": 36
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -569,11 +749,11 @@
           "tier": 15
         },
         "half": {
-          "rank_ecr": 456,
+          "rank_ecr": 457,
           "rank_min": 191,
-          "rank_max": 382,
-          "rank_ave": 304.2,
-          "rank_std": 65.73,
+          "rank_max": 384,
+          "rank_ave": 304.6,
+          "rank_std": 66.21,
           "tier": 12
         },
         "ppr": {
@@ -616,6 +796,15 @@
         "pts_ppr": 107,
         "pts_std": 107
       },
+      "draft_values": {
+        "std": 0,
+        "half": 0,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -640,24 +829,24 @@
           "rank_ecr": 254,
           "rank_min": 199,
           "rank_max": 326,
-          "rank_ave": 245.07,
-          "rank_std": 19.35,
+          "rank_ave": 245.64,
+          "rank_std": 20.26,
           "tier": 11
         },
         "half": {
           "rank_ecr": 269,
           "rank_min": 184,
-          "rank_max": 338,
-          "rank_ave": 244.26,
-          "rank_std": 20.73,
+          "rank_max": 340,
+          "rank_ave": 245.02,
+          "rank_std": 21.74,
           "tier": 9
         },
         "ppr": {
-          "rank_ecr": 253,
+          "rank_ecr": 255,
           "rank_min": 200,
           "rank_max": 329,
-          "rank_ave": 244.08,
-          "rank_std": 19.64,
+          "rank_ave": 244.58,
+          "rank_std": 20.72,
           "tier": 11
         }
       }
@@ -680,6 +869,15 @@
         "adp_ppr": 999,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -160.39,
+        "half": -146.31,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -700,15 +898,15 @@
     "tiers": {
       "std": {
         "rank": 10,
-        "tier": 3
+        "tier": 2
       },
       "ppr": {
         "rank": 10,
-        "tier": 3
+        "tier": 2
       },
       "half": {
         "rank": 10,
-        "tier": 3
+        "tier": 2
       }
     },
     "sleeper": {
@@ -719,6 +917,15 @@
         "pts_half_ppr": 100,
         "pts_ppr": 100,
         "pts_std": 100
+      },
+      "draft_values": {
+        "std": 0,
+        "half": null,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
       },
       "week": null,
       "player": {
@@ -744,24 +951,24 @@
           "rank_ecr": 224,
           "rank_min": 206,
           "rank_max": 332,
-          "rank_ave": 222.21,
-          "rank_std": 16.73,
+          "rank_ave": 222.49,
+          "rank_std": 16.77,
           "tier": 11
         },
         "half": {
-          "rank_ecr": 249,
+          "rank_ecr": 250,
           "rank_min": 180,
-          "rank_max": 332,
-          "rank_ave": 222.82,
-          "rank_std": 23.82,
+          "rank_max": 338,
+          "rank_ave": 223.24,
+          "rank_std": 23.89,
           "tier": 9
         },
         "ppr": {
-          "rank_ecr": 218,
+          "rank_ecr": 219,
           "rank_min": 193,
           "rank_max": 333,
-          "rank_ave": 218.85,
-          "rank_std": 17.49,
+          "rank_ave": 219.08,
+          "rank_std": 17.54,
           "tier": 11
         }
       }
@@ -783,6 +990,15 @@
         "adp_half_ppr": 452.2,
         "adp_ppr": 684.2,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": -18.49,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -824,6 +1040,15 @@
         "pts_ppr": 111,
         "pts_std": 111
       },
+      "draft_values": {
+        "std": 0,
+        "half": 0,
+        "ppr": 1.01
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -848,24 +1073,24 @@
           "rank_ecr": 198,
           "rank_min": 191,
           "rank_max": 252,
-          "rank_ave": 199.88,
-          "rank_std": 6.63,
+          "rank_ave": 199.84,
+          "rank_std": 6.55,
           "tier": 10
         },
         "half": {
-          "rank_ecr": 227,
+          "rank_ecr": 228,
           "rank_min": 140,
-          "rank_max": 320,
-          "rank_ave": 200.68,
-          "rank_std": 19.77,
+          "rank_max": 322,
+          "rank_ave": 200.8,
+          "rank_std": 19.6,
           "tier": 8
         },
         "ppr": {
-          "rank_ecr": 197,
+          "rank_ecr": 198,
           "rank_min": 171,
           "rank_max": 253,
-          "rank_ave": 200.31,
-          "rank_std": 7.66,
+          "rank_ave": 200.29,
+          "rank_std": 7.56,
           "tier": 10
         }
       }
@@ -887,6 +1112,15 @@
         "adp_half_ppr": 271.5,
         "adp_ppr": 611.4,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": 0,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -916,6 +1150,15 @@
         "adp_ppr": 669.5,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -943,6 +1186,15 @@
         "adp_half_ppr": 367,
         "adp_ppr": 699.7,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": -19.13,
+        "half": 0,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -984,6 +1236,15 @@
         "pts_ppr": 113,
         "pts_std": 113
       },
+      "draft_values": {
+        "std": 0,
+        "half": 0,
+        "ppr": 1
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -1008,24 +1269,24 @@
           "rank_ecr": 191,
           "rank_min": 186,
           "rank_max": 206,
-          "rank_ave": 192.15,
-          "rank_std": 3.51,
+          "rank_ave": 192.13,
+          "rank_std": 3.46,
           "tier": 10
         },
         "half": {
-          "rank_ecr": 217,
+          "rank_ecr": 220,
           "rank_min": 114,
           "rank_max": 316,
-          "rank_ave": 192.15,
-          "rank_std": 20.66,
+          "rank_ave": 192.06,
+          "rank_std": 20.44,
           "tier": 8
         },
         "ppr": {
           "rank_ecr": 190,
-          "rank_min": 136,
+          "rank_min": 135,
           "rank_max": 211,
-          "rank_ave": 192.28,
-          "rank_std": 6.81,
+          "rank_ave": 192.27,
+          "rank_std": 6.8,
           "tier": 10
         }
       }
@@ -1047,6 +1308,15 @@
         "adp_half_ppr": 265.7,
         "adp_ppr": 596.2,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": 0,
+        "ppr": -120.39
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -1076,6 +1346,15 @@
         "adp_ppr": 529,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": 0,
+        "ppr": -58.86
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -1104,6 +1383,15 @@
         "adp_ppr": 391.8,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": 0,
+        "ppr": -27.66
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -1131,6 +1419,15 @@
         "adp_half_ppr": 361,
         "adp_ppr": 357.7,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": 0,
+        "ppr": -18.08
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -1172,6 +1469,15 @@
         "pts_ppr": 100,
         "pts_std": 100
       },
+      "draft_values": {
+        "std": 0,
+        "half": null,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -1196,24 +1502,24 @@
           "rank_ecr": 271,
           "rank_min": 210,
           "rank_max": 332,
-          "rank_ave": 265.26,
-          "rank_std": 26.89,
+          "rank_ave": 265.43,
+          "rank_std": 26.63,
           "tier": 12
         },
         "half": {
           "rank_ecr": 273,
           "rank_min": 183,
-          "rank_max": 344,
-          "rank_ave": 264.71,
-          "rank_std": 29.47,
+          "rank_max": 346,
+          "rank_ave": 265.08,
+          "rank_std": 29.39,
           "tier": 9
         },
         "ppr": {
           "rank_ecr": 270,
           "rank_min": 182,
           "rank_max": 333,
-          "rank_ave": 265.31,
-          "rank_std": 29.15,
+          "rank_ave": 265.51,
+          "rank_std": 28.85,
           "tier": 12
         }
       }
@@ -1235,6 +1541,15 @@
         "adp_half_ppr": 256,
         "adp_ppr": 683,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": 0,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -1264,6 +1579,15 @@
         "adp_ppr": 671.6,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": -54.08,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -1291,6 +1615,15 @@
         "adp_half_ppr": 340.5,
         "adp_ppr": 697,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": 0,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -1320,6 +1653,15 @@
         "adp_ppr": 636.3,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -52.69,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -1338,9 +1680,18 @@
     "team": "PHI",
     "bye_week": 10,
     "tiers": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 20,
+        "tier": 5
+      },
+      "ppr": {
+        "rank": 20,
+        "tier": 5
+      },
+      "half": {
+        "rank": 20,
+        "tier": 5
+      }
     },
     "sleeper": {
       "stats": {
@@ -1350,6 +1701,15 @@
         "pts_half_ppr": 90,
         "pts_ppr": 90,
         "pts_std": 90
+      },
+      "draft_values": {
+        "std": 0,
+        "half": null,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
       },
       "week": null,
       "player": {
@@ -1372,27 +1732,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 357,
+          "rank_ecr": 355,
           "rank_min": 196,
           "rank_max": 332,
-          "rank_ave": 298.81,
-          "rank_std": 33.18,
-          "tier": 14
+          "rank_ave": 299.21,
+          "rank_std": 31.82,
+          "tier": 13
         },
         "half": {
-          "rank_ecr": 350,
+          "rank_ecr": 344,
           "rank_min": 248,
           "rank_max": 369,
-          "rank_ave": 305.52,
-          "rank_std": 29.77,
+          "rank_ave": 305.41,
+          "rank_std": 28.86,
           "tier": 11
         },
         "ppr": {
-          "rank_ecr": 359,
+          "rank_ecr": 354,
           "rank_min": 197,
           "rank_max": 380,
-          "rank_ave": 305,
-          "rank_std": 37.26,
+          "rank_ave": 305.03,
+          "rank_std": 35.51,
           "tier": 13
         }
       }
@@ -1427,6 +1787,15 @@
         "pts_ppr": 100,
         "pts_std": 100
       },
+      "draft_values": {
+        "std": 0,
+        "half": 0,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -1451,24 +1820,24 @@
           "rank_ecr": 255,
           "rank_min": 212,
           "rank_max": 332,
-          "rank_ave": 246.14,
-          "rank_std": 22,
+          "rank_ave": 245.95,
+          "rank_std": 21.9,
           "tier": 11
         },
         "half": {
           "rank_ecr": 263,
           "rank_min": 193,
-          "rank_max": 342,
-          "rank_ave": 247.7,
-          "rank_std": 23.77,
+          "rank_max": 344,
+          "rank_ave": 247.62,
+          "rank_std": 23.74,
           "tier": 9
         },
         "ppr": {
-          "rank_ecr": 252,
-          "rank_min": 207,
+          "rank_ecr": 253,
+          "rank_min": 209,
           "rank_max": 333,
-          "rank_ave": 243.92,
-          "rank_std": 23.51,
+          "rank_ave": 243.82,
+          "rank_std": 23.34,
           "tier": 11
         }
       }
@@ -1481,9 +1850,18 @@
     "team": "FA",
     "bye_week": null,
     "tiers": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 24,
+        "tier": 6
+      },
+      "ppr": {
+        "rank": 24,
+        "tier": 6
+      },
+      "half": {
+        "rank": 24,
+        "tier": 6
+      }
     },
     "sleeper": {
       "stats": {
@@ -1494,9 +1872,18 @@
         "pts_ppr": 36,
         "pts_std": 36
       },
+      "draft_values": {
+        "std": -53.29,
+        "half": -8.28,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
-        "injury_body_part": null,
+        "injury_body_part": "Undisclosed",
         "injury_notes": null,
         "injury_start_date": null,
         "injury_status": "Questionable"
@@ -1523,19 +1910,19 @@
           "tier": 14
         },
         "half": {
-          "rank_ecr": 417,
+          "rank_ecr": 418,
           "rank_min": 209,
-          "rank_max": 366,
-          "rank_ave": 292,
-          "rank_std": 47.53,
+          "rank_max": 372,
+          "rank_ave": 292.67,
+          "rank_std": 48.59,
           "tier": 11
         },
         "ppr": {
           "rank_ecr": 397,
           "rank_min": 203,
           "rank_max": 405,
-          "rank_ave": 290.18,
-          "rank_std": 60.89,
+          "rank_ave": 290.27,
+          "rank_std": 60.85,
           "tier": 14
         }
       }
@@ -1557,6 +1944,15 @@
         "adp_half_ppr": 323.3,
         "adp_ppr": 375.3,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": -22.21,
+        "half": 0,
+        "ppr": -23.51
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -1589,6 +1985,15 @@
         "pts_ppr": 18,
         "pts_std": 18
       },
+      "draft_values": {
+        "std": 0,
+        "half": -62.67,
+        "ppr": -5.35
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -1617,6 +2022,15 @@
         "adp_ppr": 674.8,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -1635,9 +2049,18 @@
     "team": "NO",
     "bye_week": 8,
     "tiers": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 22,
+        "tier": 6
+      },
+      "ppr": {
+        "rank": 22,
+        "tier": 6
+      },
+      "half": {
+        "rank": 22,
+        "tier": 6
+      }
     },
     "sleeper": {
       "stats": {
@@ -1647,6 +2070,15 @@
         "pts_half_ppr": 104,
         "pts_ppr": 104,
         "pts_std": 104
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
       },
       "week": null,
       "player": {
@@ -1677,11 +2109,11 @@
           "tier": 14
         },
         "half": {
-          "rank_ecr": 408,
-          "rank_min": 212,
+          "rank_ecr": 409,
+          "rank_min": 216,
           "rank_max": 362,
-          "rank_ave": 275.9,
-          "rank_std": 51.94,
+          "rank_ave": 277.1,
+          "rank_std": 50.57,
           "tier": 11
         },
         "ppr": {
@@ -1715,6 +2147,15 @@
         "pts_ppr": 34,
         "pts_std": 34
       },
+      "draft_values": {
+        "std": null,
+        "half": -52.18,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -1736,11 +2177,11 @@
       },
       "rankings": {
         "half": {
-          "rank_ecr": 678,
+          "rank_ecr": 706,
           "rank_min": 332,
-          "rank_max": 377,
-          "rank_ave": 354.5,
-          "rank_std": 22.5,
+          "rank_max": 379,
+          "rank_ave": 355.5,
+          "rank_std": 23.5,
           "tier": 14
         },
         "ppr": {
@@ -1783,6 +2224,15 @@
         "pts_ppr": 101,
         "pts_std": 101
       },
+      "draft_values": {
+        "std": 0,
+        "half": 0,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -1807,24 +2257,24 @@
           "rank_ecr": 212,
           "rank_min": 197,
           "rank_max": 252,
-          "rank_ave": 211.31,
-          "rank_std": 10.78,
+          "rank_ave": 211.37,
+          "rank_std": 10.71,
           "tier": 11
         },
         "half": {
-          "rank_ecr": 232,
+          "rank_ecr": 233,
           "rank_min": 153,
-          "rank_max": 322,
-          "rank_ave": 211.79,
-          "rank_std": 20.07,
+          "rank_max": 324,
+          "rank_ave": 211.94,
+          "rank_std": 19.99,
           "tier": 8
         },
         "ppr": {
           "rank_ecr": 204,
-          "rank_min": 173,
+          "rank_min": 174,
           "rank_max": 253,
           "rank_ave": 209.19,
-          "rank_std": 11.97,
+          "rank_std": 11.81,
           "tier": 11
         }
       }
@@ -1849,6 +2299,15 @@
         "pts_half_ppr": 14,
         "pts_ppr": 14,
         "pts_std": 14
+      },
+      "draft_values": {
+        "std": null,
+        "half": 0,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -1878,6 +2337,15 @@
         "adp_ppr": 668,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": -146.31,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -1905,6 +2373,15 @@
         "adp_half_ppr": 313,
         "adp_ppr": 698.4,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": 0,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -1934,6 +2411,15 @@
         "adp_ppr": 999,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -160.39,
+        "half": 0,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -1961,6 +2447,15 @@
         "adp_half_ppr": 262,
         "adp_ppr": 683.5,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": 0,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -1990,6 +2485,15 @@
         "adp_ppr": 999,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": -0.47,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -2017,6 +2521,15 @@
         "adp_half_ppr": 309,
         "adp_ppr": 634.3,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": 0,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -2046,6 +2559,15 @@
         "adp_ppr": 668.4,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": -146.31,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -2074,6 +2596,15 @@
         "adp_ppr": 523.1,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": -14.11,
+        "ppr": -57.47
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -2101,6 +2632,15 @@
         "adp_half_ppr": 700,
         "adp_ppr": 657.6,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": 0,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -2133,6 +2673,15 @@
         "pts_ppr": 75,
         "pts_std": 75
       },
+      "draft_values": {
+        "std": 0,
+        "half": null,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -2154,11 +2703,11 @@
       },
       "rankings": {
         "half": {
-          "rank_ecr": 706,
-          "rank_min": 376,
+          "rank_ecr": 731,
+          "rank_min": 378,
           "rank_max": 423,
-          "rank_ave": 399.5,
-          "rank_std": 23.5,
+          "rank_ave": 400.5,
+          "rank_std": 22.5,
           "tier": 14
         }
       }
@@ -2180,6 +2729,15 @@
         "adp_half_ppr": 657.5,
         "adp_ppr": 668.8,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -2209,6 +2767,15 @@
         "adp_ppr": 651.9,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -23.38,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -2236,6 +2803,15 @@
         "adp_half_ppr": 503,
         "adp_ppr": 663.8,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": -32.87,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -2265,6 +2841,15 @@
         "adp_ppr": 299.9,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": -0.23,
+        "ppr": -0.57
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -2292,6 +2877,15 @@
         "adp_half_ppr": 508,
         "adp_ppr": 999,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": -34.23,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -2321,6 +2915,15 @@
         "adp_ppr": 388.2,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -0.94,
+        "half": null,
+        "ppr": -26.74
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -2339,9 +2942,18 @@
     "team": "TEN",
     "bye_week": 9,
     "tiers": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 27,
+        "tier": 6
+      },
+      "ppr": {
+        "rank": 27,
+        "tier": 6
+      },
+      "half": {
+        "rank": 27,
+        "tier": 6
+      }
     },
     "sleeper": {
       "stats": {
@@ -2351,6 +2963,15 @@
         "pts_half_ppr": 84,
         "pts_ppr": 84,
         "pts_std": 84
+      },
+      "draft_values": {
+        "std": 0,
+        "half": -62.67,
+        "ppr": -14.69
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
       },
       "week": null,
       "player": {
@@ -2381,15 +3002,15 @@
           "tier": 14
         },
         "half": {
-          "rank_ecr": 455,
+          "rank_ecr": 456,
           "rank_min": 214,
-          "rank_max": 352,
-          "rank_ave": 300.8,
-          "rank_std": 52.95,
+          "rank_max": 354,
+          "rank_ave": 301.6,
+          "rank_std": 53.72,
           "tier": 12
         },
         "ppr": {
-          "rank_ecr": 414,
+          "rank_ecr": 415,
           "rank_min": 203,
           "rank_max": 401,
           "rank_ave": 295.14,
@@ -2415,6 +3036,15 @@
         "adp_half_ppr": 502,
         "adp_ppr": 586.4,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": -43.97,
+        "half": -31.88,
+        "ppr": -69.67
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -2443,6 +3073,15 @@
         "adp_half_ppr": 244,
         "adp_ppr": 680,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": 0,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -2484,6 +3123,15 @@
         "pts_ppr": 105,
         "pts_std": 105
       },
+      "draft_values": {
+        "std": 0,
+        "half": 0,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -2508,24 +3156,24 @@
           "rank_ecr": 233,
           "rank_min": 194,
           "rank_max": 332,
-          "rank_ave": 231.05,
-          "rank_std": 19.47,
+          "rank_ave": 231,
+          "rank_std": 19.28,
           "tier": 11
         },
         "half": {
-          "rank_ecr": 253,
+          "rank_ecr": 252,
           "rank_min": 182,
-          "rank_max": 330,
-          "rank_ave": 230.98,
-          "rank_std": 22.02,
+          "rank_max": 332,
+          "rank_ave": 231.08,
+          "rank_std": 21.79,
           "tier": 9
         },
         "ppr": {
-          "rank_ecr": 234,
+          "rank_ecr": 233,
           "rank_min": 192,
           "rank_max": 333,
-          "rank_ave": 227.74,
-          "rank_std": 21.14,
+          "rank_ave": 227.65,
+          "rank_std": 20.92,
           "tier": 11
         }
       }
@@ -2560,6 +3208,15 @@
         "pts_ppr": 103,
         "pts_std": 103
       },
+      "draft_values": {
+        "std": 0,
+        "half": null,
+        "ppr": -0.47
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -2581,27 +3238,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 354,
+          "rank_ecr": 353,
           "rank_min": 224,
           "rank_max": 332,
-          "rank_ave": 271.23,
-          "rank_std": 35.13,
+          "rank_ave": 270.26,
+          "rank_std": 34.66,
           "tier": 13
         },
         "half": {
           "rank_ecr": 360,
           "rank_min": 221,
-          "rank_max": 349,
-          "rank_ave": 285.04,
-          "rank_std": 40.1,
+          "rank_max": 350,
+          "rank_ave": 283.68,
+          "rank_std": 40.05,
           "tier": 11
         },
         "ppr": {
-          "rank_ecr": 355,
+          "rank_ecr": 352,
           "rank_min": 216,
           "rank_max": 407,
-          "rank_ave": 277.72,
-          "rank_std": 47.95,
+          "rank_ave": 276.69,
+          "rank_std": 47.3,
           "tier": 13
         }
       }
@@ -2623,6 +3280,15 @@
         "adp_half_ppr": 665.7,
         "adp_ppr": 635.8,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -2652,6 +3318,15 @@
         "adp_ppr": 685.3,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": 0,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -2679,6 +3354,15 @@
         "adp_half_ppr": 670.3,
         "adp_ppr": 999,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": -146.51,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -2708,6 +3392,15 @@
         "adp_ppr": 368,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": -139.82,
+        "ppr": -21.45
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -2735,6 +3428,15 @@
         "adp_half_ppr": 246,
         "adp_ppr": 634,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": -25.65,
+        "half": 0,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -2764,6 +3466,15 @@
         "adp_ppr": 689,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -143.93,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -2791,6 +3502,15 @@
         "adp_half_ppr": 653.3,
         "adp_ppr": 641.3,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -2820,6 +3540,15 @@
         "adp_ppr": 695.5,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -2847,6 +3576,15 @@
         "adp_half_ppr": 999,
         "adp_ppr": 586.8,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": -69.67
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -2876,6 +3614,15 @@
         "adp_ppr": 999,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -44.66,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -2903,6 +3650,15 @@
         "adp_half_ppr": 678.5,
         "adp_ppr": 999,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": -25.33,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -2932,6 +3688,15 @@
         "adp_ppr": 674.6,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": -53.5,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -2960,6 +3725,15 @@
         "adp_ppr": 625.1,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": 0,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -2979,15 +3753,15 @@
     "bye_week": 6,
     "tiers": {
       "std": {
-        "rank": 8,
+        "rank": 9,
         "tier": 2
       },
       "ppr": {
-        "rank": 8,
+        "rank": 9,
         "tier": 2
       },
       "half": {
-        "rank": 8,
+        "rank": 9,
         "tier": 2
       }
     },
@@ -2999,6 +3773,15 @@
         "pts_half_ppr": 106,
         "pts_ppr": 106,
         "pts_std": 106
+      },
+      "draft_values": {
+        "std": 0,
+        "half": 0,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
       },
       "week": null,
       "player": {
@@ -3021,27 +3804,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 219,
+          "rank_ecr": 222,
           "rank_min": 197,
           "rank_max": 332,
-          "rank_ave": 219.32,
-          "rank_std": 17.23,
+          "rank_ave": 219.2,
+          "rank_std": 17.09,
           "tier": 11
         },
         "half": {
-          "rank_ecr": 254,
+          "rank_ecr": 256,
           "rank_min": 180,
           "rank_max": 332,
-          "rank_ave": 218.15,
-          "rank_std": 24.13,
+          "rank_ave": 218.17,
+          "rank_std": 23.94,
           "tier": 9
         },
         "ppr": {
-          "rank_ecr": 219,
+          "rank_ecr": 223,
           "rank_min": 175,
           "rank_max": 333,
-          "rank_ave": 217.25,
-          "rank_std": 18.13,
+          "rank_ave": 217.15,
+          "rank_std": 17.98,
           "tier": 11
         }
       }
@@ -3063,6 +3846,15 @@
         "adp_half_ppr": 624,
         "adp_ppr": 659.4,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": -61.23,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -3095,6 +3887,15 @@
         "pts_ppr": 61,
         "pts_std": 61
       },
+      "draft_values": {
+        "std": 0,
+        "half": null,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -3116,11 +3917,11 @@
       },
       "rankings": {
         "half": {
-          "rank_ecr": 716,
-          "rank_min": 378,
+          "rank_ecr": 748,
+          "rank_min": 380,
           "rank_max": 467,
-          "rank_ave": 422.5,
-          "rank_std": 44.5,
+          "rank_ave": 423.5,
+          "rank_std": 43.5,
           "tier": 14
         }
       }
@@ -3142,6 +3943,15 @@
         "adp_half_ppr": 634.5,
         "adp_ppr": 696,
         "adp_std": 322
+      },
+      "draft_values": {
+        "std": 0,
+        "half": -62.67,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -3171,6 +3981,15 @@
         "adp_ppr": 999,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -3198,6 +4017,15 @@
         "adp_half_ppr": 663,
         "adp_ppr": 676,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -3227,6 +4055,15 @@
         "adp_ppr": 999,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -3255,6 +4092,15 @@
         "adp_ppr": 999,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": 0,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -3282,6 +4128,15 @@
         "adp_half_ppr": 999,
         "adp_ppr": 568.3,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": -67.67
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -3313,6 +4168,15 @@
         "pts_half_ppr": 9,
         "pts_ppr": 9,
         "pts_std": 9
+      },
+      "draft_values": {
+        "std": 0,
+        "half": -27.66,
+        "ppr": -13.8
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -3354,9 +4218,18 @@
         "pts_ppr": 106,
         "pts_std": 106
       },
+      "draft_values": {
+        "std": 0,
+        "half": 1,
+        "ppr": 1.47
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
-        "injury_body_part": null,
+        "injury_body_part": "Undisclosed",
         "injury_notes": null,
         "injury_start_date": null,
         "injury_status": "Questionable"
@@ -3378,24 +4251,24 @@
           "rank_ecr": 190,
           "rank_min": 186,
           "rank_max": 332,
-          "rank_ave": 193.91,
-          "rank_std": 13.44,
+          "rank_ave": 193.85,
+          "rank_std": 13.27,
           "tier": 10
         },
         "half": {
-          "rank_ecr": 215,
+          "rank_ecr": 216,
           "rank_min": 139,
-          "rank_max": 317,
-          "rank_ave": 194.34,
-          "rank_std": 22.96,
+          "rank_max": 318,
+          "rank_ave": 194.49,
+          "rank_std": 22.8,
           "tier": 8
         },
         "ppr": {
           "rank_ecr": 191,
           "rank_min": 151,
           "rank_max": 333,
-          "rank_ave": 194.45,
-          "rank_std": 14.6,
+          "rank_ave": 194.41,
+          "rank_std": 14.41,
           "tier": 10
         }
       }
@@ -3417,6 +4290,15 @@
         "adp_half_ppr": 617.7,
         "adp_ppr": 694,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": -51.55,
+        "half": -59.74,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -3446,6 +4328,15 @@
         "adp_ppr": 390.8,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -45.01,
+        "half": null,
+        "ppr": -27.59
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -3473,6 +4364,15 @@
         "adp_half_ppr": 696,
         "adp_ppr": 650.1,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -3502,6 +4402,15 @@
         "adp_ppr": 999,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -3529,6 +4438,15 @@
         "adp_half_ppr": 681.2,
         "adp_ppr": 681,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -3558,6 +4476,15 @@
         "adp_ppr": 999,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -152.95,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -3585,6 +4512,15 @@
         "adp_half_ppr": 999,
         "adp_ppr": 999,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": -48.93,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -3614,6 +4550,15 @@
         "adp_ppr": 999,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -51.5,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -3642,6 +4587,15 @@
         "adp_ppr": 999,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -3669,6 +4623,15 @@
         "adp_half_ppr": 687,
         "adp_ppr": 999,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": -103.16,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -3701,6 +4664,15 @@
         "pts_ppr": 34,
         "pts_std": 34
       },
+      "draft_values": {
+        "std": 0,
+        "half": null,
+        "ppr": -4.06
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -3722,11 +4694,11 @@
       },
       "rankings": {
         "half": {
-          "rank_ecr": 574,
+          "rank_ecr": 585,
           "rank_min": 217,
-          "rank_max": 384,
-          "rank_ave": 318,
-          "rank_std": 72.53,
+          "rank_max": 387,
+          "rank_ave": 319,
+          "rank_std": 73.45,
           "tier": 13
         }
       }
@@ -3739,9 +4711,18 @@
     "team": "ARI",
     "bye_week": 14,
     "tiers": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 28,
+        "tier": 6
+      },
+      "ppr": {
+        "rank": 28,
+        "tier": 6
+      },
+      "half": {
+        "rank": 28,
+        "tier": 6
+      }
     },
     "sleeper": {
       "stats": {
@@ -3751,6 +4732,15 @@
         "pts_half_ppr": 89,
         "pts_ppr": 89,
         "pts_std": 89
+      },
+      "draft_values": {
+        "std": 0,
+        "half": null,
+        "ppr": -12.94
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
       },
       "week": null,
       "player": {
@@ -3781,11 +4771,11 @@
           "tier": 14
         },
         "half": {
-          "rank_ecr": 448,
+          "rank_ecr": 449,
           "rank_min": 193,
-          "rank_max": 355,
-          "rank_ave": 274.2,
-          "rank_std": 68.3,
+          "rank_max": 356,
+          "rank_ave": 274.6,
+          "rank_std": 68.77,
           "tier": 12
         },
         "ppr": {
@@ -3816,6 +4806,15 @@
         "adp_ppr": 674.7,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -3.27,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -3834,9 +4833,18 @@
     "team": "NYJ",
     "bye_week": 13,
     "tiers": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 29,
+        "tier": 6
+      },
+      "ppr": {
+        "rank": 29,
+        "tier": 6
+      },
+      "half": {
+        "rank": 29,
+        "tier": 6
+      }
     },
     "sleeper": {
       "stats": {
@@ -3846,6 +4854,15 @@
         "pts_half_ppr": 99,
         "pts_ppr": 99,
         "pts_std": 99
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
       },
       "week": null,
       "player": {
@@ -3876,19 +4893,19 @@
           "tier": 14
         },
         "half": {
-          "rank_ecr": 433,
+          "rank_ecr": 435,
           "rank_min": 256,
           "rank_max": 424,
-          "rank_ave": 321.43,
-          "rank_std": 53.95,
+          "rank_ave": 322,
+          "rank_std": 54.33,
           "tier": 12
         },
         "ppr": {
           "rank_ecr": 405,
           "rank_min": 205,
           "rank_max": 363,
-          "rank_ave": 279.5,
-          "rank_std": 52.84,
+          "rank_ave": 280.13,
+          "rank_std": 52.39,
           "tier": 14
         }
       }
@@ -3910,6 +4927,15 @@
         "adp_half_ppr": 652.8,
         "adp_ppr": 602.5,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": -51.9,
+        "half": null,
+        "ppr": -126.21
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -3939,6 +4965,15 @@
         "adp_ppr": 681.3,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -3967,6 +5002,15 @@
         "adp_ppr": 999,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -0.7,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -3994,6 +5038,15 @@
         "adp_half_ppr": 654.7,
         "adp_ppr": 679.9,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": -53.29,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -4026,6 +5079,15 @@
         "pts_ppr": 84,
         "pts_std": 84
       },
+      "draft_values": {
+        "std": 0,
+        "half": null,
+        "ppr": -7.35
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -4047,11 +5109,11 @@
       },
       "rankings": {
         "half": {
-          "rank_ecr": 658,
+          "rank_ecr": 690,
           "rank_min": 264,
-          "rank_max": 374,
-          "rank_ave": 319,
-          "rank_std": 55,
+          "rank_max": 376,
+          "rank_ave": 320,
+          "rank_std": 56,
           "tier": 14
         }
       }
@@ -4073,6 +5135,15 @@
         "adp_half_ppr": 689,
         "adp_ppr": 692.5,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": -52.3,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -4101,6 +5172,15 @@
         "adp_half_ppr": 622,
         "adp_ppr": 659,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": -60.73,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -4142,6 +5222,15 @@
         "pts_ppr": 116,
         "pts_std": 116
       },
+      "draft_values": {
+        "std": 1.39,
+        "half": 1,
+        "ppr": 5.39
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -4167,23 +5256,23 @@
           "rank_min": 175,
           "rank_max": 191,
           "rank_ave": 186.05,
-          "rank_std": 1.57,
+          "rank_std": 1.54,
           "tier": 10
         },
         "half": {
-          "rank_ecr": 208,
+          "rank_ecr": 212,
           "rank_min": 115,
-          "rank_max": 312,
-          "rank_ave": 184.19,
-          "rank_std": 21.99,
+          "rank_max": 314,
+          "rank_ave": 184.06,
+          "rank_std": 22.02,
           "tier": 8
         },
         "ppr": {
           "rank_ecr": 181,
-          "rank_min": 137,
+          "rank_min": 124,
           "rank_max": 192,
-          "rank_ave": 185.55,
-          "rank_std": 7.32,
+          "rank_ave": 185.47,
+          "rank_std": 8.05,
           "tier": 10
         }
       }
@@ -4197,16 +5286,16 @@
     "bye_week": 6,
     "tiers": {
       "std": {
-        "rank": 9,
-        "tier": 3
+        "rank": 8,
+        "tier": 2
       },
       "ppr": {
-        "rank": 9,
-        "tier": 3
+        "rank": 8,
+        "tier": 2
       },
       "half": {
-        "rank": 9,
-        "tier": 3
+        "rank": 8,
+        "tier": 2
       }
     },
     "sleeper": {
@@ -4217,6 +5306,15 @@
         "pts_half_ppr": 105,
         "pts_ppr": 105,
         "pts_std": 105
+      },
+      "draft_values": {
+        "std": 0,
+        "half": 0,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
       },
       "week": null,
       "player": {
@@ -4239,27 +5337,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 221,
+          "rank_ecr": 219,
           "rank_min": 191,
           "rank_max": 281,
-          "rank_ave": 224.82,
-          "rank_std": 14.56,
+          "rank_ave": 224.46,
+          "rank_std": 14.54,
           "tier": 11
         },
         "half": {
-          "rank_ecr": 231,
+          "rank_ecr": 232,
           "rank_min": 154,
-          "rank_max": 326,
-          "rank_ave": 224.19,
-          "rank_std": 20.71,
+          "rank_max": 328,
+          "rank_ave": 224,
+          "rank_std": 20.62,
           "tier": 8
         },
         "ppr": {
-          "rank_ecr": 214,
+          "rank_ecr": 213,
           "rank_min": 192,
           "rank_max": 282,
-          "rank_ave": 220.88,
-          "rank_std": 15.46,
+          "rank_ave": 220.61,
+          "rank_std": 15.35,
           "tier": 11
         }
       }
@@ -4294,6 +5392,15 @@
         "pts_ppr": 34,
         "pts_std": 34
       },
+      "draft_values": {
+        "std": 0,
+        "half": null,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -4315,7 +5422,7 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 323,
+          "rank_ecr": 326,
           "rank_min": 191,
           "rank_max": 332,
           "rank_ave": 284.81,
@@ -4325,17 +5432,17 @@
         "half": {
           "rank_ecr": 326,
           "rank_min": 211,
-          "rank_max": 364,
-          "rank_ave": 284.24,
-          "rank_std": 35.82,
+          "rank_max": 366,
+          "rank_ave": 284.28,
+          "rank_std": 35.91,
           "tier": 10
         },
         "ppr": {
           "rank_ecr": 324,
           "rank_min": 192,
           "rank_max": 359,
-          "rank_ave": 285.44,
-          "rank_std": 39.57,
+          "rank_ave": 285.46,
+          "rank_std": 39.56,
           "tier": 13
         }
       }
@@ -4370,6 +5477,15 @@
         "pts_ppr": 112,
         "pts_std": 112
       },
+      "draft_values": {
+        "std": 0,
+        "half": 0,
+        "ppr": 1
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -4391,27 +5507,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 196,
+          "rank_ecr": 195,
           "rank_min": 191,
           "rank_max": 224,
           "rank_ave": 197.78,
-          "rank_std": 5.28,
+          "rank_std": 5.21,
           "tier": 10
         },
         "half": {
-          "rank_ecr": 224,
+          "rank_ecr": 227,
           "rank_min": 148,
-          "rank_max": 318,
-          "rank_ave": 198.39,
-          "rank_std": 19.5,
+          "rank_max": 320,
+          "rank_ave": 198.57,
+          "rank_std": 19.31,
           "tier": 8
         },
         "ppr": {
           "rank_ecr": 199,
           "rank_min": 168,
           "rank_max": 236,
-          "rank_ave": 198.37,
-          "rank_std": 6.48,
+          "rank_ave": 198.38,
+          "rank_std": 6.39,
           "tier": 10
         }
       }
@@ -4433,6 +5549,15 @@
         "adp_half_ppr": 668.8,
         "adp_ppr": 669.5,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -4474,6 +5599,15 @@
         "pts_ppr": 109,
         "pts_std": 109
       },
+      "draft_values": {
+        "std": 0,
+        "half": 0,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -4498,24 +5632,24 @@
           "rank_ecr": 273,
           "rank_min": 199,
           "rank_max": 327,
-          "rank_ave": 251.47,
-          "rank_std": 27.2,
+          "rank_ave": 251.34,
+          "rank_std": 26.8,
           "tier": 12
         },
         "half": {
-          "rank_ecr": 281,
+          "rank_ecr": 282,
           "rank_min": 161,
-          "rank_max": 340,
-          "rank_ave": 252.74,
-          "rank_std": 28.27,
+          "rank_max": 342,
+          "rank_ave": 252.59,
+          "rank_std": 27.91,
           "tier": 9
         },
         "ppr": {
           "rank_ecr": 272,
           "rank_min": 198,
           "rank_max": 331,
-          "rank_ave": 251.57,
-          "rank_std": 27.73,
+          "rank_ave": 251.46,
+          "rank_std": 27.32,
           "tier": 12
         }
       }
@@ -4537,6 +5671,15 @@
         "adp_half_ppr": 694.5,
         "adp_ppr": 695.5,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -4578,6 +5721,15 @@
         "pts_ppr": 106,
         "pts_std": 106
       },
+      "draft_values": {
+        "std": 0,
+        "half": 0,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -4599,27 +5751,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 238,
+          "rank_ecr": 236,
           "rank_min": 199,
           "rank_max": 332,
-          "rank_ave": 234.61,
-          "rank_std": 22.87,
+          "rank_ave": 234.2,
+          "rank_std": 22.69,
           "tier": 11
         },
         "half": {
-          "rank_ecr": 239,
+          "rank_ecr": 240,
           "rank_min": 195,
           "rank_max": 334,
-          "rank_ave": 234.33,
-          "rank_std": 24.89,
+          "rank_ave": 233.91,
+          "rank_std": 24.62,
           "tier": 9
         },
         "ppr": {
-          "rank_ecr": 232,
+          "rank_ecr": 230,
           "rank_min": 198,
           "rank_max": 333,
-          "rank_ave": 229.86,
-          "rank_std": 25.32,
+          "rank_ave": 229.43,
+          "rank_std": 25.06,
           "tier": 11
         }
       }
@@ -4641,6 +5793,15 @@
         "adp_half_ppr": 699.5,
         "adp_ppr": 671.5,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": -44.46,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -4670,6 +5831,15 @@
         "adp_ppr": 690.2,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -4698,6 +5868,15 @@
         "adp_ppr": 625.2,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": 0,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -4716,9 +5895,18 @@
     "team": "IND",
     "bye_week": 13,
     "tiers": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 23,
+        "tier": 6
+      },
+      "ppr": {
+        "rank": 23,
+        "tier": 6
+      },
+      "half": {
+        "rank": 23,
+        "tier": 6
+      }
     },
     "sleeper": {
       "stats": {
@@ -4728,6 +5916,15 @@
         "pts_half_ppr": 75,
         "pts_ppr": 75,
         "pts_std": 75
+      },
+      "draft_values": {
+        "std": 0,
+        "half": -51.87,
+        "ppr": -24.37
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
       },
       "week": null,
       "player": {
@@ -4758,19 +5955,19 @@
           "tier": 14
         },
         "half": {
-          "rank_ecr": 407,
+          "rank_ecr": 408,
           "rank_min": 221,
-          "rank_max": 368,
-          "rank_ave": 275.4,
-          "rank_std": 46.4,
+          "rank_max": 370,
+          "rank_ave": 275.6,
+          "rank_std": 46.8,
           "tier": 11
         },
         "ppr": {
           "rank_ecr": 396,
           "rank_min": 216,
           "rank_max": 333,
-          "rank_ave": 274.1,
-          "rank_std": 40.24,
+          "rank_ave": 274.2,
+          "rank_std": 40.21,
           "tier": 14
         }
       }
@@ -4792,6 +5989,15 @@
         "adp_half_ppr": 650.4,
         "adp_ppr": 671.3,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -4821,6 +6027,15 @@
         "adp_ppr": 679.9,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -4848,6 +6063,15 @@
         "adp_half_ppr": 681.5,
         "adp_ppr": 629.5,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": -51.26,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -4877,6 +6101,15 @@
         "adp_ppr": 699.2,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -35.59,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -4905,6 +6138,15 @@
         "adp_ppr": 625.9,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": -146.31,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -4932,6 +6174,15 @@
         "adp_half_ppr": 664,
         "adp_ppr": 665.7,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": -42.93,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -4963,6 +6214,15 @@
         "pts_half_ppr": 6,
         "pts_ppr": 6,
         "pts_std": 6
+      },
+      "draft_values": {
+        "std": null,
+        "half": -39.93,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -5004,6 +6264,15 @@
         "pts_ppr": 106,
         "pts_std": 106
       },
+      "draft_values": {
+        "std": 0,
+        "half": 0,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -5028,24 +6297,24 @@
           "rank_ecr": 215,
           "rank_min": 196,
           "rank_max": 325,
-          "rank_ave": 214.9,
-          "rank_std": 17.86,
+          "rank_ave": 214.73,
+          "rank_std": 17.65,
           "tier": 11
         },
         "half": {
-          "rank_ecr": 234,
+          "rank_ecr": 235,
           "rank_min": 152,
-          "rank_max": 324,
+          "rank_max": 326,
           "rank_ave": 213.86,
-          "rank_std": 23.28,
+          "rank_std": 23,
           "tier": 8
         },
         "ppr": {
           "rank_ecr": 209,
           "rank_min": 181,
           "rank_max": 328,
-          "rank_ave": 212.82,
-          "rank_std": 19.16,
+          "rank_ave": 212.64,
+          "rank_std": 18.93,
           "tier": 11
         }
       }
@@ -5080,6 +6349,15 @@
         "pts_ppr": 96,
         "pts_std": 96
       },
+      "draft_values": {
+        "std": 0,
+        "half": 0,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -5101,27 +6379,27 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 226,
+          "rank_ecr": 227,
           "rank_min": 199,
           "rank_max": 332,
-          "rank_ave": 228.78,
-          "rank_std": 20.21,
+          "rank_ave": 228.96,
+          "rank_std": 20.14,
           "tier": 11
         },
         "half": {
           "rank_ecr": 251,
           "rank_min": 184,
           "rank_max": 336,
-          "rank_ave": 227.65,
-          "rank_std": 22.74,
+          "rank_ave": 228.01,
+          "rank_std": 22.76,
           "tier": 9
         },
         "ppr": {
           "rank_ecr": 228,
           "rank_min": 194,
           "rank_max": 333,
-          "rank_ave": 224.43,
-          "rank_std": 21.08,
+          "rank_ave": 224.75,
+          "rank_std": 21.04,
           "tier": 11
         }
       }
@@ -5143,6 +6421,15 @@
         "adp_half_ppr": 623,
         "adp_ppr": 665.2,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": -61.05,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -5172,6 +6459,15 @@
         "adp_ppr": 541.5,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -51.9,
+        "half": null,
+        "ppr": -61.23
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -5200,6 +6496,15 @@
         "adp_ppr": 652.3,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": -17.59,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -5218,9 +6523,18 @@
     "team": "CAR",
     "bye_week": 5,
     "tiers": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 26,
+        "tier": 6
+      },
+      "ppr": {
+        "rank": 26,
+        "tier": 6
+      },
+      "half": {
+        "rank": 26,
+        "tier": 6
+      }
     },
     "sleeper": {
       "stats": {
@@ -5230,6 +6544,15 @@
         "pts_half_ppr": 92,
         "pts_ppr": 92,
         "pts_std": 92
+      },
+      "draft_values": {
+        "std": 0,
+        "half": null,
+        "ppr": -9.67
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
       },
       "week": null,
       "player": {
@@ -5271,8 +6594,8 @@
           "rank_ecr": 412,
           "rank_min": 203,
           "rank_max": 406,
-          "rank_ave": 282.57,
-          "rank_std": 78.42,
+          "rank_ave": 282.71,
+          "rank_std": 78.38,
           "tier": 14
         }
       }
@@ -5285,9 +6608,18 @@
     "team": "FA",
     "bye_week": null,
     "tiers": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 31,
+        "tier": 6
+      },
+      "ppr": {
+        "rank": 31,
+        "tier": 6
+      },
+      "half": {
+        "rank": 31,
+        "tier": 6
+      }
     },
     "sleeper": {
       "stats": {
@@ -5298,9 +6630,18 @@
         "pts_ppr": 31,
         "pts_std": 31
       },
+      "draft_values": {
+        "std": 0,
+        "half": -31.7,
+        "ppr": -21.87
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
-        "injury_body_part": null,
+        "injury_body_part": "Undisclosed",
         "injury_notes": null,
         "injury_start_date": null,
         "injury_status": "Questionable"
@@ -5327,19 +6668,19 @@
           "tier": 15
         },
         "half": {
-          "rank_ecr": 484,
+          "rank_ecr": 494,
           "rank_min": 185,
-          "rank_max": 372,
-          "rank_ave": 297.5,
-          "rank_std": 72.53,
+          "rank_max": 374,
+          "rank_ave": 298,
+          "rank_std": 73.04,
           "tier": 12
         },
         "ppr": {
           "rank_ecr": 427,
           "rank_min": 192,
           "rank_max": 450,
-          "rank_ave": 290.4,
-          "rank_std": 93.59,
+          "rank_ave": 290.6,
+          "rank_std": 93.53,
           "tier": 15
         }
       }
@@ -5361,6 +6702,15 @@
         "adp_half_ppr": 656.7,
         "adp_ppr": 685.2,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -5390,6 +6740,15 @@
         "adp_ppr": 451.5,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": -52.46,
+        "ppr": -43.55
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -5418,6 +6777,15 @@
         "adp_ppr": 389.3,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": -41.34,
+        "half": null,
+        "ppr": -26.86
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -5437,16 +6805,16 @@
     "bye_week": 11,
     "tiers": {
       "std": {
-        "rank": 20,
-        "tier": 5
+        "rank": 21,
+        "tier": 6
       },
       "ppr": {
-        "rank": 20,
-        "tier": 5
+        "rank": 21,
+        "tier": 6
       },
       "half": {
-        "rank": 20,
-        "tier": 5
+        "rank": 21,
+        "tier": 6
       }
     },
     "sleeper": {
@@ -5457,6 +6825,15 @@
         "pts_half_ppr": 70,
         "pts_ppr": 70,
         "pts_std": 70
+      },
+      "draft_values": {
+        "std": 0,
+        "half": 0,
+        "ppr": 0
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
       },
       "week": null,
       "player": {
@@ -5479,7 +6856,7 @@
       },
       "rankings": {
         "standard": {
-          "rank_ecr": 356,
+          "rank_ecr": 358,
           "rank_min": 216,
           "rank_max": 332,
           "rank_ave": 269.05,
@@ -5500,7 +6877,7 @@
           "rank_max": 352,
           "rank_ave": 271.23,
           "rank_std": 47.16,
-          "tier": 13
+          "tier": 14
         }
       }
     }
@@ -5521,6 +6898,15 @@
         "adp_half_ppr": 653.6,
         "adp_ppr": 674.6,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -5550,6 +6936,15 @@
         "adp_ppr": 640.1,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -5577,6 +6972,15 @@
         "adp_half_ppr": 645,
         "adp_ppr": 692.3,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": -146.31,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -5606,6 +7010,15 @@
         "adp_ppr": 662.1,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -5634,6 +7047,15 @@
         "adp_ppr": 999,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -5661,6 +7083,15 @@
         "adp_half_ppr": 631.8,
         "adp_ppr": 670.7,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": -62.67,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {
@@ -5693,6 +7124,15 @@
         "pts_ppr": 66,
         "pts_std": 66
       },
+      "draft_values": {
+        "std": 0,
+        "half": null,
+        "ppr": -17.67
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -5714,11 +7154,11 @@
       },
       "rankings": {
         "half": {
-          "rank_ecr": 510,
+          "rank_ecr": 521,
           "rank_min": 257,
           "rank_max": 469,
-          "rank_ave": 348.5,
-          "rank_std": 82.98,
+          "rank_ave": 349,
+          "rank_std": 83.18,
           "tier": 12
         },
         "ppr": {
@@ -5752,6 +7192,15 @@
         "pts_ppr": 6,
         "pts_std": 6
       },
+      "draft_values": {
+        "std": null,
+        "half": -27.49,
+        "ppr": -40.65
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -5780,6 +7229,15 @@
         "adp_ppr": 511.6,
         "adp_std": 999
       },
+      "draft_values": {
+        "std": null,
+        "half": -0.68,
+        "ppr": -54.49
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
+      },
       "week": null,
       "player": {
         "injury_body_part": null,
@@ -5798,9 +7256,18 @@
     "team": "WAS",
     "bye_week": 7,
     "tiers": {
-      "std": null,
-      "ppr": null,
-      "half": null
+      "std": {
+        "rank": 32,
+        "tier": 6
+      },
+      "ppr": {
+        "rank": 32,
+        "tier": 6
+      },
+      "half": {
+        "rank": 32,
+        "tier": 6
+      }
     },
     "sleeper": {
       "stats": {
@@ -5810,6 +7277,15 @@
         "pts_half_ppr": 74,
         "pts_ppr": 74,
         "pts_std": 74
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": "K",
+        "depth_chart_order": 1
       },
       "week": null,
       "player": {
@@ -5840,11 +7316,11 @@
           "tier": 15
         },
         "half": {
-          "rank_ecr": 517,
+          "rank_ecr": 529,
           "rank_min": 242,
           "rank_max": 468,
-          "rank_ave": 360.25,
-          "rank_std": 80.14,
+          "rank_ave": 359.75,
+          "rank_std": 80.08,
           "tier": 12
         },
         "ppr": {
@@ -5874,6 +7350,15 @@
         "adp_half_ppr": 656.5,
         "adp_ppr": 680.9,
         "adp_std": 999
+      },
+      "draft_values": {
+        "std": null,
+        "half": null,
+        "ppr": null
+      },
+      "active_player": {
+        "depth_chart_position": null,
+        "depth_chart_order": null
       },
       "week": null,
       "player": {

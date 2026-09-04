@@ -98,30 +98,6 @@ describe("toPlayerRowFromBundle", () => {
     expect(result.bye_week).toBeNull();
   });
 
-  it("maps Footballguys comparison data without affecting draft value fields", () => {
-    const result = toPlayerRowFromBundle({
-      ...mockBundlePlayer,
-      footballguys: {
-        id: "DoeJo00",
-        rank: 7,
-        tier: 2,
-        pos_rank: 3,
-        fetched_at: "2026-07-11T12:00:00.000Z",
-        settings: "12-team ppr public default",
-        adp: { consensus: 8, sleeper: null },
-      },
-    });
-
-    expect(result).toMatchObject({
-      fbg_rank: 7,
-      fbg_tier: 2,
-      fbg_rank_pos: 3,
-      fbg_adp_consensus: 8,
-      fbg_settings: "12-team ppr public default",
-      fp_rank_ave: 4.7,
-    });
-  });
-
   it("parses pos_rank correctly", () => {
     const playerWithPosRank = {
       ...mockBundlePlayer,

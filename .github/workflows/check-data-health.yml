@@ -1,0 +1,49 @@
+name: Check Fantasy Tiers Data Health
+
+on:
+  schedule:
+    # Check after both daily data-refresh windows.
+    - cron: "0 14 * * *"
+    - cron: "0 23 * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: fantasy-data-health
+  cancel-in-progress: false
+
+jobs:
+  check-data-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PRODUCTION_HEALTH_URL: https://fantasy-tiers.vercel.app/api/health/data
+      SEND_TO_MAKON_URL: https://send-to-makon.vercel.app/api/send-telegram
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check production readiness
+        run: |
+          HTTP_STATUS=$(curl --silent --show-error --output /tmp/fantasy-tiers-health.json --write-out "%{http_code}" "$PRODUCTION_HEALTH_URL") || HTTP_STATUS="000"
+          if [ ! -s /tmp/fantasy-tiers-health.json ]; then
+            printf '%s\n' '{"status":"unhealthy","error":"Production health endpoint is unreachable."}' > /tmp/fantasy-tiers-health.json
+          fi
+          PREVIOUS_CONCLUSION=$(gh api "/repos/${{ github.repository }}/actions/workflows/check-data-health.yml/runs?per_page=10" --jq '.workflow_runs[] | select(.id != ${{ github.run_id }}) | .conclusion' | head -1) || PREVIOUS_CONCLUSION=""
+
+          if [ "$HTTP_STATUS" = "200" ] && jq -e '.status == "healthy"' /tmp/fantasy-tiers-health.json >/dev/null; then
+            if [ "$PREVIOUS_CONCLUSION" = "failure" ]; then
+              curl --fail --silent --show-error --get "$SEND_TO_MAKON_URL" \
+                --data-urlencode "subject=Fantasy Tiers data recovered" \
+                --data-urlencode "message=The production draft-readiness check is healthy again. Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            fi
+            exit 0
+          fi
+
+          DETAIL=$(jq -r '.readiness.incidents[0].message // .error // "Production draft data is not ready."' /tmp/fantasy-tiers-health.json 2>/dev/null || echo "Production draft data is not ready.")
+          curl --fail --silent --show-error --get "$SEND_TO_MAKON_URL" \
+            --data-urlencode "subject=Fantasy Tiers data incident" \
+            --data-urlencode "message=$DETAIL Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          jq . /tmp/fantasy-tiers-health.json || true
+          exit 1

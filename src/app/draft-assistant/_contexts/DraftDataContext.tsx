@@ -17,6 +17,7 @@ import {
   useSleeperUserByUsername,
   useSleeperUserById,
   useSleeperDrafts,
+  useSleeperLeagueById,
   useSleeperNflState,
 } from "@/app/draft-assistant/_lib/useSleeper";
 import { buildDraftViewModel } from "@/lib/draftState";
@@ -50,8 +51,21 @@ import {
   attachDraftValueMetrics,
   type DraftRosterConstruction,
 } from "@/lib/draftValue";
-import { draftCandidateMapFromRows } from "@/lib/draftCandidate";
-import { parseSleeperScoringType } from "@/lib/scoring";
+import {
+  draftCandidateMapFromRows,
+  fantasyProsRankingsUpdatedAt,
+} from "@/lib/draftCandidate";
+import {
+  draftLeagueConfigFromSleeperDraft,
+  getUnsupportedDraftFormatNotices,
+  type SleeperDraftLeagueConfig,
+  type UnsupportedDraftFormatNotice,
+} from "@/lib/draftLeagueConfig";
+import {
+  type StarterAwareStrategyStatus,
+} from "@/lib/beerPlusStrategy";
+import { draftReadinessShardCountsFromBundle } from "@/lib/draftReadiness";
+import type { DraftReadinessReport } from "@/lib/draftReadiness";
 
 interface ProcessedData {
   availablePlayers: RankedPlayer[];
@@ -93,6 +107,8 @@ export interface DraftDataContextType extends ProcessedData {
   loadUserAndDrafts: () => Promise<void>;
   selectedDraftId: string;
   setSelectedDraftId: (draftId: string) => void;
+  draftValueStatus: StarterAwareStrategyStatus | null;
+  readiness: DraftReadinessReport | null;
   clearDraft?: () => void;
   clearUser?: () => void;
 
@@ -100,6 +116,8 @@ export interface DraftDataContextType extends ProcessedData {
   user: SleeperUser | null;
   drafts: SleeperDraftSummary[];
   draftDetails: DraftDetails | null;
+  leagueConfig: SleeperDraftLeagueConfig | null;
+  formatNotices: UnsupportedDraftFormatNotice[];
   playersBundle: AggregatesBundleResponseT | null;
   picks: DraftPick[];
 
@@ -170,6 +188,8 @@ const defaultContextValue: DraftDataContextType = {
   loadUserAndDrafts: async () => {},
   selectedDraftId: "",
   setSelectedDraftId: () => {},
+  draftValueStatus: null,
+  readiness: null,
   clearDraft: () => {},
   clearUser: () => {},
 
@@ -177,6 +197,8 @@ const defaultContextValue: DraftDataContextType = {
   user: null,
   drafts: [],
   draftDetails: null,
+  leagueConfig: null,
+  formatNotices: [],
   playersBundle: null,
   picks: [],
 
@@ -361,7 +383,6 @@ export function DraftDataProvider({
     data: user,
     isLoading: isLoadingUser,
     error: errorUser,
-    refetch: refetchUser,
   } = useSleeperUserByUsername(username, shouldLoadUser);
 
   const { data: nflState } = useSleeperNflState({ enabled: shouldLoadUser });
@@ -375,7 +396,6 @@ export function DraftDataProvider({
     data: drafts,
     isLoading: isLoadingDrafts,
     error: errorDrafts,
-    refetch: refetchDrafts,
   } = useSleeperDrafts(
     user?.user_id,
     draftSeason,
@@ -394,6 +414,17 @@ export function DraftDataProvider({
     refetchInterval: 3000,
   });
 
+  const draftLeagueId = draftDetails?.league_id ?? draftDetails?.metadata.league_id;
+
+  const {
+    data: sleeperLeague,
+    isLoading: isLoadingSleeperLeague,
+    error: errorSleeperLeague,
+  } = useSleeperLeagueById(
+    draftLeagueId,
+    Boolean(draftLeagueId)
+  );
+
   const {
     data: picks,
     isLoading: isLoadingPicks,
@@ -411,44 +442,52 @@ export function DraftDataProvider({
     refetchInterval: 3000,
   });
 
-  // Parse scoring type from draft details
-  const scoringType = React.useMemo(() => {
-    if (!draftDetails) return undefined;
-    return parseSleeperScoringType(draftDetails.metadata?.scoring_type);
-  }, [draftDetails]);
+  const leagueConfig = useMemo(() => {
+    if (!draftDetails || !user?.user_id) return null;
+    if (draftLeagueId && !sleeperLeague) return null;
+    return draftLeagueConfigFromSleeperDraft(
+      draftDetails,
+      user.user_id,
+      sleeperLeague
+    );
+  }, [draftDetails, draftLeagueId, sleeperLeague, user?.user_id]);
+  const formatNotices = useMemo(
+    () =>
+      draftDetails
+        ? getUnsupportedDraftFormatNotices(draftDetails, sleeperLeague)
+        : [],
+    [draftDetails, sleeperLeague]
+  );
 
   // Build league object from draft details
   const league = useMemo(() => {
-    if (!draftDetails || !scoringType) return null;
-    const rosterRequirements = buildRosterRequirementsFromDraftSettings(
-      draftDetails.settings
-    );
+    if (!leagueConfig) return null;
 
     const leagueObj = {
-      teams: draftDetails.settings?.teams ?? 0,
-      scoring: scoringType,
+      teams: leagueConfig.teams,
+      scoring: leagueConfig.scoring,
       roster: {
-        QB: rosterRequirements.QB,
-        RB: rosterRequirements.RB,
-        WR: rosterRequirements.WR,
-        TE: rosterRequirements.TE,
-        K: rosterRequirements.K,
-        DEF: rosterRequirements.DEF,
-        FLEX: rosterRequirements.FLEX,
-        BENCH: rosterRequirements.BN,
+        QB: leagueConfig.rosterSlots.QB,
+        RB: leagueConfig.rosterSlots.RB,
+        WR: leagueConfig.rosterSlots.WR,
+        TE: leagueConfig.rosterSlots.TE,
+        K: leagueConfig.rosterSlots.K,
+        DEF: leagueConfig.rosterSlots.DEF,
+        FLEX: leagueConfig.rosterSlots.FLEX,
+        BENCH: leagueConfig.rosterSlots.BENCH,
       },
     };
 
     return leagueObj;
-  }, [draftDetails, scoringType]);
+  }, [leagueConfig]);
 
   // Players bundle fetching
   const {
     data: playersBundle,
     isLoading: isLoadingPlayers,
     error: errorPlayers,
-    refetch: refetchPlayers,
     dataUpdatedAt: updatedAtPlayers,
+    refetch: refetchPlayers,
   } = useAggregatesBundle(league, {
     enabled: Boolean(league),
   });
@@ -505,7 +544,7 @@ export function DraftDataProvider({
     () => ({
       user: isLoadingUser || isLoadingInitialUser,
       drafts: selectedDraftId ? false : isLoadingDrafts,
-      draftDetails: isLoadingDraftDetails,
+      draftDetails: isLoadingDraftDetails || isLoadingSleeperLeague,
       players: isLoadingPlayers,
       picks: isLoadingPicks,
     }),
@@ -515,6 +554,7 @@ export function DraftDataProvider({
       isLoadingDrafts,
       selectedDraftId,
       isLoadingDraftDetails,
+      isLoadingSleeperLeague,
       isLoadingPlayers,
       isLoadingPicks,
     ]
@@ -524,7 +564,7 @@ export function DraftDataProvider({
     () => ({
       user: errorUser || errorInitialUser,
       drafts: selectedDraftId ? null : errorDrafts,
-      draftDetails: errorDraftDetails,
+      draftDetails: errorDraftDetails || errorSleeperLeague,
       players: errorPlayers,
       picks: errorPicks,
     }),
@@ -534,6 +574,7 @@ export function DraftDataProvider({
       errorDrafts,
       selectedDraftId,
       errorDraftDetails,
+      errorSleeperLeague,
       errorPlayers,
       errorPicks,
     ]
@@ -579,17 +620,13 @@ export function DraftDataProvider({
   ]);
 
   const refetchData = useCallback(() => {
-    refetchUser();
-    refetchDrafts();
+    refetchPlayers();
     refetchDraftDetails();
     refetchPicks();
-    refetchPlayers();
   }, [
-    refetchUser,
-    refetchDrafts,
+    refetchPlayers,
     refetchDraftDetails,
     refetchPicks,
-    refetchPlayers,
   ]);
 
   // Build position rows from bundle when available
@@ -645,10 +682,19 @@ export function DraftDataProvider({
 
   // Build playersMap from ALL shard for view-model
   const playersMap = useMemo(() => {
-    return positionRows ? draftCandidateMapFromRows(positionRows.ALL) : {};
-  }, [positionRows]);
+    return positionRows
+      ? draftCandidateMapFromRows(
+          positionRows.ALL,
+          playersBundle?.draftProjections?.players ?? {},
+          playersBundle
+            ? fantasyProsRankingsUpdatedAt(playersBundle)
+            : null
+        )
+      : {};
+  }, [playersBundle, positionRows]);
 
   // Build the server-like draft VM on the client
+  const projectionArtifact = playersBundle?.draftProjections;
   const viewModel = useMemo(() => {
     if (
       !draftDetails ||
@@ -663,12 +709,25 @@ export function DraftDataProvider({
       picks: picks || [],
       userId: user.user_id,
       topLimit: 3,
+      ...(leagueConfig?.scoringRules
+        ? { scoringRules: leagueConfig.scoringRules }
+        : {}),
+      ...(projectionArtifact !== undefined
+        ? { projectionArtifact }
+        : {}),
+      sourceHealth: playersBundle?.sourceHealth ?? null,
+      ...(playersBundle
+        ? { shardCounts: draftReadinessShardCountsFromBundle(playersBundle) }
+        : {}),
     });
   }, [
     playersMap,
     draftDetails,
     picks,
     user?.user_id,
+    leagueConfig?.scoringRules,
+    projectionArtifact,
+    playersBundle,
   ]);
 
   // Build processed data when all required data is available
@@ -891,6 +950,8 @@ export function DraftDataProvider({
       loadUserAndDrafts,
       selectedDraftId,
       setSelectedDraftId: handleSetSelectedDraftId,
+      draftValueStatus: viewModel?.draftValueStatus ?? null,
+      readiness: viewModel?.readiness ?? null,
       clearDraft,
       clearUser,
 
@@ -898,6 +959,8 @@ export function DraftDataProvider({
       user: user || null,
       drafts: drafts || [],
       draftDetails: draftDetails || null,
+      leagueConfig,
+      formatNotices,
       playersBundle: playersBundle || null,
       picks: picks || [],
 
@@ -946,6 +1009,8 @@ export function DraftDataProvider({
       user,
       drafts,
       draftDetails,
+      leagueConfig,
+      formatNotices,
       playersBundle,
       picks,
       showAll,
@@ -961,6 +1026,8 @@ export function DraftDataProvider({
       processedData,
       decisionRows,
       draftValueBoard,
+      viewModel?.draftValueStatus,
+      viewModel?.readiness,
       playersAll,
       playersByPosition,
       draftedIds,

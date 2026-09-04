@@ -17,7 +17,7 @@ import { getAggregatesLastModifiedServer } from "@/lib/combinedAggregates";
 import { ecrToRoundPick } from "@/lib/util";
 import { getAggregateSourceHealth } from "@/lib/sourceHealth";
 import type { ScoringType } from "@/lib/schemas";
-import { FootballguysPublicRankingsSchema } from "@/lib/footballguysRankings";
+import { DraftProjectionArtifactSchema } from "@/lib/beerPlusStrategy";
 
 type AggregateRosterSlots = {
   QB?: number | undefined;
@@ -53,6 +53,7 @@ export function buildAggregateBundle(input: {
   const allShard = loadAggregateShard("ALL");
   const allData = Object.values(allShard);
   const processedShards = processPositionShards(league);
+  const draftProjections = loadDraftProjections();
 
   for (const shardKey of Object.keys(processedShards) as Array<
     keyof typeof processedShards
@@ -71,17 +72,25 @@ export function buildAggregateBundle(input: {
       getAggregateSourceHealth({
         scoring: input.scoring,
         players: allData,
-        draftCapacity:
-          input.teams *
-          (Object.values(league.roster).reduce(
-            (total, slots) => total + slots,
-            0
-          ) +
-            3),
+        projectionArtifact: draftProjections,
+        rosterSlots: league.roster,
       })
     ),
+    draftProjections,
     shards: processedShards,
   });
+}
+
+function loadDraftProjections() {
+  const filePath = path.resolve(
+    process.cwd(),
+    "public/data/aggregate/sleeper-draft-projections.json"
+  );
+  if (!fs.existsSync(filePath)) return null;
+  const parsed = DraftProjectionArtifactSchema.safeParse(
+    JSON.parse(fs.readFileSync(filePath, "utf-8"))
+  );
+  return parsed.success ? parsed.data : null;
 }
 
 export function loadAggregateShard(shardName: string) {
@@ -110,7 +119,6 @@ export function loadAggregateShard(shardName: string) {
 }
 
 function processPositionShards(league: League) {
-  const footballguys = loadFootballguysLookup();
   const shards = {
     QB: loadAggregateShard("QB"),
     RB: loadAggregateShard("RB"),
@@ -132,22 +140,22 @@ function processPositionShards(league: League) {
 
   return {
     QB: enrichPlayers(Object.values(shards.QB), league).map((player) =>
-      enrichedToBundlePlayer(player, league, footballguys)
+      enrichedToBundlePlayer(player, league)
     ),
-    RB: (rbWrTe.RB ?? []).map((player) => enrichedToBundlePlayer(player, league, footballguys)),
-    WR: (rbWrTe.WR ?? []).map((player) => enrichedToBundlePlayer(player, league, footballguys)),
-    TE: (rbWrTe.TE ?? []).map((player) => enrichedToBundlePlayer(player, league, footballguys)),
+    RB: (rbWrTe.RB ?? []).map((player) => enrichedToBundlePlayer(player, league)),
+    WR: (rbWrTe.WR ?? []).map((player) => enrichedToBundlePlayer(player, league)),
+    TE: (rbWrTe.TE ?? []).map((player) => enrichedToBundlePlayer(player, league)),
     K: enrichPlayers(Object.values(shards.K), league).map((player) =>
-      enrichedToBundlePlayer(player, league, footballguys)
+      enrichedToBundlePlayer(player, league)
     ),
     DEF: enrichPlayers(Object.values(shards.DEF), league).map((player) =>
-      enrichedToBundlePlayer(player, league, footballguys)
+      enrichedToBundlePlayer(player, league)
     ),
     FLEX: enrichPlayers(Object.values(shards.FLEX), league).map((player) =>
-      enrichedToBundlePlayer(player, league, footballguys)
+      enrichedToBundlePlayer(player, league)
     ),
     ALL: enrichPlayers(Object.values(shards.ALL), league).map((player) =>
-      enrichedToBundlePlayer(player, league, footballguys)
+      enrichedToBundlePlayer(player, league)
     ),
   };
 }
@@ -162,12 +170,8 @@ function groupByPosition(players: readonly EnrichedPlayer[]) {
 
 function enrichedToBundlePlayer(
   player: EnrichedPlayer,
-  league: League,
-  footballguys: FootballguysLookup
+  league: League
 ): AggregatesBundlePlayerT {
-  const footballguysPlayer = footballguys.get(
-    footballguysKey(player.name, player.position)
-  );
   return AggregatesBundlePlayer.parse({
     player_id: player.player_id,
     name: player.name,
@@ -181,7 +185,10 @@ function enrichedToBundlePlayer(
     sleeper: {
       rank: player.sleeper_rank_overall,
       adp: player.sleeper_adp,
+      boardValue: player.sleeper_board_value,
       pts: player.sleeper_pts,
+      depthChartPosition: player.sleeper.active_player.depth_chart_position,
+      depthChartOrder: player.sleeper.active_player.depth_chart_order,
       injuryStatus: player.sleeper.player.injury_status,
       injuryNotes: player.sleeper.player.injury_notes,
     },
@@ -203,59 +210,10 @@ function enrichedToBundlePlayer(
       adp: player.fp_adp,
       player_owned_avg: player.fp_player_owned_avg,
     },
-    footballguys: footballguysPlayer ?? null,
     calc: {
       value: player.fp_value,
       positional_scarcity: Math.round(player.fp_remaining_value_pct || 0),
       market_delta: player.market_delta,
     },
   });
-}
-
-type FootballguysLookupEntry = {
-  id: string;
-  rank: number;
-  tier: number;
-  pos_rank: number;
-  fetched_at: string;
-  settings: string;
-  adp: Record<string, number | null>;
-};
-
-type FootballguysLookup = Map<string, FootballguysLookupEntry>;
-
-function loadFootballguysLookup(): FootballguysLookup {
-  const filePath = path.resolve(
-    process.cwd(),
-    "public/data/aggregate/footballguys-rankings.json"
-  );
-  if (!fs.existsSync(filePath)) return new Map();
-  const data = FootballguysPublicRankingsSchema.parse(
-    JSON.parse(fs.readFileSync(filePath, "utf8"))
-  );
-
-  return new Map(
-    data.rows.map((row) => [
-      footballguysKey(row.name, normalizeFootballguysPosition(row.position)),
-      {
-        id: row.id,
-        rank: row.rank,
-        tier: row.tier,
-        pos_rank: row.posRank,
-        fetched_at: data.fetchedAt,
-        settings: data.settings,
-        adp: row.adp,
-      },
-    ])
-  );
-}
-
-function footballguysKey(name: string, position: string) {
-  return `${name.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()}|${position}`;
-}
-
-function normalizeFootballguysPosition(position: string) {
-  if (position === "PK") return "K";
-  if (position === "TD") return "DEF";
-  return position;
 }

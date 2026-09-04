@@ -97,6 +97,16 @@ describe("PlayersTableBase", () => {
     expect(container.textContent).toContain("2/1");
   });
 
+  it("describes VAL as the league-specific starter-aware value", () => {
+    const valueColumn = GROUPS_FULL
+      .flatMap((group) => group.children)
+      .find((column) => column.id === "raw");
+
+    expect(valueColumn?.description).toBe(
+      "Starter-aware value for this league's scoring and lineup. It does not use your roster or current draft state."
+    );
+  });
+
   it("keeps value colors anchored to the initial all-player domain", () => {
     const initialDomain = [player("draft-best", 100), player("draft-low", 0)];
 

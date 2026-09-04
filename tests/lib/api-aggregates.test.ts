@@ -35,6 +35,11 @@ describe("API Aggregates", () => {
               adp_half_ppr: 44.1,
               adp_ppr: 43.5,
             },
+            draft_values: { std: 45, half: 44, ppr: 43 },
+            active_player: {
+              depth_chart_position: "QB",
+              depth_chart_order: 1,
+            },
             week: null,
             player: {
               injury_body_part: null,
@@ -110,6 +115,11 @@ describe("API Aggregates", () => {
               adp_half_ppr: 44.1,
               adp_ppr: 43.5,
             },
+            draft_values: { std: 45, half: 44, ppr: 43 },
+            active_player: {
+              depth_chart_position: "QB",
+              depth_chart_order: 1,
+            },
             week: null,
             player: {
               injury_body_part: null,
@@ -166,6 +176,11 @@ describe("API Aggregates", () => {
                 pts_std: 320.5,
                 pts_half_ppr: 340.2,
                 pts_ppr: 350.8,
+              },
+              draft_values: { std: 45, half: 44, ppr: 43 },
+              active_player: {
+                depth_chart_position: position === "ALL" ? "QB" : position,
+                depth_chart_order: 1,
               },
               week: null,
               player: {

@@ -4,6 +4,7 @@ export const DraftSettingsSchema = z
   .object({
     teams: z.number().optional().default(0),
     rounds: z.number().optional().default(0),
+    pick_timer: z.number().optional(),
     slots_qb: z.number().optional().default(0),
     slots_rb: z.number().optional().default(0),
     slots_wr: z.number().optional().default(0),
@@ -11,6 +12,8 @@ export const DraftSettingsSchema = z
     slots_k: z.number().optional().default(0),
     slots_def: z.number().optional().default(0),
     slots_flex: z.number().optional().default(0),
+    slots_bn: z.number().optional(),
+    slots_ir: z.number().optional(),
   })
   .optional()
   .default({
@@ -28,18 +31,24 @@ export const DraftSettingsSchema = z
 export const DraftMetadataSchema = z
   .object({
     name: z.string().optional(),
+    league_id: z.string().optional(),
     scoring_type: z.string().optional(),
   })
   .default({});
 
 export const DraftDetailsSchema = z.object({
   draft_id: z.string(),
+  league_id: z.string().nullable().optional(),
   type: z.string().optional(),
   season: z.string().optional(),
   start_time: z.number().nullable().optional(),
   status: z.string().optional(),
   metadata: DraftMetadataSchema,
   settings: DraftSettingsSchema,
+  scoring_settings: z
+    .record(z.string(), z.number())
+    .nullish()
+    .transform((value) => value ?? {}),
   slot_to_roster_id: z
     .record(z.string(), z.union([z.string(), z.number()]))
     .nullable()

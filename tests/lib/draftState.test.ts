@@ -4,6 +4,7 @@ import {
   buildDraftViewModel,
   computeRoundPick,
 } from "../../src/lib/draftState";
+import { DEFAULT_DRAFT_SCORING_RULES } from "../../src/lib/draftLeagueConfig";
 
 describe("computeRoundPick", () => {
   it("computes round and pick within round", () => {
@@ -44,6 +45,21 @@ describe("buildDraftState", () => {
 
 describe("buildDraftViewModel", () => {
   it("preserves recent pick metadata for position-run scoring", () => {
+    const updatedAt = Date.parse("2026-09-04T00:00:00.000Z");
+    const projection = (id: string, rank: number) => ({
+      playerId: id,
+      position: "RB" as const,
+      stats: {
+        rush_yd: 1_000 - (rank - 1) * 100,
+        rush_td: 9 - rank,
+        rec: 42 - rank * 2,
+        rec_yd: 320 - rank * 20,
+        rec_td: 2,
+        pts_std: 208 - rank * 18,
+      },
+      lastModified: updatedAt,
+      newsUpdated: null,
+    });
     const player = (id: string, rank: number) => ({
       player_id: id,
       name: id,
@@ -59,8 +75,11 @@ describe("buildDraftViewModel", () => {
       fp_rank_ave: rank,
       fp_rank_pos: rank,
       sleeper_adp: rank,
+      sleeper_board_rank: rank,
       sleeper_injury_status: null,
       sleeper_injury_notes: null,
+      fp_rank_updated_at: updatedAt,
+      sleeper_projection: projection(id, rank),
     });
     const playersMap = {
       rb1: player("rb1", 1),
@@ -84,8 +103,68 @@ describe("buildDraftViewModel", () => {
         { draft_slot: 3, round: 1, pick_no: 3, player_id: "rb3" },
       ],
       userId: "u1",
+      scoringRules: DEFAULT_DRAFT_SCORING_RULES,
+      sourceHealth: {
+        generatedAt: "2026-09-04T00:00:00.000Z",
+        scoring: "ppr",
+        sources: [
+          {
+            source: "FantasyPros",
+            status: "available",
+            season: "2026",
+            fetchedAt: "2026-09-04T00:00:00.000Z",
+            lastUpdated: "2026-09-04T00:00:00.000Z",
+            rowCount: 4,
+            expertsIncluded: 100,
+            expertsAvailable: 120,
+            expertCoveragePct: 83.3,
+            problems: [],
+          },
+          {
+            source: "Sleeper",
+            status: "available",
+            season: "2026",
+            fetchedAt: "2026-09-04T00:00:00.000Z",
+            lastUpdated: "2026-09-04T00:00:00.000Z",
+            rowCount: 4,
+            expertsIncluded: null,
+            expertsAvailable: null,
+            expertCoveragePct: null,
+            problems: [],
+          },
+        ],
+        fantasyProsPlayers: [],
+        sleeperPlayers: [],
+      },
+      shardCounts: {
+        ALL: 4,
+        QB: 1,
+        RB: 4,
+        WR: 1,
+        TE: 1,
+        K: 1,
+        DEF: 1,
+        FLEX: 4,
+      },
+      evaluationNow: new Date("2026-09-04T01:00:00.000Z"),
+      projectionArtifact: {
+        schemaVersion: 1,
+        source: "Sleeper season projections",
+        season: "2026",
+        fetchedAt: "2026-09-04T00:00:00.000Z",
+        sourceLastModified: "2026-09-04T00:00:00.000Z",
+        players: Object.fromEntries(
+          Object.keys(playersMap).map((playerId, index) => [
+            playerId,
+            projection(playerId, index + 1),
+          ])
+        ),
+      },
     });
 
+    expect(vm.readiness?.status, JSON.stringify(vm.readiness?.incidents)).toBe(
+      "ready"
+    );
     expect(vm.recommendationBoard?.metricsByPlayerId.rb4?.positionRunCount)
       .toBe(3);
   });

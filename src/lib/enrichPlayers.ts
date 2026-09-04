@@ -37,6 +37,7 @@ export type EnrichedPlayer = CombinedEntryT & {
   tier_level: number | null;
   sleeper_pts: number | null;
   sleeper_adp: number | null;
+  sleeper_board_value: number | null;
   sleeper_rank_overall: number | null;
   fp_pts: number | null;
   fp_adp: number | null;
@@ -92,6 +93,13 @@ function getSleeperPtsAdp(
   // Use scoring-specific ADP (fallback is not needed as specific ADP should always be available)
   const adp = toNum(stats[`adp_${sleeperSuffix}`]);
   return { pts, adp };
+}
+
+function getSleeperBoardValue(
+  entry: CombinedEntryT,
+  scoring: ScoringType
+): number | null {
+  return toNum(entry.sleeper.draft_values[scoring]);
 }
 
 function getFpPts(entry: CombinedEntryT, scoring: ScoringType): number | null {
@@ -406,7 +414,23 @@ export function enrichPlayers(
     scoring
   );
 
-  // Precompute Sleeper ADPs and PTS for overall rank derivation
+  // Precompute Sleeper market inputs for overall rank derivation.
+  const sleeperBoardRanks = new Map(
+    players
+      .flatMap((player) => {
+        const value = getSleeperBoardValue(player, scoring);
+        const adp = getSleeperPtsAdp(player, scoring).adp;
+        return value == null ? [] : [{ player, value, adp }];
+      })
+      .toSorted(
+        (left, right) =>
+          right.value - left.value ||
+          (left.adp ?? Number.MAX_SAFE_INTEGER) -
+            (right.adp ?? Number.MAX_SAFE_INTEGER) ||
+          left.player.player_id.localeCompare(right.player.player_id)
+      )
+      .map((entry, index) => [entry.player.player_id, index + 1] as const)
+  );
   const sleeperAdps = players
     .map((p) => getSleeperPtsAdp(p, scoring).adp)
     .filter((x): x is number => x != null)
@@ -452,8 +476,11 @@ export function enrichPlayers(
         p,
         scoring
       );
+      const sleeper_board_value = getSleeperBoardValue(p, scoring);
       const sleeper_rank_overall =
-        overallRankFromAdp(sleeper_adp) ?? overallRankFromPts(sleeper_pts);
+        sleeperBoardRanks.get(p.player_id) ??
+        overallRankFromAdp(sleeper_adp) ??
+        overallRankFromPts(sleeper_pts);
 
       // FantasyPros
       const fp_pts = getFpPts(p, scoring);
@@ -476,10 +503,10 @@ export function enrichPlayers(
       // UI scarcity = percent of positive value remaining after this player is taken
       const fp_remaining_value_pct = remainingPct.get(String(p.player_id)) ?? 0;
       const fp_player_owned_avg = toNum(p.fantasypros?.player_owned_avg);
-      // Market delta (MD): Sleeper ADP - FP ECR (whole number)
+      // Market delta (MD): Sleeper room rank - FP ECR (whole number)
       const market_delta =
-        sleeper_adp != null && fp_rank_overall != null
-          ? Math.round(sleeper_adp - fp_rank_overall)
+        sleeper_rank_overall != null && fp_rank_overall != null
+          ? Math.round(sleeper_rank_overall - fp_rank_overall)
           : null;
 
       return {
@@ -490,6 +517,7 @@ export function enrichPlayers(
         // sleeper
         sleeper_pts,
         sleeper_adp,
+        sleeper_board_value,
         sleeper_rank_overall,
         // fantasy pros
         fp_pts,

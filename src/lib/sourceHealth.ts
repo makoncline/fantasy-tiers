@@ -1,366 +1,349 @@
-import * as fs from "fs";
-import * as path from "path";
-import type { ScoringType } from "@/lib/schemas";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { z } from "zod";
+
+import type { DraftProjectionArtifact } from "@/lib/beerPlusStrategy";
+import type { DraftRosterSlots } from "@/lib/draftLeagueConfig";
+import {
+  DraftSourceManifestSchema,
+  MIN_SLEEPER_MARKET_MATCH_PCT,
+  MIN_SLEEPER_MARKET_PLAYERS,
+} from "@/lib/draftSourceManifest";
+import type { Position, ScoringType } from "@/lib/schemas";
 import type { CombinedEntryT } from "@/lib/schemas-aggregates";
 
-export type AggregateSourceStatus = "ok" | "warning" | "missing";
+export type AggregateSourceStatus = "available" | "missing";
 
 export type AggregateSourceHealthItem = {
-  source: "Sleeper" | "FantasyPros" | "Tiers";
+  source: "Sleeper" | "FantasyPros";
   status: AggregateSourceStatus;
+  season: string | null;
   lastUpdated: string | null;
   fetchedAt: string | null;
   rowCount: number | null;
-  relevantRowCount: number | null;
-  coveragePct: number | null;
-  coverageBasis: string | null;
-  sampleSize: string | null;
-  projectionsFetched: boolean | null;
-  warnings: string[];
+  expertsIncluded: number | null;
+  expertsAvailable: number | null;
+  expertCoveragePct: number | null;
+  problems: string[];
+};
+
+export type FantasyProsDraftSourcePlayer = {
+  sourcePlayerId: string;
+  name: string;
+  normalizedName: string;
+  position: Position;
+  rankAve: number;
+  rankPos: number | null;
+  updatedAt: string | null;
+};
+
+export type SleeperDraftSourcePlayer = {
+  playerId: string;
+  name: string;
+  normalizedName: string;
+  position: Position;
+  marketRank: number;
 };
 
 export type AggregateSourceHealth = {
   generatedAt: string;
   scoring: ScoringType;
   sources: AggregateSourceHealthItem[];
-  warnings: string[];
+  fantasyProsPlayers: FantasyProsDraftSourcePlayer[];
+  sleeperPlayers: SleeperDraftSourcePlayer[];
 };
 
-type MetadataRecord = {
-  fetched_at?: unknown;
-  fetchedAt?: unknown;
-  last_updated?: unknown;
-  lastUpdated?: unknown;
-  row_count?: unknown;
-  projections_fetched?: unknown;
-  total_experts?: unknown;
-  experts?: {
-    coverage_pct?: unknown;
-    sample_size?: unknown;
-  };
-};
+const MetadataRecordSchema = z.object({
+  fetched_at: z.union([z.string(), z.number()]).nullable().optional(),
+  last_updated: z.union([z.string(), z.number()]).nullable().optional(),
+  row_count: z.number().nonnegative().nullable().optional(),
+  year: z.union([z.string(), z.number()]).nullable().optional(),
+  experts: z
+    .object({
+      included: z.number().int().nonnegative().nullable().optional(),
+      available: z.number().int().nonnegative().nullable().optional(),
+      coverage_pct: z.number().nonnegative().nullable().optional(),
+    })
+    .optional(),
+});
 
-type AggregateMetadata = {
-  fp?: Record<string, Record<string, MetadataRecord>>;
-  tiers?: Record<string, Record<string, MetadataRecord>>;
-};
+const AggregateMetadataSchema = z.object({
+  fp: z
+    .record(z.string(), z.record(z.string(), MetadataRecordSchema))
+    .optional(),
+});
 
-function scoringKey(scoring: ScoringType) {
-  return scoring.toUpperCase();
+type MetadataRecord = z.infer<typeof MetadataRecordSchema>;
+
+function readJson(filePath: string): unknown {
+  return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
-function readMetadata(): AggregateMetadata | null {
-  const metadataPath = path.resolve(
-    process.cwd(),
-    "public",
-    "data",
-    "aggregate",
-    "metadata.json"
-  );
+function readMetadata(): z.infer<typeof AggregateMetadataSchema> | null {
   try {
-    return JSON.parse(fs.readFileSync(metadataPath, "utf8")) as AggregateMetadata;
+    return AggregateMetadataSchema.parse(
+      readJson(path.resolve("public/data/aggregate/metadata.json"))
+    );
   } catch {
     return null;
   }
 }
 
-function toNumber(value: unknown): number | null {
-  if (typeof value === "number") return Number.isFinite(value) ? value : null;
-  if (typeof value !== "string") return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+function readSourceManifest() {
+  try {
+    return DraftSourceManifestSchema.parse(
+      readJson(path.resolve("public/data/aggregate/draft-source-manifest.json"))
+    );
+  } catch {
+    return null;
+  }
 }
 
-function toIso(value: unknown): string | null {
-  if (typeof value !== "string" && typeof value !== "number") return null;
-  const date = new Date(value);
+function toIso(value: string | number | null | undefined): string | null {
+  if (value == null) return null;
+  const numeric =
+    typeof value === "string" && /^\d+$/.test(value) ? Number(value) : value;
+  const date = new Date(numeric);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
-function summarizeRecords(records: MetadataRecord[]) {
-  if (records.length === 0) return null;
-  const latestUpdated = records
-    .map((record) => toIso(record.last_updated ?? record.lastUpdated))
-    .filter((value): value is string => value != null)
-    .sort()
-    .at(-1);
-  const latestFetched = records
-    .map((record) => toIso(record.fetched_at ?? record.fetchedAt))
-    .filter((value): value is string => value != null)
-    .sort()
-    .at(-1);
-  const rowCount = records.reduce(
-    (sum, record) => sum + (toNumber(record.row_count) ?? 0),
-    0
+function oldestIso(
+  records: readonly MetadataRecord[],
+  key: "fetched_at" | "last_updated"
+) {
+  const values = records.map((record) => toIso(record[key]));
+  if (values.length === 0 || values.some((value) => value == null)) return null;
+  return values.filter((value): value is string => value != null).toSorted()[0] ?? null;
+}
+
+function weakestNumber(
+  records: readonly MetadataRecord[],
+  key: "included" | "available" | "coverage_pct"
+) {
+  const values = records.flatMap((record) => {
+    const value = record.experts?.[key];
+    return value == null ? [] : [value];
+  });
+  return values.length === 0 ? null : Math.min(...values);
+}
+
+export function buildFantasyProsSourceHealth(
+  metadata: z.infer<typeof AggregateMetadataSchema> | null,
+  scoring: ScoringType,
+  rosterSlots: Pick<
+    DraftRosterSlots,
+    "QB" | "RB" | "WR" | "TE" | "K" | "DEF" | "FLEX"
+  >,
+  sourcePlayerCount: number
+): AggregateSourceHealthItem {
+  const scoringRecords = metadata?.fp?.[scoring.toUpperCase()] ?? {};
+  const standardRecords = metadata?.fp?.STD ?? {};
+  const required: Array<readonly [string, MetadataRecord | undefined]> = [];
+  if (rosterSlots.QB > 0) required.push(["QB", standardRecords.QB]);
+  if (rosterSlots.RB > 0 || rosterSlots.FLEX > 0) {
+    required.push(["RB", scoringRecords.RB]);
+  }
+  if (rosterSlots.WR > 0 || rosterSlots.FLEX > 0) {
+    required.push(["WR", scoringRecords.WR]);
+  }
+  if (rosterSlots.TE > 0 || rosterSlots.FLEX > 0) {
+    required.push(["TE", scoringRecords.TE]);
+  }
+  if (rosterSlots.K > 0) required.push(["K", standardRecords.K]);
+  if (rosterSlots.DEF > 0) required.push(["DST", standardRecords.DST]);
+  if (rosterSlots.FLEX > 0) required.push(["FLEX", scoringRecords.FLEX]);
+  const records = required.flatMap(([, record]) => (record ? [record] : []));
+  const missingPositions = required.flatMap(([position, record]) =>
+    record ? [] : [position]
   );
-  const coverageValues = records
-    .map((record) => toNumber(record.experts?.coverage_pct))
-    .filter((value): value is number => value != null);
-  const coveragePct =
-    coverageValues.length > 0
-      ? Math.round(
-          coverageValues.reduce((sum, value) => sum + value, 0) /
-            coverageValues.length
-        )
+  const seasons = new Set(
+    records.flatMap((record) =>
+      record.year == null ? [] : [String(record.year)]
+    )
+  );
+  const hasCompleteSeasonMetadata = records.every(
+    (record) => record.year != null
+  );
+  const season =
+    hasCompleteSeasonMetadata && seasons.size === 1
+      ? [...seasons][0] ?? null
       : null;
-  const sampleSizes = new Set(
-    records
-      .map((record) => record.experts?.sample_size)
-      .filter((value): value is string => typeof value === "string")
-  );
-  const sampleSize =
-    sampleSizes.has("thin") || sampleSizes.has("limited")
-      ? "limited"
-      : sampleSizes.values().next().value ?? null;
-  const projectionsFetched = records.every(
-    (record) => record.projections_fetched === true
-  );
+  const fetchedAt = oldestIso(records, "fetched_at");
+  const lastUpdated = oldestIso(records, "last_updated");
+  const problems: string[] = [];
+  if (missingPositions.length > 0) {
+    problems.push(
+      `FantasyPros metadata is missing for ${missingPositions.join(", ")}.`
+    );
+  }
+  if (!fetchedAt) problems.push("FantasyPros fetch time is missing.");
+  if (!lastUpdated) problems.push("FantasyPros source update time is missing.");
+  if (!season) problems.push("FantasyPros season metadata is missing or mixed.");
+  if (
+    !records.every(
+      (record) =>
+        record.experts?.included != null &&
+        record.experts.available != null &&
+        record.experts.coverage_pct != null
+    )
+  ) {
+    problems.push("FantasyPros expert metadata is incomplete.");
+  }
+  if (sourcePlayerCount === 0) {
+    problems.push("FantasyPros draft player rows are missing.");
+  }
+
   return {
-    latestUpdated: latestUpdated ?? null,
-    latestFetched: latestFetched ?? null,
-    rowCount,
-    relevantRowCount: rowCount,
-    coveragePct,
-    coverageBasis: coveragePct == null ? null : "expert",
-    sampleSize,
-    projectionsFetched,
+    source: "FantasyPros",
+    status: problems.length === 0 ? "available" : "missing",
+    season,
+    lastUpdated,
+    fetchedAt,
+    rowCount: records.reduce(
+      (total, record) => total + (record.row_count ?? 0),
+      0
+    ),
+    expertsIncluded: weakestNumber(records, "included"),
+    expertsAvailable: weakestNumber(records, "available"),
+    expertCoveragePct: weakestNumber(records, "coverage_pct"),
+    problems,
   };
 }
 
-function statusFromWarnings(warnings: string[]): AggregateSourceStatus {
-  return warnings.length > 0 ? "warning" : "ok";
-}
-
-const SOURCE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
-const DEFAULT_DRAFT_CAPACITY = 180;
-
-function addFreshnessWarning(args: {
-  warnings: string[];
-  source: string;
-  updatedAt: string | null;
-  now: Date;
-}) {
-  if (!args.updatedAt) return;
-  if (args.now.getTime() - new Date(args.updatedAt).getTime() > SOURCE_MAX_AGE_MS) {
-    args.warnings.push(`${args.source} data is more than 7 days old.`);
+export function buildSleeperSourceHealth(args: {
+  players: readonly CombinedEntryT[];
+  projectionArtifact: DraftProjectionArtifact | null;
+  market: {
+    season: string;
+    fetchedAt: string;
+    rankedPlayerCount: number;
+    matchedPlayerCount: number;
+  } | null;
+  marketPlayerCount: number;
+  marketTopPlayerCount: number;
+}): AggregateSourceHealthItem {
+  const problems: string[] = [];
+  if (args.players.length === 0) {
+    problems.push("Sleeper aggregate rows are missing.");
   }
-}
-
-function fantasyProsHealth(
-  metadata: AggregateMetadata | null,
-  scoring: ScoringType,
-  now: Date
-) {
-  const records = Object.values(metadata?.fp?.[scoringKey(scoring)] ?? {});
-  const summary = summarizeRecords(records);
-  if (!summary) {
-    return {
-      source: "FantasyPros",
-      status: "missing",
-      lastUpdated: null,
-      fetchedAt: null,
-      rowCount: null,
-      relevantRowCount: null,
-      coveragePct: null,
-      coverageBasis: null,
-      sampleSize: null,
-      projectionsFetched: null,
-      warnings: ["FantasyPros metadata is missing."],
-    } satisfies AggregateSourceHealthItem;
+  if (!args.projectionArtifact) {
+    problems.push("Sleeper projection data is missing.");
   }
-
-  const warnings: string[] = [];
-  if (summary.sampleSize === "thin" || summary.sampleSize === "limited") {
-    warnings.push("FantasyPros expert sample is limited.");
+  if (!args.market || args.marketPlayerCount === 0) {
+    problems.push("Sleeper draft-market data is missing.");
   }
-  if ((summary.coveragePct ?? 100) < 50) {
-    warnings.push("FantasyPros expert coverage is below 50%.");
+  if (args.market) {
+    const matchPct =
+      args.market.rankedPlayerCount === 0
+        ? 0
+        : (args.marketPlayerCount / args.market.rankedPlayerCount) * 100;
+    if (
+      args.market.rankedPlayerCount < MIN_SLEEPER_MARKET_PLAYERS ||
+      args.marketPlayerCount < MIN_SLEEPER_MARKET_PLAYERS
+    ) {
+      problems.push(
+        `Sleeper draft market has fewer than ${MIN_SLEEPER_MARKET_PLAYERS} ranked players.`
+      );
+    }
+    const requiredTopCount = Math.min(120, args.market.rankedPlayerCount);
+    if (args.marketTopPlayerCount !== requiredTopCount) {
+      problems.push(
+        `Sleeper draft market matches ${args.marketTopPlayerCount}/${requiredTopCount} core players; 100% is required.`
+      );
+    }
+    if (matchPct < MIN_SLEEPER_MARKET_MATCH_PCT) {
+      problems.push(
+        `Sleeper draft-market player matching is ${matchPct.toFixed(1)}%; ` +
+          `${MIN_SLEEPER_MARKET_MATCH_PCT}% is required.`
+      );
+    }
+    if (args.market.matchedPlayerCount !== args.marketPlayerCount) {
+      problems.push("Sleeper draft-market manifest counts do not match.");
+    }
   }
-  addFreshnessWarning({
-    warnings,
-    source: "FantasyPros",
-    updatedAt: summary.latestUpdated ?? summary.latestFetched,
-    now,
-  });
-
-  return {
-    source: "FantasyPros",
-    status: statusFromWarnings(warnings),
-    lastUpdated: summary.latestUpdated,
-    fetchedAt: summary.latestFetched,
-    rowCount: summary.rowCount,
-    relevantRowCount: summary.relevantRowCount,
-    coveragePct: summary.coveragePct,
-    coverageBasis: summary.coverageBasis,
-    sampleSize: summary.sampleSize,
-    projectionsFetched: summary.projectionsFetched,
-    warnings,
-  } satisfies AggregateSourceHealthItem;
-}
-
-function tiersHealth(
-  metadata: AggregateMetadata | null,
-  scoring: ScoringType,
-  now: Date
-) {
-  const records = Object.values(metadata?.tiers?.[scoringKey(scoring)] ?? {});
-  const summary = summarizeRecords(records);
-  if (!summary) {
-    return {
-      source: "Tiers",
-      status: "missing",
-      lastUpdated: null,
-      fetchedAt: null,
-      rowCount: null,
-      relevantRowCount: null,
-      coveragePct: null,
-      coverageBasis: null,
-      sampleSize: null,
-      projectionsFetched: null,
-      warnings: ["Tier metadata is missing."],
-    } satisfies AggregateSourceHealthItem;
+  if (
+    args.projectionArtifact &&
+    args.market &&
+    args.projectionArtifact.season !== args.market.season
+  ) {
+    problems.push("Sleeper projection and draft-market seasons do not match.");
   }
-
-  const warnings: string[] = [];
-  if (summary.sampleSize === "thin" || summary.sampleSize === "limited") {
-    warnings.push("Tier generation used a limited expert sample.");
+  if (args.projectionArtifact && !args.projectionArtifact.sourceLastModified) {
+    problems.push("Sleeper source update time is missing.");
   }
-  addFreshnessWarning({
-    warnings,
-    source: "Tier",
-    updatedAt: summary.latestUpdated ?? summary.latestFetched,
-    now,
-  });
-
-  return {
-    source: "Tiers",
-    status: statusFromWarnings(warnings),
-    lastUpdated: summary.latestUpdated,
-    fetchedAt: summary.latestFetched,
-    rowCount: summary.rowCount,
-    relevantRowCount: summary.relevantRowCount,
-    coveragePct: summary.coveragePct,
-    coverageBasis: summary.coverageBasis,
-    sampleSize: summary.sampleSize,
-    projectionsFetched: null,
-    warnings,
-  } satisfies AggregateSourceHealthItem;
-}
-
-function numberField(value: unknown): number | null {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
-}
-
-function sleeperAdp(player: CombinedEntryT, scoring: ScoringType) {
-  const stats = player.sleeper?.stats;
-  return numberField(
-    scoring === "std"
-      ? stats?.adp_std
-      : scoring === "half"
-        ? stats?.adp_half_ppr
-        : stats?.adp_ppr
+  const seasons = [args.projectionArtifact?.season, args.market?.season].filter(
+    (season): season is string => season != null
   );
-}
-
-function hasDraftableSleeperAdp(player: CombinedEntryT, scoring: ScoringType) {
-  const adp = sleeperAdp(player, scoring);
-  return adp != null && adp < 900;
-}
-
-function hasTierForScoring(player: CombinedEntryT, scoring: ScoringType) {
-  return player.tiers[scoring] != null;
-}
-
-function draftRank(player: CombinedEntryT, scoring: ScoringType) {
-  const tierRank = player.tiers[scoring]?.rank;
-  if (tierRank != null) return tierRank;
-  const adp = sleeperAdp(player, scoring);
-  return adp != null && adp < 900 ? adp : Number.MAX_SAFE_INTEGER;
-}
-
-function sleeperHealth(
-  players: readonly CombinedEntryT[],
-  scoring: ScoringType,
-  draftCapacity: number,
-  now: Date
-) {
-  const rowCount = players.length;
-  const draftRelevantPlayers = players
-    .filter(
-      (player) =>
-        hasTierForScoring(player, scoring) ||
-        hasDraftableSleeperAdp(player, scoring)
-    )
-    .toSorted((a, b) => draftRank(a, scoring) - draftRank(b, scoring))
-    .slice(0, draftCapacity);
-  const relevantRowCount = draftRelevantPlayers.length;
-  const withAdp = draftRelevantPlayers.filter((player) =>
-    hasDraftableSleeperAdp(player, scoring)
-  ).length;
-  const latestUpdated = players
-    .map((player) => toIso(player.sleeper.updated_at))
+  const season =
+    seasons.length === 2 && new Set(seasons).size === 1
+      ? seasons[0] ?? null
+      : null;
+  const fetchedAt = [
+    args.projectionArtifact?.fetchedAt,
+    args.market?.fetchedAt,
+  ]
     .filter((value): value is string => value != null)
-    .sort()
-    .at(-1);
-  const warnings: string[] = [];
-  if (rowCount === 0) warnings.push("Sleeper aggregate rows are missing.");
-  if (rowCount > 0 && relevantRowCount === 0) {
-    warnings.push("Sleeper draft-relevant rows are missing.");
-  }
-  if (relevantRowCount > 0 && withAdp / relevantRowCount < 0.8) {
-    warnings.push("Sleeper ADP coverage is below 80% for draft-relevant players.");
-  }
-  if (!latestUpdated) {
-    warnings.push("Sleeper update timestamp is unavailable; using aggregate file freshness.");
-  }
-  addFreshnessWarning({
-    warnings,
-    source: "Sleeper",
-    updatedAt: latestUpdated ?? null,
-    now,
-  });
-
+    .toSorted()[0] ?? null;
   return {
     source: "Sleeper",
-    status: rowCount === 0 ? "missing" : statusFromWarnings(warnings),
-    lastUpdated: latestUpdated ?? null,
-    fetchedAt: null,
-    rowCount,
-    relevantRowCount,
-    coveragePct:
-      relevantRowCount > 0
-        ? Math.round((withAdp / relevantRowCount) * 100)
-        : null,
-    coverageBasis: `ADP among top ${draftCapacity} draft slots`,
-    sampleSize: null,
-    projectionsFetched: null,
-    warnings,
-  } satisfies AggregateSourceHealthItem;
+    status: problems.length === 0 ? "available" : "missing",
+    season,
+    lastUpdated: args.projectionArtifact?.sourceLastModified ?? null,
+    fetchedAt,
+    rowCount: args.players.length,
+    expertsIncluded: null,
+    expertsAvailable: null,
+    expertCoveragePct: null,
+    problems,
+  };
 }
 
 export function getAggregateSourceHealth(args: {
   scoring: ScoringType;
   players: readonly CombinedEntryT[];
-  draftCapacity?: number;
+  projectionArtifact: DraftProjectionArtifact | null;
+  rosterSlots: Pick<
+    DraftRosterSlots,
+    "QB" | "RB" | "WR" | "TE" | "K" | "DEF" | "FLEX"
+  >;
   now?: Date;
 }): AggregateSourceHealth {
   const metadata = readMetadata();
-  const now = args.now ?? new Date();
-  const draftCapacity = Math.max(
-    1,
-    Math.floor(args.draftCapacity ?? DEFAULT_DRAFT_CAPACITY)
+  const sourceManifest = readSourceManifest();
+  const sourcePlayers = sourceManifest?.fantasyPros[args.scoring] ?? [];
+  const fantasyPros = buildFantasyProsSourceHealth(
+    metadata,
+    args.scoring,
+    args.rosterSlots,
+    sourcePlayers.length
   );
-  const sources = [
-    sleeperHealth(args.players, args.scoring, draftCapacity, now),
-    fantasyProsHealth(metadata, args.scoring, now),
-    tiersHealth(metadata, args.scoring, now),
-  ];
+  const fantasyProsPlayers = sourcePlayers.map((player) => ({
+    ...player,
+    updatedAt: fantasyPros.lastUpdated,
+  }));
+  const sleeperPlayers = sourceManifest?.sleeper[args.scoring] ?? [];
   return {
-    generatedAt: now.toISOString(),
+    generatedAt: (args.now ?? new Date()).toISOString(),
     scoring: args.scoring,
-    sources,
-    warnings: sources.flatMap((source) =>
-      source.warnings.map((warning) => `${source.source}: ${warning}`)
-    ),
+    sources: [
+      fantasyPros,
+      buildSleeperSourceHealth({
+        players: args.players,
+        projectionArtifact: args.projectionArtifact,
+        market: sourceManifest
+          ? {
+              season: sourceManifest.sleeperMarket.season,
+              fetchedAt: sourceManifest.sleeperMarket.fetchedAt,
+              ...sourceManifest.sleeperMarket.boards[args.scoring],
+            }
+          : null,
+        marketPlayerCount: sleeperPlayers.length,
+        marketTopPlayerCount: sleeperPlayers.filter(
+          (player) => player.marketRank <= 120
+        ).length,
+      }),
+    ],
+    fantasyProsPlayers,
+    sleeperPlayers,
   };
 }

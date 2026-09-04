@@ -3,6 +3,16 @@ import { resetAggregatesCache } from "../../src/lib/combinedAggregates";
 import { GET as playersGET } from "../../src/app/api/players/route";
 import { NextRequest } from "next/server";
 
+function sleeperMarket(position: string, value: number) {
+  return {
+    draft_values: { std: value, half: value, ppr: value },
+    active_player: {
+      depth_chart_position: position,
+      depth_chart_order: 1,
+    },
+  };
+}
+
 const sampleCombined = {
   "1": {
     player_id: "1",
@@ -22,6 +32,7 @@ const sampleCombined = {
         adp_ppr: 10.2,
         pts_ppr: 340,
       },
+      ...sleeperMarket("QB", 10),
       week: null,
       player: {
         injury_body_part: null,
@@ -57,6 +68,7 @@ const sampleCombined = {
         adp_ppr: 1.1,
         pts_ppr: 360,
       },
+      ...sleeperMarket("RB", 99),
       week: null,
       player: {
         injury_body_part: null,
@@ -131,6 +143,7 @@ describe("/api/players route", () => {
             adp_half_ppr: 15.1,
             adp_ppr: 15.0,
           },
+          ...sleeperMarket("QB", 85),
           week: null,
           player: {
             injury_body_part: null,
@@ -159,6 +172,7 @@ describe("/api/players route", () => {
             adp_half_ppr: 5.1,
             adp_ppr: 5.0,
           },
+          ...sleeperMarket("RB", 95),
           week: null,
           player: {
             injury_body_part: null,
@@ -187,6 +201,7 @@ describe("/api/players route", () => {
             adp_half_ppr: 10.1,
             adp_ppr: 10.0,
           },
+          ...sleeperMarket("WR", 90),
           week: null,
           player: {
             injury_body_part: null,
@@ -215,6 +230,7 @@ describe("/api/players route", () => {
             adp_half_ppr: 20.1,
             adp_ppr: 20.0,
           },
+          ...sleeperMarket("TE", 80),
           week: null,
           player: {
             injury_body_part: null,
@@ -243,6 +259,7 @@ describe("/api/players route", () => {
             adp_half_ppr: 150.1,
             adp_ppr: 150.0,
           },
+          ...sleeperMarket("K", 10),
           week: null,
           player: {
             injury_body_part: null,
@@ -271,6 +288,7 @@ describe("/api/players route", () => {
             adp_half_ppr: 120.1,
             adp_ppr: 120.0,
           },
+          ...sleeperMarket("DEF", 20),
           week: null,
           player: {
             injury_body_part: null,

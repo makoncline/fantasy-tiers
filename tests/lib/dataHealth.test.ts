@@ -1,66 +1,68 @@
 import { describe, expect, it } from "vitest";
-import { buildDataHealthResponse } from "../../src/lib/dataHealth";
-import type { DraftDataQualityReport } from "../../src/lib/draftDataQuality";
 
-const GENERATED_AT = "2026-07-13T16:00:00.000Z";
-const quality = {
-  version: 1,
+import { buildDataHealthResponse } from "../../src/lib/dataHealth";
+import type { DraftReadinessReport } from "../../src/lib/draftReadiness";
+
+const CHECKED_AT = "2026-09-04T12:00:00.000Z";
+const cohort = (id: "core" | "expected" | "reserve") => ({
+  id,
+  label: id,
+  rankDepth: 120,
+  requiredCoveragePct: id === "reserve" ? 95 : 100,
+  playerIds: ["player-1"],
+  total: 1,
+  ready: 1,
+  coveragePct: 100,
+  status: "ready" as const,
+});
+const readiness = {
+  version: 3,
+  status: "ready",
+  checkedAt: CHECKED_AT,
   mode: "draft",
   season: "2026",
-  generatedAt: GENERATED_AT,
-  status: "healthy",
+  league: { teams: 12, rounds: 14, scoring: "ppr" },
+  providers: {
+    fantasyPros: {
+      status: "ready",
+      season: "2026",
+      fetchedAt: CHECKED_AT,
+      lastUpdatedAt: CHECKED_AT,
+      fetchAgeHours: 0,
+      providerAgeHours: 0,
+      expertsIncluded: 100,
+      expertsAvailable: 150,
+      expertCoveragePct: 66.7,
+    },
+    sleeper: {
+      status: "ready",
+      season: "2026",
+      fetchedAt: CHECKED_AT,
+      lastUpdatedAt: CHECKED_AT,
+      fetchAgeHours: 0,
+      providerAgeHours: 0,
+      expertsIncluded: null,
+      expertsAvailable: null,
+      expertCoveragePct: null,
+    },
+  },
   shards: { ALL: 1, QB: 1, RB: 1, WR: 1, TE: 1, K: 1, DEF: 1, FLEX: 1 },
-  scoring: {
-    std: {
-      ecrRows: 300,
-      topCandidates: 180,
-      sleeperAdpCovered: 170,
-      sleeperAdpCoveragePct: 94.4,
-      tierCovered: 180,
-      tierCoveragePct: 100,
-      expertsIncluded: 60,
-      expertsAvailable: 90,
-      expertCoveragePct: 66.7,
-    },
-    half: {
-      ecrRows: 300,
-      topCandidates: 180,
-      sleeperAdpCovered: 170,
-      sleeperAdpCoveragePct: 94.4,
-      tierCovered: 180,
-      tierCoveragePct: 100,
-      expertsIncluded: 60,
-      expertsAvailable: 90,
-      expertCoveragePct: 66.7,
-    },
-    ppr: {
-      ecrRows: 300,
-      topCandidates: 180,
-      sleeperAdpCovered: 170,
-      sleeperAdpCoveragePct: 94.4,
-      tierCovered: 180,
-      tierCoveragePct: 100,
-      expertsIncluded: 60,
-      expertsAvailable: 90,
-      expertCoveragePct: 66.7,
-    },
+  cohorts: {
+    core: cohort("core"),
+    expected: cohort("expected"),
+    reserve: cohort("reserve"),
   },
-  sources: {
-    fantasyprosUpdatedAt: GENERATED_AT,
-    sleeperUpdatedAt: GENERATED_AT,
-    tiersUpdatedAt: GENERATED_AT,
-  },
-  warnings: [],
-  errors: [],
-} satisfies DraftDataQualityReport;
+  playerIssues: [],
+  incidents: [],
+} satisfies DraftReadinessReport;
 
 describe("deployment data health", () => {
   it("is healthy for the expected commit with current draft data", () => {
     const response = buildDataHealthResponse({
       commitSha: "abc1234",
       expectedCommitSha: "abc1234",
-      quality,
-      now: new Date("2026-07-14T16:00:00.000Z"),
+      readiness,
+      now: new Date("2026-09-04T17:00:00.000Z"),
     });
     expect(response.status).toBe("healthy");
     expect(response.checks).toEqual({
@@ -73,13 +75,35 @@ describe("deployment data health", () => {
     const response = buildDataHealthResponse({
       commitSha: "old1234",
       expectedCommitSha: "new1234",
-      quality,
-      now: new Date("2026-07-20T16:00:00.000Z"),
+      readiness,
+      now: new Date("2026-09-05T12:00:00.000Z"),
     });
     expect(response.status).toBe("unhealthy");
-    expect(response.checks).toMatchObject({
+    expect(response.checks).toEqual({
       commitMatches: false,
       dataCurrent: false,
     });
+  });
+
+  it("becomes unhealthy when a provider ages after a recent assessment", () => {
+    const response = buildDataHealthResponse({
+      commitSha: "abc1234",
+      expectedCommitSha: "abc1234",
+      readiness: {
+        ...readiness,
+        checkedAt: "2026-09-05T11:30:00.000Z",
+        providers: {
+          ...readiness.providers,
+          fantasyPros: {
+            ...readiness.providers.fantasyPros,
+            fetchedAt: "2026-09-04T16:00:00.000Z",
+          },
+        },
+      },
+      now: new Date("2026-09-05T12:00:00.000Z"),
+    });
+
+    expect(response.status).toBe("unhealthy");
+    expect(response.checks.dataCurrent).toBe(false);
   });
 });

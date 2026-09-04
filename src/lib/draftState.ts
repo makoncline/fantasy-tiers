@@ -16,6 +16,18 @@ import {
   type DraftTeamRosterState,
   type DraftValueBoard,
 } from "./draftValue";
+import {
+  type DraftProjectionArtifact,
+} from "./beerPlusStrategy";
+import {
+  rankingScoringFromRules,
+  type DraftScoringRules,
+} from "./draftLeagueConfig";
+import {
+  assessDraftReadiness,
+  type DraftReadinessShardCounts,
+} from "./draftReadiness";
+import type { AggregateSourceHealthT } from "./schemas-bundle";
 
 export type PlayerWithDraftMeta = DraftCandidate & {
   drafted: boolean;
@@ -643,6 +655,11 @@ export function buildDraftViewModel(args: {
   picks: DraftPick[];
   userId?: string;
   topLimit?: number;
+  scoringRules?: DraftScoringRules;
+  projectionArtifact?: DraftProjectionArtifact | null;
+  sourceHealth?: AggregateSourceHealthT | null;
+  shardCounts?: DraftReadinessShardCounts;
+  evaluationNow?: Date;
 }) {
   const {
     playersMap,
@@ -726,7 +743,51 @@ export function buildDraftViewModel(args: {
       })
     )
   );
-  const draftValueBoard = userRoster
+  const readinessRosterSlots = {
+    QB: draft.settings.slots_qb,
+    RB: draft.settings.slots_rb,
+    WR: draft.settings.slots_wr,
+    TE: draft.settings.slots_te,
+    K: draft.settings.slots_k,
+    DEF: draft.settings.slots_def,
+    FLEX: draft.settings.slots_flex,
+    BENCH: draft.settings.slots_bn ?? 0,
+    IR: draft.settings.slots_ir ?? 0,
+  };
+  const readinessAssessment = args.scoringRules
+    ? assessDraftReadiness({
+        candidates: Object.values(playersMap),
+        sourceHealth: args.sourceHealth ?? null,
+        projectionArtifact: args.projectionArtifact ?? null,
+        teams,
+        rounds: draft.settings.rounds,
+        scoring: rankingScoringFromRules(args.scoringRules),
+        scoringRules: args.scoringRules,
+        rosterSlots: readinessRosterSlots,
+        mode: "draft",
+        season: draft.season ?? args.projectionArtifact?.season ?? "unknown",
+        shardCounts:
+          args.shardCounts ?? deriveShardCounts(Object.values(playersMap)),
+        ...(args.evaluationNow ? { now: args.evaluationNow } : {}),
+      })
+    : null;
+  const starterAwareValue = readinessAssessment?.strategy ?? {
+        status: {
+          available: false,
+          reason: "League scoring rules are not available.",
+          source: "Sleeper season projections",
+          sourceLastModified: null,
+          playerCoveragePct: 0,
+          requiredStatCoveragePct: 0,
+          missingPositions: [],
+          capabilityLimitations: [],
+        },
+        result: null,
+      };
+  const draftValueBoard =
+    userRoster &&
+    starterAwareValue.status.available &&
+    readinessAssessment?.report.status === "ready"
     ? buildDraftValueBoard({
         players: recommendationPlayers,
         teams,
@@ -741,6 +802,12 @@ export function buildDraftViewModel(args: {
         draftWideNeeds,
         teamRosterStates,
         userRosterPlayers: userRoster.players,
+        irSlots: draft.settings.slots_ir ?? 0,
+        staticValuesByPlayerId: Object.fromEntries(
+          Object.entries(starterAwareValue.result?.valuesByPlayerId ?? {}).map(
+            ([playerId, value]) => [playerId, value.value]
+          )
+        ),
       })
     : null;
   const draftContext = buildDraftContext({
@@ -765,5 +832,29 @@ export function buildDraftViewModel(args: {
     recommendationBoard: draftValueBoard,
     draftContext,
     rosterRequirements,
+    draftValueStatus: starterAwareValue.status,
+    draftValueAssumptions: starterAwareValue.result?.relevantPlayerCounts ?? null,
+    readiness: readinessAssessment?.report ?? null,
+  };
+}
+
+function deriveShardCounts(
+  candidates: readonly DraftCandidate[]
+): DraftReadinessShardCounts {
+  const count = (position: Position) =>
+    candidates.filter((candidate) => candidate.position === position).length;
+  return {
+    ALL: candidates.length,
+    QB: count("QB"),
+    RB: count("RB"),
+    WR: count("WR"),
+    TE: count("TE"),
+    K: count("K"),
+    DEF: count("DEF"),
+    FLEX: candidates.filter((candidate) =>
+      candidate.position === "RB" ||
+      candidate.position === "WR" ||
+      candidate.position === "TE"
+    ).length,
   };
 }

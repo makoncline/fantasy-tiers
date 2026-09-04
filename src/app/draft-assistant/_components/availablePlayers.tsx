@@ -13,6 +13,7 @@ import type { PlayerWithPick } from "@/lib/types.draft";
 import { EyeIcon } from "lucide-react";
 import { filterAvailableRows } from "@/app/draft-assistant/_lib/filterAvailableRows";
 import type { DraftPickAction } from "@/app/draft-assistant/_lib/types";
+import { canAddPositionToRoster } from "@/lib/draftRosterPolicy";
 
 const CORE_POSITION_FILTERS = ["QB", "RB", "WR", "TE"] as const;
 const POSITION_FILTERS = [...CORE_POSITION_FILTERS, "K", "DEF"] as const;
@@ -73,6 +74,8 @@ export default function AvailablePlayers({
   const {
     playersAll,
     userRosterSlots,
+    userPositionCounts,
+    userPositionRequirements,
     draftContext,
     draftDetails,
     picks,
@@ -338,7 +341,7 @@ export default function AvailablePlayers({
         colorizeValuePs
         dimDrafted={showDrafted} // Dim drafted players when showing them (to distinguish)
         hideDrafted={!showDrafted} // Hide drafted when switch is off, show when on
-        defaultSortId="val"
+        defaultSortId="adj"
         defaultSortDir="desc"
         heatDomainRows={valueColorDomainRef.current}
         renderActions={(row) => (
@@ -358,7 +361,15 @@ export default function AvailablePlayers({
                 type="button"
                 size="sm"
                 className="h-7 px-2 text-xs"
-                disabled={pickAction.disabled || Boolean(row.picked)}
+                disabled={
+                  pickAction.disabled ||
+                  Boolean(row.picked) ||
+                  !canAddPositionToRoster({
+                    position: row.position,
+                    counts: userPositionCounts,
+                    requirements: userPositionRequirements,
+                  })
+                }
                 aria-label={`${pickAction.label ?? "Pick"} ${row.name}`}
                 data-testid={`mock-pick-${row.player_id}`}
                 onClick={() => pickAction.onPick(row)}

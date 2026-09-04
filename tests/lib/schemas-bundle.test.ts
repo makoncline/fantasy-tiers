@@ -17,10 +17,13 @@ describe("AggregatesBundlePlayer schema", () => {
       tiers: { rank: 4, tier: 1 },
       sleeper: {
         rank: 4,
+        boardValue: 96,
         adp: 3.2,
         pts: 263.4,
         injuryStatus: null,
         injuryNotes: null,
+        depthChartPosition: "RB",
+        depthChartOrder: 1,
       },
       fantasypros: {
         rank: 4,
@@ -52,10 +55,13 @@ describe("AggregatesBundlePlayer schema", () => {
       tiers: { rank: null, tier: null },
       sleeper: {
         rank: null,
+        boardValue: null,
         adp: null,
         pts: null,
         injuryStatus: null,
         injuryNotes: null,
+        depthChartPosition: null,
+        depthChartOrder: null,
       },
       fantasypros: {
         rank: null,

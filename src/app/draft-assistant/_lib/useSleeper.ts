@@ -1,13 +1,31 @@
 import { useQuery } from "@tanstack/react-query";
+import { qk } from "@/lib/queryKeys";
 import {
   fetchSleeperUserByUsername,
   fetchSleeperUserById,
   fetchDraftsForUserYear,
+  fetchSleeperLeagueById,
   fetchSleeperNflState,
+  type SleeperLeague,
   type SleeperUser,
   type SleeperDraftSummary,
   type SleeperNflState,
 } from "@/lib/sleeper";
+
+export function useSleeperLeagueById(
+  leagueId: string | null | undefined,
+  enabled: boolean
+) {
+  return useQuery<SleeperLeague, Error>({
+    queryKey: qk.sleeper.league(String(leagueId)),
+    queryFn: async () => {
+      if (!leagueId) throw new Error("leagueId is required");
+      return fetchSleeperLeagueById(leagueId);
+    },
+    enabled: Boolean(leagueId) && enabled,
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
 export function useSleeperUserByUsername(
   username: string | undefined,

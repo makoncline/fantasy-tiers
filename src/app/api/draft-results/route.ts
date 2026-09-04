@@ -33,36 +33,10 @@ export async function POST(request: Request) {
       "utf8"
     );
 
-    const files = [artifactPath];
-    const reportMetadata = [];
-    for (const report of body.analysisReports) {
-      const reportPath = path.join(resultDir, report.fileName);
-      await writeFile(reportPath, report.content, "utf8");
-      files.push(reportPath);
-      reportMetadata.push({
-        provider: report.provider,
-        fetchedAt: report.fetchedAt,
-        sourceUrl: report.sourceUrl,
-        format: report.format,
-        fileName: report.fileName,
-        summary: report.summary,
-      });
-    }
-
-    if (reportMetadata.length > 0) {
-      const metadataPath = path.join(resultDir, "analysis-reports.json");
-      await writeFile(
-        metadataPath,
-        JSON.stringify(reportMetadata, null, 2),
-        "utf8"
-      );
-      files.push(metadataPath);
-    }
-
     return NextResponse.json({
       ok: true,
       resultDir,
-      files,
+      files: [artifactPath],
     });
   } catch (error) {
     const message =

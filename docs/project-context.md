@@ -1,12 +1,18 @@
 # Fantasy Tiers Project Context
 
-Last updated: 2026-07-13
+Last updated: 2026-09-03
 
 This document is a fast orientation guide for agents working on this repo. Read it after `AGENTS.md`.
 
 ## Product Purpose
 
-Fantasy Tiers is a personal fantasy football draft and league management app. The main user wants to use it to prepare for the new season, manage drafts, inspect Sleeper leagues, compare player rankings, and make roster decisions. A few other people may use it, but it is primarily optimized for the owner's workflow rather than a broad SaaS audience.
+Fantasy Tiers is an owner-first fantasy football draft and league management
+app that is available on the internet. Other users can load their Sleeper
+drafts, but full strategy support for every league format is not a product
+goal. The selected live Sleeper draft is the authority for its settings. The
+owner's league is the optimization target, primary regression scenario, and
+default local mock preset. For unsupported format rules, load the draft and
+show a clear limitation message instead of building another strategy engine.
 
 The app should help answer questions like:
 
@@ -38,11 +44,13 @@ The old root page was API usage text. It has been replaced with a product entry 
 
 ## Data Sources
 
-The core sources today are:
+The two independent core providers are:
 
 - Sleeper: public API for users, leagues, drafts, picks, player metadata, and projections.
 - FantasyPros: scraped rankings/projections, including draft and weekly modes.
-- Tiers: tier CSV rankings generated locally from current FantasyPros draft ECR.
+
+The app also generates tier CSV rankings locally from current FantasyPros draft
+ECR. Tiers are derived data, not a third provider.
 
 Possible future sources discussed:
 
@@ -51,7 +59,8 @@ Possible future sources discussed:
 - Other ranking sites.
 - Player news feeds.
 
-The key architectural need is a source model that can grow beyond the current three sources without hard-coding every new provider into the UI and aggregate schemas.
+Keep the source model focused on these inputs until a new provider has a clear,
+validated role.
 
 ## Data Pipeline
 
@@ -64,10 +73,11 @@ pnpm run validate:aggregates:ci
 ```
 
 Scheduled draft refreshes set `SEASON=2026`, `DRAFT=true`, and
-`FP_FETCH_PROJECTIONS=false`. Semantic validation writes the committed
-`public/data/aggregate/quality-report.json` and fails closed on short ECR,
-collapsed draft-relevant ADP/tier coverage, stale sources, wrong mode/season,
-or large regressions from the prior healthy report.
+`FP_FETCH_PROJECTIONS=false`. Readiness validation writes the committed
+`public/data/aggregate/quality-report.json`. The same readiness module protects
+the validator, health endpoint, live assistant, and mock assistant. It fails
+closed on stale FantasyPros or Sleeper data, thin expert samples, wrong
+mode/season, empty derived shards, or incomplete draft-relevant players.
 
 Source fetchers and aggregators live in:
 
@@ -99,9 +109,10 @@ The app can run with FantasyPros ECR and empty FantasyPros stats, but the curren
 
 ### Tiers 2026 Notes
 
-The old Boris Chen fetcher downloaded CSVs from `https://s3-us-west-1.amazonaws.com/fftiers/out/*`, but those files can lag the new season. The default `pnpm run fetch:tiers` path now generates tier raw CSVs in `public/data/tiers/*` from the current FantasyPros draft ECR files.
-
-The upstream `borisachen/fftiers` project uses FantasyPros data and R `mclust` clustering to create tiers. This repo uses a deterministic local approximation: contiguous 1D k-means over FantasyPros average rank. Overall `ALL` tiers use the same broad predraft shape as upstream: three coarse groups, then 10/8/8 subtiers. Keep `pnpm run fetch:borischen:remote` only as a manual fallback or comparison tool.
+The `pnpm run fetch:tiers` path generates tier raw CSVs in
+`public/data/tiers/*` from current FantasyPros draft ECR. It uses deterministic
+contiguous 1D k-means over FantasyPros average rank. Overall `ALL` tiers use
+three coarse groups followed by 10/8/8 subtiers.
 
 FantasyPros raw ECR payloads include expert sample metadata (`total_experts`, `filters`, and `experts_available.included/excluded`). Aggregate metadata preserves full expert ID lists once under top-level `expert_samples`; each source/position/scoring entry keeps an `experts` summary with included/available counts, coverage percent, sample-size label, and `sample_key`. Use this to flag early-week rankings with too few submitted experts before trusting tier or drop advice.
 
@@ -190,7 +201,11 @@ Relevant code:
 
 ## Scoring Behavior
 
-Sleeper leagues may use custom reception values. A league observed during investigation used `rec: 0.69`. That should map to PPR-style aggregate rankings, not standard.
+Sleeper leagues can use custom scoring. The live draft path must read the exact
+available scoring settings from Sleeper before it selects an aggregate ranking
+set. For example, `rec: 0.69` maps to the PPR aggregate ranking set. Exact
+scoring changes beyond that ranking-set choice need a separate, quality-gated
+`ADJ` calculation.
 
 Relevant code:
 
@@ -208,6 +223,25 @@ Current simple mapping:
 
 ## Draft Assistant
 
+The live draft assistant gets draft mechanics, draft order, and the user's slot
+from the selected Sleeper draft. It uses the draft's `league_id` to load the
+league scoring settings when the draft object does not include them. It must
+not use the owner's preset for another user's live draft.
+
+The local mock draft uses the owner's planned 2026 league as its default preset:
+
+- 12 teams, snake order, manual slot 4, and a 60-second timer.
+- 1 QB, 2 RB, 2 WR, 1 TE, 2 FLEX, 0 K, 1 DEF, and 5 bench slots.
+- 1 IR slot that does not add a draft round. The preset has 14 draft rounds.
+- 0.69 points per reception and the detailed scoring rules in
+  `src/lib/draftLeagueConfig.ts`.
+- No 2026 keepers. The policy permits one keeper per team from 2027 and stores
+  the configured eligibility and draft-round cost.
+
+Draft rounds must come from draftable roster slots. Do not add a separate
+manual round setting. K and DEF recommendations and simulated picks must follow
+the configured roster limits.
+
 Main files:
 
 - `src/app/draft-assistant/page.tsx`
@@ -224,17 +258,18 @@ Useful existing ingredients:
 - All-player and position-specific tables.
 - Drafted-player hiding/dimming.
 - Tiers ranks and tiers.
-- FantasyPros ECR average (`rank_ave`) for scoring and draft display, plus position rank, ownership, and tier.
+- FantasyPros ECR average (`rank_ave`) for player order within each position and draft display, plus position rank, ownership, and tier.
 - Sleeper ADP and rank context.
 - Market delta: `Sleeper ADP - FantasyPros ECR`.
 - Positional scarcity / remaining positive value percent.
 
-Draft value default:
+Draft value model:
 
-- `VAL` is the single tuned pick value score from the canonical `recommendationBoard`. Its player-quality baseline is required FantasyPros ECR plus overall/position tier context, never projected points.
-- `VAL` has eight normalized signals: ECR value, pick timing, starter need, roster construction, QB/TE strategy, bench balance, league demand, and data/news risk. Draft-phase weights are the only tuning surface; missing ECR makes a row recommendation-ineligible.
+- `VAL` is the only player-value baseline. It applies the selected league's supported scoring rules to Sleeper season projections, calibrates each position's projection curve to FantasyPros ECR order, and compares each player with league-specific VOLS and man-games replacement baselines. It does not use the user's roster or the current draft state.
+- `ADJ` is the canonical recommendation score. It adjusts `VAL` with pick timing, starter need, roster construction, QB/TE strategy, bench balance, league demand, and data/news risk. Draft-phase weights are the only tuning surface. Missing ECR makes a row recommendation-ineligible.
+- Recommendation order and score gaps use `ADJ`.
 - Live UI, mock UI, scripts, saved artifacts, and `/api/draft/view-model` must use `DraftCandidateSchema` and the same board. Do not add a second recommendation pipeline.
-- Draft recommendations should not depend on FantasyPros or Sleeper projected points. Projection fields are for league-manager and optional context, not the draft-clock value baseline.
+- If either provider, the derived data, or the exact-scoring value model is not ready, replace the draft surface with a named incident. Do not show a stale board and do not substitute ECR-only value or a generic scoring bucket.
 - Keep showing position rank and ADP delta because they answer draft-clock questions quickly.
 - Do not add team positional rank by default unless a clear use emerges. The app already shows team/bye, and team positional rank is less obviously actionable than position rank, ADP delta, tier, value, bye, and source confidence.
 
@@ -242,11 +277,10 @@ Mock draft results:
 
 - `/mock-draft` has a `Save result` control that writes the full local draft artifact through `POST /api/draft-results`.
 - Saved artifacts go under ignored `data/draft-results/<timestamped-run>/draft-result.json`.
-- Analyzer output, such as Footballguys per-slot report HTML and summary JSON, should be stored in the same run directory so post-draft reviews can compare picks, available context, and external grading.
-- The evaluation goal is not just "beat bad bots." Bot teams should be adequate enough to create real pressure, and the draft assistant should help the user consistently beat them from any draft slot. A strong target is an `A-` or better external analyzer grade with no glaring starter or depth holes.
+- The evaluation goal is not just "beat bad bots." Bot teams should create real pressure, and the draft assistant should produce complete, balanced rosters from every draft slot.
 - Use draft retrospectives to turn results into product improvements: compare each user pick against the actual available board, identify passed players who disappeared before the next pick, identify players who could have waited, and convert repeated mistakes into decision-board rules or UI context.
-- Current live proof is three consecutive completed Sleeper mocks from slots 4, 8, and 6 graded `A+`, `A+`, and `A`. All 45 user selections were the canonical top recommendation with no auto-picks. Full artifacts remain under ignored `data/draft-results/`.
-- Treat local batches as construction and pressure tests, not exact grade predictors. The calibrated Sleeper-market bots can create materially stronger or different boards than Sleeper's live bots, and Footballguys uses private player valuation that can disagree with FP ECR. Never add player-specific branches to chase one external grade; require valid rosters and generic quality gates locally, then confirm the FP-only policy against repeated live rooms.
+- Current live proof includes three consecutive completed Sleeper mocks from slots 4, 8, and 6. All 45 user selections were the canonical top recommendation with no auto-picks. Full artifacts remain under ignored `data/draft-results/`.
+- Treat local batches as construction and pressure tests, not exact outcome predictors. The calibrated Sleeper-market bots can create materially stronger or different boards than Sleeper's live bots. Never add player-specific branches to chase one result; require valid rosters and generic quality gates locally, then confirm the policy against repeated live rooms.
 
 Near-term product ideas:
 
@@ -285,39 +319,27 @@ The owner explicitly wants the app to avoid bad drop advice for good players who
 
 ## Source Freshness And History Problem
 
-This is a major revamp area.
+### Draft Readiness
 
-Current state:
+`src/lib/sourceHealth.ts` collects provider facts. It does not decide policy.
+`src/lib/draftReadiness.ts` owns all draft-readiness policy:
 
-- `public/data/aggregate/metadata.json` has useful per-source/per-position metadata.
-- `/api/aggregates/last-modified` currently exposes only a broad aggregate timestamp.
-- Raw source snapshots exist for Sleeper and FantasyPros, but the app does not model ranking history as a first-class feature.
-- `CombinedEntry` is provider-specific rather than adapter-oriented.
-- A working API route or non-empty UI does not mean the data is draft-ready. On 2026-06-30, the draft assistant core worked, Sleeper draft links worked, and FantasyPros ECR refreshed, but Tiers was still stale and FantasyPros projections were intentionally omitted from scheduled fetches.
+- FantasyPros and Sleeper must have been fetched in the last 18 hours.
+- Each provider timestamp must be no more than 48 hours old.
+- FantasyPros must include at least 50 experts and 50% of available experts.
+- The top 120 players and the expected league draft pool require 100% coverage.
+- The separate reserve slice covers the next three rounds after the expected
+  draft pool and requires at least 95% coverage.
+- Cohorts use the union of FantasyPros ECR and positive Sleeper ADP/board rank.
+- Every required player needs ECR, position rank, overall and position tiers,
+  a current Sleeper projection, and a finite exact-scoring `VAL`. Sleeper market
+  rank is an independent cohort signal. Its absence does not invalidate a
+  player when the required FantasyPros and Sleeper projection data is complete.
 
-Recommended direction:
-
-1. Create a source manifest model that every scraper writes:
-   - `source`
-   - `provider`
-   - `dataset`
-   - `season`
-   - `week`
-   - `scoring`
-   - `position`
-   - `fetchedAt`
-   - `sourceUpdatedAt`
-   - `rowCount`
-   - `contentHash`
-   - `status`
-   - `warnings`
-   - `sourceUrl`
-2. Add `/api/data-sources/health` or similar.
-3. Surface source freshness in the home page, draft assistant, and league manager.
-4. Preserve source snapshots and build player ranking history from them.
-5. Separate weekly start/sit value from rest-of-season or long-term player value.
-
-This matters because a player's weekly rank can disappear during a bye, injury uncertainty, or missing scrape. Drop advice should consider history and long-term value, not only current weekly ranking.
+The owner CI preset is 12 teams, 14 rounds, 0.69 PPR, two FLEX slots, and no
+kicker. Live and imported drafts use their actual Sleeper configuration. The
+saved prior report adds `previouslyReadyAt` to player diagnostics only. It is
+never a value or UI fallback.
 
 ## Player News Direction
 
@@ -361,16 +383,7 @@ pnpm playwright test tests/e2e/home.spec.ts --config e2e.config.ts --output=/pri
 
 Using default Playwright output under `test-results` while `next dev` watches the repo can trigger repeated recompiles and flaky browser assertions.
 
-## Current Priority Recommendation
-
-The next foundational slice should be source health, not another ranking table:
-
-1. Define a reusable source manifest schema.
-2. Teach existing fetchers/builders to write it.
-3. Add an API route that reports source health and stale sources.
-4. Add a small UI panel on the home page and in data-heavy tool pages.
-5. Then add ranking history on top of the same manifest/snapshot model.
-
-After that, adding Vegas odds, prediction markets, other rankings, and player news will be much less risky.
-
-Source-health warnings must use a decision-relevant denominator. For draft assistant coverage, do not divide by the entire Sleeper player universe, because it includes thousands of historical or fringe `ADP 999` rows that will never matter in a normal draft. Use common-sense relevance filters such as real Sleeper ADP, FantasyPros coverage, active scoring tiers, or currently visible draft-board rows, and label the coverage basis explicitly.
+Readiness uses a decision-relevant denominator. It does not divide by the full
+Sleeper player universe, which includes historical and fringe rows. A player
+enters a cohort through FantasyPros ECR or a real Sleeper market rank. Zero
+and 900-plus sentinel ranks do not count.

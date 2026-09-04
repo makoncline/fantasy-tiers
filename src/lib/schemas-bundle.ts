@@ -1,6 +1,7 @@
 // src/lib/schemas-bundle.ts
 import { z } from "zod";
-import { scoringTypeSchema } from "./schemas";
+import { PositionEnum, scoringTypeSchema } from "./schemas";
+import { DraftProjectionArtifactSchema } from "./beerPlusStrategy";
 
 // Individual player shape in the bundle response
 export const AggregatesBundlePlayer = z.object({
@@ -16,7 +17,10 @@ export const AggregatesBundlePlayer = z.object({
   sleeper: z.object({
     rank: z.number().nullable(),
     adp: z.number().nullable(),
+    boardValue: z.number().nullable(),
     pts: z.number().nullable(),
+    depthChartPosition: z.string().nullable(),
+    depthChartOrder: z.number().int().positive().nullable(),
     injuryStatus: z.string().nullable(),
     injuryNotes: z.string().nullable(),
   }),
@@ -33,18 +37,6 @@ export const AggregatesBundlePlayer = z.object({
     adp: z.number().nullable(),
     player_owned_avg: z.number().nullable(),
   }),
-  footballguys: z
-    .object({
-      id: z.string(),
-      rank: z.number(),
-      tier: z.number(),
-      pos_rank: z.number(),
-      fetched_at: z.string().datetime(),
-      settings: z.string(),
-      adp: z.record(z.string(), z.number().nullable()),
-    })
-    .nullable()
-    .optional(),
   calc: z.object({
     value: z.number().nullable(),
     positional_scarcity: z.number().nullable(),
@@ -55,25 +47,42 @@ export const AggregatesBundlePlayer = z.object({
 export type AggregatesBundlePlayerT = z.infer<typeof AggregatesBundlePlayer>;
 
 export const AggregateSourceHealthItem = z.object({
-  // Footballguys remains parseable for historical draft-result snapshots.
-  source: z.enum(["Sleeper", "FantasyPros", "Tiers", "Footballguys"]),
-  status: z.enum(["ok", "warning", "missing"]),
+  source: z.enum(["Sleeper", "FantasyPros"]),
+  status: z.enum(["available", "missing"]),
+  season: z.string().nullable(),
   lastUpdated: z.string().nullable(),
   fetchedAt: z.string().nullable(),
   rowCount: z.number().nullable(),
-  relevantRowCount: z.number().nullable().optional(),
-  coveragePct: z.number().nullable(),
-  coverageBasis: z.string().nullable().optional(),
-  sampleSize: z.string().nullable(),
-  projectionsFetched: z.boolean().nullable(),
-  warnings: z.array(z.string()),
+  expertsIncluded: z.number().int().nonnegative().nullable(),
+  expertsAvailable: z.number().int().nonnegative().nullable(),
+  expertCoveragePct: z.number().nonnegative().nullable(),
+  problems: z.array(z.string()),
 });
 
 export const AggregateSourceHealth = z.object({
   generatedAt: z.string(),
   scoring: scoringTypeSchema,
   sources: z.array(AggregateSourceHealthItem),
-  warnings: z.array(z.string()),
+  fantasyProsPlayers: z.array(
+    z.object({
+      sourcePlayerId: z.string().min(1),
+      name: z.string().min(1),
+      normalizedName: z.string().min(1),
+      position: PositionEnum,
+      rankAve: z.number().finite(),
+      rankPos: z.number().finite().nullable(),
+      updatedAt: z.string().datetime().nullable(),
+    })
+  ),
+  sleeperPlayers: z.array(
+    z.object({
+      playerId: z.string().min(1),
+      name: z.string().min(1),
+      normalizedName: z.string().min(1),
+      position: PositionEnum,
+      marketRank: z.number().int().positive(),
+    })
+  ),
 });
 export type AggregateSourceHealthT = z.infer<typeof AggregateSourceHealth>;
 
@@ -108,6 +117,7 @@ export const AggregatesBundleResponse = z.object({
   teams: z.number(),
   roster: RosterSlotsSchema,
   sourceHealth: AggregateSourceHealth.optional(),
+  draftProjections: DraftProjectionArtifactSchema.nullable().default(null),
   shards: AggregatesBundleShards,
 });
 

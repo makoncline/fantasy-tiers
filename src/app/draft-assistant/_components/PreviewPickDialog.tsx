@@ -153,9 +153,17 @@ function PlayerDecisionPanel({
         </div>
       </div>
       <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-        {player.draft_value_score != null ? (
+        {player.draft_raw_value_score != null ? (
           <div>
             <div className="text-xs text-muted-foreground">VAL</div>
+            <div className="font-mono">
+              {fmtNumber(player.draft_raw_value_score)}
+            </div>
+          </div>
+        ) : null}
+        {player.draft_value_score != null ? (
+          <div>
+            <div className="text-xs text-muted-foreground">ADJ</div>
             <div className="font-mono">{fmtNumber(player.draft_value_score)}</div>
           </div>
         ) : null}
@@ -163,6 +171,14 @@ function PlayerDecisionPanel({
           <div>
             <div className="text-xs text-muted-foreground">ECR</div>
             <div className="font-mono">{fmtNumber(player.fp_rank_ave)}</div>
+          </div>
+        ) : null}
+        {player.sleeper_rank_overall != null ? (
+          <div>
+            <div className="text-xs text-muted-foreground">Sleeper</div>
+            <div className="font-mono">
+              #{fmtNumber(player.sleeper_rank_overall)}
+            </div>
           </div>
         ) : null}
         {player.draft_adp_delta_rounds != null ? (
@@ -225,7 +241,7 @@ function PlayerDecisionPanel({
             {scoreGap != null
               ? `${scoreGap >= 0 ? "+" : ""}${fmtNumber(
                   scoreGap
-                )} VAL. `
+                )} adjusted. `
               : "Adjacent recommendation. "}
             {player.draft_recommendation_edge_detail ??
               player.draft_recommendation_summary ??
@@ -344,7 +360,7 @@ function PlayerNewsPanel({
         </div>
       ) : newsQuery.isError ? (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-          Player news is unavailable right now.
+          News status is unknown. Player news is unavailable right now.
         </div>
       ) : newsQuery.data?.length ? (
         <div className="max-h-[28rem] space-y-3 overflow-y-auto pr-1">
@@ -407,11 +423,22 @@ export default function PreviewPickDialog({
             {destination ? <span>Fits {destination}</span> : null}
             {player.team ? <span>Team {player.team}</span> : null}
             {player.bye_week ? <span>Bye {player.bye_week}</span> : null}
+            {player.sleeper_depth_chart_position ? (
+              <span>
+                Depth {player.sleeper_depth_chart_position}
+                {player.sleeper_depth_chart_order != null
+                  ? player.sleeper_depth_chart_order
+                  : ""}
+              </span>
+            ) : null}
             {byeConflicts.length ? (
               <span>Bye conflicts {byeConflicts.join(", ")}</span>
             ) : null}
             {player.sleeper_injury_status ? (
               <span>Status {player.sleeper_injury_status}</span>
+            ) : null}
+            {player.draft_availability_label ? (
+              <span>Availability {player.draft_availability_label}</span>
             ) : null}
             {player.sleeper_injury_notes ? (
               <span>{player.sleeper_injury_notes}</span>

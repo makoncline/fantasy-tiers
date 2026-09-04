@@ -89,7 +89,7 @@ Version 1 behavior:
 - Pick from the top 3 viable players by Sleeper ADP or Sleeper projected points.
 - Use seeded randomness among the top 3 so repeated scenarios can be stable but not always identical.
 - Avoid K/DEF until late rounds unless starter slots remain and the draft is near the end.
-- Once starters are mostly full, prefer RB/WR bench depth over backup QB/K/DEF.
+- Once starters are mostly full, use RB/WR bench depth. Supported formats have a hard maximum of one QB, TE, K, and D/ST.
 
 This intentionally mirrors simple Sleeper-room behavior, not expert strategy.
 
@@ -217,16 +217,9 @@ That JSON is validated by `DraftResultArtifactSchema` in `src/lib/draftResults.t
 - drafted players, all team rosters, and the user's roster
 - source-health metadata and the draft view model visible to the assistant UI
 
-External analyzer reports should be stored beside the draft artifact. For Footballguys, prefer:
-
-```text
-footballguys-slot-1-report.html
-footballguys-slot-1-summary.json
-...
-footballguys-all-teams-summary.json
-```
-
-This layout should make post-draft review straightforward: inspect the decisions that were visible during the draft, compare the final roster against an analyzer report, and decide whether a bad result came from the recommendation model, bot pressure, incomplete source data, or a human/agent pick.
+This layout should make post-draft review straightforward: inspect the decisions
+that were visible during the draft and decide whether a bad result came from the
+recommendation model, bot pressure, incomplete source data, or a human pick.
 
 ## Evaluation Goal
 
@@ -235,36 +228,29 @@ The simulator should create adequate teams, not deliberately bad teams. Mediocre
 The target outcome for the draft assistant is:
 
 - from any draft position, the user can use the app to beat the bot room by a clear margin
-- the user team can repeatedly reach an `A-` or better Footballguys-style external grade
-- the user team avoids obvious final-report holes such as missing starter quality at RB/WR/TE/QB or wasting too much draft capital on backup QB/K/DEF
+- the user team repeatedly passes roster-completion and starter-quality gates
+- the user team avoids missing starter quality at RB/WR/TE/QB or wasting too much draft capital on backup QB/K/DEF
 - bot teams usually finish as plausible `C`-range competitors, not broken `F` teams, unless a scenario intentionally tests bad room behavior
 
 ## Retrospective Learning Loop
 
 After each saved mock:
 
-1. Run all-team analyzer reports:
-
-   ```bash
-   pnpm run fbg:seed-player-ids
-   pnpm run fbg:analyze-draft -- --result-dir data/draft-results/<run>
-   ```
-
-2. Generate the user's pick retrospective:
+1. Generate the user's pick retrospective:
 
    ```bash
    pnpm run draft:retrospective -- --result-dir data/draft-results/<run>
    ```
 
-3. Review each user pick against the actual board at that pick:
+2. Review each user pick against the actual board at that pick:
    - selected player and selected available rank by Sleeper ADP
    - best available overall
    - top candidates by position
    - passed players who were gone before the user's next pick
    - passed players who were still available at the next pick
-   - final team grade and position-grade weaknesses
+   - final roster construction and quality-gate failures
 
-4. Convert repeated retrospective findings into app improvements. Examples: stronger "can wait" labels, position-depth warnings, "next turn survivability" confidence, stronger starter-slot pressure, or late-round penalties for backup QB/K/DEF.
+3. Convert repeated retrospective findings into app improvements. Examples: stronger "can wait" labels, position-depth warnings, "next turn survivability" confidence, stronger starter-slot pressure, or one-position price-reach guards.
 
 ## Decision Surface Direction
 
@@ -274,7 +260,7 @@ The assistant should expose multiple draft views instead of asking one blended l
 - `By position`: top remaining QB/RB/WR/TE/K/DEF with starter gaps, tier cliffs, and next-turn risk.
 - `FLEX`: RB/WR/TE-only pool for starter/flex/bench choices.
 
-This separation matters because the best remaining player by a positional rank can be misleading across positions. Late in drafts, QB and TE often look efficient by raw projection or positional rank, but backup QB/TE picks are usually low priority once a starter is rostered. The app should surface the relevant context and question, not enforce a hard rule. Examples of acceptable reasons for another QB/TE include elite tier value, very late draft price, superflex/TE-premium settings, bye/injury contingency, or a lack of useful RB/WR/FLEX alternatives.
+This separation matters because the best remaining player by a positional rank can be misleading across positions. Late in drafts, QB and TE can look efficient by raw projection or positional rank. The supported strategy must stop at one QB, one TE, one kicker, and one D/ST, then use remaining bench capital on RB/WR. Unsupported multi-QB, superflex, TE-premium, restricted-FLEX, and IDP formats must show a limitation notice.
 
 ## Expansion Plan
 

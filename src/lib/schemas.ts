@@ -19,20 +19,6 @@ export const DraftPicksSchema = z.array(DraftPickSchema);
 
 export type DraftPick = z.infer<typeof DraftPickSchema>;
 
-// Schema for rank and tier data only
-export const RankTierSchema = z.object({
-  rank: z.number(),
-  tier: z.number(),
-});
-
-// Schema for the rankings by scoring type
-const RankingsByScoringTypeSchema = z.object({
-  std: RankTierSchema.nullable(),
-  ppr: RankTierSchema.nullable(),
-  half: RankTierSchema.nullable(),
-});
-
-// Schema for the final player data
 export const PlayerSchema = z.object({
   player_id: z.string(),
   name: z.string(),
@@ -40,11 +26,6 @@ export const PlayerSchema = z.object({
   team: z.string().nullable(),
   bye_week: z.string().nullable(),
 });
-
-export const PlayerWithRankingsSchema = PlayerSchema.extend({
-  rankingsByScoringType: RankingsByScoringTypeSchema,
-});
-export type PlayerWithRankings = z.infer<typeof PlayerWithRankingsSchema>;
 
 export const SCORING_TYPES = ["std", "ppr", "half"] as const;
 export const scoringTypeSchema = z.enum(SCORING_TYPES);
@@ -55,7 +36,6 @@ export const DraftedPlayerSchema = PlayerSchema.extend({
   tier: z.number().nullable(),
 });
 
-// Ranked player schema with non-nullable rank and tier
 export const RankedPlayerSchema = PlayerSchema.extend({
   rank: z.number(),
   tier: z.number(),

@@ -76,6 +76,11 @@ describe("Aggregate Schemas", () => {
           adp_half_ppr: 11.2,
           adp_ppr: 10.8,
         },
+        draft_values: { std: 12, half: 14, ppr: 16 },
+        active_player: {
+          depth_chart_position: "QB",
+          depth_chart_order: 1,
+        },
         week: 5,
         player: {
           injury_body_part: "knee",
@@ -94,6 +99,11 @@ describe("Aggregate Schemas", () => {
           adp_std: 12.5,
           adp_half_ppr: 11.2,
           adp_ppr: 10.8,
+        },
+        draft_values: { std: null, half: null, ppr: null },
+        active_player: {
+          depth_chart_position: null,
+          depth_chart_order: null,
         },
         week: null,
         player: {
@@ -116,6 +126,11 @@ describe("Aggregate Schemas", () => {
           adp_std: 12.5,
           adp_half_ppr: 11.2,
           adp_ppr: 10.8,
+        },
+        draft_values: { std: 12, half: 14, ppr: 16 },
+        active_player: {
+          depth_chart_position: "QB",
+          depth_chart_order: 1,
         },
         week: "5", // Should be number or null
         player: {
@@ -212,6 +227,11 @@ describe("Aggregate Schemas", () => {
             adp_half_ppr: 44.1,
             adp_ppr: 43.5,
           },
+          draft_values: { std: 12, half: 14, ppr: 16 },
+          active_player: {
+            depth_chart_position: "QB",
+            depth_chart_order: 1,
+          },
           week: null,
           player: {
             injury_body_part: null,
@@ -243,39 +263,6 @@ describe("Aggregate Schemas", () => {
       expect(result.fantasypros?.player_id).toBe("12345");
     });
 
-    it("should normalize legacy borischen key to tiers", () => {
-      const input = {
-        player_id: "12345",
-        name: "john doe",
-        position: "QB",
-        team: "TB",
-        bye_week: 9,
-        borischen: {
-          std: { rank: 12, tier: 3 },
-          ppr: null,
-          half: { rank: 15, tier: 4 },
-        },
-        sleeper: {
-          stats: {
-            adp_std: 45.2,
-            adp_half_ppr: 44.1,
-            adp_ppr: 43.5,
-          },
-          week: null,
-          player: {
-            injury_body_part: null,
-            injury_notes: null,
-            injury_start_date: null,
-            injury_status: null,
-          },
-          updated_at: 1640995200000,
-        },
-        fantasypros: null,
-      };
-      const result = CombinedEntry.parse(input);
-      expect(result.tiers).toEqual(input.borischen);
-    });
-
     it("should reject missing required fields", () => {
       const invalid = {
         player_id: "12345",
@@ -290,6 +277,11 @@ describe("Aggregate Schemas", () => {
         },
         sleeper: {
           stats: {},
+          draft_values: { std: null, half: null, ppr: null },
+          active_player: {
+            depth_chart_position: null,
+            depth_chart_order: null,
+          },
           week: null,
           player: {
             injury_body_part: null,
@@ -321,6 +313,11 @@ describe("Aggregate Schemas", () => {
             adp_std: 12.5,
             adp_half_ppr: 11.2,
             adp_ppr: 10.8,
+          },
+          draft_values: { std: 12, half: 14, ppr: 16 },
+          active_player: {
+            depth_chart_position: "QB",
+            depth_chart_order: 1,
           },
           week: null,
           player: {
@@ -362,6 +359,11 @@ describe("Aggregate Schemas", () => {
               adp_std: 45.2,
               adp_half_ppr: 44.1,
               adp_ppr: 43.5,
+            },
+            draft_values: { std: 12, half: 14, ppr: 16 },
+            active_player: {
+              depth_chart_position: "QB",
+              depth_chart_order: 1,
             },
             week: null,
             player: {

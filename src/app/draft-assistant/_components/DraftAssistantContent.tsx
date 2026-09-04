@@ -4,6 +4,7 @@ import PositionCompactTables from "@/app/draft-assistant/_components/PositionCom
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import RosterSlots from "@/app/draft-assistant/_components/RosterSlots";
 import DraftStatusCard from "@/app/draft-assistant/_components/DraftStatusCard";
 import DecisionBoard from "@/app/draft-assistant/_components/DecisionBoard";
@@ -14,11 +15,21 @@ export default function DraftAssistantContent({
 }: {
   pickAction?: DraftPickAction | undefined;
 } = {}) {
-  const { availablePlayers, loading, error, userRosterSlots, draftDetails } =
-    useDraftData();
+  const {
+    availablePlayers,
+    loading,
+    error,
+    userRosterSlots,
+    draftDetails,
+    formatNotices,
+    draftValueStatus,
+    readiness,
+    refetchData,
+  } = useDraftData();
 
   const isLoading = Object.values(loading).some(Boolean);
   const hasError = Object.values(error).some(Boolean);
+  const hasBlockingError = hasError;
   const isComplete = draftDetails?.status === "complete";
 
   if (isLoading) {
@@ -32,7 +43,7 @@ export default function DraftAssistantContent({
     );
   }
 
-  if (hasError) {
+  if (hasBlockingError) {
     return (
       <Alert variant="destructive">
         <AlertTitle>Error</AlertTitle>
@@ -43,11 +54,67 @@ export default function DraftAssistantContent({
     );
   }
 
+  if (readiness?.status === "incident") {
+    return (
+      <Alert variant="destructive" data-testid="draft-data-incident">
+        <AlertTitle>Draft data incident</AlertTitle>
+        <AlertDescription className="space-y-3">
+          <p>
+            Recommendations are blocked until FantasyPros and Sleeper data are
+            current and complete.
+          </p>
+          <ul className="list-disc space-y-1 pl-5">
+            {readiness.incidents.map((incident) => (
+              <li key={`${incident.code}-${incident.message}`}>
+                {incident.message}
+              </li>
+            ))}
+            {readiness.playerIssues.slice(0, 8).map((issue) => (
+              <li key={issue.playerId}>
+                {issue.name} ({issue.position}): {issue.problems.join(" ")}
+              </li>
+            ))}
+          </ul>
+          {readiness.playerIssues.length > 8 ? (
+            <p>{readiness.playerIssues.length - 8} more player issues.</p>
+          ) : null}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={refetchData}
+          >
+            Check again
+          </Button>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {draftValueStatus?.available === false ? (
+        <Alert variant="destructive" data-testid="draft-value-unavailable-notice">
+          <AlertTitle>Draft recommendations unavailable</AlertTitle>
+          <AlertDescription>{draftValueStatus.reason}</AlertDescription>
+        </Alert>
+      ) : null}
+
+      {formatNotices.length > 0 ? (
+        <Alert data-testid="format-support-notice">
+          <AlertTitle>Limited format support</AlertTitle>
+          <AlertDescription>
+            <ul className="list-disc space-y-1 pl-5">
+              {formatNotices.map((notice) => (
+                <li key={notice.code}>{notice.message}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
       <DraftStatusCard />
 
-      {!isComplete ? <DecisionBoard /> : null}
+      {!isComplete && draftValueStatus?.available !== false ? <DecisionBoard /> : null}
 
       <Card id="roster-section">
         <CardHeader>

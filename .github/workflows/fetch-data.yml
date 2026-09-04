@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 concurrency:
   group: fantasy-data-refresh-main
@@ -27,6 +28,7 @@ jobs:
       FP_FETCH_PROJECTIONS: "false"
       FP_COOKIE: ${{ secrets.FP_COOKIE }}
       FANTASYPROS_COOKIE: ${{ secrets.FANTASYPROS_COOKIE }}
+      SEND_TO_MAKON_URL: https://send-to-makon.vercel.app/api/send-telegram
 
     steps:
       - name: Checkout repository
@@ -133,7 +135,6 @@ jobs:
           - FantasyPros draft ECR
           - Sleeper ADP and player data
           - Locally generated tiers
-          - Footballguys public-default rankings and ADP comparisons
           - Semantic source quality report
 
           Raw provider data cached locally (not committed to git)
@@ -165,9 +166,31 @@ jobs:
             echo "📋 Workflow completed - no data changes detected (12:00/21:00 UTC schedule)"
           fi
 
+      - name: Notify after recovery
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PREVIOUS_CONCLUSION=$(gh api "/repos/${{ github.repository }}/actions/workflows/fetch-data.yml/runs?per_page=10" --jq '.workflow_runs[] | select(.id != ${{ github.run_id }}) | .conclusion' | head -1) || PREVIOUS_CONCLUSION=""
+          if [ "$PREVIOUS_CONCLUSION" != "failure" ]; then
+            exit 0
+          fi
+          curl --fail --silent --show-error --get "$SEND_TO_MAKON_URL" \
+            --data-urlencode "subject=Fantasy Tiers data recovered" \
+            --data-urlencode "message=The scheduled FantasyPros and Sleeper refresh is healthy again. Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
       - name: Notify on failure
         if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           echo "❌ Data fetch workflow failed. Check the logs for details."
           echo "🔗 View the full logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          # You could add Slack/Discord notification here if desired
+          DETAIL="A fetch, aggregate, readiness, history, or deployment check failed."
+          if [ -f public/data/aggregate/quality-report.json ]; then
+            REPORT_DETAIL=$(jq -r '.incidents[0].message // empty' public/data/aggregate/quality-report.json)
+            if [ -n "$REPORT_DETAIL" ]; then DETAIL="$REPORT_DETAIL"; fi
+          fi
+          curl --fail --silent --show-error --get "$SEND_TO_MAKON_URL" \
+            --data-urlencode "subject=Fantasy Tiers data incident" \
+            --data-urlencode "message=$DETAIL Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"

@@ -37,10 +37,13 @@ describe("fetchAggregatesBundle", () => {
             tiers: { rank: 1, tier: 1 },
             sleeper: {
               rank: 1,
+              boardValue: 99,
               adp: 1.5,
               pts: 450,
               injuryStatus: null,
               injuryNotes: null,
+              depthChartPosition: "QB",
+              depthChartOrder: 1,
             },
             fantasypros: {
               rank: 1,
@@ -94,7 +97,7 @@ describe("fetchAggregatesBundle", () => {
       "/api/aggregates/bundle?scoring=ppr&teams=12&slots_qb=1&slots_rb=2&slots_wr=2&slots_te=1&slots_k=1&slots_def=1&slots_flex=1&slots_bench=0"
     );
 
-    expect(result).toEqual(mockResponse);
+    expect(result).toEqual({ ...mockResponse, draftProjections: null });
   });
 
   it("throws error on HTTP error response", async () => {

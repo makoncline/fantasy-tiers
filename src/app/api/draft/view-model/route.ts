@@ -5,8 +5,9 @@ import { fetchDraftPicks } from "../../../../lib/draftPicks";
 import { buildDraftViewModel } from "../../../../lib/draftState";
 import { buildAggregateBundle } from "../../../../lib/aggregateBundle";
 import { draftCandidateMapFromBundle } from "../../../../lib/draftCandidate";
-import { buildRosterRequirementsFromDraftSettings } from "../../../../lib/draftHelpers";
-import { parseSleeperScoringType } from "../../../../lib/scoring";
+import { draftLeagueConfigFromSleeperDraft } from "../../../../lib/draftLeagueConfig";
+import { fetchSleeperLeagueById } from "../../../../lib/sleeper";
+import { draftReadinessShardCountsFromBundle } from "../../../../lib/draftReadiness";
 
 export async function GET(req: NextRequest) {
   const draftId = req.nextUrl.searchParams.get("draft_id");
@@ -21,20 +22,27 @@ export async function GET(req: NextRequest) {
   try {
     const draft = await fetchDraftDetails(draftId);
     const picks = await fetchDraftPicks(draftId);
-    const scoring = parseSleeperScoringType(draft.metadata?.scoring_type);
-    const requirements = buildRosterRequirementsFromDraftSettings(draft.settings);
+    const leagueId = draft.league_id ?? draft.metadata.league_id;
+    const league = leagueId
+      ? await fetchSleeperLeagueById(leagueId)
+      : undefined;
+    const leagueConfig = draftLeagueConfigFromSleeperDraft(
+      draft,
+      userId,
+      league
+    );
     const bundle = buildAggregateBundle({
-      scoring,
-      teams: draft.settings?.teams ?? 0,
+      scoring: leagueConfig.scoring,
+      teams: leagueConfig.teams,
       rosterSlots: {
-        QB: requirements.QB,
-        RB: requirements.RB,
-        WR: requirements.WR,
-        TE: requirements.TE,
-        K: requirements.K,
-        DEF: requirements.DEF,
-        FLEX: requirements.FLEX,
-        BENCH: requirements.BN,
+        QB: leagueConfig.rosterSlots.QB,
+        RB: leagueConfig.rosterSlots.RB,
+        WR: leagueConfig.rosterSlots.WR,
+        TE: leagueConfig.rosterSlots.TE,
+        K: leagueConfig.rosterSlots.K,
+        DEF: leagueConfig.rosterSlots.DEF,
+        FLEX: leagueConfig.rosterSlots.FLEX,
+        BENCH: leagueConfig.rosterSlots.BENCH,
       },
     });
     const playersMap = draftCandidateMapFromBundle(bundle);
@@ -43,8 +51,22 @@ export async function GET(req: NextRequest) {
       draft,
       picks,
       userId,
+      scoringRules: leagueConfig.scoringRules,
+      projectionArtifact: bundle.draftProjections,
+      sourceHealth: bundle.sourceHealth ?? null,
+      shardCounts: draftReadinessShardCountsFromBundle(bundle),
     });
-    return NextResponse.json(vm);
+    if (vm.readiness?.status !== "ready") {
+      return NextResponse.json(
+        {
+          error: "Draft data is not ready.",
+          readiness: vm.readiness,
+          leagueConfig,
+        },
+        { status: 503, headers: { "Cache-Control": "no-store" } }
+      );
+    }
+    return NextResponse.json({ ...vm, leagueConfig });
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : "internal error";
     return NextResponse.json({ error: errorMessage }, { status: 500 });

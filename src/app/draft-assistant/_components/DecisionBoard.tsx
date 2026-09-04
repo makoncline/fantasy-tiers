@@ -65,8 +65,17 @@ function RecommendationCard({
             {player.position}
             {player.fp_rank_pos ? `${player.fp_rank_pos}` : ""}
           </Badge>
-          <Badge variant="outline">
-            VAL {formatScore(player.draft_value_score)}
+          <Badge
+            variant="outline"
+            title={`${player.draft_value_label ?? "Player value"} before roster and draft-state adjustments`}
+          >
+            VAL {formatScore(player.draft_raw_value_score)}
+          </Badge>
+          <Badge
+            variant="outline"
+            title="Adjusted for your roster and the current draft state"
+          >
+            ADJ {formatScore(player.draft_value_score)}
           </Badge>
           <Badge variant="secondary">
             {player.draft_recommendation_edge ?? "Review"}

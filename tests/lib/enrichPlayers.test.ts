@@ -28,6 +28,11 @@ describe("enrichPlayers", () => {
         pts_half_ppr: 340.2,
         pts_ppr: 350.8,
       },
+      draft_values: { std: 87, half: 91, ppr: 93 },
+      active_player: {
+        depth_chart_position: "QB",
+        depth_chart_order: 1,
+      },
       week: null,
       player: {
         injury_body_part: null,
@@ -85,6 +90,7 @@ describe("enrichPlayers", () => {
     // Check Sleeper enrichment
     expect(enriched.sleeper_pts).toBe(320.5);
     expect(enriched.sleeper_adp).toBe(45.2);
+    expect(enriched.sleeper_board_value).toBe(87);
 
     // Check FantasyPros enrichment
     expect(enriched.fp_pts).toBe(296);
@@ -178,8 +184,8 @@ describe("enrichPlayers", () => {
     const result = enrichPlayers([mockCombinedEntry], mockLeague);
     const enriched = result[0];
 
-    // market_delta = sleeper_adp - fp_rank_overall = 45.2 - 42 = 3.2, rounded to whole number
-    expect(enriched.market_delta).toBe(3);
+    // The only player is first on the Sleeper room board: 1 - 42.4 = -41.4.
+    expect(enriched.market_delta).toBe(-41);
   });
 
   it("should return empty array for empty input", () => {
@@ -259,6 +265,11 @@ describe("enrichPlayers FLEX & baseline smoke", () => {
           pts_half_ppr: null,
           pts_ppr: null,
         },
+        draft_values: { std: null, half: null, ppr: null },
+        active_player: {
+          depth_chart_position: pos,
+          depth_chart_order: 1,
+        },
         week: null,
         player: {
           injury_body_part: null,
@@ -279,7 +290,7 @@ describe("enrichPlayers FLEX & baseline smoke", () => {
           standard: { rank_ecr: ecr, rank_ave: ecr + 0.4, rank_std: 1, tier: 1 },
         },
       },
-    } as unknown as CombinedEntryT;
+    };
   }
 
   // RB points (desc): 240, 230, 220

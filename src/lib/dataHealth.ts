@@ -1,8 +1,10 @@
 import { z } from "zod";
+
 import {
-  DraftDataQualityReportSchema,
-  type DraftDataQualityReport,
-} from "./draftDataQuality";
+  DraftReadinessReportSchema,
+  isDraftReadinessReportCurrent,
+  type DraftReadinessReport,
+} from "@/lib/draftReadiness";
 
 export const DataHealthResponseSchema = z.object({
   status: z.enum(["healthy", "unhealthy"]),
@@ -12,38 +14,29 @@ export const DataHealthResponseSchema = z.object({
     commitMatches: z.boolean(),
     dataCurrent: z.boolean(),
   }),
-  quality: DraftDataQualityReportSchema,
+  readiness: DraftReadinessReportSchema,
 });
 
 export type DataHealthResponse = z.infer<typeof DataHealthResponseSchema>;
 
-const MAX_REPORT_AGE_MS = 48 * 60 * 60 * 1_000;
-
 export function buildDataHealthResponse(input: {
   commitSha: string | null;
   expectedCommitSha: string | null;
-  quality: DraftDataQualityReport;
+  readiness: DraftReadinessReport;
   now?: Date;
 }): DataHealthResponse {
-  const now = input.now ?? new Date();
-  const reportAge = now.getTime() - new Date(input.quality.generatedAt).getTime();
   const commitMatches =
     input.expectedCommitSha === null ||
     input.commitSha === input.expectedCommitSha;
-  const dataCurrent =
-    input.quality.status === "healthy" &&
-    reportAge >= 0 &&
-    reportAge <= MAX_REPORT_AGE_MS;
-  const healthy = commitMatches && dataCurrent;
-
+  const dataCurrent = isDraftReadinessReportCurrent(
+    input.readiness,
+    input.now ?? new Date()
+  );
   return DataHealthResponseSchema.parse({
-    status: healthy ? "healthy" : "unhealthy",
+    status: commitMatches && dataCurrent ? "healthy" : "unhealthy",
     commitSha: input.commitSha,
     expectedCommitSha: input.expectedCommitSha,
-    checks: {
-      commitMatches,
-      dataCurrent,
-    },
-    quality: input.quality,
+    checks: { commitMatches, dataCurrent },
+    readiness: input.readiness,
   });
 }

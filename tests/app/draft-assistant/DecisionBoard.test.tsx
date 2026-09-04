@@ -31,6 +31,8 @@ function player(
     team: "TEST",
     bye_week: 8,
     fp_rank_pos: 1,
+    draft_raw_value_score: score - 10,
+    draft_value_label: "Starter-aware value",
     draft_value_score: score,
     draft_recommendation_edge: "Slight edge",
     draft_recommendation_edge_detail: `${name} has a useful edge.`,
@@ -85,10 +87,17 @@ describe("DecisionBoard", () => {
     expect(text).toContain("Close Player pro");
     expect(text).toContain("Close Player con");
     expect(text).toContain("Close Player data");
+    expect(text).toContain("VAL 87");
+    expect(text).toContain("ADJ 97");
     expect(text).toContain("3 from top");
     expect(text).toContain("Boundary Player");
     expect(text).toContain("5 from top");
     expect(text).not.toContain("Outside Player");
+    expect(
+      container.querySelector(
+        '[title="Starter-aware value before roster and draft-state adjustments"]'
+      )
+    ).not.toBeNull();
   });
 
   it("shows every league starter position draining from its initial need", () => {
