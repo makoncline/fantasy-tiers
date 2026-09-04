@@ -31,6 +31,7 @@ export default function DraftStatusCard() {
     league,
     positionRows,
     readiness,
+    draftSlot,
   } = useDraftData();
 
   const teams = draftDetails?.settings?.teams ?? league?.teams ?? 0;
@@ -42,17 +43,17 @@ export default function DraftStatusCard() {
   const nextOverall = totalPicks ? Math.min(made + 1, totalPicks) : 0;
   const nextLabel = teams ? roundPickLabel(nextOverall, teams) : "—";
   const currentRound = teams ? Math.ceil(nextOverall / (teams || 1)) : 0;
+  const userDraftSlot =
+    draftSlot ??
+    (user?.user_id ? draftDetails?.draft_order?.[user.user_id] : undefined);
 
-  const userSlot = user?.user_id
-    ? draftDetails?.draft_order?.[user.user_id]
-    : undefined;
   const userPicksMade = (picks || []).filter(
-    (p) => p.draft_slot === userSlot
+    (p) => p.draft_slot === userDraftSlot
   ).length;
   const userPicksRemaining = rounds ? Math.max(0, rounds - userPicksMade) : 0;
   const nextUserPick = getNextPickForSlot({
     currentPick: nextOverall,
-    userSlot,
+    userSlot: userDraftSlot,
     teams,
     rounds,
     draftType: draftDetails?.type,

@@ -119,6 +119,37 @@ describe("draft league configuration", () => {
     });
   });
 
+  it("uses a manual slot only while Sleeper has no draft order", () => {
+    const unorderedDraft = DraftDetailsSchema.parse({
+      draft_id: "unordered-draft",
+      type: "snake",
+      metadata: { scoring_type: "ppr" },
+      settings: { teams: 12, rounds: 14 },
+      draft_order: null,
+    });
+    const orderedDraft = DraftDetailsSchema.parse({
+      ...unorderedDraft,
+      draft_order: { "public-user": 9 },
+    });
+
+    expect(
+      draftLeagueConfigFromSleeperDraft(
+        unorderedDraft,
+        "public-user",
+        undefined,
+        4
+      )
+    ).toMatchObject({ userSlot: 4, draftOrderMode: "manual" });
+    expect(
+      draftLeagueConfigFromSleeperDraft(
+        orderedDraft,
+        "public-user",
+        undefined,
+        4
+      )
+    ).toMatchObject({ userSlot: 9, draftOrderMode: "sleeper" });
+  });
+
   it("uses the planned 2026 league preset end to end", () => {
     const config = createDefaultSimDraftConfig();
     const draft = toSleeperDraftDetails(createSimDraft(config));

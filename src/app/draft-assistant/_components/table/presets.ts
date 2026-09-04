@@ -9,6 +9,12 @@ export const DRAFT_VALUE_DESCRIPTIONS = {
     "VAL adjusted for your roster, pick timing, league demand, and current draft state.",
 } as const;
 
+export function formatDraftValue(value: number | string | null | undefined) {
+  return typeof value === "number" && Number.isFinite(value)
+    ? Number(value.toFixed(1))
+    : "—";
+}
+
 const col = <K extends keyof PlayerWithPick>(
   id: string,
   key: K,
@@ -124,6 +130,7 @@ export const GROUPS_FULL: ColumnGroup<PlayerWithPick>[] = [
         defaultDir: "desc",
         sortAs: "number",
         width: "6ch",
+        render: formatDraftValue,
       },
       {
         id: "adj",
@@ -135,6 +142,7 @@ export const GROUPS_FULL: ColumnGroup<PlayerWithPick>[] = [
         defaultDir: "desc",
         sortAs: "number",
         width: "6ch",
+        render: formatDraftValue,
       },
       {
         id: "adp",

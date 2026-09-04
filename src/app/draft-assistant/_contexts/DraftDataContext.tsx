@@ -107,6 +107,9 @@ export interface DraftDataContextType extends ProcessedData {
   loadUserAndDrafts: () => Promise<void>;
   selectedDraftId: string;
   setSelectedDraftId: (draftId: string) => void;
+  draftSlot: number | null;
+  draftSlotSource: "sleeper" | "manual" | null;
+  setDraftSlot: (draftSlot: number) => void;
   draftValueStatus: StarterAwareStrategyStatus | null;
   readiness: DraftReadinessReport | null;
   clearDraft?: () => void;
@@ -188,6 +191,9 @@ const defaultContextValue: DraftDataContextType = {
   loadUserAndDrafts: async () => {},
   selectedDraftId: "",
   setSelectedDraftId: () => {},
+  draftSlot: null,
+  draftSlotSource: null,
+  setDraftSlot: () => {},
   draftValueStatus: null,
   readiness: null,
   clearDraft: () => {},
@@ -311,10 +317,12 @@ export function DraftDataProvider({
   children,
   initialUserId,
   initialDraftId,
+  initialDraftSlot,
 }: {
   children: React.ReactNode;
   initialUserId?: string;
   initialDraftId?: string;
+  initialDraftSlot?: number;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -342,6 +350,9 @@ export function DraftDataProvider({
   // Input state
   const [username, setUsername] = useState("");
   const [selectedDraftId, setSelectedDraftId] = useState(initialDraftId || "");
+  const [manualDraftSlot, setManualDraftSlot] = useState<number | null>(
+    initialDraftSlot ?? null
+  );
 
   // UI state
   const [showAll, setShowAll] = useState(false);
@@ -377,6 +388,10 @@ export function DraftDataProvider({
   React.useEffect(() => {
     if (initialDraftId != null) setSelectedDraftId(initialDraftId);
   }, [initialDraftId]);
+
+  React.useEffect(() => {
+    setManualDraftSlot(initialDraftSlot ?? null);
+  }, [initialDraftSlot]);
 
   // User and drafts fetching
   const {
@@ -448,9 +463,16 @@ export function DraftDataProvider({
     return draftLeagueConfigFromSleeperDraft(
       draftDetails,
       user.user_id,
-      sleeperLeague
+      sleeperLeague,
+      manualDraftSlot ?? undefined
     );
-  }, [draftDetails, draftLeagueId, sleeperLeague, user?.user_id]);
+  }, [
+    draftDetails,
+    draftLeagueId,
+    sleeperLeague,
+    user?.user_id,
+    manualDraftSlot,
+  ]);
   const formatNotices = useMemo(
     () =>
       draftDetails
@@ -521,14 +543,24 @@ export function DraftDataProvider({
   const handleSetSelectedDraftId = useCallback(
     (draftId: string) => {
       setSelectedDraftId(draftId);
-      setQuery({ draftId: draftId || null });
+      setManualDraftSlot(null);
+      setQuery({ draftId: draftId || null, draftSlot: null });
+    },
+    [setQuery]
+  );
+
+  const handleSetDraftSlot = useCallback(
+    (draftSlot: number) => {
+      setManualDraftSlot(draftSlot);
+      setQuery({ draftSlot: String(draftSlot) });
     },
     [setQuery]
   );
 
   const clearDraft = useCallback(() => {
     setSelectedDraftId("");
-    setQuery({ draftId: null });
+    setManualDraftSlot(null);
+    setQuery({ draftId: null, draftSlot: null });
   }, [setQuery]);
 
   const clearUser = useCallback(() => {
@@ -536,7 +568,8 @@ export function DraftDataProvider({
     setShouldLoadUser(false);
     setIsExplicitlyLoading(false);
     setSelectedDraftId("");
-    setQuery({ userId: null, draftId: null });
+    setManualDraftSlot(null);
+    setQuery({ userId: null, draftId: null, draftSlot: null });
   }, [setQuery]);
 
   // Loading and error states
@@ -708,6 +741,10 @@ export function DraftDataProvider({
       draft: draftDetails,
       picks: picks || [],
       userId: user.user_id,
+      ...(leagueConfig?.draftOrderMode === "manual" &&
+      leagueConfig.userSlot != null
+        ? { userSlot: leagueConfig.userSlot }
+        : {}),
       topLimit: 3,
       ...(leagueConfig?.scoringRules
         ? { scoringRules: leagueConfig.scoringRules }
@@ -725,6 +762,8 @@ export function DraftDataProvider({
     draftDetails,
     picks,
     user?.user_id,
+    leagueConfig?.draftOrderMode,
+    leagueConfig?.userSlot,
     leagueConfig?.scoringRules,
     projectionArtifact,
     playersBundle,
@@ -869,21 +908,30 @@ export function DraftDataProvider({
   }, [positionRows, pickOverlay, user?.user_id]);
 
   const draftValueBoard = viewModel?.recommendationBoard ?? null;
+  const draftRawValuesByPlayerId = viewModel?.draftRawValuesByPlayerId;
 
   const attachDraftValue = useCallback(
-    (row: PlayerWithPick): PlayerWithPick =>
-      attachDraftValueMetrics(
+    (row: PlayerWithPick): PlayerWithPick => {
+      const valued = attachDraftValueMetrics(
         row,
         draftValueBoard?.metricsByPlayerId[row.player_id]
-      ),
-    [draftValueBoard]
+      );
+      const rawValue = draftRawValuesByPlayerId?.[row.player_id];
+      return valued.draft_raw_value_score != null || rawValue == null
+        ? valued
+        : {
+            ...valued,
+            draft_raw_value_score: rawValue,
+            draft_value_label: "Starter-aware value",
+          };
+    },
+    [draftRawValuesByPlayerId, draftValueBoard]
   );
 
   const playersAll: PlayerWithPick[] = useMemo(() => {
-    if (!draftValueBoard) return playersAllWithPicks;
-    return playersAllWithPicks
-      .map(attachDraftValue)
-      .sort(
+    const valuedPlayers = playersAllWithPicks.map(attachDraftValue);
+    if (!draftValueBoard) return valuedPlayers;
+    return valuedPlayers.sort(
         (a, b) =>
           (a.draft_recommendation_rank ?? 999_999) -
             (b.draft_recommendation_rank ?? 999_999) ||
@@ -950,6 +998,11 @@ export function DraftDataProvider({
       loadUserAndDrafts,
       selectedDraftId,
       setSelectedDraftId: handleSetSelectedDraftId,
+      draftSlot: leagueConfig?.userSlot ?? null,
+      draftSlotSource: leagueConfig?.userSlot
+        ? leagueConfig.draftOrderMode
+        : null,
+      setDraftSlot: handleSetDraftSlot,
       draftValueStatus: viewModel?.draftValueStatus ?? null,
       readiness: viewModel?.readiness ?? null,
       clearDraft,
@@ -1004,6 +1057,7 @@ export function DraftDataProvider({
       loadUserAndDrafts,
       selectedDraftId,
       handleSetSelectedDraftId,
+      handleSetDraftSlot,
       clearDraft,
       clearUser,
       user,

@@ -16,7 +16,10 @@ import { PlayerTable } from "./PlayerTable";
 import type { PlayerWithPick } from "@/lib/types.draft";
 import PlayersTableBase from "./table/PlayersTableBase";
 import type { ColumnGroup } from "./table/columns";
-import { DRAFT_VALUE_DESCRIPTIONS } from "./table/presets";
+import {
+  DRAFT_VALUE_DESCRIPTIONS,
+  formatDraftValue,
+} from "./table/presets";
 
 import PreviewPickDialog, { type PreviewPickPlayer } from "./PreviewPickDialog";
 import { CheckIcon, EyeIcon } from "lucide-react";
@@ -167,6 +170,7 @@ export default function PositionCompactTables({
           sortAs: "number",
           nulls: "last",
           width: "6ch",
+          render: formatDraftValue,
         },
         {
           id: "adj",
@@ -179,6 +183,7 @@ export default function PositionCompactTables({
           defaultDir: "desc",
           heat: { scale: "val" },
           width: "6ch",
+          render: formatDraftValue,
         },
         {
           id: "adp",

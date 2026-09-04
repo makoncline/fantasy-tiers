@@ -198,4 +198,52 @@ describe("DraftAssistantContent", () => {
     act(() => root.unmount());
     container.remove();
   });
+
+  it("asks for a manual slot when Sleeper has not published the order", () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    act(() => {
+      root.render(
+        <DraftDataStaticProvider
+          value={{
+            user: { user_id: "user-1", username: "makon" },
+            draftDetails: {
+              draft_id: "draft-1",
+              type: "snake",
+              status: "pre_draft",
+              metadata: {},
+              settings: {
+                teams: 12,
+                rounds: 14,
+                slots_qb: 1,
+                slots_rb: 2,
+                slots_wr: 2,
+                slots_te: 1,
+                slots_k: 1,
+                slots_def: 1,
+                slots_flex: 1,
+              },
+              scoring_settings: {},
+              slot_to_roster_id: {},
+              draft_order: {},
+            },
+          }}
+        >
+          <DraftAssistantContent />
+        </DraftDataStaticProvider>
+      );
+    });
+
+    expect(container.textContent).toContain(
+      "Sleeper has not set the draft order"
+    );
+    expect(container.textContent).toContain("Raw Val is available now.");
+    expect(
+      container.querySelector('[data-testid="manual-draft-slot-form"]')
+    ).not.toBeNull();
+
+    act(() => root.unmount());
+    container.remove();
+  });
 });

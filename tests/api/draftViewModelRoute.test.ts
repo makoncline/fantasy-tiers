@@ -170,6 +170,37 @@ describe("GET /api/draft/view-model", () => {
     );
   });
 
+  it("uses a manual slot when Sleeper has not published the draft order", async () => {
+    vi.mocked(fetchDraftDetails).mockResolvedValue({
+      ...draft,
+      draft_order: {},
+    });
+
+    const response = await GET(
+      request("draft_id=draft-1&user_id=user-1&draft_slot=4")
+    );
+    const body: unknown = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toHaveProperty("leagueConfig.userSlot", 4);
+    expect(body).toHaveProperty("leagueConfig.draftOrderMode", "manual");
+    expect(buildDraftViewModel).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: "user-1", userSlot: 4 })
+    );
+  });
+
+  it("rejects an invalid manual draft slot", async () => {
+    const response = await GET(
+      request("draft_id=draft-1&user_id=user-1&draft_slot=zero")
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "draft_slot must be a positive integer",
+    });
+    expect(fetchDraftDetails).not.toHaveBeenCalled();
+  });
+
   it("does not expose an alternate recommendation strategy through the URL", async () => {
     const response = await GET(
       request("draft_id=draft-1&user_id=user-1&strategy=current")

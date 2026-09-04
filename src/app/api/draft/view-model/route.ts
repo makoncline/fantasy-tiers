@@ -12,15 +12,33 @@ import { draftReadinessShardCountsFromBundle } from "../../../../lib/draftReadin
 export async function GET(req: NextRequest) {
   const draftId = req.nextUrl.searchParams.get("draft_id");
   const userId = req.nextUrl.searchParams.get("user_id");
+  const draftSlotParam = req.nextUrl.searchParams.get("draft_slot");
   if (!draftId || !userId) {
     return NextResponse.json(
       { error: "draft_id and user_id are required" },
       { status: 400 }
     );
   }
+  const manualUserSlot =
+    draftSlotParam == null ? undefined : Number(draftSlotParam);
+  if (
+    manualUserSlot != null &&
+    (!Number.isInteger(manualUserSlot) || manualUserSlot < 1)
+  ) {
+    return NextResponse.json(
+      { error: "draft_slot must be a positive integer" },
+      { status: 400 }
+    );
+  }
 
   try {
     const draft = await fetchDraftDetails(draftId);
+    if (manualUserSlot != null && manualUserSlot > draft.settings.teams) {
+      return NextResponse.json(
+        { error: `draft_slot must be between 1 and ${draft.settings.teams}` },
+        { status: 400 }
+      );
+    }
     const picks = await fetchDraftPicks(draftId);
     const leagueId = draft.league_id ?? draft.metadata.league_id;
     const league = leagueId
@@ -29,7 +47,8 @@ export async function GET(req: NextRequest) {
     const leagueConfig = draftLeagueConfigFromSleeperDraft(
       draft,
       userId,
-      league
+      league,
+      manualUserSlot
     );
     const bundle = buildAggregateBundle({
       scoring: leagueConfig.scoring,
@@ -51,6 +70,7 @@ export async function GET(req: NextRequest) {
       draft,
       picks,
       userId,
+      ...(manualUserSlot != null ? { userSlot: manualUserSlot } : {}),
       scoringRules: leagueConfig.scoringRules,
       projectionArtifact: bundle.draftProjections,
       sourceHealth: bundle.sourceHealth ?? null,

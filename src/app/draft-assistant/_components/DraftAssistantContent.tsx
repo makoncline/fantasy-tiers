@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import RosterSlots from "@/app/draft-assistant/_components/RosterSlots";
 import DraftStatusCard from "@/app/draft-assistant/_components/DraftStatusCard";
 import DecisionBoard from "@/app/draft-assistant/_components/DecisionBoard";
+import ManualDraftSlotForm from "@/app/draft-assistant/_components/ManualDraftSlotForm";
 import type { DraftPickAction } from "@/app/draft-assistant/_lib/types";
 
 export default function DraftAssistantContent({
@@ -25,12 +26,23 @@ export default function DraftAssistantContent({
     draftValueStatus,
     readiness,
     refetchData,
+    user,
+    draftSlot,
+    draftSlotSource,
+    setDraftSlot,
   } = useDraftData();
 
   const isLoading = Object.values(loading).some(Boolean);
   const hasError = Object.values(error).some(Boolean);
   const hasBlockingError = hasError;
   const isComplete = draftDetails?.status === "complete";
+  const sleeperDraftSlot = user?.user_id
+    ? draftDetails?.draft_order?.[user.user_id]
+    : undefined;
+  const needsManualDraftSlot =
+    !isComplete &&
+    sleeperDraftSlot == null &&
+    (draftDetails?.settings.teams ?? 0) > 0;
 
   if (isLoading) {
     return (
@@ -96,6 +108,36 @@ export default function DraftAssistantContent({
         <Alert variant="destructive" data-testid="draft-value-unavailable-notice">
           <AlertTitle>Draft recommendations unavailable</AlertTitle>
           <AlertDescription>{draftValueStatus.reason}</AlertDescription>
+        </Alert>
+      ) : null}
+
+      {needsManualDraftSlot ? (
+        <Alert data-testid="manual-draft-slot-notice">
+          <AlertTitle>
+            {draftSlotSource === "manual"
+              ? `Using manual draft slot ${draftSlot}`
+              : "Sleeper has not set the draft order"}
+          </AlertTitle>
+          <AlertDescription>
+            {draftSlotSource === "manual" ? (
+              <p>
+                Adj, roster needs, turn timing, and recommendations use this
+                slot. The app will use Sleeper automatically after it publishes
+                the order.
+              </p>
+            ) : (
+              <p>
+                Raw Val is available now. Select your slot to calculate Adj,
+                roster needs, turn timing, and recommendations.
+              </p>
+            )}
+            <ManualDraftSlotForm
+              key={draftSlot ?? "unset"}
+              currentSlot={draftSlotSource === "manual" ? draftSlot : null}
+              teams={draftDetails?.settings.teams ?? 0}
+              onSave={setDraftSlot}
+            />
+          </AlertDescription>
         </Alert>
       ) : null}
 

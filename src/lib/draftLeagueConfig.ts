@@ -69,7 +69,7 @@ export const SleeperDraftLeagueConfigSchema = z.object({
   rounds: z.number().int().min(1),
   userSlot: z.number().int().min(1).nullable(),
   draftType: z.string().min(1),
-  draftOrderMode: z.literal("sleeper"),
+  draftOrderMode: z.enum(["sleeper", "manual"]),
   pickTimerSeconds: z.number().int().min(1).nullable(),
   scoring: scoringTypeSchema,
   scoringSource: z.enum(["draft", "league", "metadata"]),
@@ -212,7 +212,8 @@ export function rosterSlotsFromSleeperLeague(league: SleeperLeague): DraftRoster
 export function draftLeagueConfigFromSleeperDraft(
   draft: DraftDetails,
   userId: string,
-  league?: SleeperLeague
+  league?: SleeperLeague,
+  manualUserSlot?: number
 ): SleeperDraftLeagueConfig {
   const draftScoring = draft.scoring_settings;
   const leagueScoring = league?.scoring_settings;
@@ -240,13 +241,23 @@ export function draftLeagueConfigFromSleeperDraft(
     draft.settings.slots_k +
     draft.settings.slots_def +
     draft.settings.slots_flex;
+  const sleeperUserSlot = draft.draft_order[userId] ?? null;
+  const validManualUserSlot =
+    manualUserSlot != null &&
+    Number.isInteger(manualUserSlot) &&
+    manualUserSlot >= 1 &&
+    manualUserSlot <= draft.settings.teams
+      ? manualUserSlot
+      : null;
+  const userSlot = sleeperUserSlot ?? validManualUserSlot;
   return SleeperDraftLeagueConfigSchema.parse({
     source: "sleeper-draft",
     teams: draft.settings.teams,
     rounds: draft.settings.rounds,
-    userSlot: draft.draft_order[userId] ?? null,
+    userSlot,
     draftType: draft.type,
-    draftOrderMode: "sleeper",
+    draftOrderMode:
+      sleeperUserSlot != null || userSlot == null ? "sleeper" : "manual",
     pickTimerSeconds: draft.settings.pick_timer ?? null,
     scoring: rankingScoringFromRules(scoringRules),
     scoringSource,

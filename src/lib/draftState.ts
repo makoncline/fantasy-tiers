@@ -654,6 +654,7 @@ export function buildDraftViewModel(args: {
   draft: DraftDetails;
   picks: DraftPick[];
   userId?: string;
+  userSlot?: number;
   topLimit?: number;
   scoringRules?: DraftScoringRules;
   projectionArtifact?: DraftProjectionArtifact | null;
@@ -704,9 +705,17 @@ export function buildDraftViewModel(args: {
     };
   }
 
-  const userSlot = userId
+  const sleeperUserSlot = userId
     ? (draft.draft_order?.[userId] as number | undefined)
     : undefined;
+  const userSlot =
+    sleeperUserSlot ??
+    (args.userSlot != null &&
+    Number.isInteger(args.userSlot) &&
+    args.userSlot >= 1 &&
+    args.userSlot <= teams
+      ? args.userSlot
+      : undefined);
   const userRoster = userSlot ? rosters[userSlot] : undefined;
   const recommendationPlayers = Object.values(base.players).map((player) => ({
     ...player,
@@ -784,6 +793,11 @@ export function buildDraftViewModel(args: {
         },
         result: null,
       };
+  const draftRawValuesByPlayerId = Object.fromEntries(
+    Object.entries(starterAwareValue.result?.valuesByPlayerId ?? {}).map(
+      ([playerId, value]) => [playerId, value.value]
+    )
+  );
   const draftValueBoard =
     userRoster &&
     starterAwareValue.status.available &&
@@ -803,11 +817,7 @@ export function buildDraftViewModel(args: {
         teamRosterStates,
         userRosterPlayers: userRoster.players,
         irSlots: draft.settings.slots_ir ?? 0,
-        staticValuesByPlayerId: Object.fromEntries(
-          Object.entries(starterAwareValue.result?.valuesByPlayerId ?? {}).map(
-            ([playerId, value]) => [playerId, value.value]
-          )
-        ),
+        staticValuesByPlayerId: draftRawValuesByPlayerId,
       })
     : null;
   const draftContext = buildDraftContext({
@@ -830,6 +840,7 @@ export function buildDraftViewModel(args: {
     teamRosterStates,
     draftWideNeeds,
     recommendationBoard: draftValueBoard,
+    draftRawValuesByPlayerId,
     draftContext,
     rosterRequirements,
     draftValueStatus: starterAwareValue.status,

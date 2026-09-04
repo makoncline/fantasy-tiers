@@ -15,11 +15,23 @@ const DraftAssistantShell: React.FC = () => {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId") || "";
   const draftId = searchParams.get("draftId") || "";
+  const draftSlotParam = searchParams.get("draftSlot");
+  const parsedDraftSlot = draftSlotParam ? Number(draftSlotParam) : null;
+  const draftSlot =
+    parsedDraftSlot != null &&
+    Number.isInteger(parsedDraftSlot) &&
+    parsedDraftSlot > 0
+      ? parsedDraftSlot
+      : undefined;
   const hasUser = Boolean(userId);
   const hasDraft = Boolean(draftId);
 
   return (
-    <DraftDataProvider initialUserId={userId} initialDraftId={draftId}>
+    <DraftDataProvider
+      initialUserId={userId}
+      initialDraftId={draftId}
+      {...(draftSlot != null ? { initialDraftSlot: draftSlot } : {})}
+    >
       <div className="p-4 md:p-6">
         <h1 className="mb-3 text-xl font-bold">Draft Assistant</h1>
         <DraftAssistantInner
@@ -46,6 +58,7 @@ const DraftAssistantInner: React.FC<{
     draftDetails,
     loading,
     error,
+    draftSlot,
     clearDraft: contextClearDraft,
     clearUser: contextClearUser,
   } = useDraftData();
@@ -97,8 +110,8 @@ const DraftAssistantInner: React.FC<{
                   {...(draftDetails?.status && {
                     status: draftDetails.status,
                   })}
-                  {...(draftDetails?.draft_order?.[userId] && {
-                    pickNumber: draftDetails.draft_order[userId],
+                  {...(draftSlot && {
+                    pickNumber: draftSlot,
                   })}
                   {...(draftDetails?.metadata?.scoring_type && {
                     scoringType: draftDetails.metadata.scoring_type,

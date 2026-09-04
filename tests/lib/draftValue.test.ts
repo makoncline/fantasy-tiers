@@ -804,6 +804,14 @@ describe("buildDraftValueBoard", () => {
       sourceConfidence: "low",
       missingFields: expect.arrayContaining(["ecr"]),
     });
+    const missingMetrics = board.metricsByPlayerId.missing;
+    if (!missingMetrics) throw new Error("Expected missing-player metrics");
+    expect(
+      attachDraftValueMetrics(
+        { player_id: "missing", position: "WR" },
+        missingMetrics
+      ).draft_value_score
+    ).toBeNull();
   });
 
   it("does not let a small RB value edge beat a higher-tier WR reach on the first pick", () => {

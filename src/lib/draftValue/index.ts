@@ -3042,7 +3042,8 @@ export function attachDraftValueMetrics<TPlayer extends DraftValuePlayerInput>(
     ...player,
     draft_raw_value_score: metrics.staticValue,
     draft_value_label: metrics.valueLabel,
-    draft_value_score: metrics.recommendationScore,
+    draft_value_score:
+      metrics.recommendationRank == null ? null : metrics.recommendationScore,
     draft_tier_cliff: metrics.tierCliff,
     draft_adp_delta_rounds: metrics.adpDeltaRounds,
     draft_comeback_probability: metrics.comebackProbability,
