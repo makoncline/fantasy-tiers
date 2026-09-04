@@ -38,6 +38,8 @@ describe("scheduled data workflow", () => {
       "https://send-to-makon.vercel.app/api/send-telegram"
     );
     expect(workflow).toContain("Fantasy Tiers data incident");
+    expect(workflow).toContain("Fantasy Tiers data warning");
+    expect(workflow).toContain("Fresh data was published with a reserve warning");
     expect(workflow).toContain("Fantasy Tiers data recovered");
     expect(workflow).toContain('|| PREVIOUS_CONCLUSION=""');
     expect(workflow).not.toContain(

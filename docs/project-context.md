@@ -78,6 +78,9 @@ Scheduled draft refreshes set `SEASON=2026`, `DRAFT=true`, and
 the validator, health endpoint, live assistant, and mock assistant. It fails
 closed on stale FantasyPros or Sleeper data, thin expert samples, wrong
 mode/season, empty derived shards, or incomplete draft-relevant players.
+Core and expected-draft players are blocking. The next-three-round reserve
+slice is diagnostic: low reserve coverage publishes fresh data and sends an
+owner warning instead of keeping the prior snapshot live.
 
 Source fetchers and aggregators live in:
 
@@ -329,7 +332,7 @@ The owner explicitly wants the app to avoid bad drop advice for good players who
 - FantasyPros must include at least 50 experts and 50% of available experts.
 - The top 120 players and the expected league draft pool require 100% coverage.
 - The separate reserve slice covers the next three rounds after the expected
-  draft pool and requires at least 95% coverage.
+  draft pool. Coverage below 95% is a warning, not a publication block.
 - Cohorts use the union of FantasyPros ECR and positive Sleeper ADP/board rank.
 - Every required player needs ECR, position rank, overall and position tiers,
   a current Sleeper projection, and a finite exact-scoring `VAL`. Sleeper market

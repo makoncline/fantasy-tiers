@@ -12,9 +12,10 @@ Use the draft assistant beside a live Sleeper draft room and verify three things
 - The assistant reports `Data ready` before it renders the draft board.
 - Draft-room state changes in Sleeper, especially draft slot and picks, appear in the assistant within the polling window.
 
-If readiness fails, stop. The app replaces the board with the provider,
-derived-data, cohort, and player-specific incidents. Do not draft from a prior
-board. Refresh and repair the data pipeline first.
+If blocking readiness fails, stop. The app replaces the board when a provider,
+derived artifact, core player, or expected-draft player is not ready. A reserve
+pool warning does not block fresh data or the draft board. Review its named
+players, but continue to use the current board.
 
 ## Fast Startup
 
@@ -415,7 +416,7 @@ QB and TE need context. A top-tier QB or TE can be worth taking when the tier an
 
 ## Current Rough Edges
 
-- Draft readiness replaces the board when a source, derived shard, or relevant player is stale or incomplete. Repair the named incident before drafting.
+- Draft readiness replaces the board when a source, derived shard, core player, or expected-draft player is stale or incomplete. Reserve-only gaps publish with an owner warning.
 - The available pool is effectively limited by ranked rows in parts of the view model; unranked current-season players need clearer handling.
 - FantasyPros projected points/value fields can exist in the aggregate, but draft recommendations should not depend on them. The schedule-safe draft path is ECR-only; missing FantasyPros projections should not create draft-room source warnings when ECR/tier data is healthy.
 - Starting a Sleeper mock can trigger a browser confirmation dialog. If automation hangs there, verify draft status through `GET /v1/draft/<draft-id>` before continuing.

@@ -1312,3 +1312,42 @@ Decision:
 
 - Keep the qualitative signal. It gives timing context where the user makes a
   decision and removes an uncalibrated percentage from scan-heavy tables.
+
+## 2026-09-04: Publish data with reserve warnings
+
+Objective:
+
+- Keep the draft data current when only the reserve cohort is incomplete.
+- Notify the owner about the exact reserve gaps without blocking publication.
+
+Finding:
+
+- Sleeper changed Travis Hunter's primary position from WR to DB while keeping
+  WR in `fantasy_positions`. The source still supplied his receiving projection
+  fields. This was a valid provider classification, not a failed fetch.
+- The aggregate builder ignored the DB-primary row. Together with the existing
+  Jayden Higgins gap, reserve coverage was 35/37, or 94.6%.
+- Core coverage and expected-draft-pool coverage remained 100%. The previous
+  policy failed the full refresh because reserve coverage was below 95%.
+
+Change:
+
+- Core and expected-draft cohort failures still block publication.
+- A reserve cohort below 95% has `warning` status and does not change the full
+  readiness report to an incident.
+- The workflow now publishes the refreshed aggregates and then sends a
+  `Fantasy Tiers data warning` message with reserve coverage and player details.
+- A warning run does not also send the normal recovery message.
+
+Proof:
+
+- The readiness scenario test removes a ready reserve player's projection,
+  confirms the reserve cohort is incomplete, and confirms the full report stays
+  ready.
+- The workflow contract test requires the warning subject and publication
+  message.
+
+Decision:
+
+- Keep reserve coverage observable but non-blocking. Missing data for a likely
+  drafted player remains blocking through the core and expected cohorts.

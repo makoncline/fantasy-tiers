@@ -47,7 +47,7 @@ const DraftReadinessCohortSchema = z.object({
   total: z.number().int().nonnegative(),
   ready: z.number().int().nonnegative(),
   coveragePct: z.number().min(0).max(100),
-  status: z.enum(["ready", "incident"]),
+  status: z.enum(["ready", "warning", "incident"]),
 });
 
 const DraftReadinessProviderSchema = z.object({
@@ -330,7 +330,8 @@ export function assessDraftReadiness(input: {
       reserveDepth,
       95,
       reserveIds,
-      issuesByPlayerId
+      issuesByPlayerId,
+      "warning"
     ),
   };
   for (const cohort of Object.values(cohorts)) {
@@ -648,7 +649,8 @@ function cohortReport(
   rankDepth: number,
   requiredCoveragePct: number,
   playerIds: string[],
-  issuesByPlayerId: ReadonlyMap<string, readonly string[]>
+  issuesByPlayerId: ReadonlyMap<string, readonly string[]>,
+  incompleteStatus: "warning" | "incident" = "incident"
 ) {
   const total = playerIds.length;
   const ready = playerIds.filter((playerId) => !issuesByPlayerId.has(playerId)).length;
@@ -662,7 +664,7 @@ function cohortReport(
     total,
     ready,
     coveragePct,
-    status: coveragePct >= requiredCoveragePct ? "ready" : "incident",
+    status: coveragePct >= requiredCoveragePct ? "ready" : incompleteStatus,
   } as const;
 }
 

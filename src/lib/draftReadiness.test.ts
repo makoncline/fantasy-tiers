@@ -61,6 +61,35 @@ describe("draft readiness", () => {
     ).toEqual([]);
   });
 
+  it("keeps reserve-only coverage gaps non-blocking", () => {
+    const { common, assessment } = currentAssessment();
+    if (!common.projectionArtifact) {
+      throw new Error("The current draft fixture has no projection artifact.");
+    }
+    const issueIds = new Set(
+      assessment.report.playerIssues.map((issue) => issue.playerId)
+    );
+    const reservePlayerId = assessment.report.cohorts.reserve.playerIds.find(
+      (playerId) => !issueIds.has(playerId)
+    );
+    if (!reservePlayerId) {
+      throw new Error("The current draft fixture has no ready reserve player.");
+    }
+    const players = { ...common.projectionArtifact.players };
+    delete players[reservePlayerId];
+
+    const result = assessDraftReadiness({
+      ...common,
+      projectionArtifact: { ...common.projectionArtifact, players },
+    });
+
+    expect(result.report.cohorts.reserve.status).toBe("warning");
+    expect(result.report.status).toBe("ready");
+    expect(result.report.incidents).not.toContainEqual(
+      expect.objectContaining({ code: "COHORT_COVERAGE" })
+    );
+  });
+
   it("blocks recommendations and names an expected player with missing data", () => {
     const { common, assessment } = currentAssessment();
     const playerId = assessment.report.cohorts.core.playerIds[0];
