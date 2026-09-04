@@ -184,7 +184,8 @@ describe("PreviewPickDialog", () => {
     expect(text).toContain("Sleeper vs ECR+8.6 later");
     expect(text).toContain("Overall tier3");
     expect(text).toContain("Position tier2");
-    expect(text).toContain("Back?Likely 72%");
+    expect(text).toContain("TimingCan wait");
+    expect(text).not.toContain("72%");
     expect(text).toContain("League needs7 WR");
     expect(text).toContain("Adj breakdown");
     expect(text).toContain("Pick timing+4");

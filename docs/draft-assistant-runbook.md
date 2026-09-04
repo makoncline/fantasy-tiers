@@ -395,7 +395,10 @@ QB and TE need context. A top-tier QB or TE can be worth taking when the tier an
   urgency, comeback timing, room demand, and draft-state adjustments. Show
   both. Do not show a persistent
   comeback-probability column by default; timing can surface through `ADJ`, ADP
-  delta, and reason chips such as `Likely gone`.
+  delta, and qualitative signals such as `Likely gone`, `Toss-up`, and
+  `Can wait`. Show these signals only for the top recommendation, close
+  alternatives, and an opened player detail. Do not show a percentage until
+  the estimate has calibrated historical error.
 - If FantasyPros ECR average (`rank_ave`) is missing, expose it as missing data
   and make the row recommendation-ineligible. Do not use another rank field.
   D/ST and kicker use Sleeper standard projected points only when league

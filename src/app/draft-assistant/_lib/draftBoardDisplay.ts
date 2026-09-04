@@ -15,10 +15,7 @@ export const OVERALL_PLAYER_LIMIT = 50;
 export const POSITION_PLAYER_LIMIT = 10;
 
 type MarketComparisonRow = Pick<PlayerWithPick, "fp_rank_ave" | "sleeper_adp">;
-type ComebackRow = Pick<
-  PlayerWithPick,
-  "draft_comeback_label" | "draft_comeback_probability"
->;
+type TimingRow = Pick<PlayerWithPick, "draft_comeback_label">;
 
 export function hasDraftEcr(row: PlayerWithPick) {
   return typeof row.fp_rank_ave === "number" && Number.isFinite(row.fp_rank_ave);
@@ -82,15 +79,11 @@ export function formatSleeperEcrEdge(row: MarketComparisonRow) {
   return edge > 0 ? `+${picks} later` : `-${picks} earlier`;
 }
 
-export function formatComeback(row: ComebackRow) {
+export function formatTimingSignal(row: TimingRow) {
   if (!row.draft_comeback_label || row.draft_comeback_label === "unknown") {
     return "—";
   }
-  const label =
-    row.draft_comeback_label === "toss-up"
-      ? "Toss-up"
-      : `${row.draft_comeback_label[0]?.toUpperCase() ?? ""}${row.draft_comeback_label.slice(1)}`;
-  return typeof row.draft_comeback_probability === "number"
-    ? `${label} ${Math.round(row.draft_comeback_probability * 100)}%`
-    : label;
+  if (row.draft_comeback_label === "likely") return "Can wait";
+  if (row.draft_comeback_label === "toss-up") return "Toss-up";
+  return "Likely gone";
 }

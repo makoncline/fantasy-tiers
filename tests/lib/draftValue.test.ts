@@ -678,9 +678,47 @@ describe("buildDraftValueBoard", () => {
     const wrComeback = board.metricsByPlayerId.wr1?.comebackProbability;
     const qbComeback = board.metricsByPlayerId.qb1?.comebackProbability;
 
-    expect(wrComeback).toBeLessThan(0.25);
+    expect(wrComeback).toBeGreaterThan(0.35);
     expect(qbComeback).toBeGreaterThan(0.45);
     expect(wrComeback).toBeLessThan(qbComeback ?? 0);
+  });
+
+  it("keeps league demand from erasing an ADP-based comeback chance", () => {
+    const teamRosterStates = Array.from({ length: 12 }, (_, index) => ({
+      draftSlot: index + 1,
+      positionCounts: { QB: 0, RB: 0, WR: 0, TE: 0, K: 0, DEF: 0 },
+      starterNeeds: { QB: 1, RB: 2, WR: 2, TE: 1, FLEX: 2, K: 0, DEF: 1 },
+      benchSlotsRemaining: 5,
+    }));
+    const board = buildDraftValueBoard({
+      players: [
+        {
+          player_id: "wr-next-turn",
+          name: "Next-turn WR",
+          position: "WR",
+          tier_rank: 16,
+          tier_level: 2,
+          fp_value: 60,
+          sleeper_adp: 25,
+        },
+      ],
+      teams: 12,
+      rounds: 14,
+      draftType: "snake",
+      currentPick: 4,
+      userSlot: 4,
+      rosterRequirements: { ...rosterRequirements, K: 0, FLEX: 2, BN: 5 },
+      userPositionCounts: {},
+      userPositionNeeds: { QB: 1, RB: 2, WR: 2, TE: 1, FLEX: 2, DEF: 1 },
+      teamRosterStates,
+    });
+
+    const comeback = board.metricsByPlayerId["wr-next-turn"]?.comebackProbability;
+    expect(comeback).toBeGreaterThan(0.55);
+    expect(comeback).toBeLessThan(0.75);
+    expect(board.metricsByPlayerId["wr-next-turn"]?.comebackLabel).toBe(
+      "toss-up"
+    );
   });
 
   it("uses the supplied starter-aware values as the static baseline", () => {

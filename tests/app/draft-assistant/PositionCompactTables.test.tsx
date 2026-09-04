@@ -100,7 +100,6 @@ describe("PositionCompactTables", () => {
       "ECR",
       "ADP",
       "Edge",
-      "Back?",
       "",
     ]);
     expect(qbCard?.textContent).toContain("You: 0/1 · League needs: 7 · 1 left in tier");

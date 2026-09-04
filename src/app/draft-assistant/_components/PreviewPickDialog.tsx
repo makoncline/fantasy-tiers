@@ -25,8 +25,8 @@ import {
 import type { PlayerWithPick } from "@/lib/types.draft";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
 import {
-  formatComeback,
   formatSleeperEcrEdge,
+  formatTimingSignal,
 } from "@/app/draft-assistant/_lib/draftBoardDisplay";
 import type { DraftRecommendationComponentKey } from "@/lib/draftValue";
 
@@ -126,6 +126,7 @@ function PlayerDecisionPanel({
   const outlook = draftContext?.positionOutlook.find(
     (item) => item.position === player.position
   );
+  const timingSignal = formatTimingSignal(player);
 
   return (
     <section className="space-y-3 rounded-lg border bg-muted/20 p-3">
@@ -179,10 +180,10 @@ function PlayerDecisionPanel({
             <div className="font-mono">{fmtNumber(player.position_tier_level)}</div>
           </div>
         ) : null}
-        {player.draft_comeback_label ? (
+        {timingSignal !== "—" ? (
           <div>
-            <div className="text-xs text-muted-foreground">Back?</div>
-            <div className="font-mono">{formatComeback(player)}</div>
+            <div className="text-xs text-muted-foreground">Timing</div>
+            <div className="font-mono">{timingSignal}</div>
           </div>
         ) : null}
         {outlook ? (

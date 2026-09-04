@@ -1,6 +1,5 @@
 import { createElement } from "react";
 import {
-  formatComeback,
   formatSleeperEcrEdge,
   sleeperEcrEdge,
 } from "@/app/draft-assistant/_lib/draftBoardDisplay";
@@ -107,17 +106,6 @@ export const GROUPS_FULL: ColumnGroup<PlayerWithPick>[] = [
         nulls: "last",
         width: "11ch",
         render: (_, row) => formatSleeperEcrEdge(row),
-      },
-      {
-        id: "back",
-        header: "Back?",
-        description: "Chance that the player is available at your next pick.",
-        accessor: (row) => row.draft_comeback_probability ?? null,
-        sortable: true,
-        sortAs: "number",
-        nulls: "last",
-        width: "10ch",
-        render: (_, row) => formatComeback(row),
       },
     ],
   },

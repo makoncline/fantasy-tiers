@@ -539,7 +539,7 @@ function adjustedComebackProbability(args: {
   const statesBySlot = new Map(
     args.teamRosterStates.map((state) => [state.draftSlot, state] as const)
   );
-  let expectedPositionPicks = 0;
+  let expectedPositionShare = 0;
   let picksBeforeTarget = 0;
 
   for (let pick = startPick; pick <= endPick; pick += 1) {
@@ -547,17 +547,70 @@ function adjustedComebackProbability(args: {
     if (slot == null) continue;
     const state = statesBySlot.get(slot);
     if (!state) continue;
-    expectedPositionPicks += teamPositionDemandWeight(args.position, state);
+    expectedPositionShare += normalizedTeamPositionDemand(
+      args.position,
+      state
+    );
     picksBeforeTarget += 1;
   }
 
   if (picksBeforeTarget === 0) return base;
 
-  const neutralExpected =
-    picksBeforeTarget * neutralPositionPickShare(args.position);
-  const demandPressure = expectedPositionPicks - neutralExpected;
-  const adjusted = base * Math.exp(-0.38 * demandPressure);
+  const averagePositionShare = expectedPositionShare / picksBeforeTarget;
+  const demandPressure =
+    averagePositionShare - neutralPositionPickShare(args.position);
+  const probabilityAdjustment = Math.max(
+    -0.12,
+    Math.min(0.12, demandPressure * 0.4)
+  );
+  const adjusted = base - probabilityAdjustment;
   return clampProbability(adjusted);
+}
+
+// This is a relative draft-room pressure score. It is not a return probability.
+function roomCompetitionUrgency(args: {
+  adp: number | null;
+  position: Position;
+  currentPick: number;
+  nextPick: number | null;
+  comebackTargetPick: number | null;
+  teams: number;
+  draftType?: string | null | undefined;
+  teamRosterStates?: readonly DraftTeamRosterState[] | undefined;
+}) {
+  const base = comebackProbability(args.adp, args.comebackTargetPick, args.teams);
+  if (base == null) return 0;
+  if (args.comebackTargetPick == null || !args.teamRosterStates?.length) {
+    return Math.max(0, roundOne((1 - base) * 8));
+  }
+
+  const userOnClock = args.nextPick === args.currentPick;
+  const startPick = userOnClock ? args.currentPick + 1 : args.currentPick;
+  const endPick = args.comebackTargetPick - 1;
+  if (startPick > endPick) return Math.max(0, roundOne((1 - base) * 8));
+
+  const statesBySlot = new Map(
+    args.teamRosterStates.map((state) => [state.draftSlot, state] as const)
+  );
+  let competition = 0;
+  let picksBeforeTarget = 0;
+
+  for (let pick = startPick; pick <= endPick; pick += 1) {
+    const slot = pickSlot(pick, args.teams, args.draftType);
+    if (slot == null) continue;
+    const state = statesBySlot.get(slot);
+    if (!state) continue;
+    competition += teamPositionDemandWeight(args.position, state);
+    picksBeforeTarget += 1;
+  }
+
+  const neutralCompetition =
+    picksBeforeTarget * neutralPositionPickShare(args.position);
+  const pressure = competition - neutralCompetition;
+  const urgencyAvailability = clampProbability(
+    base * Math.exp(-0.38 * pressure)
+  );
+  return Math.max(0, roundOne((1 - urgencyAvailability) * 8));
 }
 
 function teamPositionDemandWeight(
@@ -591,6 +644,27 @@ function teamPositionDemandWeight(
   }
 
   return Math.min(0.95, Math.max(0.01, weight));
+}
+
+const COMEBACK_DEMAND_POSITIONS = [
+  "QB",
+  "RB",
+  "WR",
+  "TE",
+] as const satisfies readonly Position[];
+
+function normalizedTeamPositionDemand(
+  position: Position,
+  state: DraftTeamRosterState
+) {
+  if (position === "K" || position === "DEF") {
+    return neutralPositionPickShare(position);
+  }
+  const total = COMEBACK_DEMAND_POSITIONS.reduce(
+    (sum, candidate) => sum + teamPositionDemandWeight(candidate, state),
+    0
+  );
+  return total > 0 ? teamPositionDemandWeight(position, state) / total : 0;
 }
 
 function neutralPositionPickShare(position: Position) {
@@ -2336,7 +2410,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       needs: input.userPositionNeeds,
       benchBalance: rosterConstruction.benchBalance,
     });
-    const availability = adjustedComebackProbability({
+    const comebackArgs = {
       adp: marketRank,
       position: player.position,
       currentPick,
@@ -2345,14 +2419,14 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       teams,
       draftType: input.draftType,
       teamRosterStates: input.teamRosterStates,
-    });
+    };
+    const availability = adjustedComebackProbability(comebackArgs);
     const label = comebackLabel(availability);
     const positionRunCount = runCounts.get(player.position) ?? 0;
     const runUrgency = positionRunCount >= 3 ? 2 : positionRunCount >= 2 ? 1 : 0;
     const cliffUrgency =
       sameTierFallbackCount <= 1 ? 2 : sameTierFallbackCount <= 3 ? 1 : 0;
-    const availabilityUrgency =
-      availability == null ? 0 : Math.max(0, roundOne((1 - availability) * 8));
+    const availabilityUrgency = roomCompetitionUrgency(comebackArgs);
     const roomDemand = roomDemandScore({
       position: player.position,
       teams,

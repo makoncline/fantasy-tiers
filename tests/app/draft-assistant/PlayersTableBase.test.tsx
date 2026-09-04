@@ -91,7 +91,10 @@ describe("PlayersTableBase", () => {
       );
     });
 
-    expect(container.textContent).toContain("PlayerTierVALADJECRSleeper ADPSleeper vs ECRBack?");
+    expect(container.textContent).toContain(
+      "PlayerTierVALADJECRSleeper ADPSleeper vs ECR"
+    );
+    expect(container.textContent).not.toContain("Back?");
     expect(container.textContent).not.toContain("Draft board");
     expect(container.textContent).toContain("Ranked PlayerRB3");
     expect(container.textContent).toContain("1.11");

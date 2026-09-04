@@ -1274,3 +1274,41 @@ Decision:
 - Keep one starter-aware value model. This supersedes earlier notes that kept
   the ECR-only model as the default or described starter-aware value as
   experimental.
+
+## 2026-09-04: Qualitative next-turn timing
+
+Objective:
+
+- Remove the low-value `Back?` column from the overall and position tables.
+- Show useful next-turn timing without false percentage precision.
+- Keep recommendation quality equal to the accepted baseline.
+
+Change:
+
+- The overall and position tables no longer show a persistent return estimate.
+- The Decision Board shows `Likely gone`, `Toss-up`, or `Can wait` for the top
+  recommendation and alternatives within five `Adj` points.
+- The player detail shows the same qualitative timing label.
+- The displayed estimate starts with Sleeper ADP. It normalizes QB, RB, WR,
+  and TE demand for each team between the current pick and the next user pick.
+  The demand adjustment is limited to 12 percentage points.
+- The existing room-pressure urgency stays internal to `Adj`. The app does not
+  present that heuristic as a probability.
+
+Proof:
+
+- Scenario tests cover the current-pick snake boundary, position demand, a
+  realistic round-one return estimate, table column removal, and qualitative
+  Decision Board and player-detail labels.
+- Baseline: `/private/tmp/fantasy-tiers-comeback-baseline/algo-batch-20260904195339`.
+- Candidate: `/private/tmp/fantasy-tiers-comeback-final/algo-batch-20260904200102`.
+- The batch used the same three fixed seeds for all 12 slots in the 12-team,
+  14-round, 0.69 PPR, two-FLEX, no-kicker format.
+- All 36 candidate drafts matched the baseline roster exactly. All 36 passed
+  roster validity, roster completion, endgame, and core-construction gates.
+  Mean starter ECR, simulated finish, and top-six TE count were unchanged.
+
+Decision:
+
+- Keep the qualitative signal. It gives timing context where the user makes a
+  decision and removes an uncalibrated percentage from scan-heavy tables.

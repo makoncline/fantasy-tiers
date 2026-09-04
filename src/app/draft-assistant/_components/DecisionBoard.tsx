@@ -4,6 +4,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
+import { formatTimingSignal } from "@/app/draft-assistant/_lib/draftBoardDisplay";
 import type { PlayerWithPick } from "@/lib/types.draft";
 
 function formatScore(value: number | null | undefined) {
@@ -48,6 +49,7 @@ function RecommendationCard({
   gapFromTop?: number;
   primary?: boolean;
 }) {
+  const timingSignal = formatTimingSignal(player);
   return (
     <div
       className={`rounded-md border p-3 ${primary ? "bg-primary/5" : "bg-muted/20"}`}
@@ -85,6 +87,15 @@ function RecommendationCard({
                 ? ` · +${formatScore(player.draft_recommendation_score_gap)} vs next`
                 : ""}
           </Badge>
+          {timingSignal !== "—" ? (
+            <Badge
+              variant="outline"
+              title="Sleeper ADP estimate for availability at your next pick"
+              data-testid="decision-timing-signal"
+            >
+              {timingSignal}
+            </Badge>
+          ) : null}
         </div>
         {player.draft_recommendation_edge_detail ? (
           <p

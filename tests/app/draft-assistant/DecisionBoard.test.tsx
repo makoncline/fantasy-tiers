@@ -39,6 +39,7 @@ function player(
     draft_recommendation_pros: [`${name} pro`],
     draft_recommendation_cons: [`${name} con`],
     draft_data_quality_notes: [`${name} data`],
+    draft_comeback_label: "unknown",
   };
 }
 
@@ -63,6 +64,10 @@ describe("DecisionBoard", () => {
     const close = player("close", "Close Player", 97);
     const boundary = player("boundary", "Boundary Player", 95);
     const outside = player("outside", "Outside Player", 94.9);
+    top.draft_comeback_label = "unlikely";
+    close.draft_comeback_label = "toss-up";
+    boundary.draft_comeback_label = "likely";
+    outside.draft_comeback_label = "likely";
 
     mockUseDraftData.mockReturnValue({
       decisionRows: [top, close, boundary, outside],
@@ -93,6 +98,9 @@ describe("DecisionBoard", () => {
     expect(text).toContain("Boundary Player");
     expect(text).toContain("5 from top");
     expect(text).not.toContain("Outside Player");
+    expect(container.textContent).toContain("Likely gone");
+    expect(text).toContain("Toss-up");
+    expect(text).toContain("Can wait");
     expect(
       container.querySelector(
         '[title="Starter-aware value before roster and draft-state adjustments"]'
