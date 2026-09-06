@@ -7,6 +7,9 @@ The public surfaces are `/draft-assistant` and `/league-manager`. The local-only
 Read `docs/project-context.md` before changing data or draft behavior. Read
 `docs/draft-assistant-runbook.md` before controlling a Sleeper mock.
 
+See [Draft Strategy and External Review Brief](docs/draft-strategy.md) for the
+league settings, prioritized rules, current model, and open review questions.
+
 ## Local Development
 
 ```bash
@@ -105,3 +108,5 @@ pnpm run e2e:ci
 `GET /api/health/data` is read-only and uncached. It reports the deployed
 commit and the complete draft-readiness report. It does not expose credentials,
 database URLs, SQL, or provider payloads.
+
+- [Draft strategy experiments](docs/draft-strategy-experiments.md): priorities, matched results, and promotion decisions.

@@ -67,7 +67,11 @@ import {
 import { draftReadinessShardCountsFromBundle } from "@/lib/draftReadiness";
 import type { DraftReadinessReport } from "@/lib/draftReadiness";
 
+import type { DraftChoiceSnapshot } from "@/lib/draftChoices";
+
 interface ProcessedData {
+  choiceSnapshot?: DraftChoiceSnapshot | null;
+  recommendationBoard?: ReturnType<typeof buildDraftViewModel>["recommendationBoard"];
   availablePlayers: RankedPlayer[];
   availableByPosition?: Record<string, RankedPlayer[]>;
   topAvailablePlayersByPosition?: Record<string, RankedPlayer[]>;
@@ -991,6 +995,8 @@ export function DraftDataProvider({
       setDraftSlot: handleSetDraftSlot,
       draftValueStatus: viewModel?.draftValueStatus ?? null,
       readiness: viewModel?.readiness ?? null,
+      choiceSnapshot: viewModel?.choiceSnapshot ?? null,
+      recommendationBoard: draftValueBoard,
       clearDraft,
       clearUser,
 
@@ -1062,6 +1068,7 @@ export function DraftDataProvider({
       draftValueBoard,
       viewModel?.draftValueStatus,
       viewModel?.readiness,
+      viewModel?.choiceSnapshot,
       playersAll,
       playersByPosition,
       draftedIds,

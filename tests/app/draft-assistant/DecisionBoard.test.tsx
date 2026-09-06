@@ -59,55 +59,6 @@ describe("DecisionBoard", () => {
     container.remove();
   });
 
-  it("renders a full card for every recommendation within five points", () => {
-    const top = player("top", "Top Player", 100, "RB");
-    const close = player("close", "Close Player", 97);
-    const boundary = player("boundary", "Boundary Player", 95);
-    const outside = player("outside", "Outside Player", 94.9);
-    top.draft_comeback_label = "unlikely";
-    close.draft_comeback_label = "toss-up";
-    boundary.draft_comeback_label = "likely";
-    outside.draft_comeback_label = "likely";
-
-    mockUseDraftData.mockReturnValue({
-      decisionRows: [top, close, boundary, outside],
-      topRecommendation: top,
-      rosterConstruction: null,
-      draftContext: null,
-      userPositionCounts: {},
-    } as never);
-
-    act(() => root.render(<DecisionBoard />));
-
-    const cards = container.querySelectorAll(
-      '[data-testid="decision-recommendation-card"]'
-    );
-    expect(cards).toHaveLength(3);
-
-    const closeOptions = container.querySelector(
-      '[data-testid="decision-close-options"]'
-    );
-    const text = closeOptions?.textContent ?? "";
-    expect(text).toContain("Close Player");
-    expect(text).toContain("Close Player pro");
-    expect(text).toContain("Close Player con");
-    expect(text).toContain("Close Player data");
-    expect(text).toContain("VAL 87");
-    expect(text).toContain("ADJ 97");
-    expect(text).toContain("3 from top");
-    expect(text).toContain("Boundary Player");
-    expect(text).toContain("5 from top");
-    expect(text).not.toContain("Outside Player");
-    expect(container.textContent).toContain("Likely gone");
-    expect(text).toContain("Toss-up");
-    expect(text).toContain("Can wait");
-    expect(
-      container.querySelector(
-        '[title="Starter-aware value before roster and draft-state adjustments"]'
-      )
-    ).not.toBeNull();
-  });
-
   it("shows every league starter position draining from its initial need", () => {
     const top = player("top", "Top Player", 100, "RB");
     mockUseDraftData.mockReturnValue({

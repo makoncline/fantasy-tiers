@@ -2026,6 +2026,7 @@ function dataQualityText(args: {
 }
 
 function buildRecommendationExplanation(args: {
+  hasFuturePick: boolean;
   player: DraftValuePlayerInput;
   actionLabel: DraftActionLabel;
   adpDeltaRounds: number | null;
@@ -2049,12 +2050,12 @@ function buildRecommendationExplanation(args: {
   });
   if (rosterNeed) pros.push(rosterNeed);
 
-  const tierTiming = tierTimingText({
+  const tierTiming = args.hasFuturePick ? tierTimingText({
     position: args.player.position,
     tier: args.tier,
     comebackLabel: args.comebackLabel,
     sameTierFallbackCount: args.sameTierFallbackCount,
-  });
+  }) : null;
   if (tierTiming) {
     if (tierTiming.startsWith("Can probably wait")) cons.push(tierTiming);
     else pros.push(tierTiming);
@@ -2270,6 +2271,9 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     rounds: input.rounds,
     draftType: input.draftType,
   });
+  // An unknown draft length must not be treated as a confirmed final pick.
+  const hasFuturePick =
+    comebackTargetPick != null || input.rounds == null || !input.userSlot;
   const picksUntilNextTurn =
     nextPick == null ? null : Math.max(0, nextPick - currentPick);
 
@@ -2401,7 +2405,8 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     const sleeperBoardRank = getSleeperBoardRank(player);
     const sleeperBoardValue = toNumber(player.sleeper_board_value);
     const marketRank = sleeperBoardRank ?? adp;
-    const adpDeltaPicks = adp == null ? null : roundOne(adp - currentPick);
+    const adpDeltaPicks =
+      !hasFuturePick || adp == null ? null : roundOne(adp - currentPick);
     const adpDeltaRounds =
       adpDeltaPicks == null ? null : roundOne(adpDeltaPicks / teams);
     const rbWrDepthMarket = rbWrDepthMarketScore({
@@ -2423,15 +2428,16 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     const availability = adjustedComebackProbability(comebackArgs);
     const label = comebackLabel(availability);
     const positionRunCount = runCounts.get(player.position) ?? 0;
-    const runUrgency = positionRunCount >= 3 ? 2 : positionRunCount >= 2 ? 1 : 0;
+    const runUrgency =
+      !hasFuturePick ? 0 : positionRunCount >= 3 ? 2 : positionRunCount >= 2 ? 1 : 0;
     const cliffUrgency =
-      sameTierFallbackCount <= 1 ? 2 : sameTierFallbackCount <= 3 ? 1 : 0;
+      !hasFuturePick ? 0 : sameTierFallbackCount <= 1 ? 2 : sameTierFallbackCount <= 3 ? 1 : 0;
     const availabilityUrgency = roomCompetitionUrgency(comebackArgs);
-    const roomDemand = roomDemandScore({
+    const roomDemand = hasFuturePick ? roomDemandScore({
       position: player.position,
       teams,
       draftWideNeeds: input.draftWideNeeds,
-    });
+    }) : 0;
     const urgencyScore = roundOne(
       availabilityUrgency + runUrgency + cliffUrgency + roomDemand
     );
@@ -2665,7 +2671,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
               bestStaticValue,
               strategyValueFloor
             ),
-      timing: normalizedComponent(
+      timing: !hasFuturePick ? 0 : normalizedComponent(
         (availabilityUrgency +
           runUrgency +
           cliffUrgency +
@@ -2686,7 +2692,9 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       depth: normalizedComponent(benchScore),
       demand: normalizedComponent(roomDemand * 12),
       risk: normalizedComponent(
-        -missingFields.length * 12 - playerAvailability.penalty * 5
+        -missingFields.filter(
+          (field) => hasFuturePick || field !== "Sleeper market rank"
+        ).length * 12 - playerAvailability.penalty * 5
       ),
     };
     const components = weightRecommendationComponents(
@@ -2761,7 +2769,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     }
     reasons.push(...qbStarterQuality.reasons);
     reasons.push(...teStarterQuality.reasons);
-    if (sameTierFallbackCount <= 1 && scarcityTier != null) {
+    if (hasFuturePick && sameTierFallbackCount <= 1 && scarcityTier != null) {
       reasons.push({
         code: "TIER_CLIFF",
         label: "Tier cliff",
@@ -2776,7 +2784,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
           "Sleeper room timing says this player probably will not return.",
       });
     }
-    if (adp != null && adp <= currentPick - teams / 2) {
+    if (hasFuturePick && adp != null && adp <= currentPick - teams / 2) {
       reasons.push({
         code: "ADP_BARGAIN",
         label: "ADP bargain",
@@ -2834,6 +2842,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     const recommendationExplanation = buildRecommendationExplanation({
       player,
       actionLabel,
+      hasFuturePick,
       adpDeltaRounds,
       comebackLabel: label,
       currentRound,

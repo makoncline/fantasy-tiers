@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { readFileSync } from "node:fs";
 
 import { GET } from "@/app/api/health/data/route";
+import { DraftReadinessReportSchema } from "@/lib/draftReadiness";
 
 describe("/api/health/data", () => {
   afterEach(() => {
@@ -10,7 +12,10 @@ describe("/api/health/data", () => {
 
   it("reassesses the deployed aggregate artifacts before reporting healthy", async () => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-09-04T17:45:00.000Z"));
+    const snapshot = DraftReadinessReportSchema.parse(JSON.parse(
+      readFileSync("public/data/aggregate/quality-report.json", "utf8")
+    ));
+    vi.setSystemTime(new Date(snapshot.checkedAt));
 
     const response = await GET(
       new NextRequest("http://localhost/api/health/data")

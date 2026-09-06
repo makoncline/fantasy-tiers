@@ -1065,7 +1065,6 @@ function MockAssistantPanel(props: {
     <section data-testid="mock-assistant-panel">
       <DraftDataStaticProvider value={contextValue}>
         <DraftAssistantContent
-          showRecommendations={false}
           pickAction={{
             disabled: !props.snapshot.isUserTurn,
             onPick: (player) => props.onPick(player.player_id),
@@ -1236,6 +1235,8 @@ function useMockDraftContextValue(props: {
       selectedDraftId: draftState.config.draftId,
       draftValueStatus: viewModel.draftValueStatus,
       readiness: viewModel.readiness,
+      choiceSnapshot: viewModel.choiceSnapshot,
+      recommendationBoard: draftValueBoard,
       user,
       drafts: [],
       draftDetails,

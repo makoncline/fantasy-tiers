@@ -4,13 +4,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
-import { formatTimingSignal } from "@/app/draft-assistant/_lib/draftBoardDisplay";
-import type { PlayerWithPick } from "@/lib/types.draft";
-
-function formatScore(value: number | null | undefined) {
-  if (value == null) return "—";
-  return String(Math.round(value * 10) / 10);
-}
+import ChoiceComparison from "./ChoiceComparison";
 
 function unique(values: readonly string[]) {
   return [...new Set(values.filter(Boolean))];
@@ -36,95 +30,6 @@ function buildFocus(args: {
 }
 
 const DEMAND_POSITIONS = ["QB", "RB", "WR", "TE", "K", "DEF"] as const;
-const CLOSE_OPTION_SCORE_GAP = 5;
-
-function RecommendationCard({
-  player,
-  label,
-  gapFromTop,
-  primary = false,
-}: {
-  player: PlayerWithPick;
-  label: string;
-  gapFromTop?: number;
-  primary?: boolean;
-}) {
-  const timingSignal = formatTimingSignal(player);
-  return (
-    <div
-      className={`rounded-md border p-3 ${primary ? "bg-primary/5" : "bg-muted/20"}`}
-      data-testid="decision-recommendation-card"
-    >
-      <div className="min-w-0">
-        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          {label}
-        </div>
-        <div className="mt-1 flex flex-wrap items-center gap-2">
-          <span className="text-lg font-semibold leading-tight">
-            {player.name}
-          </span>
-          <Badge variant="outline">
-            {player.position}
-            {player.fp_rank_pos ? `${player.fp_rank_pos}` : ""}
-          </Badge>
-          <Badge
-            variant="outline"
-            title={`${player.draft_value_label ?? "Player value"} before roster and draft-state adjustments`}
-          >
-            VAL {formatScore(player.draft_raw_value_score)}
-          </Badge>
-          <Badge
-            variant="outline"
-            title="Adjusted for your roster and the current draft state"
-          >
-            ADJ {formatScore(player.draft_value_score)}
-          </Badge>
-          <Badge variant="secondary">
-            {player.draft_recommendation_edge ?? "Review"}
-            {gapFromTop != null
-              ? ` · ${formatScore(gapFromTop)} from top`
-              : player.draft_recommendation_score_gap != null
-                ? ` · +${formatScore(player.draft_recommendation_score_gap)} vs next`
-                : ""}
-          </Badge>
-          {timingSignal !== "—" ? (
-            <Badge
-              variant="outline"
-              title="Sleeper ADP estimate for availability at your next pick"
-              data-testid="decision-timing-signal"
-            >
-              {timingSignal}
-            </Badge>
-          ) : null}
-        </div>
-        {player.draft_recommendation_edge_detail ? (
-          <p
-            className="mt-2 max-w-3xl text-sm text-foreground/80"
-            data-testid={
-              primary ? "decision-recommendation-summary" : undefined
-            }
-          >
-            {player.draft_recommendation_edge_detail}
-          </p>
-        ) : null}
-        <div className="mt-2 space-y-1">
-          <SignalList label="Pros" values={player.draft_recommendation_pros} />
-          <SignalList
-            label="Cons"
-            values={player.draft_recommendation_cons}
-            variant="secondary"
-          />
-          <SignalList
-            label="Data"
-            values={player.draft_data_quality_notes}
-            variant="secondary"
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function flexStarterShare(
   position: (typeof DEMAND_POSITIONS)[number],
   flexSlots: number
@@ -202,30 +107,6 @@ function DemandBars({
   );
 }
 
-function SignalList({
-  label,
-  values,
-  variant = "outline",
-}: {
-  label: string;
-  values: readonly string[] | undefined;
-  variant?: "default" | "secondary" | "outline";
-}) {
-  if (!values?.length) return null;
-  return (
-    <div className="flex flex-wrap items-center gap-1">
-      <span className="text-xs font-medium text-muted-foreground">
-        {label}:
-      </span>
-      {values.map((value) => (
-        <Badge key={`${label}-${value}`} variant={variant}>
-          {value}
-        </Badge>
-      ))}
-    </div>
-  );
-}
-
 export default function DecisionBoard() {
   const {
     decisionRows,
@@ -240,18 +121,6 @@ export default function DecisionBoard() {
   const topReasons = unique(
     topRows.flatMap((row) => row.draft_reason_labels ?? [])
   );
-  const topRecommendationScore = topRecommendation?.draft_value_score;
-  const closeOptions =
-    topRecommendationScore == null
-      ? []
-      : decisionRows.slice(1).flatMap((row) => {
-          if (row.draft_value_score == null) return [];
-          const gap = Math.round(
-            (topRecommendationScore - row.draft_value_score) * 10
-          ) / 10;
-          if (gap < 0 || gap > CLOSE_OPTION_SCORE_GAP) return [];
-          return [{ row, gap }];
-        });
   const starterSlots = draftContext?.user.starterSlotsRemaining;
   const coreOpen =
     starterSlots == null
@@ -304,43 +173,17 @@ export default function DecisionBoard() {
         .filter((row) => row.starterInitial > 0);
 
   return (
-    <Card id="decision-board" data-testid="decision-board">
+    <Card id="decision-board" data-testid="decision-board" className="scroll-mt-40">
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-          <CardTitle>Pick Insights</CardTitle>
+          <CardTitle>Your choices</CardTitle>
           <Badge className="w-fit" variant="default">
             {focus}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {topRecommendation ? (
-          <div className="space-y-3">
-            <RecommendationCard
-              player={topRecommendation}
-              label="Recommended Pick"
-              primary
-            />
-            {closeOptions.length ? (
-              <div
-                className="space-y-2"
-                data-testid="decision-close-options"
-              >
-                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Close recommendations
-                </div>
-                {closeOptions.map(({ row, gap }) => (
-                  <RecommendationCard
-                    key={row.player_id}
-                    player={row}
-                    label="Close Option"
-                    gapFromTop={gap}
-                  />
-                ))}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
+      <CardContent className="flex flex-col gap-3">
+        <ChoiceComparison />
         {demandRows.length ? (
           <div className="rounded-md border bg-muted/20 p-3">
             <div className="mb-3 flex items-center justify-between gap-3">
@@ -351,7 +194,7 @@ export default function DecisionBoard() {
                 Still needed / starting need
               </div>
             </div>
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               <DemandBars
                 title="Starter slots"
                 rows={demandRows.map((row) => ({

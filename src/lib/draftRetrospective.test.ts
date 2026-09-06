@@ -183,7 +183,7 @@ function makeArtifact(source: "mock-draft" | "sleeper-live") {
 function makeDecisionLog() {
   const artifact = makeArtifact("mock-draft");
   return DraftDecisionLogSchema.parse({
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedAt: "2026-09-03T20:00:00.000Z",
     sourceSnapshot: sourceSnapshot(),
     league: {
@@ -235,6 +235,7 @@ function decision(
     rosterCountsBefore: {},
     rosterNeedsBefore: {},
     availableCount: topOptions.length,
+    bestLegalStaticValue: Math.max(...topOptions.map((p) => p.staticValue ?? -Infinity)),
   };
 }
 
@@ -268,6 +269,7 @@ function candidate(
     comebackProbability: 0.1,
     comebackLabel: "unlikely",
     weightProfile: "starter_build",
+    componentScores: { value: staticValue, timing: 0, starterNeed: 0, construction: 0, onesie: 0, depth: 0, demand: 0, risk: 0 },
     topComponents: [{ key: "value", label: "Value", value: staticValue }],
     reasonLabels: ["Best value"],
     reasonDetails: ["Saved detail."],

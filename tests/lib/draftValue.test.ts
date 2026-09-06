@@ -42,6 +42,35 @@ describe("buildDraftValueBoard", () => {
     BN: 6,
   };
 
+  it("ignores market price and room timing on the final pick, including missing ADP", () => {
+    const finalBoards = [90, 240, undefined].map((adp) => buildDraftValueBoard({
+      players: [
+        { player_id: "wr1", name: "Higher value", position: "WR", fp_rank_ave: 160, fp_rank_pos: 60, tier_level: 8, sleeper_adp: adp },
+        { player_id: "wr2", name: "Lower value", position: "WR", fp_rank_ave: 161, fp_rank_pos: 61, tier_level: 9, sleeper_adp: 160 },
+      ],
+      teams: 12,
+      rounds: 14,
+      draftType: "snake",
+      userSlot: 4,
+      currentPick: 165,
+      rosterRequirements: { QB: 1, RB: 2, WR: 2, TE: 1, FLEX: 2, K: 0, DEF: 1, BN: 5 },
+      userPositionCounts: { QB: 1, RB: 5, WR: 5, TE: 1, DEF: 1 },
+      userPositionNeeds: { BN: 1 },
+      draftWideNeeds: { WR: 20 },
+      staticValuesByPlayerId: { wr1: 10, wr2: 9 },
+    }));
+
+    const scores = finalBoards.map((board) => board.metricsByPlayerId.wr1?.recommendationScore);
+    expect(new Set(scores).size).toBe(1);
+    for (const board of finalBoards) {
+      expect(board.recommendations[0]?.player_id).toBe("wr1");
+      expect(board.metricsByPlayerId.wr1?.components).toMatchObject({ timing: 0, demand: 0 });
+      expect(board.metricsByPlayerId.wr1?.comebackProbability).toBeNull();
+      const explanation = board.metricsByPlayerId.wr1?.recommendationExplanation;
+      expect([...explanation?.pros ?? [], ...explanation?.cons ?? []].join(" ")).not.toMatch(/before ADP|after ADP|next pick|Likely last pick/);
+    }
+  });
+
   it("keeps Val static while roster state changes Adj", () => {
     const base = {
       players: [
