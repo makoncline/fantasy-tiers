@@ -40,10 +40,10 @@ export function ComparePlayerButton({ player }: { player: PlayerWithPick }) {
 export function DraftSelectedComparison() {
   const comparison = useSelectedComparison();
   const { userRosterSlots, playersAll } = useDraftData();
-  if (!comparison) return null;
+  if (!comparison || !comparison.players.length) return null;
   const first = comparison.players[0];
   return <section aria-label="Your comparison" className="space-y-2 rounded-md border p-3 text-xs">
-    <p className="font-medium">Your comparison ({comparison.players.length}/3){!first ? " · Select Compare on up to three players." : ""}</p>
+    <p className="font-medium">Your comparison ({comparison.players.length}/3)</p>
     {first ? <>
       <Table>
         <TableHeader><TableRow><TableHead>Player</TableHead><TableHead>Status / slot</TableHead><TableHead>Val / Adj</TableHead><TableHead>Difference from {first.name}</TableHead><TableHead>Main context</TableHead><TableHead /></TableRow></TableHeader>
@@ -61,7 +61,7 @@ export function DraftSelectedComparison() {
           </TableRow>;
         })}</TableBody>
       </Table>
-      <p>Differences are model estimates, not confidence or projected point gains. Eligibility does not establish starter quality. Preview either player and select the other to inspect the pair.</p>
+      <p>Model score differences, not projected points.</p>
     </> : null}
   </section>;
 }

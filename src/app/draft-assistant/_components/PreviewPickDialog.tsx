@@ -244,7 +244,7 @@ function PlayerDecisionPanel({
             {valueGap != null ? `${formatSignedScore(valueGap)} Val. ` : "Base-value difference unavailable. "}
             {scoreGap != null ? `${formatSignedScore(scoreGap)} Adj. ` : "Adjusted difference unavailable. "}
             {largestDifference && largestDifference.gap !== 0 ? `${COMPONENT_LABELS[largestDifference.key]} is the largest component difference (${formatSignedScore(largestDifference.gap)}).` : "No component difference is available."}
-            <p className="mt-1">These are model score differences, not confidence or projected point gains. Waiting estimates are unvalidated; ADP does not establish that a player will survive.</p>
+            <p className="mt-1">Model scores, not projected points. ADP is not a survival forecast.</p>
           </div>
         </div>
       ) : null}
@@ -411,7 +411,7 @@ export default function PreviewPickDialog({
             Preview Pick {player ? `— ${player.name}` : ""}
           </DialogTitle>
           <DialogDescription>
-            Check slot eligibility and source role. A depth-chart rank does not establish workload or starter quality.
+            Player details and comparison.
           </DialogDescription>
         </DialogHeader>
         {player ? (

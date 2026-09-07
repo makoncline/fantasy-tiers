@@ -83,7 +83,7 @@ describe("advisory draft choices", { timeout: 20_000 }, () => {
         <ChoiceComparison />
       </DraftDataStaticProvider>
     ));
-    expect(host.textContent).toContain("No opponent picks before your next turn");
+    expect(host.textContent).toContain("Back-to-back picks");
     expect(host.textContent).not.toContain("May be gone");
     expect(JSON.stringify(adjacentBoard)).toBe(savedBoard);
     const offClock = { ...snapshot, boardInput: { ...snapshot.boardInput, currentPick: 3, userSlot: 4 } };
@@ -92,7 +92,7 @@ describe("advisory draft choices", { timeout: 20_000 }, () => {
         <ChoiceComparison />
       </DraftDataStaticProvider>
     ));
-    expect(host.textContent).not.toContain("No opponent picks before your next turn");
+    expect(host.textContent).not.toContain("Back-to-back picks");
     expect(host.textContent).toContain("Upcoming · 1.04");
     const unknown = { ...snapshot, boardInput: { ...snapshot.boardInput, currentPick: 12, userSlot: 12, rounds: undefined } };
     act(() => root.render(
@@ -101,7 +101,7 @@ describe("advisory draft choices", { timeout: 20_000 }, () => {
       </DraftDataStaticProvider>
     ));
     expect(host.textContent).toContain("Draft turn information is incomplete");
-    expect(host.textContent).not.toContain("No opponent picks before your next turn");
+    expect(host.textContent).not.toContain("Back-to-back picks");
     expect(host.textContent).not.toContain("No later own pick");
     act(() => root.unmount());
     host.remove();

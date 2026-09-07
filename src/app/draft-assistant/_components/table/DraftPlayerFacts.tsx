@@ -1,6 +1,5 @@
 "use client";
 import { ComparePlayerButton } from "../DraftSelectedComparison";
-import { slotEligibility, largestContext } from "../../_lib/draftTableReview";
 import { useDraftData } from "../../_contexts/DraftDataContext";
 import type { PlayerWithPick } from "@/lib/types.draft";
 
@@ -17,9 +16,7 @@ export function DraftPlayerFacts({ row }: { row: PlayerWithPick }) {
     : row.position === "DEF" || row.position === "K" ? "Manual only: specialist deferred by roster policy"
     : "Manual only: outside current roster policy";
   return <div className="mt-1 space-y-1 text-[11px] text-muted-foreground" data-testid={`player-facts-${row.player_id}`}>
-    {userRosterSlots.length ? <p>{slotEligibility(userRosterSlots, row.position)}</p> : null}
-    {peers.length ? <p>Shares bye {row.bye_week} with {peers.join(", ")}</p> : null}
-    <p>{largestContext(row)}</p>
+    {peers.length ? <span title={`Shares bye ${row.bye_week} with ${peers.join(", ")}`}>Bye overlap · </span> : null}
     <ComparePlayerButton player={row} />
     {policy ? <p className="text-amber-800 dark:text-amber-300">{policy}</p> : null}
     {row.sleeper_injury_notes ? <p>{row.sleeper_injury_notes}</p> : null}

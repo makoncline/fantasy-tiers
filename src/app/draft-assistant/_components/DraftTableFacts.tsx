@@ -10,7 +10,7 @@ export default function DraftTableFacts() {
   const open = Object.entries(choiceSnapshot.boardInput.userPositionNeeds)
     .filter(([slot, count]) => slot !== "BN" && count > 0)
     .map(([slot, count]) => `${count} ${slot === "DEF" ? "D/ST" : slot}`);
-  const coverage = byeCoverage(userRosterSlots);
+  const coverage = byeCoverage(userRosterSlots).filter(({ added }) => added.length > 0);
   return <div className="space-y-1 rounded-md border bg-muted/20 p-3 text-xs" data-testid="draft-table-facts">
     <p>{window.state === "unknown" ? "Pick order incomplete" : window.state === "complete" ? "Your draft picks are complete" : <>
       {window.onClock ? "Your pick" : "Upcoming pick"} {formatDraftPick(window.ownPick, choiceSnapshot.boardInput.teams)} (#{window.ownPick}).
@@ -19,9 +19,8 @@ export default function DraftTableFacts() {
     </>}</p>
     <p>Open: {open.join(", ") || "all starting slots covered"}.</p>
     {coverage.map(({ week, absent, added }) => <div key={week}>
-      <p>Shared bye {week}: {absent.join(", ")}.</p>
-      <p>Additional uncovered slots: {added.join(", ") || "none with the current roster"}.</p>
+      <p title={absent.join(", ")}>Bye {week}: uncovered {added.join(", ")}.</p>
     </div>)}
-    {coverage.length ? <p>Coverage uses current roster eligibility, including bench. Other open slots are listed above. It excludes injury, unknown byes, waiver additions, and player quality.</p> : null}
+
   </div>;
 }

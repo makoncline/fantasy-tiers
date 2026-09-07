@@ -45,7 +45,6 @@ type PositionSection = {
   rows: PlayerWithPick[];
   rosterCount: number;
   rosterRequirement: number;
-  tierRemaining: number;
 };
 
 function isConfiguredPosition(
@@ -58,17 +57,6 @@ function isConfiguredPosition(
     );
   }
   return (requirements[position] ?? 0) > 0;
-}
-
-function tierRemaining(rows: readonly PlayerWithPick[]) {
-  const sorted = [...rows].sort(
-    (a, b) =>
-      (b.draft_value_score ?? Number.NEGATIVE_INFINITY) -
-      (a.draft_value_score ?? Number.NEGATIVE_INFINITY)
-  );
-  const tier = sorted[0]?.position_tier_level;
-  if (tier == null) return 0;
-  return sorted.filter((row) => row.position_tier_level === tier).length;
 }
 
 function toPreviewPlayer(row: PlayerWithPick): PreviewPickPlayer {
@@ -134,7 +122,6 @@ export default function PositionCompactTables({
           rows,
           rosterCount: roster.count,
           rosterRequirement: roster.requirement,
-          tierRemaining: tierRemaining(rows),
         },
       ];
     });
@@ -315,7 +302,6 @@ export default function PositionCompactTables({
               <p className="text-xs text-muted-foreground">
                 You: {section.rosterCount}/{section.rosterRequirement}
                  · <DraftDemand position={section.position} />
-                {section.position === "FLEX" ? " Compare tiers only within a position." : ` · ${section.tierRemaining} left in the leading Adj player’s position tier`}
               </p>
             </CardHeader>
             <CardContent className="px-2 pb-2 pt-0">

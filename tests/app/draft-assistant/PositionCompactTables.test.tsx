@@ -103,7 +103,7 @@ describe("PositionCompactTables", () => {
       "ADP vs ECR",
       "",
     ]);
-    expect(qbCard?.textContent).toContain("7 direct QB starter slots open");
+    expect(qbCard?.textContent).toContain("Room open: 7 QB");
     expect(container.querySelector('[data-testid="pos-card-K"]')).toBeNull();
     expect(container.textContent).not.toContain("Show all rows");
     expect(qbCard?.textContent).not.toContain("baseline");
