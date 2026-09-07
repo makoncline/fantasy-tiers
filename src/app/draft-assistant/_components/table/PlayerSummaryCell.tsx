@@ -1,3 +1,4 @@
+import { DraftPlayerFacts } from "./DraftPlayerFacts";
 import { Badge } from "@/components/ui/badge";
 import type { PlayerWithPick } from "@/lib/types.draft";
 
@@ -29,6 +30,7 @@ export function PlayerSummaryCell({ row }: { row: PlayerWithPick }) {
         ) : null}
       </div>
       <div className="mt-1 text-[11px] text-muted-foreground">{teamBye}</div>
+      <DraftPlayerFacts row={row} />
     </div>
   );
 }

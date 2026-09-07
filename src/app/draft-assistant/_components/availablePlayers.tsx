@@ -75,10 +75,7 @@ export default function AvailablePlayers({
         <p className="text-xs text-muted-foreground">
           {showDiagnostics
             ? "Drafted players and players without current FantasyPros ECR."
-            : `Top ${Math.min(
-                rows.length,
-                OVERALL_PLAYER_LIMIT
-              )} roster-legal players by Adj.`}
+            : "Roster-legal players. Sort a column to compare options."}
         </p>
         <label className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
           <Switch

@@ -1,4 +1,5 @@
 import React from "react";
+import { DraftDemand } from "./DraftDemand";
 import { EyeIcon } from "lucide-react";
 
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
@@ -24,9 +25,9 @@ import {
 import type { Position, RosterSlot } from "@/lib/schemas";
 import type { PlayerWithPick } from "@/lib/types.draft";
 
-import { PlayerTable } from "./PlayerTable";
 import PreviewPickDialog, { type PreviewPickPlayer } from "./PreviewPickDialog";
 import PlayersTableBase from "./table/PlayersTableBase";
+import { DraftAdpCell } from "./table/DraftAdpCell";
 import { PlayerSummaryCell } from "./table/PlayerSummaryCell";
 import type { ColumnGroup } from "./table/columns";
 import {
@@ -35,15 +36,15 @@ import {
 } from "./table/presets";
 
 interface PositionCompactTablesProps {
+  position?: Position | "FLEX" | undefined;
   pickAction?: DraftPickAction | undefined;
 }
 
 type PositionSection = {
-  position: Position;
+  position: Position | "FLEX";
   rows: PlayerWithPick[];
   rosterCount: number;
   rosterRequirement: number;
-  leagueNeeds: number;
   tierRemaining: number;
 };
 
@@ -79,12 +80,10 @@ function toPreviewPlayer(row: PlayerWithPick): PreviewPickPlayer {
   };
 }
 
-function formatCount(value: number) {
-  return Number.isInteger(value) ? String(value) : value.toFixed(1);
-}
 
 export default function PositionCompactTables({
   pickAction,
+  position: selectedPosition,
 }: PositionCompactTablesProps = {}) {
   const {
     playersByPosition,
@@ -92,10 +91,9 @@ export default function PositionCompactTables({
     userPositionCounts,
     userPositionRequirements,
     getRosterStatus,
-    draftContext,
     showDiagnostics,
   } = useDraftData();
-  const [openPosition, setOpenPosition] = React.useState<Position | null>(null);
+  const [openPosition, setOpenPosition] = React.useState<Position | "FLEX" | null>(null);
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const [previewPlayer, setPreviewPlayer] =
     React.useState<PreviewPickPlayer | null>(null);
@@ -108,10 +106,10 @@ export default function PositionCompactTables({
   const sections = React.useMemo<PositionSection[]>(() => {
     if (!playersByPosition) return [];
 
-    return DRAFT_BOARD_POSITIONS.flatMap((position) => {
-      if (!isConfiguredPosition(position, userPositionRequirements)) return [];
+    return (selectedPosition ? [selectedPosition] : DRAFT_BOARD_POSITIONS).flatMap((position) => {
+      if (position !== "FLEX" && !isConfiguredPosition(position, userPositionRequirements)) return [];
       if (
-        !showDiagnostics &&
+        position !== "FLEX" && !showDiagnostics &&
         !isRosterLegalPosition(
           position,
           userPositionCounts,
@@ -129,25 +127,22 @@ export default function PositionCompactTables({
       });
       if (rows.length === 0) return [];
 
-      const roster = getRosterStatus(position);
-      const outlook = draftContext?.positionOutlook.find(
-        (item) => item.position === position
-      );
+      const roster = position === "FLEX" ? { count: userRosterSlots.filter(s => s.slot === "FLEX" && s.player).length, requirement: userPositionRequirements.FLEX ?? 0 } : getRosterStatus(position);
       return [
         {
           position,
           rows,
           rosterCount: roster.count,
           rosterRequirement: roster.requirement,
-          leagueNeeds: outlook?.leagueStarterSlotsRemaining ?? 0,
           tierRemaining: tierRemaining(rows),
         },
       ];
     });
   }, [
-    draftContext,
     getRosterStatus,
     playersByPosition,
+    selectedPosition,
+    userRosterSlots,
     showDiagnostics,
     userPositionCounts,
     userPositionRequirements,
@@ -169,16 +164,18 @@ export default function PositionCompactTables({
           },
           {
             id: "position_tier",
-            header: "Tier",
+            header: "Position tier",
             description: "FantasyPros position tier.",
             accessor: (row) => row.position_tier_level ?? null,
-            sortable: true,
+            render: (value, row) => selectedPosition === "FLEX" ? `${row.position} ${value ?? "—"}` : value ?? "—",
+            sortable: selectedPosition !== "FLEX",
             sortAs: "number",
             nulls: "last",
             width: "5ch",
           },
           {
             id: "raw",
+            defaultDir: "desc",
             header: "VAL",
             description: DRAFT_VALUE_DESCRIPTIONS.raw,
             accessor: (row) => row.draft_raw_value_score ?? null,
@@ -215,19 +212,19 @@ export default function PositionCompactTables({
           {
             id: "adp",
             header: "ADP",
-            description: "Sleeper average draft position.",
+            description: "Draft platform average draft position.",
             accessor: (row) => row.sleeper_adp ?? null,
             sortable: true,
             sortAs: "number",
             nulls: "last",
             width: "6ch",
-            render: (_, row) => row.sleeper_adp_round_pick ?? "—",
+            render: (_, row) => <DraftAdpCell playerId={row.player_id} adp={row.sleeper_adp ?? null} display={row.sleeper_adp_round_pick} />,
           },
           {
             id: "market_edge",
-            header: "Edge",
+            header: "ADP vs ECR",
             description:
-              "Sleeper ADP minus FantasyPros ECR. Later can be a market value.",
+              "Draft platform ADP minus FantasyPros ECR. Later can be a market value.",
             accessor: sleeperEcrEdge,
             sortable: true,
             sortAs: "number",
@@ -238,7 +235,7 @@ export default function PositionCompactTables({
         ],
       },
     ],
-    []
+    [selectedPosition]
   );
 
   const renderActions = React.useCallback(
@@ -299,13 +296,14 @@ export default function PositionCompactTables({
 
   return (
     <div className="space-y-2">
+      {sections.length === 0 ? <p className="text-sm text-muted-foreground">No roster-legal players remain in this pool.</p> : null}
       {showDiagnostics ? (
         <p className="px-1 text-xs text-muted-foreground">
           Diagnostic rows only. Turn off Diagnostics above to return to the draft
           board.
         </p>
       ) : null}
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+      <div className={selectedPosition ? "grid grid-cols-1 gap-2" : "grid grid-cols-1 gap-2 md:grid-cols-2"}>
         {sections.map((section) => (
           <Card
             key={section.position}
@@ -313,13 +311,11 @@ export default function PositionCompactTables({
             data-testid={`pos-card-${section.position}`}
           >
             <CardHeader className="px-3 py-2">
-              <CardTitle className="text-sm">{section.position}</CardTitle>
+              <CardTitle className="text-sm">{section.position === "DEF" ? "D/ST" : section.position}</CardTitle>
               <p className="text-xs text-muted-foreground">
                 You: {section.rosterCount}/{section.rosterRequirement}
-                {" · "}
-                League needs: {formatCount(section.leagueNeeds)}
-                {" · "}
-                {section.tierRemaining} left in tier
+                 · <DraftDemand position={section.position} />
+                {section.position === "FLEX" ? " Compare tiers only within a position." : ` · ${section.tierRemaining} left in the leading Adj player’s position tier`}
               </p>
             </CardHeader>
             <CardContent className="px-2 pb-2 pt-0">
@@ -362,17 +358,17 @@ export default function PositionCompactTables({
           <DialogHeader>
             <DialogTitle>{openSection?.position} draft board</DialogTitle>
             <DialogDescription>
-              {openSection
-                ? `You: ${openSection.rosterCount}/${openSection.rosterRequirement} · League needs: ${formatCount(openSection.leagueNeeds)} · ${openSection.tierRemaining} left in tier`
-                : ""}
+              {openSection ? <DraftDemand position={openSection.position} /> : null}
             </DialogDescription>
           </DialogHeader>
           <div className="max-h-[70vh] overflow-auto pr-2">
             {openSection ? (
-              <PlayerTable
+              <PlayersTableBase
                 rows={openSection.rows}
+                groups={compactGroups}
                 sortable
-                colorizeValuePs
+                colorize
+                tierRowColors
                 dimDrafted={showDiagnostics}
                 defaultSortId="adj"
                 defaultSortDir="desc"

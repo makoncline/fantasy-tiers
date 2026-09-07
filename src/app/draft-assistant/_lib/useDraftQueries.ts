@@ -1,5 +1,6 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { canAcceptEmptyPickResponse } from "@/lib/draftLiveState";
 import { fetchDraftDetails } from "@/lib/draftDetails";
 import type { DraftDetails } from "@/lib/draftDetails";
 import { fetchDraftPicks } from "@/lib/draftPicks";
@@ -35,14 +36,20 @@ export function useDraftPicks(
   opts?: {
     enabled?: boolean;
     expectedPickCount?: number;
+    allowEmptyPreDraft?: boolean;
     refetchInterval?: number;
   }
 ) {
   const enabled = Boolean(draftId) && (opts?.enabled ?? true);
   const pollInterval = opts?.refetchInterval ?? 3000;
+  const client = useQueryClient();
   return useQuery<DraftPick[], Error>({
     queryKey: qk.draft.picks(String(draftId)),
-    queryFn: () => fetchDraftPicks(String(draftId)),
+    queryFn: ({ signal }) => fetchDraftPicks(String(draftId), {
+      signal,
+      allowEmptyPreDraft: canAcceptEmptyPickResponse(opts?.allowEmptyPreDraft ?? false,
+        client.getQueryData<DraftPick[]>(qk.draft.picks(String(draftId)))),
+    }),
     enabled,
     staleTime: 0,
     gcTime: 0,

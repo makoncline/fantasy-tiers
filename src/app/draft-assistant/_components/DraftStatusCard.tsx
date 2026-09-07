@@ -115,7 +115,7 @@ export default function DraftStatusCard() {
     <Card
       id="draft-status-card"
       data-testid="draft-status-card"
-      className="sticky top-0 z-40 bg-background p-2 shadow-md"
+      className="bg-background p-2 shadow-md"
     >
       <CardHeader className="flex flex-row justify-between p-0 items-center">
         <CardTitle className="text-base font-semibold p-0 m-0">

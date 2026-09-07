@@ -1,7 +1,9 @@
 import React from "react";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableHeader,
+  TableCaption,
   TableRow,
   TableHead,
   TableBody,
@@ -152,6 +154,10 @@ export default function PlayersTableBase({
 
   return (
     <Table>
+      {sortable ? <TableCaption className="caption-top text-left">{allColumns.some(c => c.id === "raw") && allColumns.some(c => c.id === "adj") ? <span className="mb-2 flex flex-wrap gap-2">
+        <Button type="button" variant={sortId === "raw" && sortDir === "desc" ? "secondary" : "outline"} size="sm" aria-pressed={sortId === "raw" && sortDir === "desc"} onClick={() => { setSortId("raw"); setSortDir("desc"); }}>Base value (Val)</Button>
+        <Button type="button" variant={sortId === "adj" && sortDir === "desc" ? "secondary" : "outline"} size="sm" aria-pressed={sortId === "adj" && sortDir === "desc"} onClick={() => { setSortId("adj"); setSortDir("desc"); }}>With context (Adj)</Button>
+      </span> : null}Showing {visibleRows.length} of {baseRows.length} players · {activeCol ? `Sorted by ${activeCol.header} (${sortDir === "desc" ? "high to low" : "low to high"})` : "Source order"}</TableCaption> : null}
       <TableHeader className="sticky top-0 z-30">
         <TableRow>
           {allColumns.map((c) => (

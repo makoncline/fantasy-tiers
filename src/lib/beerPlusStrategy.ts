@@ -303,6 +303,7 @@ export function reconcileSleeperStandardProjection(input: {
 export function buildStarterAwareValues(input: {
   teams: number;
   rosterSlots: DraftRosterSlots;
+  expectedGames?: Readonly<Record<Position, number>>;
   players: readonly {
     playerId: string;
     position: Position;
@@ -369,7 +370,7 @@ export function buildStarterAwareValues(input: {
       vols,
       manGames: Math.ceil(
         (vols * MAN_GAMES_ASSUMPTIONS.seasonGames) /
-          MAN_GAMES_ASSUMPTIONS.expectedGames[position]
+          (input.expectedGames ?? MAN_GAMES_ASSUMPTIONS.expectedGames)[position]
       ),
     };
   }

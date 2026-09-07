@@ -9,7 +9,7 @@ import type { AggregatesBundleResponseT } from "@/lib/schemas-bundle";
 import { SIM_BOT_STRATEGY_IDS } from "@/lib/simDraft/botStrategies";
 import type { SimDraftPlayer } from "@/lib/simDraft";
 
-export const DRAFT_DECISION_LOG_SCHEMA_VERSION = 1;
+export const DRAFT_DECISION_LOG_SCHEMA_VERSION = 2;
 
 const nullableNumber = z.number().finite().nullable();
 
@@ -47,6 +47,16 @@ export const AlgorithmDraftCandidateSchema = z.object({
     "depth_build",
     "endgame",
   ]),
+  componentScores: z.object({
+    value: z.number().finite(),
+    timing: z.number().finite(),
+    starterNeed: z.number().finite(),
+    construction: z.number().finite(),
+    onesie: z.number().finite(),
+    depth: z.number().finite(),
+    demand: z.number().finite(),
+    risk: z.number().finite(),
+  }),
   topComponents: z.array(z.object({
     key: z.enum([
       "value",
@@ -80,6 +90,7 @@ export const AlgorithmDraftDecisionSchema = z.object({
   rosterCountsBefore: z.record(z.string(), z.number().int().min(0)),
   rosterNeedsBefore: z.record(z.string(), z.number().int().min(0)),
   availableCount: z.number().int().min(0),
+  bestLegalStaticValue: z.number().finite(),
 });
 
 export const DraftSourceSnapshotSchema = z.object({

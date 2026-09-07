@@ -195,6 +195,9 @@ function buildDecisionRecord(input: {
     rosterNeedsBefore:
       input.viewModel.userRoster?.remainingPositionRequirements ?? {},
     availableCount: input.recommendations.length,
+    bestLegalStaticValue: Math.max(...input.recommendations.map(
+      (player) => input.metricsByPlayerId[player.player_id]?.staticValue ?? -Infinity
+    )),
   };
 }
 
@@ -228,6 +231,7 @@ function candidateFromMetrics(
     confidence: metrics.recommendationConfidence,
     scoreGap: metrics.recommendationScoreGap,
     staticValue: metrics.staticValue,
+    componentScores: metrics.components,
     valueRank: metrics.valueRank,
     positionalValueRank: metrics.positionalValueRank,
     positionTier: metrics.positionTier,

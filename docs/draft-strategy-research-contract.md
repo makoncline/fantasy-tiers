@@ -1,6 +1,6 @@
 # Draft Strategy Research Contract
 
-Last verified: 2026-09-03
+Last verified: 2026-09-05
 
 ## Purpose
 
@@ -38,6 +38,12 @@ shows that the format difference does not invalidate the decision rule.
 
 ## Evidence Rules
 
+Owner clarification, September 5: projections and rankings are uncertain
+estimates. Use experiments to remove clear mistakes and find robust choices.
+Do not force close choices on small modeled gains. Check plausible forecast
+variations, show reasonable alternatives, and leave room for owner judgment.
+Simulation precision does not establish player-performance certainty.
+
 Classify evidence before using it:
 
 - **Method:** A first-party description of a draft model or calculation.
@@ -47,9 +53,33 @@ Classify evidence before using it:
 - **Internal experiment:** A saved mock, decision log, or held-out Sleeper
   board replay from this repository.
 
-Every strategy change must name an accepted principle below. It must also add
-or update a scenario test and produce a saved multi-seed result. Do not convert
+Every strategy change must name an accepted principle below. Do not convert
 one player, one draft, or one grader paragraph into a general rule.
+
+### Constraint classes
+
+| Class | Examples | Treatment |
+| --- | --- | --- |
+| League constraints | Eligibility, roster size, actual draft order, enough picks to complete required slots. | Enforce. |
+| Owner policy | One QB and TE; ECR required for advice; confirmed season-long absences excluded. | Enforce and label as owner policy. |
+| Strategy hypothesis | WR2 by round five, RB/WR balance, late D/ST. | Test benefit separately; failure is not league illegality. |
+| Opponent assumption | Backup frequency, early D/ST, response to runs. | Estimate from opponents, not owner policy. |
+
+### Evidence matched to the claim
+
+| Change or claim | Required evidence |
+| --- | --- |
+| Calculation or state fix | Correctness and regression tests. |
+| Explanation or comparison display | Accurate, traceable output; useful distinctions; unchanged selections. |
+| Availability forecast | Prospective predictions on fresh boards. |
+| New selection policy | Forecast, sensitivity, roster, and changed-decision checks. |
+| Better fantasy outcomes | Suitable independent outcome evidence. |
+
+A full historical season evaluator does not block a clearer display or a
+calculation fix. A small score lead is a conditional tie-breaker, not certainty.
+Check the stability of the reasonable-choice set and material roster paths,
+not only the top player's identity. Do not interpret hand-set stress frequencies
+as probabilities. Do not vary actual league rules as an uncertainty scenario.
 
 ## Accepted Principles
 
@@ -57,7 +87,7 @@ one player, one draft, or one grader paragraph into a general rule.
 | --- | --- | --- | --- | --- |
 | DS-01 | League size, scoring, and starting requirements must change cross-position value. | [FantasyPros VBD definitions](https://support.fantasypros.com/hc/en-us/articles/115005868747-What-is-value-based-drafting-What-do-player-draft-values-mean-VORP-VONA-VOLS-VBD), [2026 FantasyPros VBD table](https://www.fantasypros.com/nfl/rankings/ppr-vbd.php), [TapThatDraft starter guide](https://subvertadown.com/article/tapthatdraft-easy-starter-guide-quick-steps-to-get-your-hold-my-beersheets-) | High | **Implemented:** capability-checked Sleeper scoring, league size, direct starters, greedy FLEX allocation, and configured K/D/ST demand set the canonical cross-position `VAL`. The model supports only scoring inputs that the projection source can represent. |
 | DS-02 | Player quality and room timing are different signals. Use trusted rankings for quality and platform/reference data for likely draft order. | [TapThatDraft ranking calibration](https://subvertadown.com/article/tapthatdraft-lets-you-customize-positional-player-ordering---solving-the-old-cheat-sheet-rankings-versus-projections-), [2026 ADP-referencing guide](https://subvertadown.com/article/timing-your-draft-picks-with-adp-referencing---understanding-tapthatdraft-s-time-priority-ordering-of-players-to-help-you-lead-in-your-draft), [FantasyPros real-time ADP](https://www.fantasypros.com/nfl/adp/overall.php) | High | **Implemented:** the model preserves each Sleeper projection curve but assigns it by FantasyPros order within each position. Sleeper ADP remains the room-timing signal. After RB/WR starters and FLEX slots are filled, a soft market-price penalty reduces multi-round depth reaches unless roster balance needs that position. |
-| DS-03 | A snake recommendation must include next-turn opportunity cost, not static value alone. | [FantasyPros VONA definition](https://support.fantasypros.com/hc/en-us/articles/115005868747-What-is-value-based-drafting-What-do-player-draft-values-mean-VORP-VONA-VOLS-VBD), [Snake Value method](https://subvertadown.com/article/fantasy-snake-drafts-and-strategizing-for-scarcity----snake-value-based-drafting) | High | **Partial:** Sleeper ADP, tier cliffs, position runs, and room demand affect `ADJ`. The Decision Board shows a bounded qualitative return signal for the top recommendation and close alternatives. The model does not calculate expected same-position value lost by the next pick. |
+| DS-03 | A snake recommendation must include next-turn opportunity cost, not static value alone. | [FantasyPros VONA definition](https://support.fantasypros.com/hc/en-us/articles/115005868747-What-is-value-based-drafting-What-do-player-draft-values-mean-VORP-VONA-VOLS-VBD), [Snake Value method](https://subvertadown.com/article/fantasy-snake-drafts-and-strategizing-for-scarcity----snake-value-based-drafting) | High | **Partial:** Sleeper ADP, tier cliffs, position runs, and room demand affect `ADJ` before the final own pick. Final-pick timing and demand are zero; missing market rank has no final-pick score penalty. The Decision Board shows a bounded qualitative return signal for the top recommendation and close alternatives. The model does not calculate expected same-position value lost by the next pick. |
 | DS-04 | Roster construction is adaptive. In the target two-FLEX format, keep RB and WR options open and respond to tiers instead of forcing Zero RB, Hero RB, or Robust RB. | [June 2026 two-FLEX expert mock](https://www.4for4.com/2026/preseason/expert-fantasy-football-mock-draft-recap-12-team-half-ppr-may-2026), [July 2026 two-FLEX expert mock](https://www.4for4.com/2026/preseason/expert-fantasy-football-mock-draft-recap-12-team-half-ppr-july-2026), [2026 RB strategy discussion](https://www.fantasylife.com/articles/fantasy/adjusting-your-rb-draft-strategy-in-2026-fantasy-football) | Medium | **Implemented:** phase profiles, RB anchors, WR starter balance, FLEX needs, and bench balance adapt to roster state. More validation is required because current external grading found weak WR starters in one representative roster. |
 | DS-05 | QB and TE timing must remain subordinate to usable starter quality and RB/WR opportunity cost. A round deadline is not enough. | [July 2026 two-FLEX mock](https://www.4for4.com/2026/preseason/expert-fantasy-football-mock-draft-recap-12-team-half-ppr-july-2026), [ADP-referencing guide](https://subvertadown.com/article/timing-your-draft-picks-with-adp-referencing---understanding-tapthatdraft-s-time-priority-ordering-of-players-to-help-you-lead-in-your-draft) | Medium | **Implemented:** QB has a quality floor. Non-elite TE completion yields to a consensus ECR/ADP price reach. Evaluation records QB/TE reach separately and does not reward earlier selection by itself. Supported formats stop at one QB and one TE. |
 | DS-06 | D/ST is an endgame requirement in this managed redraft product. Spend normal bench capital on RB/WR unless roster completion requires D/ST. | [TapThatDraft 2026 unsupported-feature notes](https://subvertadown.com/article/a-list-of-features-not-supported-in-tapthatdraft-2026-), [4for4 tool FAQ](https://www.4for4.com/faq-page) | Medium | **Implemented:** K and D/ST are ineligible before the final two rounds while a non-special roster slot remains. The rule yields when roster completion requires the special-team slot. |
@@ -97,8 +127,8 @@ A draft-policy change is accepted only when all applicable checks pass:
 1. A scenario test proves the intended decision through the canonical
    recommendation board.
 2. All configured draft slots run with at least three fixed seeds.
-3. Every roster is legal and passes the relevant starter-quality, RB/WR depth,
-   and endgame gates.
+3. Every roster is legal. Separately report owner-policy compliance and the
+   predeclared starter-quality, depth, and endgame hypothesis gates.
 4. Pick logs show why the new rule changed a recommendation.
 5. Local ECR rank is labeled as an internal regression signal.
 6. A candidate and its baseline use the same source snapshot, league settings,
@@ -106,7 +136,17 @@ A draft-policy change is accepted only when all applicable checks pass:
    gate and the full core-starter ECR regression signal.
 7. The change does not branch on a player name or player ID.
 
-## Priority Gaps
+## External Review Experiments
+
+The owner authorized an experiment cycle on 2026-09-05. Use
+[draft strategy experiments](draft-strategy-experiments.md) for its priority,
+fixed inputs, acceptance gates, and results. Its choice-assistant milestone
+sets the current order: explanation, stress tests, separate opponent model,
+advisory two-pick preview, then a separate policy acceptance review. It keeps
+the final-pick fix and experiment tools. This supersedes the older priority
+order below for strategy research. Keep unproven candidates out of active scoring.
+
+## Earlier Priority Gaps
 
 Work in this order because each step makes the next result easier to trust:
 

@@ -39,7 +39,9 @@ export async function GET(req: NextRequest) {
         { status: 400 }
       );
     }
-    const picks = await fetchDraftPicks(draftId);
+    const picks = await fetchDraftPicks(draftId, {
+      allowEmptyPreDraft: draft.status === "pre_draft",
+    });
     const leagueId = draft.league_id ?? draft.metadata.league_id;
     const league = leagueId
       ? await fetchSleeperLeagueById(leagueId)

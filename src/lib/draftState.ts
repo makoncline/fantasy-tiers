@@ -15,6 +15,7 @@ import {
   buildDraftValueBoard,
   type DraftTeamRosterState,
   type DraftValueBoard,
+  type DraftValueBoardInput,
 } from "./draftValue";
 import {
   type DraftProjectionArtifact,
@@ -798,11 +799,11 @@ export function buildDraftViewModel(args: {
       ([playerId, value]) => [playerId, value.value]
     )
   );
-  const draftValueBoard =
+  const recommendationInput: DraftValueBoardInput<RecommendationDraftCandidate> | null =
     userRoster &&
     starterAwareValue.status.available &&
     readinessAssessment?.report.status === "ready"
-    ? buildDraftValueBoard({
+    ? {
         players: recommendationPlayers,
         teams,
         rounds: draft.settings?.rounds,
@@ -818,8 +819,9 @@ export function buildDraftViewModel(args: {
         userRosterPlayers: userRoster.players,
         irSlots: draft.settings.slots_ir ?? 0,
         staticValuesByPlayerId: draftRawValuesByPlayerId,
-      })
+      }
     : null;
+  const draftValueBoard = recommendationInput ? buildDraftValueBoard(recommendationInput) : null;
   const draftContext = buildDraftContext({
     base,
     draft,
@@ -840,6 +842,14 @@ export function buildDraftViewModel(args: {
     teamRosterStates,
     draftWideNeeds,
     recommendationBoard: draftValueBoard,
+    choiceSnapshot: recommendationInput && starterAwareValue.result && args.scoringRules ? {
+      draftId: draft.draft_id,
+      scoringRules: args.scoringRules,
+      projectionUpdatedAt: starterAwareValue.status.sourceLastModified,
+      boardInput: recommendationInput,
+      values: starterAwareValue.result,
+      rosterSlots: readinessRosterSlots,
+    } : null,
     draftRawValuesByPlayerId,
     draftContext,
     rosterRequirements,

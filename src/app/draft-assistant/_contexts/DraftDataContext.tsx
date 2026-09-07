@@ -67,7 +67,11 @@ import {
 import { draftReadinessShardCountsFromBundle } from "@/lib/draftReadiness";
 import type { DraftReadinessReport } from "@/lib/draftReadiness";
 
+import type { DraftChoiceSnapshot } from "@/lib/draftChoices";
+
 interface ProcessedData {
+  choiceSnapshot?: DraftChoiceSnapshot | null;
+  recommendationBoard?: ReturnType<typeof buildDraftViewModel>["recommendationBoard"];
   availablePlayers: RankedPlayer[];
   availableByPosition?: Record<string, RankedPlayer[]>;
   topAvailablePlayersByPosition?: Record<string, RankedPlayer[]>;
@@ -164,6 +168,7 @@ export interface DraftDataContextType extends ProcessedData {
 
   refetchData: () => void;
   lastUpdatedAt: number | null;
+  pickFeed: { checkedAt: number | null; paused: boolean; complete: boolean } | null;
 
   // Enriched player data with pick overlay
   playersAll: PlayerWithPick[];
@@ -245,6 +250,7 @@ const defaultContextValue: DraftDataContextType = {
   league: null,
   refetchData: () => {},
   lastUpdatedAt: null,
+  pickFeed: null,
 
   // Enriched player data with pick overlay
   playersAll: [],
@@ -432,8 +438,10 @@ export function DraftDataProvider({
     error: errorPicks,
     refetch: refetchPicks,
     dataUpdatedAt: updatedAtPicks,
+    fetchStatus: fetchStatusPicks,
   } = useDraftPicks(selectedDraftId, {
     enabled: Boolean(selectedDraftId),
+    allowEmptyPreDraft: draftDetails?.status === "pre_draft",
     ...(draftDetails?.settings.teams && draftDetails.settings.rounds
       ? {
           expectedPickCount:
@@ -689,7 +697,7 @@ export function DraftDataProvider({
       FLEX: toPlayerRowsFromBundle(
         playersBundle.shards.FLEX,
         league.teams,
-        positionTierOptions
+        { positionTierByPlayerId }
       ),
       ALL: toPlayerRowsFromBundle(playersBundle.shards.ALL, league.teams, {
         positionTierByPlayerId,
@@ -991,6 +999,8 @@ export function DraftDataProvider({
       setDraftSlot: handleSetDraftSlot,
       draftValueStatus: viewModel?.draftValueStatus ?? null,
       readiness: viewModel?.readiness ?? null,
+      choiceSnapshot: viewModel?.choiceSnapshot ?? null,
+      recommendationBoard: draftValueBoard,
       clearDraft,
       clearUser,
 
@@ -1021,6 +1031,13 @@ export function DraftDataProvider({
       // League and other data
       league,
       refetchData,
+      pickFeed: selectedDraftId ? {
+        checkedAt: updatedAtPicks || null,
+        paused: fetchStatusPicks === "paused",
+        complete: draftDetails?.status === "complete" &&
+          (draftDetails.settings.teams ?? 0) > 0 && (draftDetails.settings.rounds ?? 0) > 0 &&
+          (picks?.length ?? 0) === ((draftDetails.settings.teams ?? 0) * (draftDetails.settings.rounds ?? 0)),
+      } : null,
       lastUpdatedAt:
         Math.max(
           0,
@@ -1056,12 +1073,14 @@ export function DraftDataProvider({
       refetchData,
       updatedAtDraftDetails,
       updatedAtPicks,
+      fetchStatusPicks,
       updatedAtPlayers,
       processedData,
       decisionRows,
       draftValueBoard,
       viewModel?.draftValueStatus,
       viewModel?.readiness,
+      viewModel?.choiceSnapshot,
       playersAll,
       playersByPosition,
       draftedIds,

@@ -1,10 +1,10 @@
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
-import AvailablePlayers from "@/app/draft-assistant/_components/availablePlayers";
-import PositionCompactTables from "@/app/draft-assistant/_components/PositionCompactTables";
+import DraftPlayerPool from "./DraftPlayerPool";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import RosterSlots from "@/app/draft-assistant/_components/RosterSlots";
 import DraftStatusCard from "@/app/draft-assistant/_components/DraftStatusCard";
 import DecisionBoard from "@/app/draft-assistant/_components/DecisionBoard";
@@ -104,7 +104,7 @@ export default function DraftAssistantContent({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {draftValueStatus?.available === false ? (
         <Alert variant="destructive" data-testid="draft-value-unavailable-notice">
           <AlertTitle>Draft recommendations unavailable</AlertTitle>
@@ -160,54 +160,29 @@ export default function DraftAssistantContent({
       {showRecommendations &&
       !isComplete &&
       draftValueStatus?.available !== false ? (
-        <DecisionBoard />
+        <DecisionBoard pickAction={pickAction} />
       ) : null}
 
-      <Card id="roster-section">
-        <CardHeader>
-          <CardTitle>Your Roster</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <RosterSlots slots={userRosterSlots || []} />
-        </CardContent>
-      </Card>
+      <Collapsible id="roster-section">
+        <CollapsibleTrigger asChild><Button variant="outline">Show / hide full roster ({userRosterSlots.filter(slot => slot.player).length} players)</Button></CollapsibleTrigger>
+        <CollapsibleContent className="pt-2"><RosterSlots slots={userRosterSlots} /></CollapsibleContent>
+      </Collapsible>
 
-      <Card id="available-section">
-        <CardHeader>
+      <Card id="available-section" className="gap-2 py-3">
+        <CardHeader className="px-3">
           <CardTitle>
-            {isComplete ? "Remaining Player Pool" : "Overall Value Pool"}
+            {isComplete ? "Remaining Player Pool" : "Player Pool"}
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <AvailablePlayers
+        <CardContent className="px-3">
+          <DraftPlayerPool
             loading={isLoading}
             pickAction={pickAction}
           />
         </CardContent>
       </Card>
 
-      <details
-        id="positions-section"
-        className="group rounded-md border bg-card text-card-foreground"
-      >
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
-          <div>
-            <h2 className="text-base font-semibold">Position Tables</h2>
-            <p className="text-xs text-muted-foreground">
-              Compare the best remaining options within one position.
-            </p>
-          </div>
-          <span className="text-xs font-medium text-muted-foreground group-open:hidden">
-            Show
-          </span>
-          <span className="hidden text-xs font-medium text-muted-foreground group-open:inline">
-            Hide
-          </span>
-        </summary>
-        <div className="border-t p-3">
-          <PositionCompactTables pickAction={pickAction} />
-        </div>
-      </details>
+
     </div>
   );
 }

@@ -1,6 +1,9 @@
 "use client";
 
 import React from "react";
+import { DraftDemand } from "./DraftDemand";
+import { useSelectedComparison } from "./DraftSelectedComparison";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import { ExternalLink, Newspaper, RefreshCw } from "lucide-react";
 import {
@@ -26,7 +29,6 @@ import type { PlayerWithPick } from "@/lib/types.draft";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
 import {
   formatSleeperEcrEdge,
-  formatTimingSignal,
 } from "@/app/draft-assistant/_lib/draftBoardDisplay";
 import type { DraftRecommendationComponentKey } from "@/lib/draftValue";
 
@@ -74,7 +76,7 @@ const COMPONENT_LABELS = {
   starterNeed: "Starter need",
   construction: "Roster construction",
   onesie: "QB/TE strategy",
-  depth: "Bench balance",
+  depth: "Roster depth and balance",
   demand: "League demand",
   risk: "Data/news risk",
 } satisfies Record<DraftRecommendationComponentKey, string>;
@@ -99,20 +101,23 @@ function PlayerDecisionPanel({
 }: {
   player: PreviewPickPlayer | null;
 }) {
-  const { decisionRows, draftContext } = useDraftData();
+  const { decisionRows, recommendationBoard, positionRows } = useDraftData();
+  const comparison = useSelectedComparison();
+  const [referenceId, setReferenceId] = React.useState<string>("");
   if (!player) return null;
 
+  const availability = recommendationBoard?.metricsByPlayerId[player.player_id]?.availability;
   const decisionIndex = decisionRows.findIndex(
     (row) => row.player_id === player.player_id
   );
-  const nextOption =
+  const overallRow = positionRows?.ALL.find((row) => row.player_id === player.player_id);
+  const overallTier = overallRow?.tier_level ?? overallRow?.fp_tier ?? overallRow?.tier;
+  const selectedAlternatives = comparison?.players.filter(p => p.player_id !== player.player_id && !p.picked) ?? [];
+  const chosenReference = selectedAlternatives.find(p => p.player_id === referenceId) ?? selectedAlternatives[0];
+  const nextOption = chosenReference ?? (
     decisionIndex >= 0
       ? decisionRows[decisionIndex + 1] ?? decisionRows[decisionIndex - 1] ?? null
-      : decisionRows.find((row) => row.player_id !== player.player_id) ?? null;
-  const comparisonIsHigher =
-    nextOption != null &&
-    decisionIndex > 0 &&
-    nextOption.player_id === decisionRows[decisionIndex - 1]?.player_id;
+      : decisionRows.find((row) => row.player_id !== player.player_id) ?? null);
   const scoreGap =
     player.draft_value_score != null && nextOption?.draft_value_score != null
       ? player.draft_value_score - nextOption.draft_value_score
@@ -123,14 +128,30 @@ function PlayerDecisionPanel({
       ? [{ key, label: COMPONENT_LABELS[key], value }]
       : [];
   });
-  const outlook = draftContext?.positionOutlook.find(
-    (item) => item.position === player.position
-  );
-  const timingSignal = formatTimingSignal(player);
+
+  const valueGap = player.draft_raw_value_score != null && nextOption?.draft_raw_value_score != null
+    ? player.draft_raw_value_score - nextOption.draft_raw_value_score : null;
+  const largestDifference = COMPONENT_KEYS.flatMap(key => {
+    const own = player.draft_component_scores?.[key];
+    const other = nextOption?.draft_component_scores?.[key];
+    return typeof own === "number" && typeof other === "number" ? [{ key, gap: own - other }] : [];
+  }).sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap))[0];
 
   return (
     <section className="space-y-3 rounded-lg border bg-muted/20 p-3">
       <h3 className="text-sm font-semibold">Draft value</h3>
+      {availability ? <div className="text-xs text-muted-foreground">
+        <p>{availability.detail}</p>
+        <p>{availability.newsUpdated ? `Player news updated ${new Date(availability.newsUpdated).toLocaleString()}` : "Player news timestamp unavailable"}.</p>
+        {availability.rankingsMayBeStale ? <p>News is newer than the rankings; review the report before choosing.</p> : null}
+      </div> : null}
+      {selectedAlternatives.length ? <div className="space-y-1">
+        <p className="text-xs">Compare with your selected player</p>
+        <Select value={chosenReference?.player_id ?? ""} onValueChange={setReferenceId}>
+          <SelectTrigger aria-label="Comparison player"><SelectValue /></SelectTrigger>
+          <SelectContent>{selectedAlternatives.map(p => <SelectItem key={p.player_id} value={p.player_id}>{p.name}</SelectItem>)}</SelectContent>
+        </Select>
+      </div> : null}
       <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
         {player.draft_raw_value_score != null ? (
           <div>
@@ -154,7 +175,7 @@ function PlayerDecisionPanel({
         ) : null}
         {player.sleeper_adp != null ? (
           <div>
-            <div className="text-xs text-muted-foreground">Sleeper ADP</div>
+            <div className="text-xs text-muted-foreground">Platform ADP</div>
             <div className="font-mono">
               {player.sleeper_adp_round_pick ?? fmtNumber(player.sleeper_adp)}
             </div>
@@ -162,15 +183,15 @@ function PlayerDecisionPanel({
         ) : null}
         {player.fp_rank_ave != null && player.sleeper_adp != null ? (
           <div>
-            <div className="text-xs text-muted-foreground">Sleeper vs ECR</div>
+            <div className="text-xs text-muted-foreground">ADP vs ECR</div>
             <div className="font-mono">{formatSleeperEcrEdge(player)}</div>
           </div>
         ) : null}
-        {(player.tier_level ?? player.fp_tier ?? player.tier) > 0 ? (
+        {overallTier != null && overallTier > 0 ? (
           <div>
             <div className="text-xs text-muted-foreground">Overall tier</div>
             <div className="font-mono">
-              {fmtNumber(player.tier_level ?? player.fp_tier ?? player.tier)}
+              {fmtNumber(overallTier)}
             </div>
           </div>
         ) : null}
@@ -180,20 +201,7 @@ function PlayerDecisionPanel({
             <div className="font-mono">{fmtNumber(player.position_tier_level)}</div>
           </div>
         ) : null}
-        {timingSignal !== "—" ? (
-          <div>
-            <div className="text-xs text-muted-foreground">Timing</div>
-            <div className="font-mono">{timingSignal}</div>
-          </div>
-        ) : null}
-        {outlook ? (
-          <div>
-            <div className="text-xs text-muted-foreground">League needs</div>
-            <div className="font-mono">
-              {fmtNumber(outlook.leagueStarterSlotsRemaining)} {player.position}
-            </div>
-          </div>
-        ) : null}
+        <div><div className="text-xs text-muted-foreground">Room starter slots</div><DraftDemand position={player.position} /></div>
       </div>
       {components.length ? (
         <div
@@ -230,17 +238,13 @@ function PlayerDecisionPanel({
           data-testid="preview-why-over-next"
         >
           <div className="font-medium text-foreground">
-            {comparisonIsHigher ? "Compared with" : "Why over"} {nextOption.name}
+            Compared with {nextOption.name}
           </div>
           <div>
-            {scoreGap != null
-              ? `${scoreGap >= 0 ? "+" : ""}${fmtNumber(
-                  scoreGap
-                )} adjusted. `
-              : "Adjacent recommendation. "}
-            {player.draft_recommendation_edge_detail ??
-              player.draft_recommendation_summary ??
-              (player.draft_reason_details ?? []).slice(0, 2).join(" ")}
+            {valueGap != null ? `${formatSignedScore(valueGap)} Val. ` : "Base-value difference unavailable. "}
+            {scoreGap != null ? `${formatSignedScore(scoreGap)} Adj. ` : "Adjusted difference unavailable. "}
+            {largestDifference && largestDifference.gap !== 0 ? `${COMPONENT_LABELS[largestDifference.key]} is the largest component difference (${formatSignedScore(largestDifference.gap)}).` : "No component difference is available."}
+            <p className="mt-1">These are model score differences, not confidence or projected point gains. Waiting estimates are unvalidated; ADP does not establish that a player will survive.</p>
           </div>
         </div>
       ) : null}
@@ -407,7 +411,7 @@ export default function PreviewPickDialog({
             Preview Pick {player ? `— ${player.name}` : ""}
           </DialogTitle>
           <DialogDescription>
-            Preview how this player would fit into your current roster.
+            Check slot eligibility and source role. A depth-chart rank does not establish workload or starter quality.
           </DialogDescription>
         </DialogHeader>
         {player ? (
@@ -415,12 +419,12 @@ export default function PreviewPickDialog({
             className="flex flex-wrap gap-x-5 gap-y-1 border-y py-2 text-sm"
             data-testid="preview-fit-summary"
           >
-            {destination ? <span>Fits {destination}</span> : null}
+            {destination ? <span>Eligible for {destination}</span> : null}
             {player.team ? <span>Team {player.team}</span> : null}
             {player.bye_week ? <span>Bye {player.bye_week}</span> : null}
             {player.sleeper_depth_chart_position ? (
               <span>
-                Depth {player.sleeper_depth_chart_position}
+                Source depth {player.sleeper_depth_chart_position}
                 {player.sleeper_depth_chart_order != null
                   ? player.sleeper_depth_chart_order
                   : ""}
@@ -442,7 +446,7 @@ export default function PreviewPickDialog({
         ) : null}
         <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-4">
-            <PlayerDecisionPanel player={player} />
+            <PlayerDecisionPanel key={player?.player_id} player={player} />
           </div>
           <PlayerNewsPanel open={open} playerId={player?.player_id} />
         </div>

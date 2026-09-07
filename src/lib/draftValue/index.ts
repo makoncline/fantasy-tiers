@@ -1,4 +1,6 @@
 import type { Position, RosterSlot } from "@/lib/schemas";
+import { getDraftTurnContext, pickSlot } from "@/lib/draftTurn";
+export { getNextPickForSlot } from "@/lib/draftTurn";
 import {
   classifyDraftAvailability,
   type DraftAvailability,
@@ -252,7 +254,7 @@ const COMPONENT_LABELS = {
   starterNeed: "Starter need",
   construction: "Roster construction",
   onesie: "QB/TE strategy",
-  depth: "Bench balance",
+  depth: "Roster depth and balance",
   demand: "League demand",
   risk: "Data/news risk",
 } satisfies Record<DraftRecommendationComponentKey, string>;
@@ -474,30 +476,6 @@ function rankBasedValueScore(args: {
   };
 }
 
-function pickSlot(overall: number, teams: number, draftType?: string | null) {
-  if (!overall || !teams) return null;
-  const pickInRound = ((overall - 1) % teams) + 1;
-  const round = Math.ceil(overall / teams);
-  if (String(draftType ?? "").toLowerCase() === "linear") return pickInRound;
-  return round % 2 === 1 ? pickInRound : teams - pickInRound + 1;
-}
-
-export function getNextPickForSlot(args: {
-  currentPick: number;
-  userSlot?: number | null | undefined;
-  teams: number;
-  rounds?: number | undefined;
-  draftType?: string | null | undefined;
-}) {
-  const { currentPick, userSlot, teams, rounds, draftType } = args;
-  if (!userSlot || !teams || teams <= 0) return null;
-  const maxPick = teams * Math.max(rounds ?? 30, 1);
-  for (let pick = Math.max(1, currentPick); pick <= maxPick; pick += 1) {
-    if (pickSlot(pick, teams, draftType) === userSlot) return pick;
-  }
-  return null;
-}
-
 function defaultAdpSpread(adp: number | null, teams: number) {
   if (adp == null) return Math.max(teams, 10);
   if (adp <= teams * 2) return Math.max(4, teams * 0.6);
@@ -518,10 +496,13 @@ function adjustedComebackProbability(args: {
   currentPick: number;
   nextPick: number | null;
   comebackTargetPick: number | null;
+  opponentPicksBeforeTarget: number | null;
   teams: number;
   draftType?: string | null | undefined;
   teamRosterStates?: readonly DraftTeamRosterState[] | undefined;
 }) {
+  // An empty, verified opponent interval is deterministic, even without ADP.
+  if (args.opponentPicksBeforeTarget === 0) return 1;
   const base = comebackProbability(args.adp, args.comebackTargetPick, args.teams);
   if (
     base == null ||
@@ -574,10 +555,12 @@ function roomCompetitionUrgency(args: {
   currentPick: number;
   nextPick: number | null;
   comebackTargetPick: number | null;
+  opponentPicksBeforeTarget: number | null;
   teams: number;
   draftType?: string | null | undefined;
   teamRosterStates?: readonly DraftTeamRosterState[] | undefined;
 }) {
+  if (args.opponentPicksBeforeTarget === 0) return 0;
   const base = comebackProbability(args.adp, args.comebackTargetPick, args.teams);
   if (base == null) return 0;
   if (args.comebackTargetPick == null || !args.teamRosterStates?.length) {
@@ -2026,6 +2009,7 @@ function dataQualityText(args: {
 }
 
 function buildRecommendationExplanation(args: {
+  hasOpponentWait: boolean;
   player: DraftValuePlayerInput;
   actionLabel: DraftActionLabel;
   adpDeltaRounds: number | null;
@@ -2049,12 +2033,12 @@ function buildRecommendationExplanation(args: {
   });
   if (rosterNeed) pros.push(rosterNeed);
 
-  const tierTiming = tierTimingText({
+  const tierTiming = args.hasOpponentWait ? tierTimingText({
     position: args.player.position,
     tier: args.tier,
     comebackLabel: args.comebackLabel,
     sameTierFallbackCount: args.sameTierFallbackCount,
-  });
+  }) : null;
   if (tierTiming) {
     if (tierTiming.startsWith("Can probably wait")) cons.push(tierTiming);
     else pros.push(tierTiming);
@@ -2256,20 +2240,12 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
   const currentPick = Math.max(1, input.currentPick || 1);
   const available = input.players.filter((player) => !isPicked(player));
   const starters = countRequiredStarters(teams, input.rosterRequirements);
-  const nextPick = getNextPickForSlot({
-    currentPick,
-    userSlot: input.userSlot,
-    teams,
-    rounds: input.rounds,
-    draftType: input.draftType,
-  });
-  const comebackTargetPick = getNextPickForSlot({
-    currentPick: currentPick + 1,
-    userSlot: input.userSlot,
-    teams,
-    rounds: input.rounds,
-    draftType: input.draftType,
-  });
+  // Validate the original inputs, not the numeric fallbacks used for scoring.
+  const turn = getDraftTurnContext(input);
+  const { nextPick, comebackTargetPick } = turn;
+  // Unknown turn data is not a confirmed final pick or a known empty interval.
+  const hasFuturePick = turn.state !== "no-future-pick";
+  const hasOpponentWait = hasFuturePick && turn.opponentPicksBeforeTarget !== 0;
   const picksUntilNextTurn =
     nextPick == null ? null : Math.max(0, nextPick - currentPick);
 
@@ -2401,7 +2377,8 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     const sleeperBoardRank = getSleeperBoardRank(player);
     const sleeperBoardValue = toNumber(player.sleeper_board_value);
     const marketRank = sleeperBoardRank ?? adp;
-    const adpDeltaPicks = adp == null ? null : roundOne(adp - currentPick);
+    const adpDeltaPicks =
+      !hasFuturePick || adp == null ? null : roundOne(adp - currentPick);
     const adpDeltaRounds =
       adpDeltaPicks == null ? null : roundOne(adpDeltaPicks / teams);
     const rbWrDepthMarket = rbWrDepthMarketScore({
@@ -2416,6 +2393,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       currentPick,
       nextPick,
       comebackTargetPick,
+      opponentPicksBeforeTarget: turn.opponentPicksBeforeTarget,
       teams,
       draftType: input.draftType,
       teamRosterStates: input.teamRosterStates,
@@ -2423,15 +2401,16 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     const availability = adjustedComebackProbability(comebackArgs);
     const label = comebackLabel(availability);
     const positionRunCount = runCounts.get(player.position) ?? 0;
-    const runUrgency = positionRunCount >= 3 ? 2 : positionRunCount >= 2 ? 1 : 0;
+    const runUrgency =
+      !hasOpponentWait ? 0 : positionRunCount >= 3 ? 2 : positionRunCount >= 2 ? 1 : 0;
     const cliffUrgency =
-      sameTierFallbackCount <= 1 ? 2 : sameTierFallbackCount <= 3 ? 1 : 0;
+      !hasOpponentWait ? 0 : sameTierFallbackCount <= 1 ? 2 : sameTierFallbackCount <= 3 ? 1 : 0;
     const availabilityUrgency = roomCompetitionUrgency(comebackArgs);
-    const roomDemand = roomDemandScore({
+    const roomDemand = hasOpponentWait ? roomDemandScore({
       position: player.position,
       teams,
       draftWideNeeds: input.draftWideNeeds,
-    });
+    }) : 0;
     const urgencyScore = roundOne(
       availabilityUrgency + runUrgency + cliffUrgency + roomDemand
     );
@@ -2665,11 +2644,11 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
               bestStaticValue,
               strategyValueFloor
             ),
-      timing: normalizedComponent(
+      timing: !hasFuturePick ? 0 : normalizedComponent(
         (availabilityUrgency +
           runUrgency +
           cliffUrgency +
-          Math.min(tierCliff ?? 0, 20) * 0.2 +
+          (hasOpponentWait ? Math.min(tierCliff ?? 0, 20) * 0.2 : 0) +
           adpScore(adpDeltaRounds) +
           rbWrDepthMarket) *
           2
@@ -2686,7 +2665,9 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       depth: normalizedComponent(benchScore),
       demand: normalizedComponent(roomDemand * 12),
       risk: normalizedComponent(
-        -missingFields.length * 12 - playerAvailability.penalty * 5
+        -missingFields.filter(
+          (field) => hasFuturePick || field !== "Sleeper market rank"
+        ).length * 12 - playerAvailability.penalty * 5
       ),
     };
     const components = weightRecommendationComponents(
@@ -2695,7 +2676,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     );
     const recommendationScore = sumComponents(components);
     const topComponents = topRecommendationComponents(components, valueLabel);
-    const actionLabel = buildActionLabel(
+    const actionLabel = turn.opponentPicksBeforeTarget === 0 ? "can wait" : buildActionLabel(
       availability,
       sameTierFallbackCount,
       urgencyScore
@@ -2761,7 +2742,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     }
     reasons.push(...qbStarterQuality.reasons);
     reasons.push(...teStarterQuality.reasons);
-    if (sameTierFallbackCount <= 1 && scarcityTier != null) {
+    if (hasOpponentWait && sameTierFallbackCount <= 1 && scarcityTier != null) {
       reasons.push({
         code: "TIER_CLIFF",
         label: "Tier cliff",
@@ -2776,7 +2757,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
           "Sleeper room timing says this player probably will not return.",
       });
     }
-    if (adp != null && adp <= currentPick - teams / 2) {
+    if (hasFuturePick && adp != null && adp <= currentPick - teams / 2) {
       reasons.push({
         code: "ADP_BARGAIN",
         label: "ADP bargain",
@@ -2834,6 +2815,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     const recommendationExplanation = buildRecommendationExplanation({
       player,
       actionLabel,
+      hasOpponentWait,
       adpDeltaRounds,
       comebackLabel: label,
       currentRound,
