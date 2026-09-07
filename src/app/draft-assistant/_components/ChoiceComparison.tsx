@@ -28,6 +28,7 @@ import {
   overallTier, tierDifference,
 } from "@/lib/draftCardMetrics";
 
+import type { DraftPickAction } from "../_lib/types";
 import { DraftAdpValue } from "./DraftAdpValue";
 const noteSchema = z.object({ note: z.string().trim().max(400) });
 
@@ -55,9 +56,10 @@ function Metric({ label, value, difference }: { label: string; value: string; di
   </div>;
 }
 
-function CompactChoiceCard({ choice, lean, snapshot, future = false, selected = false, onPreview }: {
+function CompactChoiceCard({ choice, lean, snapshot, future = false, selected = false, onPreview, explanation, onPick, pickDisabled }: {
   choice: DraftChoice; lean: DraftChoice; snapshot: DraftChoiceSnapshot;
   future?: boolean; selected?: boolean; onPreview?: (() => void) | undefined;
+  explanation?: string; onPick?: (() => void) | undefined; pickDisabled?: boolean | undefined;
 }) {
   const { player, metrics } = choice;
   const isLean = player.player_id === lean.player.player_id;
@@ -66,6 +68,7 @@ function CompactChoiceCard({ choice, lean, snapshot, future = false, selected = 
   const tier = overallTier(player);
   const window = getChoicePickWindow(snapshot.boardInput);
   const differences = choiceContributionDifference(lean.metrics, metrics);
+  const byePeers = (snapshot.boardInput.userRosterPlayers ?? []).filter((p) => player.bye_week && String(p.bye_week) === player.bye_week);
   const hasRisk = metrics.availability.classification !== "healthy";
   const [open, setOpen] = useState(false);
   return <Card className={`min-w-0 rounded-xl py-0 shadow-none ${
@@ -88,8 +91,11 @@ function CompactChoiceCard({ choice, lean, snapshot, future = false, selected = 
       </div>
       <p className="text-xs text-muted-foreground" data-testid={isLean && !future ? "decision-recommendation-summary" : undefined}>
         {fit.slot === "BN" ? `${player.position} bench coverage` : `${fit.slot} starter`}
-        {isLean ? " · Highest Adj in this row" : " · Differences are versus this row’s lean"}
+        {explanation ? ` · ${explanation}` : ""}
       </p>
+      <p className="text-xs text-muted-foreground">{fit.remaining}</p>
+      {byePeers.length ? <p className="text-xs">Shares bye {player.bye_week} with {byePeers.map((p) => p.name ?? p.position).join(", ")}. Coverage needs review.</p> : null}
+      {hasRisk ? <p className="text-xs text-amber-800 dark:text-amber-300">{metrics.availability.detail}</p> : null}
       {hasRisk ? <Badge variant="outline" className="w-fit border-amber-500/30 text-amber-800 dark:text-amber-300" title={metrics.availability.detail}>
         {metrics.availability.label}
       </Badge> : null}
@@ -97,6 +103,7 @@ function CompactChoiceCard({ choice, lean, snapshot, future = false, selected = 
       {metrics.missingFields.length ? <p className="text-xs text-amber-800 dark:text-amber-300">Source notes: {metrics.missingFields.join(", ")}</p> : null}
       {future && scenarioMarketOrder(player) == null ? <p className="text-xs text-amber-800 dark:text-amber-300">No market placement; survival was not modeled.</p> : null}
       <div className="mt-auto flex flex-col gap-1">
+        {onPick ? <Button type="button" size="sm" disabled={pickDisabled} onClick={onPick} aria-label={`Pick ${player.name}`}>Pick {player.name}</Button> : null}
         {onPreview ? <Button type="button" size="sm" variant={selected ? "secondary" : "outline"}
           aria-pressed={selected} onClick={onPreview} className="min-h-9 w-full text-xs">
           {selected ? "Previewing this path" : "Preview after this pick"}
@@ -105,10 +112,10 @@ function CompactChoiceCard({ choice, lean, snapshot, future = false, selected = 
           <CollapsibleTrigger asChild><Button type="button" variant="ghost" size="sm" className="h-8 px-0 text-xs text-muted-foreground">Value and adjustment details</Button></CollapsibleTrigger>
           <CollapsibleContent className="flex flex-col gap-2 border-t pt-3 text-xs">
             <p>{choice.reason}. A comparison is not a claim of equal value.</p>
-            <p>{fit.remaining}</p>
             <p>Val is an ECR-calibrated value estimate. It does not retain each player’s stat profile. Adj is a ranking score, not fantasy points or confidence.</p>
-            <p>Original league-scored Sleeper projection: {score(value?.rawProjectedPoints)} points.</p>
+            <p>Original league-scored projection: {score(value?.rawProjectedPoints)} points.</p>
             <p>ECR-assigned projection: {score(value?.projectedPoints)} points.</p>
+            <p>Roster depth and balance can affect a FLEX starter as well as a bench pick. It reflects roster composition, not just empty bench slots.</p>
             <p>Position tier: {player.position} {player.position_tier_level ?? "—"}. Compare position tiers only within the same position.</p>
             <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 tabular-nums">
               {Object.entries(CHOICE_COMPONENT_LABELS).map(([key, label]) => <div className="contents" key={key}>
@@ -116,7 +123,6 @@ function CompactChoiceCard({ choice, lean, snapshot, future = false, selected = 
               </div>)}
             </dl>
             {!isLean ? <p>Largest contributions favoring the lean: {differences.filter((d) => d.value > 0).slice(0, 2).map((d) => `${d.label} +${score(d.value)}`).join(", ") || "none"}.</p> : null}
-            {hasRisk ? <p>{metrics.availability.detail}</p> : null}
             {metrics.recommendationExplanation.dataQuality.map((text) => <p key={text}>{text}</p>)}
           </CollapsibleContent>
         </Collapsible>
@@ -133,17 +139,29 @@ function ScenarioBody({ payload }: { payload: ScenarioPayload }) {
       {scenario.status === "ready" ? "No eligible recommendation remains in this scenario." : scenario.message}
     </p>;
   }
-  const lean = choices[0];
   const picksAfterOwn = scenario.selections.filter((pick) => pick.kind === "opponent" && pick.pick > (scenario.window.ownPick ?? 0));
   return <div className="flex flex-col gap-3" data-testid="next-pick-scenario">
-    <p className="text-sm"><strong>{result.positionLead} leads in this scenario.</strong> Other paths can change the next position.</p>
-    <div className="grid items-start gap-3 md:grid-cols-3">{choices.slice(0, 3).map((choice) =>
-      <CompactChoiceCard key={choice.player.player_id} choice={choice} lean={lean} snapshot={snapshot} future />
-    )}</div>
+    <p className="text-xs text-muted-foreground">{payload.paths.length === 2 ? "Two paths under one market-order assumption." : "Only one comparison path is available; no second path is inferred."} No validated availability probabilities or path winner. Compare scores within each future board only.</p>
+    <div className="grid items-start gap-3 md:grid-cols-2">{payload.paths.map((path, index) => {
+      const next = path.result;
+      const firstChoice = next.choices[0];
+      const waitPosition = payload.paths[index === 0 ? 1 : 0]?.firstPosition;
+      const later = next.board?.recommendations.find((p) => p.position === waitPosition);
+      return <Card key={path.firstName} className="gap-2 p-3" data-testid="two-pick-path"><CardContent className="space-y-2 p-0 text-sm">
+        <h3 className="font-semibold capitalize">{path.firstName} now ({path.firstPosition})</h3>
+        {firstChoice && next.snapshot ? <>
+          <p>If the room follows this order: {firstChoice.player.name} ({firstChoice.player.position}) — {choiceRosterFit(firstChoice.player, next.snapshot.boardInput.userPositionNeeds).purpose}.</p>
+          <p className="text-xs">{choiceRosterFit(firstChoice.player, next.snapshot.boardInput.userPositionNeeds).remaining}</p>
+          <p className="text-xs">Future-board lean: Val {score(firstChoice.metrics.staticValue)}, Adj {score(firstChoice.metrics.recommendationScore)}.</p>
+          {waitPosition && waitPosition !== path.firstPosition ? <p className="text-xs">If you wait on {waitPosition}: {later ? `${later.name} remains in this scenario.${later.player_id === firstChoice.player.player_id ? " This is the next lean shown above." : ` ${choiceRosterFit(later, next.snapshot.boardInput.userPositionNeeds).remaining}`}` : "No eligible option remains in this scenario."}</p> : null}
+          {later && scenarioMarketOrder(later) == null ? <p className="text-xs">This later option has no market placement. Its survival was not modeled.</p> : null}
+        </> : <p>{next.scenario.status === "ready" ? "No useful second choice is available." : next.scenario.message}</p>}
+      </CardContent></Card>;
+    })}</div>
     <Collapsible>
       <CollapsibleTrigger asChild><Button type="button" variant="ghost" size="sm" className="px-0 text-xs text-muted-foreground">Scenario removals and opponent rosters</Button></CollapsibleTrigger>
       <CollapsibleContent className="flex flex-col gap-3 pt-2 text-xs">
-        <p>One what-if, not an availability forecast: opponents take the highest remaining platform market entry. Sleeper board order is primary; ADP is a fallback. ECR is not a market fallback. No new roster-demand weights are used.</p>
+        <p>One what-if, not an availability forecast: opponents take the highest remaining platform market entry. Platform board order is primary; ADP is a fallback. ECR is not a market fallback. No new roster-demand weights are used.</p>
         <p>Between your two picks, this scenario removes: {picksAfterOwn.map((pick) => `${pick.name} (${pick.position}, #${pick.pick})`).join("; ") || "none"}.</p>
         {scenario.window.beforeOwn ? <p>Before your upcoming pick it removes: {scenario.selections.filter((pick) => pick.pick < (scenario.window.ownPick ?? 0)).map((pick) => pick.name).join(", ")}.</p> : null}
         <p>{scenario.unpricedCount} available players have no usable market placement and were not removed by market order. Their remaining status is not a survival forecast.</p>
@@ -161,7 +179,7 @@ function ScenarioBody({ payload }: { payload: ScenarioPayload }) {
   </div>;
 }
 
-function ChoicePanel({ board, snapshot }: { board: DraftValueBoard<DraftCandidate>; snapshot: DraftChoiceSnapshot }) {
+function ChoicePanel({ board, snapshot, pickAction }: { board: DraftValueBoard<DraftCandidate>; snapshot: DraftChoiceSnapshot; pickAction?: DraftPickAction | undefined }) {
   const choices = useMemo(() => buildDraftChoices(board), [board]);
   const [comparison, setComparison] = useState("");
   const [selectedNow, setSelectedNow] = useState("");
@@ -210,6 +228,14 @@ function ChoicePanel({ board, snapshot }: { board: DraftValueBoard<DraftCandidat
     {window.onClock && window.betweenOwn === 0 ? <p className="-mt-2 text-xs text-muted-foreground">No opponent picks before your next turn. Other available players stay on the board.</p> : null}
     <div className="grid items-start gap-3 md:grid-cols-3">{display.map((choice) =>
       <CompactChoiceCard key={choice.player.player_id} choice={choice} lean={lean} snapshot={snapshot}
+        explanation={(() => {
+          const rival = choice === lean ? choices.find((c) => c !== lean) : lean;
+          if (!rival) return "Only comparison shown; other eligible players are in the tables";
+          const edge = choiceContributionDifference(choice.metrics, rival.metrics).find((d) => d.value > 0);
+          return edge ? `${edge.label} gives the largest score edge over ${rival.player.name} (+${score(edge.value)} Adj contribution)` : `No component edge over ${rival.player.name}`;
+        })()}
+        onPick={pickAction ? () => pickAction.onPick(choice.player) : undefined}
+        pickDisabled={pickAction?.disabled}
         selected={preview != null && preview.status !== "failed" && choice.player.player_id === selectedNowId}
         onPreview={window.state === "ready" ? () => requestPreview(choice.player.player_id) : undefined} />
     )}</div>
@@ -217,9 +243,10 @@ function ChoicePanel({ board, snapshot }: { board: DraftValueBoard<DraftCandidat
     {window.state === "ready" ? <section aria-label="Next pick market-order scenario" className="flex flex-col gap-3 border-t pt-4" aria-busy={updating}>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-sm font-semibold">Next · {formatDraftPick(window.nextOwnPick, teams)} <span className="font-normal text-muted-foreground">#{window.nextOwnPick}</span></h2>
-        <Badge variant="outline" className="font-normal">Market-order scenario</Badge>
+        <Badge variant="outline" className="font-normal">Illustrative what-if</Badge>
       </div>
-      <p className="text-xs text-muted-foreground">After taking <strong className="font-medium text-foreground capitalize">{selectedName}</strong> at #{window.ownPick}, then removing {window.betweenOwn} players in market order. Not a promise of availability.</p>
+      <p className="text-xs text-muted-foreground">After taking <strong className="font-medium text-foreground capitalize">{selectedName}</strong> at #{window.ownPick}, then removing {window.betweenOwn} players in market order.</p>
+      <p className="text-xs text-amber-800 dark:text-amber-300">This is not an availability forecast. Players removed here may still reach your next pick; players shown here may be taken. Use these paths to compare trade-offs, not to decide that a player is safe to wait on.</p>
       {updating ? <p className="text-sm text-muted-foreground" role="status">Calculating this scenario…</p>
         : preview?.status === "ready" ? <DraftOptionalBoundary key={preview.sequence}>
           <ScenarioBody payload={preview.payload} />
@@ -257,6 +284,7 @@ function ChoicePanel({ board, snapshot }: { board: DraftValueBoard<DraftCandidat
               schemaVersion: "choice-ui-lookahead-v2", capturedAt: new Date().toISOString(),
               snapshot, sourceChecks, pickFeed, pickFeedError: sourceError.picks?.message ?? null,
               previewStatus: preview?.status ?? "not-requested-or-stale", choices: display, sensitivity: report, personalJudgment: note,
+              paths: preview?.status === "ready" ? preview.payload.paths : null,
               lookahead: lookahead ? { scenario: lookahead.scenario, choices: lookahead.choices,
                 boardInput: lookahead.snapshot?.boardInput ?? null } : null,
               scoring: "Active recommendation unchanged; next-row scores are hypothetical only",
@@ -271,24 +299,29 @@ function ChoicePanel({ board, snapshot }: { board: DraftValueBoard<DraftCandidat
         {stressError ? <p role="status" className="text-sm text-amber-800 dark:text-amber-300">{stressError}</p> : null}
         {report ? <div className="flex flex-col gap-2" data-testid="choice-sensitivity">
           <p className="text-sm font-medium">{report.status}</p>
-          <p className="text-xs text-muted-foreground">Present in all six hand-set cases: {report.persistentChoiceNames.join(", ") || "none"}. This does not establish confidence or a large advantage.</p>
+          {report.status === "Choice changes with assumptions" && report.scenarios.every((s) => s.leanId === lean.player.player_id) ? <p className="text-xs">The default stays the same; the comparison set changes. This label does not mean the top pick changed.</p> : null}
+          <p className="text-sm">Tested winners: {[...new Set(report.scenarios.map((s) => s.leanName ?? "No eligible choice"))].join(", ")}. These are conditional model results, not confidence estimates.</p>
+          {Array.from(new Map(report.scenarios.filter((s) => s.leanId).map((s) => [s.leanId, s])).values()).map((s) => <p key={s.leanId} className="text-xs">{s.leanName}: {choices.slice(0, 3).some((c) => c.player.player_id === s.leanId) ? "visible in the initial cards" : choices.some((c) => c.player.player_id === s.leanId) ? "hidden on expansion" : "absent from the initial comparison set"}.</p>)}
+          <Collapsible><CollapsibleTrigger asChild><Button variant="ghost" size="sm">Stress case details</Button></CollapsibleTrigger><CollapsibleContent className="space-y-3">
+          <p className="text-xs text-muted-foreground">Set membership only — present in all six hand-set cases: {report.persistentChoiceNames.join(", ") || "none"}. This does not establish confidence or a large advantage.</p>
           {report.scenarios.map((scenario) => <div key={scenario.assumption} className="border-l-2 pl-3 text-xs">
             <p>{scenario.assumption}</p><p>{scenario.leanName ?? "No choice"} · {scenario.path} · {scenario.change} · Adj lead {score(scenario.adjustedGap)}</p>
             {scenario.addedNames.length || scenario.removedNames.length ? <p className="text-muted-foreground">Added: {scenario.addedNames.join(", ") || "none"}. Removed: {scenario.removedNames.join(", ") || "none"}.</p> : null}
             {scenario.leanId && board.recommendations.some((p) => p.player_id === scenario.leanId) ? <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => setComparison(scenario.leanId ?? "")}>Inspect this player on the current board</Button> : null}
           </div>)}
+          </CollapsibleContent></Collapsible>
         </div> : <p className="text-xs text-muted-foreground">Insufficient evidence: assumptions have not been tested for this board.</p>}
       </CollapsibleContent>
     </Collapsible>
   </div>;
 }
 
-export default function ChoiceComparison() {
+export default function ChoiceComparison({ pickAction }: { pickAction?: DraftPickAction | undefined } = {}) {
   const { recommendationBoard: board, choiceSnapshot: snapshot } = useDraftData();
   if (!board || !snapshot || !board.topRecommendation) return null;
   // Discard notes and manual paths on room/turn/owner changes. Source refreshes
   // retain the manual choice only while it is still eligible. Stress reports
   // require exact snapshot identity. Optional work is explicit and invalidated.
   const key = `${snapshot.draftId}:${snapshot.boardInput.currentPick}:${snapshot.boardInput.userSlot}`;
-  return <ChoicePanel key={key} board={board} snapshot={snapshot} />;
+  return <ChoicePanel key={key} board={board} snapshot={snapshot} pickAction={pickAction} />;
 }

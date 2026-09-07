@@ -26,7 +26,7 @@ describe("DraftAssistantContent", () => {
     });
 
     expect(container.querySelector('[data-testid="decision-board"]')).toBeNull();
-    expect(container.textContent).toContain("Overall Value Pool");
+    expect(container.textContent).toContain("Player Pool");
 
     act(() => root.unmount());
     container.remove();

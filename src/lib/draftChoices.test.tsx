@@ -69,9 +69,12 @@ describe("advisory draft choices", { timeout: 20_000 }, () => {
     act(() => test?.click());
     expect(host.querySelector('[data-testid="choice-sensitivity"]')).not.toBeNull();
     expect(currentCard()).toBe(first);
+    expect(host.textContent).toContain("Tested winners:");
+    expect(host.textContent).not.toContain("Set membership only");
+    expect(host.textContent).not.toContain("Highest Adj in this row");
     const details = [...host.querySelectorAll("button")].find((b) => b.textContent === "Value and adjustment details");
     act(() => details?.click());
-    expect(host.textContent).toContain("Original league-scored Sleeper projection");
+    expect(host.textContent).toContain("Original league-scored projection");
     const adjacent = { ...snapshot, boardInput: { ...snapshot.boardInput, currentPick: 24, userSlot: 1 } };
     const adjacentBoard = buildDraftValueBoard(adjacent.boardInput);
     const savedBoard = JSON.stringify(adjacentBoard);

@@ -92,14 +92,14 @@ describe("PlayersTableBase", () => {
     });
 
     expect(container.textContent).toContain(
-      "PlayerTierVALADJECRSleeper ADPSleeper vs ECR"
+      "PlayerOverall / position tierVALADJECRADPADP vs ECR"
     );
     expect(container.textContent).not.toContain("Back?");
     expect(container.textContent).not.toContain("Draft board");
     expect(container.textContent).toContain("Ranked PlayerRB3");
     expect(container.textContent).toContain("1.11");
     expect(container.textContent).toContain("+3.0 later");
-    expect(container.textContent).toContain("2/1");
+    expect(container.textContent).toContain("Overall 2 · Pos 1");
   });
 
   it("describes VAL as the league-specific starter-aware value", () => {

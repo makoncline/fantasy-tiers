@@ -19,7 +19,7 @@ export const CHOICE_COMPONENT_LABELS = {
   starterNeed: "Starter need",
   construction: "Roster construction",
   onesie: "QB/TE policy",
-  depth: "Bench balance",
+  depth: "Roster depth and balance",
   demand: "Room demand",
   risk: "Risk",
 };

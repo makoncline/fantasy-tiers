@@ -4,30 +4,8 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
+import type { DraftPickAction } from "../_lib/types";
 import ChoiceComparison from "./ChoiceComparison";
-
-function unique(values: readonly string[]) {
-  return [...new Set(values.filter(Boolean))];
-}
-
-function buildFocus(args: {
-  coreOpen: string[];
-  specialOpen: string[];
-  flexOpen: number;
-  benchSlotsRemaining: number;
-  totalSlotsRemaining: number;
-  topReasons: readonly string[];
-}) {
-  if (args.totalSlotsRemaining > 0 && args.totalSlotsRemaining <= args.specialOpen.length) {
-    return `${args.specialOpen.join("/")} only remains`;
-  }
-  if (args.coreOpen.length) return `Fill ${args.coreOpen.join("/")}`;
-  if (args.flexOpen > 0) return "Protect FLEX quality";
-  if (args.topReasons.includes("WR2 anchor")) return "Protect WR2";
-  if (args.topReasons.includes("WR starter")) return "Protect WR/FLEX";
-  if (args.benchSlotsRemaining > 0) return "RB/WR bench upside";
-  return "Review best value";
-}
 
 const DEMAND_POSITIONS = ["QB", "RB", "WR", "TE", "K", "DEF"] as const;
 function flexStarterShare(
@@ -107,7 +85,7 @@ function DemandBars({
   );
 }
 
-export default function DecisionBoard() {
+export default function DecisionBoard({ pickAction }: { pickAction?: DraftPickAction | undefined } = {}) {
   const {
     decisionRows,
     topRecommendation,
@@ -117,10 +95,6 @@ export default function DecisionBoard() {
 
   if (!decisionRows.length) return null;
 
-  const topRows = decisionRows.slice(0, 4);
-  const topReasons = unique(
-    topRows.flatMap((row) => row.draft_reason_labels ?? [])
-  );
   const starterSlots = draftContext?.user.starterSlotsRemaining;
   const coreOpen =
     starterSlots == null
@@ -134,14 +108,8 @@ export default function DecisionBoard() {
       : (["K", "DEF"] as const).filter(
           (position) => (starterSlots[position] ?? 0) > 0
         );
-  const focus = buildFocus({
-    coreOpen,
-    specialOpen,
-    flexOpen: rosterConstruction?.flexOpen ?? 0,
-    benchSlotsRemaining: draftContext?.user.benchSlotsRemaining ?? 0,
-    totalSlotsRemaining: draftContext?.user.totalSlotsRemaining ?? 0,
-    topReasons,
-  });
+  const open = [...coreOpen, ...(rosterConstruction?.flexOpen ? [`${rosterConstruction.flexOpen} FLEX`] : []), ...specialOpen.map((p) => p === "DEF" ? "D/ST" : p)];
+  const focus = open.length ? `Open: ${open.join(", ")}` : "Starting slots covered";
   const demandRows =
     draftContext == null
       ? []
@@ -183,7 +151,7 @@ export default function DecisionBoard() {
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        <ChoiceComparison />
+        <ChoiceComparison pickAction={pickAction} />
         {demandRows.length ? (
           <div className="rounded-md border bg-muted/20 p-3">
             <div className="mb-3 flex items-center justify-between gap-3">

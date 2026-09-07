@@ -27,7 +27,7 @@ function formatOverallAndPositionTier(row: PlayerWithPick) {
   if (typeof overallTier !== "number" && typeof positionTier !== "number") {
     return "—";
   }
-  return `${overallTier ?? "—"}/${positionTier ?? "—"}`;
+  return `Overall ${overallTier ?? "—"} · Pos ${positionTier ?? "—"}`;
 }
 
 export const GROUPS_FULL: ColumnGroup<PlayerWithPick>[] = [
@@ -44,12 +44,12 @@ export const GROUPS_FULL: ColumnGroup<PlayerWithPick>[] = [
       },
       {
         id: "tier_level",
-        header: "Tier",
+        header: "Overall / position tier",
         description: "FantasyPros overall tier / position tier.",
         accessor: (r) => r.tier_level ?? r.fp_tier ?? r.tier ?? null,
         sortable: true,
         sortAs: "number",
-        width: "6ch",
+        width: "16ch",
         render: (_, row) => formatOverallAndPositionTier(row),
       },
       {
@@ -87,8 +87,8 @@ export const GROUPS_FULL: ColumnGroup<PlayerWithPick>[] = [
       },
       {
         id: "sleeper_adp",
-        header: "Sleeper ADP",
-        description: "Sleeper average draft position as round.pick.",
+        header: "ADP",
+        description: "Draft platform average draft position as round.pick.",
         accessor: (r) => r.sleeper_adp ?? null,
         sortable: true,
         sortAs: "number",
@@ -101,9 +101,9 @@ export const GROUPS_FULL: ColumnGroup<PlayerWithPick>[] = [
       },
       {
         id: "market_edge",
-        header: "Sleeper vs ECR",
+        header: "ADP vs ECR",
         description:
-          "Sleeper ADP minus FantasyPros ECR. Later means Sleeper drafters may wait longer than expert consensus.",
+          "Draft platform ADP minus FantasyPros ECR. Later means drafters may wait longer than expert consensus.",
         accessor: sleeperEcrEdge,
         sortable: true,
         sortAs: "number",

@@ -93,12 +93,14 @@ describe("PreviewPickDialog", () => {
 
     mockUseDraftData.mockReturnValue({
       league: { scoring: "half" },
+      positionRows: { ALL: [{ ...selected, tier_level: 5 }] },
       decisionRows: [
         decisionPlayer("top", "Top Running Back", 95),
         selected,
         decisionPlayer("next", "Next Receiver", 89),
       ],
       draftContext: {
+        room: { leagueStarterSlotsRemaining: { WR: 7, FLEX: 12 } },
         positionOutlook: [
           { position: "WR", leagueStarterSlotsRemaining: 7 },
         ],
@@ -171,29 +173,29 @@ describe("PreviewPickDialog", () => {
     }
 
     const text = document.body.textContent ?? "";
-    expect(text).toContain("Fits FLEX");
+    expect(text).toContain("Eligible for FLEX");
     expect(text).toContain("Team DEN");
     expect(text).toContain("Bye conflicts Rostered Receiver");
     expect(text).toContain("Questionable");
     expect(text).toContain("Availability Short-term concern");
-    expect(text).toContain("Depth WR1");
+    expect(text).toContain("Source depth WR1");
     expect(text).toContain("VAL83");
     expect(text).toContain("ADJ91");
     expect(text).toContain("ECR18.4");
-    expect(text).toContain("Sleeper ADP3.03");
-    expect(text).toContain("Sleeper vs ECR+8.6 later");
-    expect(text).toContain("Overall tier3");
+    expect(text).toContain("Platform ADP3.03");
+    expect(text).toContain("ADP vs ECR+8.6 later");
+    expect(text).toContain("Overall tier5");
     expect(text).toContain("Position tier2");
-    expect(text).toContain("TimingCan wait");
+    expect(text).toContain("Waiting estimates are unvalidated");
     expect(text).not.toContain("72%");
-    expect(text).toContain("League needs7 WR");
+    expect(text).toContain("7 direct WR starter slots open");
     expect(text).toContain("Adj breakdown");
     expect(text).toContain("Pick timing+4");
     expect(text).toContain("Data/news risk-2");
     expect(text).toContain("ADJ total91");
     expect(text).not.toContain("Pros");
     expect(text).not.toContain("Cons");
-    expect(text).toContain("Why over Next Receiver");
+    expect(text).toContain("Compared with Next Receiver");
     expect(text).not.toContain("Why over Top Running Back");
     expect(text).not.toContain("durable value");
     expect(text).not.toContain("Source Rows");
@@ -203,6 +205,25 @@ describe("PreviewPickDialog", () => {
     expect(text).toContain("Headline 3");
     expect(text).not.toContain("Headline 4");
     expect(text).not.toContain("x".repeat(180));
+  });
+
+  it("uses the signed gap and the actual compared player when the selected player trails", async () => {
+    const other = { ...decisionPlayer("other", "Actual alternative", 33.6),
+      draft_raw_value_score: 4.6, draft_component_scores: { ...selected.draft_component_scores, onesie: 0 } };
+    mockUseDraftData.mockReturnValue({ ...mockUseDraftData(), decisionRows: [other] });
+    await act(async () => root.render(<QueryClientProvider client={queryClient}>
+      <PreviewPickDialog open onOpenChange={vi.fn()} baseSlots={[]} player={{ ...selected,
+        draft_raw_value_score: 10.3, draft_value_score: -60.3,
+        draft_component_scores: { ...selected.draft_component_scores, onesie: -100 },
+        draft_recommendation_edge_detail: "Slight edge; higher tier than unrelated player",
+      }} />
+    </QueryClientProvider>));
+    const text = document.querySelector('[data-testid="preview-why-over-next"]')?.textContent;
+    expect(text).toContain("Compared with Actual alternative");
+    expect(text).toContain("+5.7 Val. -93.9 Adj.");
+    expect(text).toContain("QB/TE strategy is the largest component difference (-100)");
+    expect(text).not.toContain("Slight edge");
+    expect(text).not.toContain("unrelated player");
   });
 
   it("shows unknown news status when the news request fails", async () => {

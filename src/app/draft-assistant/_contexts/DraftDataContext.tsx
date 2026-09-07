@@ -697,7 +697,7 @@ export function DraftDataProvider({
       FLEX: toPlayerRowsFromBundle(
         playersBundle.shards.FLEX,
         league.teams,
-        positionTierOptions
+        { positionTierByPlayerId }
       ),
       ALL: toPlayerRowsFromBundle(playersBundle.shards.ALL, league.teams, {
         positionTierByPlayerId,

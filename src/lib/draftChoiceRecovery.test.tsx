@@ -18,9 +18,9 @@ function setup() {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host);
   const snapshot = draftChoiceFixture();
-  const show = (next = snapshot) => {
+  const show = (next = snapshot, onPick?: (player: { player_id: string }) => void) => {
     const board = buildDraftValueBoard({ ...next.boardInput, players: next.boardInput.players.map((player) => ({ ...player, drafted: false, draftedByMe: false })) });
-    act(() => root!.render(<DraftDataStaticProvider value={{ choiceSnapshot: next, recommendationBoard: board }}><ChoiceComparison /></DraftDataStaticProvider>));
+    act(() => root!.render(<DraftDataStaticProvider value={{ choiceSnapshot: next, recommendationBoard: board }}><ChoiceComparison pickAction={onPick ? { onPick } : undefined} /></DraftDataStaticProvider>));
     return board;
   };
   return { snapshot, show };
@@ -35,15 +35,19 @@ async function finishJob() { await act(async () => { await vi.runAllTimersAsync(
 describe("choice panel recovery", () => {
   it("runs lookahead only after a request, then invalidates it on a same-pick source refresh", async () => {
     vi.useFakeTimers(); const { snapshot, show } = setup(); const build = vi.spyOn(lookahead, "buildDraftLookahead"); show();
-    expect(build).not.toHaveBeenCalled(); const lean = host.querySelector("h3")?.textContent;
-    click("Show next-pick scenario"); await finishJob(); expect(build).toHaveBeenCalledOnce();
+    expect(build).not.toHaveBeenCalled();
+    expect(host.textContent).toContain("Players removed here may still reach your next pick");
+    const lean = host.querySelector("h3")?.textContent;
+    click("Show next-pick scenario"); await finishJob(); expect(build).toHaveBeenCalledTimes(2);
     expect(host.querySelector('[data-testid="next-pick-scenario"]')).not.toBeNull();
     expect(host.querySelector("h3")?.textContent).toBe(lean);
+    expect(host.querySelectorAll('[data-testid="two-pick-path"]')).toHaveLength(2);
+    expect(host.textContent).toContain("No validated availability probabilities or path winner");
     const refreshed = structuredClone(snapshot); refreshed.projectionUpdatedAt = "2026-09-06T16:00:00Z";
     show(refreshed);
     expect(host.querySelector('[data-testid="next-pick-scenario"]')).toBeNull();
     expect(host.textContent).toContain("board changed");
-    expect(build).toHaveBeenCalledOnce(); // No automatic recomputation on refresh.
+    expect(build).toHaveBeenCalledTimes(2); // No automatic recomputation on refresh.
   });
   it("changes the hypothetical first choice, not the active default", async () => {
     vi.useFakeTimers(); const { show } = setup(); show();
@@ -53,6 +57,18 @@ describe("choice panel recovery", () => {
     act(() => alternative.click()); await finishJob();
     expect(host.querySelector('[data-testid="decision-recommendation-card"] h3')?.textContent).toBe(first);
     expect(host.querySelector('[data-testid="next-pick-scenario"]')).not.toBeNull();
+  });
+  it("allows a local pick from every comparison card, but exposes no live pick action", () => {
+    const { show } = setup(); show();
+    expect([...host.querySelectorAll("button")].some(b => b.textContent?.startsWith("Pick "))).toBe(false);
+    const onPick = vi.fn(); const board = show(undefined, onPick);
+    const cards = host.querySelectorAll('[data-testid="decision-recommendation-card"]');
+    for (const card of cards) {
+      const button = [...card.querySelectorAll("button")].find(b => b.textContent?.startsWith("Pick "));
+      expect(button).toBeDefined(); act(() => button!.click());
+    }
+    expect(onPick).toHaveBeenCalledTimes(cards.length);
+    expect(onPick.mock.calls[0]?.[0].player_id).toBe(board.topRecommendation?.player.player_id);
   });
   it("keeps the current row if optional calculation throws", async () => {
     vi.useFakeTimers(); const { show } = setup(); show();

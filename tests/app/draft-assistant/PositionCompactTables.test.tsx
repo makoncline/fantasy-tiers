@@ -65,6 +65,7 @@ describe("PositionCompactTables", () => {
       userPositionRequirements: { QB: 1, K: 0 },
       getRosterStatus: () => ({ count: 0, requirement: 1, met: false }),
       draftContext: {
+        room: { leagueStarterSlotsRemaining: { QB: 7, FLEX: 12 } },
         positionOutlook: [
           { position: "QB", leagueStarterSlotsRemaining: 7 },
         ],
@@ -94,15 +95,15 @@ describe("PositionCompactTables", () => {
     );
     expect(headers).toEqual([
       "Player",
-      "Tier",
+      "Position tier",
       "VAL",
       "ADJ ▼",
       "ECR",
       "ADP",
-      "Edge",
+      "ADP vs ECR",
       "",
     ]);
-    expect(qbCard?.textContent).toContain("You: 0/1 · League needs: 7 · 1 left in tier");
+    expect(qbCard?.textContent).toContain("7 direct QB starter slots open");
     expect(container.querySelector('[data-testid="pos-card-K"]')).toBeNull();
     expect(container.textContent).not.toContain("Show all rows");
     expect(qbCard?.textContent).not.toContain("baseline");

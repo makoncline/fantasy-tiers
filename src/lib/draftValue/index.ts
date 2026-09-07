@@ -254,7 +254,7 @@ const COMPONENT_LABELS = {
   starterNeed: "Starter need",
   construction: "Roster construction",
   onesie: "QB/TE strategy",
-  depth: "Bench balance",
+  depth: "Roster depth and balance",
   demand: "League demand",
   risk: "Data/news risk",
 } satisfies Record<DraftRecommendationComponentKey, string>;
