@@ -1,6 +1,6 @@
 import React from "react";
 import PlayersTableBase from "./table/PlayersTableBase";
-import { GROUPS_FULL } from "./table/presets";
+import { draftTableGroups } from "./table/presets";
 import type { PlayerWithPick } from "@/lib/types.draft";
 
 // Re-export for backward compatibility
@@ -8,6 +8,8 @@ export { mapToPlayerRow } from "@/lib/playerRowMapping";
 
 export function PlayerTable({
   rows,
+  source,
+  onPlayerClick,
   renderActions,
   sortable = false,
   colorizeValuePs = false,
@@ -19,7 +21,9 @@ export function PlayerTable({
   maxRows,
 }: {
   rows: PlayerWithPick[];
-  renderActions?: (row: PlayerWithPick) => React.ReactNode;
+  source?: string | undefined;
+  onPlayerClick?: ((row: PlayerWithPick) => void) | undefined;
+  renderActions?: ((row: PlayerWithPick) => React.ReactNode) | undefined;
   sortable?: boolean;
   colorizeValuePs?: boolean;
   hideDrafted?: boolean;
@@ -32,7 +36,7 @@ export function PlayerTable({
   return (
     <PlayersTableBase
       rows={rows}
-      groups={GROUPS_FULL}
+      groups={draftTableGroups({ source, onOpen: onPlayerClick })}
       sortable={sortable}
       colorize={colorizeValuePs}
       hideDrafted={hideDrafted}

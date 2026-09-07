@@ -65,6 +65,7 @@ describe("PositionCompactTables", () => {
       userPositionRequirements: { QB: 1, K: 0 },
       getRosterStatus: () => ({ count: 0, requirement: 1, met: false }),
       draftContext: {
+        room: { leagueStarterSlotsRemaining: { QB: 7, FLEX: 12 } },
         positionOutlook: [
           { position: "QB", leagueStarterSlotsRemaining: 7 },
         ],
@@ -82,7 +83,7 @@ describe("PositionCompactTables", () => {
     vi.clearAllMocks();
   });
 
-  it("shows current FP rows in compact position columns without projection UI", () => {
+  it("shows current rows with selected-source points and position tiers", () => {
     act(() => root.render(<PositionCompactTables />));
 
     const qbCard = container.querySelector('[data-testid="pos-card-QB"]');
@@ -93,22 +94,21 @@ describe("PositionCompactTables", () => {
       (header) => header.textContent
     );
     expect(headers).toEqual([
+      "Tier (QB)",
       "Player",
-      "Tier",
+      "TM/BYE",
+      "PTS",
       "VAL",
       "ADJ ▼",
-      "ECR",
       "ADP",
-      "Edge",
-      "",
     ]);
-    expect(qbCard?.textContent).toContain("You: 0/1 · League needs: 7 · 1 left in tier");
+    expect(qbCard?.textContent).toContain("Room open: 7 QB");
     expect(container.querySelector('[data-testid="pos-card-K"]')).toBeNull();
     expect(container.textContent).not.toContain("Show all rows");
     expect(qbCard?.textContent).not.toContain("baseline");
     expect(qbCard?.textContent).not.toContain("pts");
     expect(container.querySelector('[data-testid="data-last-updated"]')).toBeNull();
-    expect(container.querySelector('button[aria-label="Preview Current ECR"]')).not.toBeNull();
+    expect(container.querySelector('button[aria-label="Details for Current ECR"]')).not.toBeNull();
   });
 
   it("disables a pick after the one-player position maximum is filled", () => {

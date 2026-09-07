@@ -41,7 +41,8 @@
     "test:integration:fantasypros": "vitest run --config vitest.integration.config.ts",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
-    "knip": "knip"
+    "knip": "knip",
+    "fetch:fp-projections": "node --import=tsx scripts/fp/refresh-draft-projections.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",

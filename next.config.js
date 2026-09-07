@@ -5,6 +5,7 @@ const path = require("path");
 // - Remove typescript.ignoreBuildErrors and eslint.ignoreDuringBuilds
 const nextConfig = {
   reactStrictMode: true,
+  outputFileTracingIncludes: { "/api/draft/*": ["./public/data/aggregate/fantasypros-draft-projections.json"] },
   // Silence workspace root inference warnings by pinning tracing root
   outputFileTracingRoot: path.join(__dirname),
   // Build checks re-enabled

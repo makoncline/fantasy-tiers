@@ -11,6 +11,7 @@ export type PickMeta = {
 };
 
 export type PlayerWithPick = PlayerRow & {
+  draft_projected_points?: number | null;
   picked?: PickMeta;
   draftedByMe?: boolean;
 };

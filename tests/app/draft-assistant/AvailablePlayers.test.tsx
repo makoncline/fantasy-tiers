@@ -81,11 +81,14 @@ describe("AvailablePlayers", () => {
     vi.clearAllMocks();
   });
 
-  it("shows 50 ECR-qualified and roster-legal players by Adj", () => {
+  it("shows 20 legal players and expands the sorted pool", () => {
     act(() => root.render(<AvailablePlayers loading={false} />));
 
     const rows = container.querySelectorAll("tbody tr");
-    expect(rows).toHaveLength(50);
+    expect(rows).toHaveLength(20);
+    const more = [...container.querySelectorAll("button")].find(button => button.textContent === "Show more");
+    act(() => more?.click());
+    expect(container.querySelectorAll("tbody tr")).toHaveLength(40);
     expect(rows[0]?.textContent).toContain("RB 55");
     expect(container.textContent).not.toContain("Filled QB");
     expect(container.textContent).not.toContain("No Kicker");

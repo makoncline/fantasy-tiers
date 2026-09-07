@@ -1,3 +1,4 @@
+import { compareDraftSources, type ProjectionSource } from "./draftSourceComparison";
 import type { DraftDetails } from "./draftDetails";
 import type { DraftPick } from "./schemas";
 import type {
@@ -403,7 +404,7 @@ function buildTeamRosterStates(
 
 function summarizePlayerForContext(
   player: RankedDraftCandidate,
-  draftValueBoard: DraftValueBoard<RecommendationDraftCandidate> | null
+  draftValueBoard: DraftValueBoard<DraftCandidate> | null
 ): DraftContextPlayer {
   const metrics = draftValueBoard?.metricsByPlayerId[player.player_id];
   return {
@@ -486,7 +487,7 @@ function buildDraftContext(args: {
   availableByPosition: Record<string, RankedDraftCandidate[]>;
   userSlot: number | undefined;
   userRoster: DraftRosterView | undefined;
-  draftValueBoard: DraftValueBoard<RecommendationDraftCandidate> | null;
+  draftValueBoard: DraftValueBoard<DraftCandidate> | null;
 }): DraftContext {
   const { base, draft, picks, rosters, availableByPosition, userSlot, userRoster } =
     args;
@@ -662,6 +663,8 @@ export function buildDraftViewModel(args: {
   sourceHealth?: AggregateSourceHealthT | null;
   shardCounts?: DraftReadinessShardCounts;
   evaluationNow?: Date;
+  valueSource?: "sleeper" | "fp" | "combined";
+  fpSource?: ProjectionSource | null;
 }) {
   const {
     playersMap,
@@ -794,69 +797,102 @@ export function buildDraftViewModel(args: {
         },
         result: null,
       };
-  const draftRawValuesByPlayerId = Object.fromEntries(
-    Object.entries(starterAwareValue.result?.valuesByPlayerId ?? {}).map(
-      ([playerId, value]) => [playerId, value.value]
-    )
-  );
-  const recommendationInput: DraftValueBoardInput<RecommendationDraftCandidate> | null =
-    userRoster &&
-    starterAwareValue.status.available &&
-    readinessAssessment?.report.status === "ready"
-    ? {
-        players: recommendationPlayers,
-        teams,
-        rounds: draft.settings?.rounds,
-        draftType: draft.type,
-        currentPick:
-          picks.filter((pick) => pick && pick.player_id).length + 1,
-        userSlot,
-        rosterRequirements,
-        userPositionCounts: userRoster.rosterPositionCounts,
-        userPositionNeeds: userRoster.remainingPositionRequirements,
-        draftWideNeeds,
-        teamRosterStates,
-        userRosterPlayers: userRoster.players,
-        irSlots: draft.settings.slots_ir ?? 0,
-        staticValuesByPlayerId: draftRawValuesByPlayerId,
-      }
-    : null;
-  const draftValueBoard = recommendationInput ? buildDraftValueBoard(recommendationInput) : null;
-  const draftContext = buildDraftContext({
-    base,
-    draft,
-    picks,
-    rosters,
-    rosterRequirements,
-    availableByPosition,
-    userSlot,
-    userRoster,
-    draftValueBoard,
-  });
+  const originalStrategy = starterAwareValue;
+  const originalValues = starterAwareValue.result;
+  // ESPN already supplies league-specific points. Its source contract is separate.
+  const valueSource = args.projectionArtifact?.source === "ESPN league projections" ? "combined" : args.valueSource ?? "sleeper";
+  const sourceComparison = originalValues && args.scoringRules && userRoster ? compareDraftSources({
+    draftId: draft.draft_id, scoringRules: args.scoringRules,
+    projectionUpdatedAt: starterAwareValue.status.sourceLastModified,
+    values: originalValues, rosterSlots: readinessRosterSlots,
+    boardInput: { staticValuesByPlayerId: {}, players: recommendationPlayers, teams, rounds: draft.settings.rounds,
+      draftType: draft.type, currentPick: picks.filter(pick => pick && pick.player_id).length + 1, userSlot,
+      rosterRequirements, userPositionCounts: userRoster.rosterPositionCounts,
+      userPositionNeeds: userRoster.remainingPositionRequirements, draftWideNeeds,
+      teamRosterStates, userRosterPlayers: userRoster.players, irSlots: draft.settings.slots_ir ?? 0 },
+  }, args.fpSource ?? { rows: [], updatedAt: null, problems: ["FP projections are unavailable."] }, args.evaluationNow?.getTime()) : null;
+  const buildSourceView = (source: "sleeper" | "fp" | "combined") => {
+    let starterAwareValue = originalStrategy;
+    if (source !== "combined" && sourceComparison) {
+      const selected = sourceComparison[source];
+      starterAwareValue = {
+        result: selected?.values ?? null,
+        status: { ...starterAwareValue.status, available: selected != null,
+          reason: selected ? null : sourceComparison.problems.join(" "),
+          source: source === "fp" ? "FantasyPros projections (Sleeper K/DST)" : "Sleeper season projections",
+          sourceLastModified: source === "fp" ? args.fpSource?.updatedAt ?? null : starterAwareValue.status.sourceLastModified },
+      };
+    }
+    const draftRawValuesByPlayerId = Object.fromEntries(
+      Object.entries(starterAwareValue.result?.valuesByPlayerId ?? {}).map(
+        ([playerId, value]) => [playerId, value.value]
+      )
+    );
+    const recommendationInput: DraftValueBoardInput<RecommendationDraftCandidate> | null =
+      userRoster &&
+      starterAwareValue.status.available &&
+      readinessAssessment?.report.status === "ready"
+      ? {
+          players: recommendationPlayers,
+          teams,
+          rounds: draft.settings?.rounds,
+          draftType: draft.type,
+          currentPick:
+            picks.filter((pick) => pick && pick.player_id).length + 1,
+          userSlot,
+          rosterRequirements,
+          userPositionCounts: userRoster.rosterPositionCounts,
+          userPositionNeeds: userRoster.remainingPositionRequirements,
+          draftWideNeeds,
+          teamRosterStates,
+          userRosterPlayers: userRoster.players,
+          irSlots: draft.settings.slots_ir ?? 0,
+          staticValuesByPlayerId: draftRawValuesByPlayerId,
+        }
+      : null;
+    const draftValueBoard = recommendationInput ? (source === "combined" ? buildDraftValueBoard(recommendationInput) : sourceComparison?.[source]?.board ?? null) : null;
+    const draftContext = buildDraftContext({
+      base,
+      draft,
+      picks,
+      rosters,
+      rosterRequirements,
+      availableByPosition,
+      userSlot,
+      userRoster,
+      draftValueBoard,
+    });
 
-  return {
-    ...base,
-    availableByPosition,
-    topAvailablePlayersByPosition: topAvailable,
-    userRoster,
-    teamRosterStates,
-    draftWideNeeds,
-    recommendationBoard: draftValueBoard,
-    choiceSnapshot: recommendationInput && starterAwareValue.result && args.scoringRules ? {
-      draftId: draft.draft_id,
-      scoringRules: args.scoringRules,
-      projectionUpdatedAt: starterAwareValue.status.sourceLastModified,
-      boardInput: recommendationInput,
-      values: starterAwareValue.result,
-      rosterSlots: readinessRosterSlots,
-    } : null,
-    draftRawValuesByPlayerId,
-    draftContext,
-    rosterRequirements,
-    draftValueStatus: starterAwareValue.status,
-    draftValueAssumptions: starterAwareValue.result?.relevantPlayerCounts ?? null,
-    readiness: readinessAssessment?.report ?? null,
+    return {
+      valueSource: source,
+      recommendationBoard: draftValueBoard,
+      choiceSnapshot: recommendationInput && starterAwareValue.result && args.scoringRules ? {
+        draftId: draft.draft_id,
+        scoringRules: args.scoringRules,
+        projectionUpdatedAt: starterAwareValue.status.sourceLastModified,
+        boardInput: recommendationInput,
+        values: starterAwareValue.result,
+        ...(originalValues ? { sleeperValues: originalValues } : {}),
+        rosterSlots: readinessRosterSlots,
+      } : null,
+      draftRawValuesByPlayerId,
+      draftContext,
+      draftValueStatus: starterAwareValue.status,
+      draftValueAssumptions: starterAwareValue.result?.relevantPlayerCounts ?? null,
+    };
   };
+  const sourceViews = { sleeper: buildSourceView("sleeper"), fp: buildSourceView("fp") };
+  return {
+    ...base, availableByPosition, topAvailablePlayersByPosition: topAvailable,
+    userRoster, teamRosterStates, draftWideNeeds, sourceComparison, sourceViews, rosterRequirements,
+    readiness: readinessAssessment?.report ?? null,
+    ...(valueSource === "combined" ? buildSourceView("combined") : sourceViews[valueSource]),
+  };
+}
+
+/** Select a precomputed source. No projection, readiness, or scoring work runs here. */
+export function selectDraftSource(view: ReturnType<typeof buildDraftViewModel>, source: "sleeper" | "fp") {
+  return { ...view, ...view.sourceViews[source] };
 }
 
 function deriveShardCounts(

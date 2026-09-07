@@ -131,7 +131,7 @@ export function buildMarketOrderScenario<T extends MarketScenarioPlayer>(input: 
     if (pick === window.ownPick) {
       if (selected.has(own.player_id)) {
         return { ...empty, status: "blocked", selections, unpricedCount,
-          message: `${own.name} is taken before your upcoming turn in this scenario. Compare another player.` };
+          message: `${own.name} is taken before your upcoming turn in this scenario.` };
       }
       player = own;
     } else {

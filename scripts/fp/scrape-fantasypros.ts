@@ -28,6 +28,7 @@ function buildUrl(position: Position, scoring: Scoring, week: string): string {
 async function fetchHtml(url: string): Promise<string> {
   const res = await fetch(url, {
     headers: buildFantasyProsHeaders(),
+    signal: AbortSignal.timeout(30_000),
   });
   if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
   return res.text();
@@ -186,9 +187,9 @@ function inferSourcesCount(html: string): number | null {
   return m ? Number(m[1]) : null;
 }
 
-function inferDate(html: string): string | null {
+export function inferDate(html: string): string | null {
   // e.g., "Aug 29, 2025" — normalize to YYYY-MM-DD
-  const m = html.match(/\b([A-Z][a-z]{2} \d{1,2}, \d{4})\b/);
+  const m = load(html)("body").text().match(/Consensus last updated\s*:?\s*([A-Z][a-z]{2} \d{1,2}, \d{4})/i);
   if (!m) return null;
   const parsed = dayjs(m[1]);
   return parsed.isValid() ? parsed.format("YYYY-MM-DD") : null;
@@ -232,7 +233,7 @@ async function writeOutputs({
     scoring,
     week,
     sources,
-    date: date ?? dayjs().format("YYYY-MM-DD"),
+    date,
     scrapedAt: dayjs().toISOString(),
     rowCount: rows.length,
     // Retain column keys for reference
@@ -269,7 +270,7 @@ async function writeOutputs({
   );
 }
 
-async function scrapeOne(
+export async function scrapeOne(
   position: Position,
   scoring: Scoring,
   week: string,
@@ -287,6 +288,7 @@ async function scrapeOne(
   });
   const sources = inferSourcesCount(html);
   const date = inferDate(html);
+  if (!date) throw new Error("FantasyPros projection source date is missing.");
   await writeOutputs({
     position,
     scoring,

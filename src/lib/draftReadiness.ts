@@ -190,7 +190,7 @@ export function assessDraftReadiness(input: {
       code: "WRONG_SEASON",
       scope: "pipeline",
       message:
-        `Sleeper projection season is ${input.projectionArtifact?.season ?? "missing"}; ` +
+        `Projection season is ${input.projectionArtifact?.season ?? "missing"}; ` +
         `expected ${input.season}.`,
     });
   }
@@ -608,7 +608,7 @@ function candidateProblems(
     problems.push("Sleeper draft-market rank was not merged.");
   }
   if (!artifact?.players[player.player_id]) {
-    problems.push("Sleeper projection is missing.");
+    problems.push(`${artifact?.leaguePoints ? "ESPN" : "Sleeper"} projection is missing.`);
   }
   addPlayerFreshnessProblem(
     problems,
@@ -618,8 +618,8 @@ function candidateProblems(
   );
   addPlayerFreshnessProblem(
     problems,
-    "Sleeper projection",
-    player.sleeper_projection?.lastModified ?? null,
+    artifact?.leaguePoints ? "ESPN projection snapshot" : "Sleeper projection",
+    artifact?.leaguePoints ? Date.parse(artifact.fetchedAt) : player.sleeper_projection?.lastModified ?? null,
     now
   );
   const value = strategy.result?.valuesByPlayerId[player.player_id]?.value;

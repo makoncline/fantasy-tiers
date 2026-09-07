@@ -2,7 +2,7 @@
 
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import DraftAssistantContent from "@/app/draft-assistant/_components/DraftAssistantContent";
 import { DraftDataStaticProvider } from "@/app/draft-assistant/_contexts/DraftDataContext";
@@ -10,6 +10,8 @@ import { DraftDataStaticProvider } from "@/app/draft-assistant/_contexts/DraftDa
 (
   globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true;
+
+vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
 
 describe("DraftAssistantContent", () => {
   it("can hide recommendations for table-only mock studies", () => {
@@ -26,7 +28,7 @@ describe("DraftAssistantContent", () => {
     });
 
     expect(container.querySelector('[data-testid="decision-board"]')).toBeNull();
-    expect(container.textContent).toContain("Overall Value Pool");
+    expect(container.querySelector('[data-testid="draft-player-pool"]')).not.toBeNull();
 
     act(() => root.unmount());
     container.remove();

@@ -1,7 +1,10 @@
+import { WatchlistButton, useDraftWatchlist } from "../DraftWatchlistContext";
+import { useDraftPreference, draftSortIdPreference, draftSortDirectionPreference } from "@/hooks/useDraftPreference";
 import React from "react";
 import {
   Table,
   TableHeader,
+  TableCaption,
   TableRow,
   TableHead,
   TableBody,
@@ -19,8 +22,7 @@ type Props = {
   colorize?: boolean;
   dimDrafted?: boolean;
   hideDrafted?: boolean;
-  renderActions?: (row: PlayerWithPick) => React.ReactNode;
-  tierRowColors?: boolean; // Enable alternating tier-based row backgrounds
+  renderActions?: ((row: PlayerWithPick) => React.ReactNode) | undefined;
   maxRows?: number | undefined;
   defaultSortId?: string | undefined;
   defaultSortDir?: "asc" | "desc" | undefined;
@@ -35,12 +37,12 @@ export default function PlayersTableBase({
   dimDrafted = false,
   hideDrafted = false,
   renderActions = undefined,
-  tierRowColors = false,
   maxRows,
   defaultSortId,
   defaultSortDir = "asc",
   heatDomainRows,
 }: Props) {
+  const watchlist = useDraftWatchlist();
   // 1) Filter/dim drafted once
   const baseRows = React.useMemo(
     () => (hideDrafted ? rows.filter((r) => !isDraftedRow(r)) : rows),
@@ -82,10 +84,22 @@ export default function PlayersTableBase({
   };
 
   // 3) Sorting driven by column ids
-  const [sortId, setSortId] = React.useState<string | null>(
-    defaultSortId ?? null
+  const sortPreferenceKey = `table:${groups[0]?.children[0]?.header ?? "players"}`;
+  const [sortId, setSortId] = useDraftPreference<string | null>(`${sortPreferenceKey}:sort`, draftSortIdPreference,
+    dimDrafted && defaultSortId === "adj" ? "raw" : defaultSortId ?? null
   );
-  const [sortDir, setSortDir] = React.useState<"asc" | "desc">(defaultSortDir);
+  const [sortDir, setSortDir] = useDraftPreference(`${sortPreferenceKey}:direction`, draftSortDirectionPreference, defaultSortDir);
+  const [previousDimDrafted, setPreviousDimDrafted] = React.useState(dimDrafted);
+  // Drafted players have no current recommendation score. On reveal, use
+  // comparable base values instead of pushing those rows below the visible slice.
+  if (previousDimDrafted !== dimDrafted) {
+    setPreviousDimDrafted(dimDrafted);
+    if (dimDrafted && sortId === "adj") {
+      setSortId("raw");
+      setSortDir("desc");
+    }
+  }
+
 
   const allColumns: ColumnDef<PlayerWithPick>[] = groups.flatMap(
     (g) => g.children
@@ -121,25 +135,33 @@ export default function PlayersTableBase({
   }, [baseRows, activeCol, sortDir, sortable]);
 
   const visibleRows = React.useMemo(
-    () => (maxRows == null ? sorted : sorted.slice(0, maxRows)),
+    () => {
+      if (maxRows == null) return sorted;
+      let available = 0;
+      const cutoff = sorted.findIndex(row => {
+        if (isDraftedRow(row)) return false;
+        available += 1;
+        return available > maxRows;
+      });
+      return cutoff < 0 ? sorted : sorted.slice(0, cutoff);
+    },
     [maxRows, sorted]
   );
 
   const tierBandClasses = React.useMemo(() => {
-    const shouldBand = tierRowColors || sortId === "tier_level";
-    if (!shouldBand) return [];
+    if (!activeCol || (sortId !== "tier_level" && sortId !== "position_tier")) return [];
 
     let currentTier: number | string | null = null;
     let bandIndex = -1;
     return visibleRows.map((row) => {
-      const nextTier = row.tier_level ?? row.tier ?? "unranked";
+      const nextTier = activeCol.accessor(row) ?? "unranked";
       if (nextTier !== currentTier) {
         currentTier = nextTier;
         bandIndex += 1;
       }
-      return bandIndex % 2 === 1 ? "bg-muted" : "";
+      return nextTier === "unranked" ? "" : bandIndex % 2 === 1 ? "bg-violet-500/10" : "bg-sky-500/10";
     });
-  }, [sortId, tierRowColors, visibleRows]);
+  }, [sortId, activeCol, visibleRows]);
 
   const onHeadClick = (c: ColumnDef<PlayerWithPick>) => {
     if (!sortable || !c.sortable) return;
@@ -151,8 +173,9 @@ export default function PlayersTableBase({
   };
 
   return (
-    <Table>
-      <TableHeader className="sticky top-0 z-30">
+    <Table className="w-auto border border-border text-xs">
+      {sortable ? <TableCaption className="sr-only">{visibleRows.length} of {baseRows.length} players</TableCaption> : null}
+      <TableHeader className="sticky top-0 z-30 bg-muted">
         <TableRow>
           {allColumns.map((c) => (
             <TableHead
@@ -160,7 +183,7 @@ export default function PlayersTableBase({
               style={c.width ? { width: c.width } : undefined}
               onClick={() => onHeadClick(c)}
               className={
-                (c.sortable ? "cursor-pointer select-none " : "") +
+                "h-8 whitespace-nowrap border-r border-border px-2 " + (c.sortable ? "cursor-pointer select-none " : "") +
                 (c.className ?? "")
               }
               title={c.description ?? c.header}
@@ -181,6 +204,7 @@ export default function PlayersTableBase({
             </TableHead>
           ))}
           {renderActions ? <TableHead className="w-8" /> : null}
+          {watchlist ? <TableHead className="w-8"><span className="sr-only">Watch list</span></TableHead> : null}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -210,6 +234,7 @@ export default function PlayersTableBase({
                 return (
                   <TableCell
                     key={c.id}
+                    className="border-r border-border px-2 py-1.5 tabular-nums"
                     {...(isNameCol && isDrafted ? { "data-drafted": "D" } : {})}
                     style={bg ? { background: bg } : undefined}
                   >
@@ -220,6 +245,7 @@ export default function PlayersTableBase({
               {renderActions ? (
                 <TableCell className="w-8 p-0">{renderActions(r)}</TableCell>
               ) : null}
+              {watchlist ? <TableCell className="w-8 p-1"><WatchlistButton playerId={r.player_id} name={r.name} /></TableCell> : null}
             </TableRow>
           );
         })}

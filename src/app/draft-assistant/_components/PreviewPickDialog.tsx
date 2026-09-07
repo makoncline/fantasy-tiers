@@ -1,258 +1,22 @@
 "use client";
 
-import React from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ExternalLink, Newspaper, RefreshCw } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import type {
-  DraftedPlayer,
-  RankedPlayer,
-  RosterSlot,
-} from "@/lib/schemas";
-import { qk } from "@/lib/queryKeys";
-import {
-  SleeperPlayerNewsResponseSchema,
-  type SleeperPlayerNewsItem,
-} from "@/lib/sleeperNews";
+import { PlayerSourceDetails } from "./DraftSourceSelector";
+import { WatchlistButton } from "./DraftWatchlistContext";
+import { useDraftData } from "../_contexts/DraftDataContext";
+import type { RankedPlayer } from "@/lib/schemas";
 import type { PlayerWithPick } from "@/lib/types.draft";
-import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
-import {
-  formatSleeperEcrEdge,
-  formatTimingSignal,
-} from "@/app/draft-assistant/_lib/draftBoardDisplay";
-import type { DraftRecommendationComponentKey } from "@/lib/draftValue";
+import { CHOICE_COMPONENT_LABELS } from "@/lib/draftChoices";
+import { qk } from "@/lib/queryKeys";
+import { SleeperPlayerNewsResponseSchema } from "@/lib/sleeperNews";
 
-type PreviewExtras = Partial<
-  Omit<
-    PlayerWithPick,
-    "player_id" | "name" | "position" | "team" | "bye_week" | "rank" | "tier"
-  >
->;
-export type PreviewPickPlayer = RankedPlayer & PreviewExtras;
-
-const newsDateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-});
-
-function destinationSlot(
-  baseSlots: { slot: RosterSlot; player: DraftedPlayer | null }[],
-  preview: PreviewPickPlayer
-) {
-  if (baseSlots.some((slot) => slot.slot === preview.position && !slot.player)) {
-    return preview.position;
-  }
-  const isFlex =
-    preview.position === "RB" ||
-    preview.position === "WR" ||
-    preview.position === "TE";
-  if (isFlex && baseSlots.some((slot) => slot.slot === "FLEX" && !slot.player)) {
-    return "FLEX";
-  }
-  return baseSlots.some((slot) => slot.slot === "BN" && !slot.player)
-    ? "BN"
-    : null;
-}
-
-function fmtNumber(value: number) {
-  return Number.isInteger(value) ? String(value) : value.toFixed(1);
-}
-
-const COMPONENT_LABELS = {
-  value: "League value",
-  timing: "Pick timing",
-  starterNeed: "Starter need",
-  construction: "Roster construction",
-  onesie: "QB/TE strategy",
-  depth: "Bench balance",
-  demand: "League demand",
-  risk: "Data/news risk",
-} satisfies Record<DraftRecommendationComponentKey, string>;
-
-const COMPONENT_KEYS = [
-  "value",
-  "timing",
-  "starterNeed",
-  "construction",
-  "onesie",
-  "depth",
-  "demand",
-  "risk",
-] as const satisfies readonly DraftRecommendationComponentKey[];
-
-function formatSignedScore(value: number) {
-  return `${value >= 0 ? "+" : ""}${fmtNumber(value)}`;
-}
-
-function PlayerDecisionPanel({
-  player,
-}: {
-  player: PreviewPickPlayer | null;
-}) {
-  const { decisionRows, draftContext } = useDraftData();
-  if (!player) return null;
-
-  const decisionIndex = decisionRows.findIndex(
-    (row) => row.player_id === player.player_id
-  );
-  const nextOption =
-    decisionIndex >= 0
-      ? decisionRows[decisionIndex + 1] ?? decisionRows[decisionIndex - 1] ?? null
-      : decisionRows.find((row) => row.player_id !== player.player_id) ?? null;
-  const comparisonIsHigher =
-    nextOption != null &&
-    decisionIndex > 0 &&
-    nextOption.player_id === decisionRows[decisionIndex - 1]?.player_id;
-  const scoreGap =
-    player.draft_value_score != null && nextOption?.draft_value_score != null
-      ? player.draft_value_score - nextOption.draft_value_score
-      : null;
-  const components = COMPONENT_KEYS.flatMap((key) => {
-    const value = player.draft_component_scores?.[key];
-    return typeof value === "number" && Number.isFinite(value)
-      ? [{ key, label: COMPONENT_LABELS[key], value }]
-      : [];
-  });
-  const outlook = draftContext?.positionOutlook.find(
-    (item) => item.position === player.position
-  );
-  const timingSignal = formatTimingSignal(player);
-
-  return (
-    <section className="space-y-3 rounded-lg border bg-muted/20 p-3">
-      <h3 className="text-sm font-semibold">Draft value</h3>
-      <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-        {player.draft_raw_value_score != null ? (
-          <div>
-            <div className="text-xs text-muted-foreground">VAL</div>
-            <div className="font-mono">
-              {fmtNumber(player.draft_raw_value_score)}
-            </div>
-          </div>
-        ) : null}
-        {player.draft_value_score != null ? (
-          <div>
-            <div className="text-xs text-muted-foreground">ADJ</div>
-            <div className="font-mono">{fmtNumber(player.draft_value_score)}</div>
-          </div>
-        ) : null}
-        {player.fp_rank_ave != null ? (
-          <div>
-            <div className="text-xs text-muted-foreground">ECR</div>
-            <div className="font-mono">{fmtNumber(player.fp_rank_ave)}</div>
-          </div>
-        ) : null}
-        {player.sleeper_adp != null ? (
-          <div>
-            <div className="text-xs text-muted-foreground">Sleeper ADP</div>
-            <div className="font-mono">
-              {player.sleeper_adp_round_pick ?? fmtNumber(player.sleeper_adp)}
-            </div>
-          </div>
-        ) : null}
-        {player.fp_rank_ave != null && player.sleeper_adp != null ? (
-          <div>
-            <div className="text-xs text-muted-foreground">Sleeper vs ECR</div>
-            <div className="font-mono">{formatSleeperEcrEdge(player)}</div>
-          </div>
-        ) : null}
-        {(player.tier_level ?? player.fp_tier ?? player.tier) > 0 ? (
-          <div>
-            <div className="text-xs text-muted-foreground">Overall tier</div>
-            <div className="font-mono">
-              {fmtNumber(player.tier_level ?? player.fp_tier ?? player.tier)}
-            </div>
-          </div>
-        ) : null}
-        {player.position_tier_level != null ? (
-          <div>
-            <div className="text-xs text-muted-foreground">Position tier</div>
-            <div className="font-mono">{fmtNumber(player.position_tier_level)}</div>
-          </div>
-        ) : null}
-        {timingSignal !== "—" ? (
-          <div>
-            <div className="text-xs text-muted-foreground">Timing</div>
-            <div className="font-mono">{timingSignal}</div>
-          </div>
-        ) : null}
-        {outlook ? (
-          <div>
-            <div className="text-xs text-muted-foreground">League needs</div>
-            <div className="font-mono">
-              {fmtNumber(outlook.leagueStarterSlotsRemaining)} {player.position}
-            </div>
-          </div>
-        ) : null}
-      </div>
-      {components.length ? (
-        <div
-          className="rounded-md border bg-background/60"
-          data-testid="preview-adj-breakdown"
-        >
-          <div className="border-b px-3 py-2 text-xs font-medium">
-            Adj breakdown
-          </div>
-          <div className="divide-y text-xs">
-            {components.map((component) => (
-              <div
-                key={component.key}
-                className="flex items-center justify-between gap-4 px-3 py-1.5"
-              >
-                <span className="text-muted-foreground">{component.label}</span>
-                <span className="font-mono">
-                  {formatSignedScore(component.value)}
-                </span>
-              </div>
-            ))}
-            {player.draft_value_score != null ? (
-              <div className="flex items-center justify-between gap-4 px-3 py-2 font-medium">
-                <span>ADJ total</span>
-                <span className="font-mono">{fmtNumber(player.draft_value_score)}</span>
-              </div>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
-      {nextOption ? (
-        <div
-          className="rounded-md border bg-background/60 p-2 text-xs text-muted-foreground"
-          data-testid="preview-why-over-next"
-        >
-          <div className="font-medium text-foreground">
-            {comparisonIsHigher ? "Compared with" : "Why over"} {nextOption.name}
-          </div>
-          <div>
-            {scoreGap != null
-              ? `${scoreGap >= 0 ? "+" : ""}${fmtNumber(
-                  scoreGap
-                )} adjusted. `
-              : "Adjacent recommendation. "}
-            {player.draft_recommendation_edge_detail ??
-              player.draft_recommendation_summary ??
-              (player.draft_reason_details ?? []).slice(0, 2).join(" ")}
-          </div>
-        </div>
-      ) : null}
-    </section>
-  );
-}
-
-function formatNewsDate(value: number) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Unknown";
-  return newsDateFormatter.format(date);
-}
+export type PreviewPickPlayer = RankedPlayer & Partial<Omit<PlayerWithPick, "player_id" | "name" | "position" | "team" | "bye_week" | "rank" | "tier">>;
+const signed = (value: number) => `${value > 0 ? "+" : ""}${value.toFixed(1)}`;
+const dateFormat = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
 
 function usePlayerNews(playerId: string | undefined, enabled: boolean) {
   return useQuery({
@@ -275,178 +39,58 @@ function usePlayerNews(playerId: string | undefined, enabled: boolean) {
   });
 }
 
-function NewsItem({ item }: { item: SleeperPlayerNewsItem }) {
-  const title = item.metadata.title;
-  const summary = item.metadata.description ?? item.metadata.analysis;
-  const excerpt =
-    summary && summary.length > 180
-      ? `${summary.slice(0, 177).trimEnd()}...`
-      : summary;
-
-  return (
-    <article className="rounded-lg border bg-muted/20 p-3">
-      <div className="mb-2 flex flex-wrap items-center gap-2">
-        <Badge variant="outline" className="capitalize">
-          {item.source}
-        </Badge>
-        <span className="text-xs text-muted-foreground">
-          {formatNewsDate(item.published)}
-        </span>
-      </div>
-      {title ? (
-        <h4 className="text-sm font-semibold leading-snug">
-          {item.metadata.url ? (
-            <a
-              href={item.metadata.url}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-start gap-1 hover:underline"
-            >
-              {title}
-              <ExternalLink className="mt-0.5 size-3 shrink-0" />
-            </a>
-          ) : (
-            title
-          )}
-        </h4>
-      ) : null}
-      {excerpt ? (
-        <p className="mt-2 text-sm leading-5 text-muted-foreground">{excerpt}</p>
-      ) : null}
-    </article>
-  );
+function PlayerNews({ playerId }: { playerId: string }) {
+  const news = usePlayerNews(playerId, true);
+  return <div className="text-xs">
+    {news.isLoading ? <p>Loading news…</p> : news.isError ? <p>News unavailable.</p> : !news.data?.length ? <p>No recent news.</p> :
+      <div className="divide-y">{news.data.slice(0, 3).map(item => <article className="space-y-1 py-2" key={`${item.source}-${item.source_key ?? item.published}`}>
+        <p className="font-medium">{item.metadata.title ?? "Report"}<span className="ml-2 font-normal text-muted-foreground">{Number.isFinite(new Date(item.published).getTime()) ? dateFormat.format(new Date(item.published)) : "—"}</span></p>
+        {item.metadata.description ? <p>{item.metadata.description}</p> : null}
+        {item.metadata.analysis && item.metadata.analysis !== item.metadata.description ? <p>{item.metadata.analysis}</p> : null}
+        {item.metadata.url ? <a className="inline-block underline" href={item.metadata.url} target="_blank" rel="noreferrer">Full report · {item.source}</a> : null}
+      </article>)}</div>}
+    <Button variant="ghost" size="sm" className="mt-1 h-7 text-xs" disabled={news.isFetching} onClick={() => void news.refetch()}>Refresh news</Button>
+  </div>;
 }
 
-function PlayerNewsPanel({
-  open,
-  playerId,
-}: {
-  open: boolean;
-  playerId: string | undefined;
+export default function PreviewPickDialog({ open, onOpenChange, player }: {
+  open: boolean; onOpenChange: (open: boolean) => void; player: PreviewPickPlayer | null;
 }) {
-  const newsQuery = usePlayerNews(playerId, open);
-
-  return (
-    <section className="space-y-3">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Newspaper className="size-4 text-muted-foreground" />
-          <h3 className="text-sm font-semibold">Recent News</h3>
-        </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => void newsQuery.refetch()}
-          disabled={!playerId || newsQuery.isFetching}
-        >
-          <RefreshCw className="size-3.5" />
-          Refresh
-        </Button>
-      </div>
-
-      {!playerId ? (
-        <div className="rounded-lg border bg-muted/40 p-4 text-sm text-muted-foreground">
-          No player selected.
-        </div>
-      ) : newsQuery.isLoading ? (
-        <div className="rounded-lg border bg-muted/40 p-4 text-sm text-muted-foreground">
-          Loading news...
-        </div>
-      ) : newsQuery.isError ? (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-          News status is unknown. Player news is unavailable right now.
-        </div>
-      ) : newsQuery.data?.length ? (
-        <div className="max-h-[28rem] space-y-3 overflow-y-auto pr-1">
-          {newsQuery.data.slice(0, 3).map((item) => (
-            <NewsItem
-              key={`${item.source}-${item.source_key ?? item.published}`}
-              item={item}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-lg border bg-muted/40 p-4 text-sm text-muted-foreground">
-          No recent news found.
-        </div>
-      )}
-    </section>
-  );
-}
-
-export default function PreviewPickDialog({
-  open,
-  onOpenChange,
-  baseSlots,
-  player,
-}: {
-  open: boolean;
-  onOpenChange: (o: boolean) => void;
-  baseSlots: { slot: RosterSlot; player: DraftedPlayer | null }[];
-  player: PreviewPickPlayer | null;
-}) {
-  const destination = React.useMemo(
-    () => (player ? destinationSlot(baseSlots, player) : null),
-    [baseSlots, player]
-  );
-  const byeConflicts = React.useMemo(
-    () =>
-      player?.bye_week
-        ? baseSlots.flatMap((slot) =>
-            slot.player?.bye_week === player.bye_week ? [slot.player.name] : []
-          )
-        : [],
-    [baseSlots, player]
-  );
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85dvh] max-w-5xl overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            Preview Pick {player ? `— ${player.name}` : ""}
-          </DialogTitle>
-          <DialogDescription>
-            Preview how this player would fit into your current roster.
-          </DialogDescription>
-        </DialogHeader>
-        {player ? (
-          <div
-            className="flex flex-wrap gap-x-5 gap-y-1 border-y py-2 text-sm"
-            data-testid="preview-fit-summary"
-          >
-            {destination ? <span>Fits {destination}</span> : null}
-            {player.team ? <span>Team {player.team}</span> : null}
-            {player.bye_week ? <span>Bye {player.bye_week}</span> : null}
-            {player.sleeper_depth_chart_position ? (
-              <span>
-                Depth {player.sleeper_depth_chart_position}
-                {player.sleeper_depth_chart_order != null
-                  ? player.sleeper_depth_chart_order
-                  : ""}
-              </span>
-            ) : null}
-            {byeConflicts.length ? (
-              <span>Bye conflicts {byeConflicts.join(", ")}</span>
-            ) : null}
-            {player.sleeper_injury_status ? (
-              <span>Status {player.sleeper_injury_status}</span>
-            ) : null}
-            {player.draft_availability_label ? (
-              <span>Availability {player.draft_availability_label}</span>
-            ) : null}
-            {player.sleeper_injury_notes ? (
-              <span>{player.sleeper_injury_notes}</span>
-            ) : null}
-          </div>
-        ) : null}
-        <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="space-y-4">
-            <PlayerDecisionPanel player={player} />
-          </div>
-          <PlayerNewsPanel open={open} playerId={player?.player_id} />
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+  const { playersAll, positionRows, sourceComparison, valueSource, recommendationBoard } = useDraftData();
+  const [expanded, setExpanded] = useState<string[]>([]);
+  const row = playersAll?.find(p => p.player_id === player?.player_id);
+  const source = valueSource === "fp" ? "FantasyPros" : valueSource === "sleeper" ? "Sleeper" : "Combined";
+  const metric = player ? (valueSource === "fp" || valueSource === "sleeper" ? sourceComparison?.[valueSource]?.board : recommendationBoard)?.metricsByPlayerId[player.player_id] : undefined;
+  const components = Object.entries(CHOICE_COMPONENT_LABELS).flatMap(([key, label]) => {
+    const value = Object.entries(metric?.components ?? {}).find(([name]) => name === key)?.[1];
+    return typeof value === "number" && Number.isFinite(value) && value !== 0 ? [{ key, label, value }] : [];
+  });
+  const largest = components.filter(c => c.key !== "value").sort((a, b) => Math.abs(b.value) - Math.abs(a.value))[0];
+  const overall = positionRows?.ALL?.find(p => p.player_id === player?.player_id);
+  const position = player ? positionRows?.[player.position]?.find(p => p.player_id === player.player_id) : undefined;
+  const tier = (p: typeof overall) => p?.tier_level ?? p?.fp_tier ?? p?.tier;
+  const overallTier = tier(overall);
+  const positionTier = tier(position) ?? row?.position_tier_level ?? player?.position_tier_level;
+  const status = row?.sleeper_injury_status ?? player?.sleeper_injury_status ?? (metric?.availability.classification !== "healthy" ? metric?.availability.label : null);
+  const depth = row?.sleeper_depth_chart_position ?? player?.sleeper_depth_chart_position;
+  const depthOrder = row?.sleeper_depth_chart_order ?? player?.sleeper_depth_chart_order;
+  return <Dialog open={open} onOpenChange={value => { onOpenChange(value); if (!value) setExpanded([]); }}>
+    <DialogContent className="max-h-[90dvh] gap-3 overflow-y-auto p-4 sm:max-w-xl sm:p-5">
+      <DialogHeader className="gap-1 text-left">
+        <div className="flex flex-wrap items-center gap-2 pr-6"><DialogTitle className="capitalize">{player?.name ?? "Player"}</DialogTitle>{row ? <WatchlistButton playerId={row.player_id} name={row.name} labelled /> : null}</div>
+        <DialogDescription>{player?.position ?? "—"} · {player?.team ?? "—"} · Bye {player?.bye_week ?? "—"}{status ? ` · ${status}` : ""}</DialogDescription>
+      </DialogHeader>
+      {depth ? <p className="text-xs text-muted-foreground">Depth: {depth}{depthOrder ?? ""}</p> : null}
+      {player ? <PlayerSourceDetails playerId={player.player_id} /> : null}
+      <p className="text-xs">Tier (Overall) {overallTier && overallTier > 0 ? overallTier : "—"} · Tier ({player?.position ?? "—"}) {positionTier && positionTier > 0 ? positionTier : "—"}</p>
+      <p className="text-sm" data-testid="player-adjustment-summary">{largest ? `${source}: ${largest.label} has the largest adjustment (${signed(largest.value)}).` : metric ? `${source}: no nonzero adjustments.` : `${source}: adjustment data unavailable.`}</p>
+      <Accordion type="multiple" value={expanded} onValueChange={setExpanded}>
+        <AccordionItem value="adjustments"><AccordionTrigger className="py-2">Adjustment breakdown</AccordionTrigger><AccordionContent className="text-xs">
+          <p className="mb-2 font-medium">{source} · ADJ contributions</p>
+          {components.length ? <dl className="grid grid-cols-[1fr_auto] gap-1 tabular-nums">{components.map(c => <div className="contents" key={c.key}><dt>{c.label}</dt><dd>{signed(c.value)}</dd></div>)}</dl> : <p>No nonzero contributions available.</p>}
+        </AccordionContent></AccordionItem>
+        <AccordionItem value="news"><AccordionTrigger className="py-2">News</AccordionTrigger><AccordionContent>{open && player && expanded.includes("news") ? <PlayerNews key={player.player_id} playerId={player.player_id} /> : null}</AccordionContent></AccordionItem>
+      </Accordion>
+    </DialogContent>
+  </Dialog>;
 }

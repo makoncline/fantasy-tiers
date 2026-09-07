@@ -9,7 +9,7 @@ import PreviewPickDialog, {
   type PreviewPickPlayer,
 } from "@/app/draft-assistant/_components/PreviewPickDialog";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
-import type { DraftedPlayer } from "@/lib/schemas";
+import { DraftWatchlistProvider } from "@/app/draft-assistant/_components/DraftWatchlistContext";
 import type { PlayerWithPick } from "@/lib/types.draft";
 
 vi.mock("@/app/draft-assistant/_contexts/DraftDataContext", () => ({
@@ -92,13 +92,21 @@ describe("PreviewPickDialog", () => {
     });
 
     mockUseDraftData.mockReturnValue({
-      league: { scoring: "half" },
+      playersAll: [selected],
+      valueSource: "sleeper",
+      sourceComparison: {
+        sleeper: { values: { valuesByPlayerId: { selected: { projectedPoints: 200, value: 83 } } }, board: { metricsByPlayerId: { selected: { recommendationScore: 91, components: selected.draft_component_scores } } } },
+        fp: { values: { valuesByPlayerId: { selected: { projectedPoints: 210, value: 88 } } }, board: { metricsByPlayerId: { selected: { recommendationScore: 94, components: { ...selected.draft_component_scores, onesie: -100 } } } } },
+      },
+      league: { scoring: "half", teams: 12 },
+      positionRows: { ALL: [{ ...selected, tier_level: 5 }] },
       decisionRows: [
         decisionPlayer("top", "Top Running Back", 95),
         selected,
         decisionPlayer("next", "Next Receiver", 89),
       ],
       draftContext: {
+        room: { leagueStarterSlotsRemaining: { WR: 7, FLEX: 12 } },
         positionOutlook: [
           { position: "WR", leagueStarterSlotsRemaining: 7 },
         ],
@@ -136,102 +144,50 @@ describe("PreviewPickDialog", () => {
     vi.unstubAllGlobals();
   });
 
-  it("shows only compact, actionable preview details", async () => {
-    const byeConflict = {
-      player_id: "rostered",
-      name: "Rostered Receiver",
-      position: "WR",
-      team: "SEA",
-      bye_week: "9",
-      rank: 20,
-      tier: 4,
-    } satisfies DraftedPlayer;
-
-    await act(async () => {
-      root.render(
-        <QueryClientProvider client={queryClient}>
-          <PreviewPickDialog
-            open
-            onOpenChange={vi.fn()}
-            player={selected}
-            baseSlots={[
-              { slot: "WR", player: byeConflict },
-              { slot: "FLEX", player: null },
-            ]}
-          />
-        </QueryClientProvider>
-      );
-    });
-
-    for (let attempt = 0; attempt < 20; attempt += 1) {
-      if (document.body.textContent?.includes("Headline 3")) break;
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 5));
-      });
-    }
-
-    const text = document.body.textContent ?? "";
-    expect(text).toContain("Fits FLEX");
-    expect(text).toContain("Team DEN");
-    expect(text).toContain("Bye conflicts Rostered Receiver");
-    expect(text).toContain("Questionable");
-    expect(text).toContain("Availability Short-term concern");
-    expect(text).toContain("Depth WR1");
-    expect(text).toContain("VAL83");
-    expect(text).toContain("ADJ91");
-    expect(text).toContain("ECR18.4");
-    expect(text).toContain("Sleeper ADP3.03");
-    expect(text).toContain("Sleeper vs ECR+8.6 later");
-    expect(text).toContain("Overall tier3");
-    expect(text).toContain("Position tier2");
-    expect(text).toContain("TimingCan wait");
-    expect(text).not.toContain("72%");
-    expect(text).toContain("League needs7 WR");
-    expect(text).toContain("Adj breakdown");
-    expect(text).toContain("Pick timing+4");
-    expect(text).toContain("Data/news risk-2");
-    expect(text).toContain("ADJ total91");
-    expect(text).not.toContain("Pros");
-    expect(text).not.toContain("Cons");
-    expect(text).toContain("Why over Next Receiver");
-    expect(text).not.toContain("Why over Top Running Back");
-    expect(text).not.toContain("durable value");
-    expect(text).not.toContain("Source Rows");
-    expect(text).not.toContain("hidden source warning");
-    expect(text).not.toContain("unknown");
-    expect(text).not.toContain("Source warning");
-    expect(text).toContain("Headline 3");
-    expect(text).not.toContain("Headline 4");
-    expect(text).not.toContain("x".repeat(180));
+  function renderDialog() {
+    return act(async () => root.render(<QueryClientProvider client={queryClient}><DraftWatchlistProvider>
+      <PreviewPickDialog open onOpenChange={vi.fn()} player={selected} />
+    </DraftWatchlistProvider></QueryClientProvider>));
+  }
+  async function click(label: string) {
+    const button = Array.from(document.querySelectorAll("button")).find(b => b.textContent === label);
+    expect(button).toBeTruthy();
+    await act(async () => button!.click());
+  }
+  it("shows separate values, source-specific adjustments, compact status and comparison actions", async () => {
+    await renderDialog();
+    const text = document.querySelector('[role="dialog"]')!.textContent!;
+    expect(text).toContain("WR · DEN · Bye 9 · Questionable");
+    expect(text.match(/Questionable/g)).toHaveLength(1);
+    expect(text).toContain("Depth: WR1");
+    expect(text).toContain("Sleeper200.083.091.0ADP 3.03");
+    expect(text).toContain("FantasyPros210.088.094.0ECR 2.06");
+    expect(text).toContain("Tier (Overall) 5 · Tier (WR) 2");
+    expect(text).toContain("Sleeper: Starter need has the largest adjustment (+5.0).");
+    for (const removed of ["Draft value", "Room starter", "ADP vs ECR", "Availability Short", "Limited at practice", "Base value contribution"]) expect(text).not.toContain(removed);
+    expect(fetch).not.toHaveBeenCalled();
+    await click("Watch +");
+    expect(document.querySelector('button[aria-label="Remove Selected Receiver from watch list"]')?.getAttribute("aria-pressed")).toBe("true");
+    await click("Adjustment breakdown");
+    expect(document.body.textContent).toContain("Sleeper · ADJ contributions");
+    expect(document.body.textContent).toContain("Risk-2.0");
+    expect(document.body.textContent).not.toContain("QB/TE policy");
+    mockUseDraftData.mockReturnValue({...mockUseDraftData(), valueSource: "fp"});
+    await renderDialog();
+    expect(document.body.textContent).toContain("FantasyPros: QB/TE policy has the largest adjustment (-100.0).");
+    expect(document.body.textContent).toContain("FantasyPros · ADJ contributions");
   });
-
-  it("shows unknown news status when the news request fails", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce(
-      new Response(JSON.stringify({ error: "unavailable" }), { status: 503 })
-    );
-
-    await act(async () => {
-      root.render(
-        <QueryClientProvider client={queryClient}>
-          <PreviewPickDialog
-            open
-            onOpenChange={vi.fn()}
-            player={selected}
-            baseSlots={[]}
-          />
-        </QueryClientProvider>
-      );
-    });
-
-    for (let attempt = 0; attempt < 20; attempt += 1) {
-      if (document.body.textContent?.includes("News status is unknown")) break;
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 5));
-      });
-    }
-
-    const text = document.body.textContent ?? "";
-    expect(text).toContain("News status is unknown");
-    expect(text).not.toContain("News status is healthy");
+  it("keeps missing values missing and expands full news only on request", async () => {
+    mockUseDraftData.mockReturnValue({...mockUseDraftData(), valueSource: "fp", sourceComparison: null, playersAll: [{...selected, sleeper_adp: null, fp_rank_ave: null}] } as never);
+    await renderDialog();
+    expect(document.body.textContent).toContain("Sleeper———ADP —");
+    expect(document.body.textContent).toContain("FantasyPros———ECR —");
+    expect(document.body.textContent).toContain("FantasyPros: adjustment data unavailable.");
+    await click("News");
+    for (let attempt=0; attempt<20 && !document.body.textContent?.includes("Headline 3"); attempt++) await act(async () => { await new Promise(r => setTimeout(r, 5)); });
+    expect(document.body.textContent).toContain("Headline 3");
+    expect(document.body.textContent).not.toContain("Headline 4");
+    expect(document.body.textContent).toContain("x".repeat(220));
+    expect(Array.from(document.querySelectorAll("button")).some(b => b.textContent?.includes("Headline 1"))).toBe(false);
   });
 });

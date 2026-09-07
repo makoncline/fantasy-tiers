@@ -20,7 +20,7 @@ import {
   useSleeperLeagueById,
   useSleeperNflState,
 } from "@/app/draft-assistant/_lib/useSleeper";
-import { buildDraftViewModel } from "@/lib/draftState";
+import { buildDraftViewModel, selectDraftSource } from "@/lib/draftState";
 import type { DraftContext } from "@/lib/draftState";
 import { buildRosterRequirementsFromDraftSettings } from "@/lib/draftHelpers";
 import { getSleeperSeasonCandidates } from "@/lib/sleeperSeasons";
@@ -67,9 +67,13 @@ import {
 import { draftReadinessShardCountsFromBundle } from "@/lib/draftReadiness";
 import type { DraftReadinessReport } from "@/lib/draftReadiness";
 
+import { useDraftProjectionSource } from "@/hooks/useDraftProjectionSource";
 import type { DraftChoiceSnapshot } from "@/lib/draftChoices";
 
 interface ProcessedData {
+  valueSource?: "sleeper" | "fp" | "combined";
+  setValueSource?: (source: "sleeper" | "fp") => void;
+  sourceComparison?: ReturnType<typeof buildDraftViewModel>["sourceComparison"];
   choiceSnapshot?: DraftChoiceSnapshot | null;
   recommendationBoard?: ReturnType<typeof buildDraftViewModel>["recommendationBoard"];
   availablePlayers: RankedPlayer[];
@@ -197,8 +201,6 @@ const defaultContextValue: DraftDataContextType = {
   setDraftSlot: () => {},
   draftValueStatus: null,
   readiness: null,
-  clearDraft: () => {},
-  clearUser: () => {},
 
   // Data state
   user: null,
@@ -318,6 +320,7 @@ export function DraftDataProvider({
   initialDraftId?: string;
   initialDraftSlot?: number;
 }) {
+  const { valueSource, setValueSource, fpSource, evaluationNow } = useDraftProjectionSource();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -697,7 +700,7 @@ export function DraftDataProvider({
       FLEX: toPlayerRowsFromBundle(
         playersBundle.shards.FLEX,
         league.teams,
-        positionTierOptions
+        { positionTierByPlayerId }
       ),
       ALL: toPlayerRowsFromBundle(playersBundle.shards.ALL, league.teams, {
         positionTierByPlayerId,
@@ -722,7 +725,7 @@ export function DraftDataProvider({
 
   // Build the server-like draft VM on the client
   const projectionArtifact = playersBundle?.draftProjections;
-  const viewModel = useMemo(() => {
+  const sourceViewModel = useMemo(() => {
     if (
       !draftDetails ||
       !playersMap ||
@@ -731,6 +734,7 @@ export function DraftDataProvider({
     )
       return null;
     return buildDraftViewModel({
+      fpSource, evaluationNow,
       playersMap, // <- use the map from bundle rows
       draft: draftDetails,
       picks: picks || [],
@@ -752,6 +756,7 @@ export function DraftDataProvider({
         : {}),
     });
   }, [
+    fpSource, evaluationNow,
     playersMap,
     draftDetails,
     picks,
@@ -762,6 +767,8 @@ export function DraftDataProvider({
     projectionArtifact,
     playersBundle,
   ]);
+
+  const viewModel = useMemo(() => sourceViewModel ? selectDraftSource(sourceViewModel, valueSource) : null, [sourceViewModel, valueSource]);
 
   // Build processed data when all required data is available
   const processedData = useMemo(() => {
@@ -907,7 +914,7 @@ export function DraftDataProvider({
   const attachDraftValue = useCallback(
     (row: PlayerWithPick): PlayerWithPick => {
       const valued = attachDraftValueMetrics(
-        row,
+        { ...row, draft_projected_points: viewModel?.choiceSnapshot?.values.valuesByPlayerId[row.player_id]?.projectedPoints ?? null },
         draftValueBoard?.metricsByPlayerId[row.player_id]
       );
       const rawValue = draftRawValuesByPlayerId?.[row.player_id];
@@ -919,7 +926,7 @@ export function DraftDataProvider({
             draft_value_label: "Starter-aware value",
           };
     },
-    [draftRawValuesByPlayerId, draftValueBoard]
+    [draftRawValuesByPlayerId, draftValueBoard, viewModel?.choiceSnapshot]
   );
 
   const playersAll: PlayerWithPick[] = useMemo(() => {
@@ -999,6 +1006,7 @@ export function DraftDataProvider({
       setDraftSlot: handleSetDraftSlot,
       draftValueStatus: viewModel?.draftValueStatus ?? null,
       readiness: viewModel?.readiness ?? null,
+      valueSource, setValueSource, sourceComparison: viewModel?.sourceComparison ?? null,
       choiceSnapshot: viewModel?.choiceSnapshot ?? null,
       recommendationBoard: draftValueBoard,
       clearDraft,
@@ -1080,6 +1088,7 @@ export function DraftDataProvider({
       draftValueBoard,
       viewModel?.draftValueStatus,
       viewModel?.readiness,
+      valueSource, setValueSource, viewModel?.sourceComparison,
       viewModel?.choiceSnapshot,
       playersAll,
       playersByPosition,

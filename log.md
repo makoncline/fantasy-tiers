@@ -44,3 +44,16 @@
 - [2026-09-05] Prospective evidence versus owner adherence: Validate the saved prior prefix and actual selection used to condition the forecast. Record default-following separately. A non-default choice is not an evidence failure; changing the conditioned selection is.
 
 - [2026-09-06] Scenario FLEX demand: The v2 packet also omitted FLEX when it rebuilt room-wide needs. When changing the next-pick adapter, preserve FLEX separately from player positions and test the room total, not only the owner roster.
+- [2026-09-06] Comparison card pick actions: The inspection pool can contain a high-Val player outside `decisionRows`. Local card picks must use the canonical eligible candidate's player ID, not look up the compact table slice. Otherwise a visible alternative can silently lack a Pick button.
+- [2026-09-06] Cross-pool tier labels: FLEX shard tiers are not position tiers, and position shard tiers are not overall tiers. Keep each pool's own rows, but use the dedicated position-tier map for FLEX labels and ALL metadata for preview overall tiers. The expanded table must retain the compact table's tier semantics.
+- [2026-09-06] Direct versus shared draft demand: `draftContext.positionOutlook[].leagueStarterSlotsRemaining` includes all open FLEX slots for each eligible position. UI direct counts must use `draftContext.room.leagueStarterSlotsRemaining[position]` and show `.FLEX` separately, counted once. Do not label the combined outlook as direct TE/RB/WR starter need.
+
+
+- [2026-09-06] Codex review CLI version: The PATH CLI v0.146.0 cannot review with gpt-6-astra and returns a newer-version-required error. The app-bundled /Applications/ChatGPT.app/Contents/Resources/codex v0.153.4 works. Use the bundled CLI with the same model and review target when this error occurs.
+
+
+- [2026-09-07] FantasyPros free API truncation: A preseason all-offense request reported 543 players but returned only 10 QBs. The key notice limits usage to 50/day; the older terms PDF says 100/day. Use the stricter key limit, retain complete browser projection captures, and read docs/fantasypros-api-reference.md before API work.
+
+- [2026-09-07] FP native refresh: The existing website scraper and FP_COOKIE helper returned 526 full season projection rows on GitHub Actions. Use the draft-only staged publication wrapper; weekly ECR fetches do not refresh season projections. Use fetch-data.yml projections_only mode to verify access and failure preservation without publishing production data.
+- [2026-09-07] Draft source toggle: The source comparison already builds both native boards. Reuse sourceViews and selectDraftSource; keep the selected source out of the live/mock calculation memo dependencies. Otherwise toggling reruns readiness and scoring even though both calculations already exist.
+- [2026-09-07] Mock route build mode: `/mock-draft` calls `notFound()` in production. Browser rehearsal must use `next dev` (for example a separate port with `--webpack`), even when `/draft-assistant` is served successfully by `next start`.

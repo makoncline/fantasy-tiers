@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { DraftScoringRules } from "@/lib/draftLeagueConfig";
+import { DraftScoringRulesSchema, type DraftScoringRules } from "@/lib/draftLeagueConfig";
 import type { DraftRosterSlots } from "@/lib/draftLeagueConfig";
 import { PositionEnum, type Position } from "@/lib/schemas";
 
@@ -48,11 +48,20 @@ export type DraftProjectionInput = z.infer<typeof DraftProjectionInputSchema>;
 
 export const DraftProjectionArtifactSchema = z.object({
   schemaVersion: z.literal(1),
-  source: z.literal("Sleeper season projections"),
+  source: z.enum(["Sleeper season projections", "ESPN league projections"]),
+  leaguePoints: z.object({
+    leagueId: z.string().min(1),
+    scoringRules: DraftScoringRulesSchema,
+    points: z.record(z.string(), z.number().finite()),
+  }).optional(),
   season: z.string().min(4),
   fetchedAt: z.string().datetime(),
   sourceLastModified: z.string().datetime().nullable(),
   players: z.record(z.string(), DraftProjectionInputSchema),
+}).superRefine((artifact, ctx) => {
+  if ((artifact.source === "ESPN league projections") !== Boolean(artifact.leaguePoints)) {
+    ctx.addIssue({ code: "custom", message: "League projections require their scoring context." });
+  }
 });
 
 export type DraftProjectionArtifact = z.infer<typeof DraftProjectionArtifactSchema>;
@@ -436,18 +445,22 @@ export function buildStarterAwareStrategy(input: {
     scoringRules: input.scoringRules,
     rosterSlots: input.rosterSlots,
   });
-  const capabilityLimitations = leagueCapabilityLimitations;
+  const leaguePoints = artifact?.leaguePoints;
+  const scoringMatches = !leaguePoints || Object.entries(leaguePoints.scoringRules).every(
+    ([key, value]) => Reflect.get(input.scoringRules, key) === value
+  );
+  const capabilityLimitations = leaguePoints && scoringMatches ? [] : leagueCapabilityLimitations;
   const projected = artifact
     ? input.players.flatMap((player) => {
         const projection = artifact.players[player.playerId];
         if (
           player.ecr == null ||
           !projection ||
-          !hasRequiredStats(projection, input.scoringRules)
+          (leaguePoints ? leaguePoints.points[player.playerId] == null : !hasRequiredStats(projection, input.scoringRules))
         ) {
           return [];
         }
-        const rawProjectedPoints = calculateBeerPlusProjectedPoints({
+        const rawProjectedPoints = leaguePoints?.points[player.playerId] ?? calculateBeerPlusProjectedPoints({
           position: player.position,
           scoringRules: input.scoringRules,
           stats: projection.stats,
@@ -476,6 +489,8 @@ export function buildStarterAwareStrategy(input: {
   );
   const reason = !artifact
     ? "Sleeper season projections are not available."
+    : !scoringMatches
+      ? "League projections do not match the selected scoring."
     : capabilityLimitations.length > 0
       ? capabilityLimitations.map((limitation) => limitation.message).join(" ")
       : missingPositions.length > 0

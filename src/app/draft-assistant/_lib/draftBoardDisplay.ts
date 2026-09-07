@@ -11,7 +11,6 @@ export const DRAFT_BOARD_POSITIONS = [
   "K",
 ] as const satisfies readonly Position[];
 
-export const OVERALL_PLAYER_LIMIT = 50;
 export const POSITION_PLAYER_LIMIT = 10;
 
 type MarketComparisonRow = Pick<PlayerWithPick, "fp_rank_ave" | "sleeper_adp">;
@@ -44,6 +43,7 @@ export function isRosterLegalPosition(
 export function draftBoardRows(input: {
   rows: readonly PlayerWithPick[];
   diagnostics: boolean;
+  showDrafted?: boolean;
   counts: Partial<Record<Position, number>>;
   requirements: Partial<Record<RosterSlot, number>>;
 }) {
@@ -53,7 +53,7 @@ export function draftBoardRows(input: {
 
   return input.rows.filter(
     (row) =>
-      !row.picked &&
+      row.picked ? Boolean(input.showDrafted) :
       hasDraftEcr(row) &&
       isRosterLegalPlayer(row, input.counts, input.requirements)
   );

@@ -26,7 +26,7 @@ const GroupSchema = z.object({ position: z.string(), ids: z.array(z.string()), a
 const TurnSchema = ProspectiveBoundarySchema.extend({ rows: z.array(RowSchema), groups: z.array(GroupSchema), codeHash: z.string(), poolHash: z.string(), bundleHash: z.string(), expectedPositionPicks: z.record(z.string(), z.number()) });
 
 async function codeHash() {
-  const paths = execFileSync("rg", ["--files", "src/lib", "scripts/draft"], { encoding: "utf8" }).trim().split("\n").filter((p) => /\.(ts|py)$/.test(p) && !p.endsWith(".test.ts")).sort();
+  const paths = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "--", "src/lib", "scripts/draft"], { encoding: "utf8" }).trim().split("\n").filter((p) => /\.(ts|py)$/.test(p) && !p.endsWith(".test.ts")).sort();
   return hash((await Promise.all(paths.map(async (p) => `${p}\n${await readFile(p, "utf8")}`))).join("\n"));
 }
 export async function liveMarketDraft(id: string) {

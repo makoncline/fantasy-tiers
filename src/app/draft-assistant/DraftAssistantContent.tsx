@@ -32,8 +32,7 @@ const DraftAssistantShell: React.FC = () => {
       initialDraftId={draftId}
       {...(draftSlot != null ? { initialDraftSlot: draftSlot } : {})}
     >
-      <div className="p-4 md:p-6">
-        <h1 className="mb-3 text-xl font-bold">Draft Assistant</h1>
+      <div className="group/draft p-4 md:p-6">
         <DraftAssistantInner
           userId={userId}
           draftId={draftId}
@@ -65,13 +64,7 @@ const DraftAssistantInner: React.FC<{
 
   const selectedDraft = drafts?.find((d) => d.draft_id === selectedDraftId);
 
-  return (
-    <>
-      {!hasUser && <DraftAssistantForm step="user" />}
-
-      {hasUser && !hasDraft && <DraftAssistantForm step="draft" />}
-
-      {hasDraft && (
+  const contextBar = hasDraft ? (
         <div
           className="mb-4 flex flex-col gap-3 border-y py-3 text-sm md:flex-row md:items-center md:justify-between"
           data-testid="draft-context-bar"
@@ -123,11 +116,13 @@ const DraftAssistantInner: React.FC<{
             Change draft
           </Button>
         </div>
-      )}
-
-      {hasUser && hasDraft && <DraftAssistantContentComponent />}
-    </>
-  );
+  ) : null;
+  return <>
+    {!hasUser || !hasDraft ? <h1 className="mb-3 text-xl font-bold">Draft Assistant</h1> : null}
+    {!hasUser && <DraftAssistantForm step="user" />}
+    {hasUser && !hasDraft && <DraftAssistantForm step="draft" />}
+    {hasUser && hasDraft ? <DraftAssistantContentComponent header={contextBar} /> : contextBar}
+  </>;
 };
 
 export default DraftAssistantShell;

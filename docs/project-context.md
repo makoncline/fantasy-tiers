@@ -1,6 +1,6 @@
 # Fantasy Tiers Project Context
 
-Last updated: 2026-09-03
+Last updated: 2026-09-07
 
 This document is a fast orientation guide for agents working on this repo. Read it after `AGENTS.md`.
 
@@ -22,6 +22,10 @@ The app should help answer questions like:
 - Which roster spots are weak?
 - Is a player actually droppable, or are they temporarily suppressed by bye week, injury, or weekly-ranking context?
 - Which data source is fresh, stale, or missing?
+
+## Native projection source release
+
+The owner approved a Sleeper/FantasyPros projection toggle for draft values. See `docs/native-projection-release-2026-09-07.md` for the source contract, existing scraper reuse, hosted Actions proof, and pending production integration. This supersedes older ECR-only or curve-reassignment guidance for the normal Sleeper draft UI; the combined model is an explicit experiment baseline.
 
 ## Current App Surfaces
 

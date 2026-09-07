@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import PlayersTableBase from "@/app/draft-assistant/_components/table/PlayersTableBase";
 import type { ColumnGroup } from "@/app/draft-assistant/_components/table/columns";
-import { GROUPS_FULL } from "@/app/draft-assistant/_components/table/presets";
+import { draftTableGroups } from "@/app/draft-assistant/_components/table/presets";
 import type { PlayerWithPick } from "@/lib/types.draft";
 
 (
@@ -51,6 +51,21 @@ describe("PlayersTableBase", () => {
     container.remove();
   });
 
+  it("counts only undrafted players toward the row limit, preserving sorted drafted rows", () => {
+    const mixed = [
+      {...player("drafted-high", 50), picked: {overall: 1}},
+      player("available-high", 40),
+      {...player("drafted-mid", 30), picked: {overall: 2}},
+      player("available-low", 20),
+      player("outside-limit", 10),
+    ];
+    act(() => root.render(<PlayersTableBase rows={mixed} groups={groups} sortable defaultSortId="value" defaultSortDir="desc" maxRows={2} dimDrafted />));
+    const rendered = [...container.querySelectorAll("tbody tr")];
+    expect(rendered).toHaveLength(4);
+    expect(rendered.filter(row => row.getAttribute("data-row-drafted") !== "true")).toHaveLength(2);
+    expect(rendered.map(row => row.textContent)).toEqual(["50", "40", "30", "20"]);
+  });
+
   it("keeps null values last when sorting descending", () => {
     act(() => {
       root.render(
@@ -70,7 +85,7 @@ describe("PlayersTableBase", () => {
     expect(values).toEqual(["20", "10", "—"]);
   });
 
-  it("shows one clear Sleeper versus ECR edge", () => {
+  it.each(["sleeper", "fp"])("shows only the %s market column in a compact row", (source) => {
     act(() => {
       root.render(
         <PlayersTableBase
@@ -86,24 +101,46 @@ describe("PlayersTableBase", () => {
               position_tier_level: 1,
             },
           ]}
-          groups={GROUPS_FULL}
+          groups={draftTableGroups({ source })}
         />
       );
     });
 
     expect(container.textContent).toContain(
-      "PlayerTierVALADJECRSleeper ADPSleeper vs ECR"
+      `Tier (Overall)PlayerTM/BYEPTSVALADJ${source === "fp" ? "ECR" : "ADP"}`
     );
     expect(container.textContent).not.toContain("Back?");
     expect(container.textContent).not.toContain("Draft board");
-    expect(container.textContent).toContain("Ranked PlayerRB3");
-    expect(container.textContent).toContain("1.11");
-    expect(container.textContent).toContain("+3.0 later");
-    expect(container.textContent).toContain("2/1");
+    expect(container.textContent).toContain("Ranked PlayerRB");
+    if (source === "sleeper") expect(container.textContent).toContain("1.11");
+    expect(container.textContent).not.toContain("ADP vs ECR");
+    expect(container.querySelectorAll("tbody td")[0]?.textContent).toBe("2");
+  });
+
+  it.each(["tier_level", "position_tier"])("colors the displayed %s groups only while tier-sorted", (id) => {
+    const rows = [
+      { ...player("a", 30), tier_level: 1, position_tier_level: 3 },
+      { ...player("b", 20), tier_level: 1, position_tier_level: 2 },
+      { ...player("c", 10), tier_level: 2, position_tier_level: 2 },
+    ];
+    const tierGroups: ColumnGroup<PlayerWithPick>[] = [{ header: "", children: [
+      { id, header: "Tier", accessor: r => id === "tier_level" ? r.tier_level : r.position_tier_level, sortable: true },
+      { id: "value", header: "Value", accessor: r => r.draft_value_score, sortable: true },
+    ] }];
+    act(() => root.render(<PlayersTableBase rows={rows} groups={tierGroups} sortable />));
+    const bodies = () => [...container.querySelectorAll("tbody tr")];
+    expect(bodies().every(r => !r.className.includes("500/10"))).toBe(true);
+    act(() => container.querySelector("th")?.click());
+    expect(bodies().map(r => r.querySelector("td")?.textContent)).toEqual(id === "tier_level" ? ["1", "1", "2"] : ["2", "2", "3"]);
+    expect(bodies()[0]?.className).toBe(bodies()[1]?.className);
+    expect(bodies()[0]?.className).not.toBe(bodies()[2]?.className);
+    expect(bodies()[0]?.className).toContain("bg-sky-500/10");
+    act(() => container.querySelectorAll("th")[1]?.click());
+    expect(bodies().every(r => !r.className.includes("500/10"))).toBe(true);
   });
 
   it("describes VAL as the league-specific starter-aware value", () => {
-    const valueColumn = GROUPS_FULL
+    const valueColumn = draftTableGroups()
       .flatMap((group) => group.children)
       .find((column) => column.id === "raw");
 

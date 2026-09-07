@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -131,17 +130,17 @@ export default function DraftAssistantForm({
         data-lpignore="true"
         data-form-type="other"
       >
-        <Card className="mb-4">
-          <CardHeader>
-            <CardTitle>
+        <section className="mb-4">
+          <header>
+            <h2>
               {step === "user"
                 ? "User Input"
                 : step === "draft"
                 ? "Draft Selection"
                 : "League Details"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </h2>
+          </header>
+          <div className="space-y-4">
             {(step === "user" || step === "full") && (
               <FormField
                 control={form.control}
@@ -196,11 +195,11 @@ export default function DraftAssistantForm({
                     const value = d.draft_id;
                     const checked = selectedDraftId === value;
                     return (
-                      <Card
+                      <section
                         key={value}
-                        className={checked ? "ring-2 ring-primary" : ""}
+                        className="border-b py-2"
                       >
-                        <CardContent className="py-4">
+                        <div className="py-4">
                           <div className="flex items-start gap-3">
                             <RadioGroupItem
                               value={value}
@@ -229,13 +228,13 @@ export default function DraftAssistantForm({
                               />
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </section>
                     );
                   })}
 
-                  <Card>
-                    <CardContent className="py-4">
+                  <section>
+                    <div className="py-4">
                       <div className="flex items-start gap-3">
                         <RadioGroupItem
                           value="manual"
@@ -288,8 +287,8 @@ export default function DraftAssistantForm({
                             )}
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </section>
                 </RadioGroup>
                 <FormField
                   control={form.control}
@@ -349,8 +348,8 @@ export default function DraftAssistantForm({
                 </AlertDescription>
               </Alert>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       </form>
     </Form>
   );

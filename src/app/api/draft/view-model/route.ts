@@ -1,3 +1,5 @@
+import { z } from "zod";
+import { readPublishedFantasyProsProjections } from "@/lib/fantasyProsProjectionSource";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { fetchDraftDetails } from "../../../../lib/draftDetails";
@@ -10,6 +12,8 @@ import { fetchSleeperLeagueById } from "../../../../lib/sleeper";
 import { draftReadinessShardCountsFromBundle } from "../../../../lib/draftReadiness";
 
 export async function GET(req: NextRequest) {
+  const source = z.enum(["sleeper", "fp"]).safeParse(req.nextUrl.searchParams.get("source") ?? "sleeper");
+  if (!source.success) return NextResponse.json({ error: "source must be sleeper or fp" }, { status: 400 });
   const draftId = req.nextUrl.searchParams.get("draft_id");
   const userId = req.nextUrl.searchParams.get("user_id");
   const draftSlotParam = req.nextUrl.searchParams.get("draft_slot");
@@ -39,7 +43,9 @@ export async function GET(req: NextRequest) {
         { status: 400 }
       );
     }
-    const picks = await fetchDraftPicks(draftId);
+    const picks = await fetchDraftPicks(draftId, {
+      allowEmptyPreDraft: draft.status === "pre_draft",
+    });
     const leagueId = draft.league_id ?? draft.metadata.league_id;
     const league = leagueId
       ? await fetchSleeperLeagueById(leagueId)
@@ -66,6 +72,8 @@ export async function GET(req: NextRequest) {
     });
     const playersMap = draftCandidateMapFromBundle(bundle);
     const vm = buildDraftViewModel({
+      valueSource: source.data,
+      fpSource: readPublishedFantasyProsProjections(),
       playersMap,
       draft,
       picks,
@@ -76,10 +84,10 @@ export async function GET(req: NextRequest) {
       sourceHealth: bundle.sourceHealth ?? null,
       shardCounts: draftReadinessShardCountsFromBundle(bundle),
     });
-    if (vm.readiness?.status !== "ready") {
+    if (vm.readiness?.status !== "ready" || !vm.draftValueStatus.available) {
       return NextResponse.json(
         {
-          error: "Draft data is not ready.",
+          error: vm.draftValueStatus.reason ?? "Draft data is not ready.",
           readiness: vm.readiness,
           leagueConfig,
         },

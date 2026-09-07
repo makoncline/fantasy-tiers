@@ -1,19 +1,18 @@
+import { useDraftTablePreferences } from "./DraftTablePreferences";
 import React from "react";
-import { EyeIcon } from "lucide-react";
+import { DraftDemand } from "./DraftDemand";
+import { DraftScarcity } from "./DraftScarcity";
 
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
 import {
   DRAFT_BOARD_POSITIONS,
   draftBoardRows,
-  formatSleeperEcrEdge,
   isRosterLegalPlayer,
   isRosterLegalPosition,
   POSITION_PLAYER_LIMIT,
-  sleeperEcrEdge,
 } from "@/app/draft-assistant/_lib/draftBoardDisplay";
 import type { DraftPickAction } from "@/app/draft-assistant/_lib/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -24,27 +23,20 @@ import {
 import type { Position, RosterSlot } from "@/lib/schemas";
 import type { PlayerWithPick } from "@/lib/types.draft";
 
-import { PlayerTable } from "./PlayerTable";
 import PreviewPickDialog, { type PreviewPickPlayer } from "./PreviewPickDialog";
 import PlayersTableBase from "./table/PlayersTableBase";
-import { PlayerSummaryCell } from "./table/PlayerSummaryCell";
-import type { ColumnGroup } from "./table/columns";
-import {
-  DRAFT_VALUE_DESCRIPTIONS,
-  formatDraftValue,
-} from "./table/presets";
+import { draftTableGroups } from "./table/presets";
 
 interface PositionCompactTablesProps {
+  position?: Position | "FLEX" | undefined;
   pickAction?: DraftPickAction | undefined;
 }
 
 type PositionSection = {
-  position: Position;
+  position: Position | "FLEX";
   rows: PlayerWithPick[];
   rosterCount: number;
   rosterRequirement: number;
-  leagueNeeds: number;
-  tierRemaining: number;
 };
 
 function isConfiguredPosition(
@@ -59,17 +51,6 @@ function isConfiguredPosition(
   return (requirements[position] ?? 0) > 0;
 }
 
-function tierRemaining(rows: readonly PlayerWithPick[]) {
-  const sorted = [...rows].sort(
-    (a, b) =>
-      (b.draft_value_score ?? Number.NEGATIVE_INFINITY) -
-      (a.draft_value_score ?? Number.NEGATIVE_INFINITY)
-  );
-  const tier = sorted[0]?.position_tier_level;
-  if (tier == null) return 0;
-  return sorted.filter((row) => row.position_tier_level === tier).length;
-}
-
 function toPreviewPlayer(row: PlayerWithPick): PreviewPickPlayer {
   return {
     ...row,
@@ -79,23 +60,22 @@ function toPreviewPlayer(row: PlayerWithPick): PreviewPickPlayer {
   };
 }
 
-function formatCount(value: number) {
-  return Number.isInteger(value) ? String(value) : value.toFixed(1);
-}
 
 export default function PositionCompactTables({
   pickAction,
+  position: selectedPosition,
 }: PositionCompactTablesProps = {}) {
   const {
     playersByPosition,
+    valueSource,
     userRosterSlots,
     userPositionCounts,
     userPositionRequirements,
     getRosterStatus,
-    draftContext,
     showDiagnostics,
   } = useDraftData();
-  const [openPosition, setOpenPosition] = React.useState<Position | null>(null);
+  const showDrafted = useDraftTablePreferences()?.showDrafted ?? false;
+  const [openPosition, setOpenPosition] = React.useState<Position | "FLEX" | null>(null);
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const [previewPlayer, setPreviewPlayer] =
     React.useState<PreviewPickPlayer | null>(null);
@@ -108,10 +88,10 @@ export default function PositionCompactTables({
   const sections = React.useMemo<PositionSection[]>(() => {
     if (!playersByPosition) return [];
 
-    return DRAFT_BOARD_POSITIONS.flatMap((position) => {
-      if (!isConfiguredPosition(position, userPositionRequirements)) return [];
+    return (selectedPosition ? [selectedPosition] : DRAFT_BOARD_POSITIONS).flatMap((position) => {
+      if (position !== "FLEX" && !isConfiguredPosition(position, userPositionRequirements)) return [];
       if (
-        !showDiagnostics &&
+        position !== "FLEX" && !showDiagnostics && !showDrafted &&
         !isRosterLegalPosition(
           position,
           userPositionCounts,
@@ -124,136 +104,38 @@ export default function PositionCompactTables({
       const rows = draftBoardRows({
         rows: playersByPosition[position],
         diagnostics: showDiagnostics,
+        showDrafted,
         counts: userPositionCounts,
         requirements: userPositionRequirements,
       });
       if (rows.length === 0) return [];
 
-      const roster = getRosterStatus(position);
-      const outlook = draftContext?.positionOutlook.find(
-        (item) => item.position === position
-      );
+      const roster = position === "FLEX" ? { count: userRosterSlots.filter(s => s.slot === "FLEX" && s.player).length, requirement: userPositionRequirements.FLEX ?? 0 } : getRosterStatus(position);
       return [
         {
           position,
           rows,
           rosterCount: roster.count,
           rosterRequirement: roster.requirement,
-          leagueNeeds: outlook?.leagueStarterSlotsRemaining ?? 0,
-          tierRemaining: tierRemaining(rows),
         },
       ];
     });
   }, [
-    draftContext,
     getRosterStatus,
     playersByPosition,
+    selectedPosition,
+    userRosterSlots,
     showDiagnostics,
+    showDrafted,
     userPositionCounts,
     userPositionRequirements,
   ]);
 
-  const compactGroups = React.useMemo<ColumnGroup<PlayerWithPick>[]>(
-    () => [
-      {
-        header: "Position",
-        children: [
-          {
-            id: "name",
-            header: "Player",
-            accessor: (row) => row.name,
-            sortable: true,
-            sortAs: "string",
-            width: "18ch",
-            render: (_, row) => <PlayerSummaryCell row={row} />,
-          },
-          {
-            id: "position_tier",
-            header: "Tier",
-            description: "FantasyPros position tier.",
-            accessor: (row) => row.position_tier_level ?? null,
-            sortable: true,
-            sortAs: "number",
-            nulls: "last",
-            width: "5ch",
-          },
-          {
-            id: "raw",
-            header: "VAL",
-            description: DRAFT_VALUE_DESCRIPTIONS.raw,
-            accessor: (row) => row.draft_raw_value_score ?? null,
-            sortable: true,
-            sortAs: "number",
-            nulls: "last",
-            width: "6ch",
-            render: formatDraftValue,
-          },
-          {
-            id: "adj",
-            header: "ADJ",
-            description: DRAFT_VALUE_DESCRIPTIONS.adjusted,
-            accessor: (row) => row.draft_value_score ?? null,
-            sortable: true,
-            sortAs: "number",
-            nulls: "last",
-            defaultDir: "desc",
-            heat: { scale: "val" },
-            width: "6ch",
-            render: formatDraftValue,
-          },
-          {
-            id: "ecr",
-            header: "ECR",
-            description: "FantasyPros expert consensus rank.",
-            accessor: (row) => row.fp_rank_ave ?? null,
-            sortable: true,
-            sortAs: "number",
-            nulls: "last",
-            width: "6ch",
-            render: formatDraftValue,
-          },
-          {
-            id: "adp",
-            header: "ADP",
-            description: "Sleeper average draft position.",
-            accessor: (row) => row.sleeper_adp ?? null,
-            sortable: true,
-            sortAs: "number",
-            nulls: "last",
-            width: "6ch",
-            render: (_, row) => row.sleeper_adp_round_pick ?? "—",
-          },
-          {
-            id: "market_edge",
-            header: "Edge",
-            description:
-              "Sleeper ADP minus FantasyPros ECR. Later can be a market value.",
-            accessor: sleeperEcrEdge,
-            sortable: true,
-            sortAs: "number",
-            nulls: "last",
-            width: "9ch",
-            render: (_, row) => formatSleeperEcrEdge(row),
-          },
-        ],
-      },
-    ],
-    []
-  );
+  const compactGroups = (position: Position | "FLEX") => draftTableGroups({ source: valueSource, position, onOpen: openPreview });
 
   const renderActions = React.useCallback(
     (row: PlayerWithPick) => (
       <div className="flex items-center justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7"
-          onClick={() => openPreview(row)}
-          aria-label={`Preview ${row.name}`}
-          title="Preview"
-        >
-          <EyeIcon className="h-4 w-4" />
-        </Button>
         {pickAction ? (
           <Button
             type="button"
@@ -278,7 +160,6 @@ export default function PositionCompactTables({
       </div>
     ),
     [
-      openPreview,
       pickAction,
       userPositionCounts,
       userPositionRequirements,
@@ -299,46 +180,42 @@ export default function PositionCompactTables({
 
   return (
     <div className="space-y-2">
+      {sections.length === 0 ? <p className="text-sm text-muted-foreground">No roster-legal players remain in this pool.</p> : null}
       {showDiagnostics ? (
         <p className="px-1 text-xs text-muted-foreground">
           Diagnostic rows only. Turn off Diagnostics above to return to the draft
           board.
         </p>
       ) : null}
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+      <div className={selectedPosition ? "grid grid-cols-1 gap-2" : "grid grid-cols-1 gap-2 md:grid-cols-2"}>
         {sections.map((section) => (
-          <Card
+          <section
             key={section.position}
-            className="min-w-0"
+            className="min-w-0 space-y-2"
             data-testid={`pos-card-${section.position}`}
           >
-            <CardHeader className="px-3 py-2">
-              <CardTitle className="text-sm">{section.position}</CardTitle>
+            <header className="space-y-1">
+              <h2 className="text-sm font-semibold">{section.position === "DEF" ? "D/ST" : section.position}</h2>
               <p className="text-xs text-muted-foreground">
-                You: {section.rosterCount}/{section.rosterRequirement}
-                {" · "}
-                League needs: {formatCount(section.leagueNeeds)}
-                {" · "}
-                {section.tierRemaining} left in tier
+                <DraftScarcity position={section.position} /> · You: {section.rosterCount}/{section.rosterRequirement} · <DraftDemand position={section.position} />
               </p>
-            </CardHeader>
-            <CardContent className="px-2 pb-2 pt-0">
+            </header>
+            <div>
               <div className="overflow-x-auto">
                 <PlayersTableBase
                   rows={section.rows}
-                  groups={compactGroups}
+                  groups={compactGroups(section.position)}
                   sortable
                   maxRows={POSITION_PLAYER_LIMIT}
                   colorize
-                  dimDrafted={showDiagnostics}
-                  tierRowColors
+                  dimDrafted={showDiagnostics || showDrafted}
                   defaultSortId="adj"
                   defaultSortDir="desc"
                   heatDomainRows={section.rows}
-                  renderActions={renderActions}
+                  renderActions={pickAction ? renderActions : undefined}
                 />
               </div>
-              {section.rows.length > POSITION_PLAYER_LIMIT ? (
+              {section.rows.filter(row => !row.picked).length > POSITION_PLAYER_LIMIT ? (
                 <Button
                   type="button"
                   variant="ghost"
@@ -349,8 +226,8 @@ export default function PositionCompactTables({
                   Show all {section.position}
                 </Button>
               ) : null}
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         ))}
       </div>
 
@@ -362,22 +239,21 @@ export default function PositionCompactTables({
           <DialogHeader>
             <DialogTitle>{openSection?.position} draft board</DialogTitle>
             <DialogDescription>
-              {openSection
-                ? `You: ${openSection.rosterCount}/${openSection.rosterRequirement} · League needs: ${formatCount(openSection.leagueNeeds)} · ${openSection.tierRemaining} left in tier`
-                : ""}
+              {openSection ? <DraftDemand position={openSection.position} /> : null}
             </DialogDescription>
           </DialogHeader>
           <div className="max-h-[70vh] overflow-auto pr-2">
             {openSection ? (
-              <PlayerTable
+              <PlayersTableBase
                 rows={openSection.rows}
+                groups={compactGroups(openSection.position)}
                 sortable
-                colorizeValuePs
-                dimDrafted={showDiagnostics}
+                colorize
+                dimDrafted={showDiagnostics || showDrafted}
                 defaultSortId="adj"
                 defaultSortDir="desc"
                 heatDomainRows={openSection.rows}
-                renderActions={renderActions}
+                renderActions={pickAction ? renderActions : undefined}
               />
             ) : null}
           </div>
@@ -387,7 +263,6 @@ export default function PositionCompactTables({
       <PreviewPickDialog
         open={previewOpen}
         onOpenChange={setPreviewOpen}
-        baseSlots={userRosterSlots}
         player={previewPlayer}
       />
     </div>

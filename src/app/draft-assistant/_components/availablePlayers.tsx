@@ -1,15 +1,13 @@
+import { useDraftTablePreferences } from "./DraftTablePreferences";
 import React from "react";
-import { EyeIcon } from "lucide-react";
 
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
 import {
   draftBoardRows,
   hasDraftEcr,
-  OVERALL_PLAYER_LIMIT,
 } from "@/app/draft-assistant/_lib/draftBoardDisplay";
 import type { DraftPickAction } from "@/app/draft-assistant/_lib/types";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { canAddPositionToRoster } from "@/lib/draftRosterPolicy";
 import type { PlayerWithPick } from "@/lib/types.draft";
 
@@ -18,6 +16,7 @@ import PreviewPickDialog, { type PreviewPickPlayer } from "./PreviewPickDialog";
 
 interface AvailablePlayersProps {
   loading: boolean;
+  excludedPositions?: readonly string[];
   pickAction?: DraftPickAction | undefined;
 }
 
@@ -33,17 +32,19 @@ function toPreviewPlayer(row: PlayerWithPick): PreviewPickPlayer {
 export default function AvailablePlayers({
   loading,
   pickAction,
+  excludedPositions = [],
 }: AvailablePlayersProps) {
   const {
     playersAll,
-    userRosterSlots,
+    valueSource,
     userPositionCounts,
     userPositionRequirements,
     showDiagnostics,
-    setShowDiagnostics,
   } = useDraftData();
+  const showDrafted = useDraftTablePreferences()?.showDrafted ?? false;
   const [previewPlayer, setPreviewPlayer] =
     React.useState<PreviewPickPlayer | null>(null);
+  const [visibleCount, setVisibleCount] = React.useState(20);
   const [previewOpen, setPreviewOpen] = React.useState(false);
 
   const rows = React.useMemo(
@@ -51,12 +52,15 @@ export default function AvailablePlayers({
       draftBoardRows({
         rows: playersAll,
         diagnostics: showDiagnostics,
+        showDrafted,
         counts: userPositionCounts,
         requirements: userPositionRequirements,
-      }),
+      }).filter(row => !excludedPositions.includes(row.position)),
     [
       playersAll,
+      excludedPositions,
       showDiagnostics,
+      showDrafted,
       userPositionCounts,
       userPositionRequirements,
     ]
@@ -71,47 +75,22 @@ export default function AvailablePlayers({
 
   return (
     <>
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <p className="text-xs text-muted-foreground">
-          {showDiagnostics
-            ? "Drafted players and players without current FantasyPros ECR."
-            : `Top ${Math.min(
-                rows.length,
-                OVERALL_PLAYER_LIMIT
-              )} roster-legal players by Adj.`}
-        </p>
-        <label className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
-          <Switch
-            checked={showDiagnostics}
-            onCheckedChange={setShowDiagnostics}
-            data-testid="draft-diagnostics-toggle"
-          />
-          <span>Diagnostics</span>
-        </label>
-      </div>
 
+      {rows.length === 0 ? <p className="text-sm text-muted-foreground">No players match these filters.</p> : null}
       <div className="overflow-x-auto">
         <PlayerTable
           rows={rows}
+          source={valueSource}
+          onPlayerClick={openPreview}
           sortable
           colorizeValuePs
-          dimDrafted={showDiagnostics}
+          dimDrafted={showDiagnostics || showDrafted}
           defaultSortId="adj"
           defaultSortDir="desc"
           heatDomainRows={playersAll}
-          maxRows={OVERALL_PLAYER_LIMIT}
-          renderActions={(row) => (
+          maxRows={visibleCount}
+          renderActions={pickAction ? (row) => (
             <div className="flex items-center justify-end gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => openPreview(row)}
-                aria-label={`Preview ${row.name}`}
-                title="Preview"
-              >
-                <EyeIcon className="h-4 w-4" />
-              </Button>
               {pickAction ? (
                 <Button
                   type="button"
@@ -135,14 +114,15 @@ export default function AvailablePlayers({
                 </Button>
               ) : null}
             </div>
-          )}
+          ) : undefined}
         />
       </div>
+
+      {rows.filter(row => !row.picked).length > visibleCount ? <Button variant="outline" size="sm" onClick={() => setVisibleCount(count => count + 20)}>Show more</Button> : null}
 
       <PreviewPickDialog
         open={previewOpen}
         onOpenChange={setPreviewOpen}
-        baseSlots={userRosterSlots}
         player={previewPlayer}
       />
     </>

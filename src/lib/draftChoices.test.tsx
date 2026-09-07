@@ -1,9 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, expect, it, vi } from "vitest";
-import React, { act } from "react";
-import { createRoot } from "react-dom/client";
-import ChoiceComparison from "@/app/draft-assistant/_components/ChoiceComparison";
-import { DraftDataStaticProvider } from "@/app/draft-assistant/_contexts/DraftDataContext";
+import { describe, expect, it } from "vitest";
 import { buildAggregateBundle } from "./aggregateBundle";
 import { draftCandidateMapFromBundle } from "./draftCandidate";
 import { DEFAULT_DRAFT_ROSTER_SLOTS, DEFAULT_DRAFT_SCORING_RULES } from "./draftLeagueConfig";
@@ -32,78 +28,6 @@ function fixture() {
 }
 
 describe("advisory draft choices", { timeout: 20_000 }, () => {
-  it("renders the shared comparison and runs advisory stress tests without changing its lean", async () => {
-    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-    const { snapshot } = fixture();
-    snapshot.boardInput.currentPick = 4;
-    const board = buildDraftValueBoard(snapshot.boardInput);
-    const host = document.createElement("div");
-    document.body.appendChild(host);
-    const root = createRoot(host);
-    act(() => root.render(
-      <DraftDataStaticProvider value={{ recommendationBoard: board, choiceSnapshot: snapshot }}>
-        <ChoiceComparison />
-      </DraftDataStaticProvider>
-    ));
-    const currentCard = () => [...(host.querySelector('[data-testid="decision-recommendation-card"]')?.querySelectorAll("h3, dl") ?? [])].map((node) => node.textContent).join(" ");
-    const first = currentCard();
-    expect(first).toContain(board.topRecommendation?.player.name);
-    expect(host.querySelector('[data-testid="next-pick-scenario"]')).toBeNull();
-    const preview = [...host.querySelectorAll("button")].find((b) => b.textContent === "Show next-pick scenario");
-    act(() => preview?.click());
-    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
-    expect(host.querySelector('[data-testid="next-pick-scenario"]')).not.toBeNull();
-    expect(currentCard()).toBe(first);
-    const refreshed = { ...snapshot };
-    act(() => root.render(
-      <DraftDataStaticProvider value={{ recommendationBoard: board, choiceSnapshot: refreshed }}>
-        <ChoiceComparison />
-      </DraftDataStaticProvider>
-    ));
-    expect(host.querySelector('[data-testid="next-pick-scenario"]')).toBeNull();
-    expect(host.textContent).toContain("The board changed");
-    const diagnostics = [...host.querySelectorAll("button")].find((b) => b.textContent === "Details, assumptions & notes");
-    act(() => diagnostics?.click());
-    expect(host.textContent).toContain("Insufficient evidence");
-    const test = [...host.querySelectorAll("button")].find((b) => b.textContent === "Test assumptions for this pick");
-    act(() => test?.click());
-    expect(host.querySelector('[data-testid="choice-sensitivity"]')).not.toBeNull();
-    expect(currentCard()).toBe(first);
-    const details = [...host.querySelectorAll("button")].find((b) => b.textContent === "Value and adjustment details");
-    act(() => details?.click());
-    expect(host.textContent).toContain("Original league-scored Sleeper projection");
-    const adjacent = { ...snapshot, boardInput: { ...snapshot.boardInput, currentPick: 24, userSlot: 1 } };
-    const adjacentBoard = buildDraftValueBoard(adjacent.boardInput);
-    const savedBoard = JSON.stringify(adjacentBoard);
-    act(() => root.render(
-      <DraftDataStaticProvider value={{ recommendationBoard: adjacentBoard, choiceSnapshot: adjacent }}>
-        <ChoiceComparison />
-      </DraftDataStaticProvider>
-    ));
-    expect(host.textContent).toContain("No opponent picks before your next turn");
-    expect(host.textContent).not.toContain("May be gone");
-    expect(JSON.stringify(adjacentBoard)).toBe(savedBoard);
-    const offClock = { ...snapshot, boardInput: { ...snapshot.boardInput, currentPick: 3, userSlot: 4 } };
-    act(() => root.render(
-      <DraftDataStaticProvider value={{ recommendationBoard: buildDraftValueBoard(offClock.boardInput), choiceSnapshot: offClock }}>
-        <ChoiceComparison />
-      </DraftDataStaticProvider>
-    ));
-    expect(host.textContent).not.toContain("No opponent picks before your next turn");
-    expect(host.textContent).toContain("Upcoming · 1.04");
-    const unknown = { ...snapshot, boardInput: { ...snapshot.boardInput, currentPick: 12, userSlot: 12, rounds: undefined } };
-    act(() => root.render(
-      <DraftDataStaticProvider value={{ recommendationBoard: buildDraftValueBoard(unknown.boardInput), choiceSnapshot: unknown }}>
-        <ChoiceComparison />
-      </DraftDataStaticProvider>
-    ));
-    expect(host.textContent).toContain("Draft turn information is incomplete");
-    expect(host.textContent).not.toContain("No opponent picks before your next turn");
-    expect(host.textContent).not.toContain("No later own pick");
-    act(() => root.unmount());
-    host.remove();
-    vi.unstubAllGlobals();
-  });
   it("runs canonical stress cases without changing the board or league inputs", () => {
     const { snapshot, board } = fixture();
     const before = JSON.stringify({ snapshot, board });

@@ -1,34 +1,12 @@
-import { Badge } from "@/components/ui/badge";
+import { PlayerPositionRank } from "../PlayerPositionRank";
+import { Button } from "@/components/ui/button";
 import type { PlayerWithPick } from "@/lib/types.draft";
 
-function positionRank(row: PlayerWithPick) {
-  return typeof row.fp_rank_pos === "number"
-    ? `${row.position}${row.fp_rank_pos}`
-    : row.position;
-}
-
-export function PlayerSummaryCell({ row }: { row: PlayerWithPick }) {
-  const teamBye = [
-    row.team ?? "FA",
-    row.bye_week != null ? `Bye ${row.bye_week}` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
-  return (
-    <div className="min-w-36 leading-tight">
-      <div className="flex flex-wrap items-center gap-1.5">
-        <span className="font-medium">{row.name}</span>
-        <span className="text-[11px] text-muted-foreground">
-          {positionRank(row)}
-        </span>
-        {row.sleeper_injury_status ? (
-          <Badge variant="outline" className="h-4 px-1 text-[10px] font-normal">
-            {row.sleeper_injury_status}
-          </Badge>
-        ) : null}
-      </div>
-      <div className="mt-1 text-[11px] text-muted-foreground">{teamBye}</div>
-    </div>
-  );
+export function PlayerSummaryCell({ row, onOpen }: { row: PlayerWithPick; onOpen?: ((row: PlayerWithPick) => void) | undefined }) {
+  return <div className="flex items-center gap-1.5 whitespace-nowrap">
+    {onOpen ? <Button variant="ghost" className="h-auto justify-start p-0 font-medium capitalize" onClick={() => onOpen(row)} aria-label={`Details for ${row.name}`}>{row.name}</Button> : <span className="font-medium capitalize">{row.name}</span>}
+    <PlayerPositionRank position={row.position} rank={row.fp_rank_pos} />
+    {row.picked ? <span className="text-[10px] text-muted-foreground">Drafted</span> : null}
+    {row.sleeper_injury_status ? <span className="text-amber-600" role="img" aria-label={row.sleeper_injury_status} title={row.sleeper_injury_status}>!</span> : null}
+  </div>;
 }

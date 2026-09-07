@@ -1,5 +1,8 @@
 // src/lib/queryKeys.ts
+import type { DraftChoiceSnapshot } from "./draftChoices";
 export const qk = {
+  draftNext: (snapshot: DraftChoiceSnapshot, playerId: string) => ["draft-next", snapshot, playerId] as const,
+  espn: { relay: (id: string) => ["espn", "relay", id] as const },
   aggregates: {
     merged: ["aggregates", "merged"] as const,
     shard: (pos: string) => ["aggregates", "shard", pos] as const,
@@ -34,6 +37,7 @@ export const qk = {
     lastModified: ["aggregates", "last-modified"] as const,
   },
   draft: {
+    projectionSource: ["draft", "projection-source"] as const,
     details: (id: string) => ["draft", id, "details"] as const,
     picks: (id: string) => ["draft", id, "picks"] as const,
     viewModel: (id: string, userId: string) =>

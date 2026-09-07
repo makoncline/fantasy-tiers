@@ -1,7 +1,8 @@
 "use client";
 
+import { ecrToRoundPick } from "@/lib/util";
 import { Badge } from "@/components/ui/badge";
-import { getAdpTiming, formatDraftMetric, type AdpTiming } from "@/lib/draftCardMetrics";
+import { getAdpTiming, type AdpTiming } from "@/lib/draftCardMetrics";
 
 const TEXT_COLORS = {
   early: "text-amber-800 dark:text-amber-300",
@@ -22,10 +23,10 @@ export function DraftAdpValue({ adp, pick, teams, compact = false, display }: {
   compact?: boolean; display?: string | undefined;
 }) {
   const timing = getAdpTiming(adp, pick, teams);
-  const value = display ?? formatDraftMetric(timing.adp);
+  const value = display ?? ecrToRoundPick(timing.adp, teams) ?? "—";
   const label = `ADP ${value} · ${timing.label}`;
   if (compact) return <span className={`whitespace-nowrap tabular-nums ${TEXT_COLORS[timing.tone]}`}
     title={timing.detail} aria-label={`${label}. ${timing.detail}`}>{value}</span>;
   return <Badge variant="outline" className={`tabular-nums ${TEXT_COLORS[timing.tone]} ${BADGE_COLORS[timing.tone]}`}
-    title={timing.detail}>{label}</Badge>;
+    title={timing.detail}>ADP {value}</Badge>;
 }
