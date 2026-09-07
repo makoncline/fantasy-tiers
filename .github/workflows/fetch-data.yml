@@ -6,7 +6,12 @@ on:
     # During daylight saving time this is 8am/5pm Eastern and 6am/3pm Mountain.
     - cron: "0 12 * * *"
     - cron: "0 21 * * *"
-  workflow_dispatch: # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      projections_only:
+        description: Verify season projections without publishing data
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -18,6 +23,7 @@ concurrency:
 
 jobs:
   fetch-data:
+    if: ${{ !inputs.projections_only }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -63,6 +69,17 @@ jobs:
           echo "🔄 Building aggregates..."
           pnpm run agg:all
           echo "✅ Aggregates built"
+
+      - name: Refresh native FantasyPros projections
+        id: fp-projections
+        continue-on-error: true
+        run: pnpm run fetch:fp-projections
+
+      - name: Report FP projection refresh failure
+        if: steps.fp-projections.outcome == 'failure'
+        run: |
+          echo "::warning::FP projection refresh failed; last good snapshot retained. Stale FP projections are disabled in the app."
+          echo "FP refresh failed. Check FP_COOKIE. Sleeper refresh can still publish." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Validate aggregates
         run: |
@@ -179,7 +196,7 @@ jobs:
           fi
 
       - name: Notify after recovery
-        if: success()
+        if: success() && steps.fp-projections.outcome == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -209,3 +226,32 @@ jobs:
           curl --fail --silent --show-error --get "$SEND_TO_MAKON_URL" \
             --data-urlencode "subject=Fantasy Tiers data incident" \
             --data-urlencode "message=$DETAIL Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+  verify-projections:
+    if: ${{ inputs.projections_only }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Fetch complete season projections with the existing scraper
+        env:
+          FP_COOKIE: ${{ secrets.FP_COOKIE }}
+        run: pnpm run fetch:fp-projections
+      - name: Verify failed, truncated, and stale refreshes preserve data
+        run: pnpm exec vitest run scripts/fp/refresh-draft-projections.test.ts
+      - name: Record position coverage
+        run: |
+          jq '{updatedAt, problems, positions: (.rows | group_by(.position) | map({position: .[0].position, rows: length}))}' public/data/aggregate/fantasypros-draft-projections.json >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-fp-season-projections
+          path: public/data/aggregate/fantasypros-draft-projections.json
+          retention-days: 7
