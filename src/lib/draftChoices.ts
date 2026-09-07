@@ -10,6 +10,7 @@ export type DraftChoiceSnapshot = {
   projectionUpdatedAt: string | null;
   boardInput: DraftValueBoardInput<DraftCandidate>;
   values: StarterAwareValueResult;
+  sleeperValues?: StarterAwareValueResult;
   rosterSlots: DraftRosterSlots;
 };
 

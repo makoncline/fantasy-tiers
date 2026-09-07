@@ -17,13 +17,13 @@ it("publishes all four validated tables atomically and retains the good snapshot
     const count = failure === "truncated" ? 10 : 90;
     const fields = ["PASSING_YDS","PASSING_TDS","INTS","RUSHING_YDS","RUSHING_TDS","REC","RECEIVING_YDS","RECEIVING_TDS","YDS","TDS","FL"];
     await fs.mkdir(path.join(staging,"raw"), {recursive:true});
-    await fs.writeFile(path.join(staging,"raw",`${position}-half-draft_raw.json`), JSON.stringify({ meta:{source:"FantasyPros",position,week,date:failure === "stale" ? "2026-08-01" : "2026-09-07",rowCount:count}, rows:Array.from({length:count},(_,i)=>({Player:`${position} ${i}`,...Object.fromEntries(fields.map(f=>[`${f}_AVG`,"1"]))})) }));
+    await fs.writeFile(path.join(staging,"raw",`${position}-half-draft_raw.json`), JSON.stringify({ meta:{source:"FantasyPros",position,week:failure === "weekly" ? 1 : week,date:failure === "stale" ? "2026-08-01" : "2026-09-07",rowCount:count}, rows:Array.from({length:count},(_,i)=>({Player:`${position} ${i}`,...Object.fromEntries(fields.map(f=>[`${f}_AVG`,"1"]))})) }));
   };
   try {
     expect(await refreshDraftProjections({output,scrape,now})).toEqual({rows:360,updatedAt:"2026-09-07"});
     expect(calls).toEqual(["QB","RB","WR","TE"]);
     const original = await fs.readFile(output,"utf8");
-    for (failure of ["network","truncated","stale"]) {
+    for (failure of ["network","truncated","stale","weekly"]) {
       await expect(refreshDraftProjections({output,scrape,now})).rejects.toThrow();
       expect(await fs.readFile(output,"utf8")).toBe(original);
     }
