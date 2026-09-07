@@ -117,7 +117,7 @@ describe("GET /api/draft/view-model", () => {
     expect(body).not.toHaveProperty("nextPickRecommendations");
     expect(body).not.toHaveProperty("dynamicRecommendations");
     expect(fetchDraftDetails).toHaveBeenCalledWith("draft-1");
-    expect(fetchDraftPicks).toHaveBeenCalledWith("draft-1");
+    expect(fetchDraftPicks).toHaveBeenCalledWith("draft-1", { allowEmptyPreDraft: false });
     expect(buildAggregateBundle).toHaveBeenCalledWith({
       scoring: "ppr",
       teams: 10,
@@ -143,6 +143,24 @@ describe("GET /api/draft/view-model", () => {
       sourceHealth: bundle.sourceHealth,
       shardCounts,
     });
+  });
+
+  it.each(["pre_draft", "drafting"])("handles an empty pick feed according to confirmed %s state", async (status) => {
+    vi.mocked(fetchDraftDetails).mockResolvedValue({ ...draft, status });
+    const { fetchDraftPicks: realFetch } = await vi.importActual<typeof import("../../src/lib/draftPicks")>("../../src/lib/draftPicks");
+    vi.mocked(fetchDraftPicks).mockImplementation(realFetch);
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status: 404 })));
+    try {
+      const response = await GET(request());
+      expect(response.status).toBe(status === "pre_draft" ? 200 : 500);
+      if (status === "pre_draft") {
+        expect(buildDraftViewModel).toHaveBeenCalledWith(expect.objectContaining({ picks: [] }));
+      } else {
+        expect(buildDraftViewModel).not.toHaveBeenCalled();
+      }
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it("uses exact Sleeper scoring instead of the preset scoring bucket", async () => {
