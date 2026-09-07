@@ -31,8 +31,9 @@ it("keeps shared facts, shard-specific pools, and per-tab sorting without recomm
     const tab = (label: string) => [...host.querySelectorAll('[role="tab"]')].find(t => t.textContent === label)!;
     act(() => tab("RB").dispatchEvent(new MouseEvent("mousedown", { bubbles: true, button: 0 })));
     expect(panel("RB").textContent).toContain("RB shard player");
-    expect(panel("RB").textContent).toContain("Eligible for RB2");
-    expect(panel("RB").textContent).toContain("Shares bye 8 with Owned RB");
+    expect(panel("RB").textContent).not.toContain("Eligible for RB2");
+    expect(panel("RB").querySelector('[title="Shares bye 8 with Owned RB"]')).not.toBeNull();
+    expect(host.querySelector('[aria-label="Your comparison"]')).toBeNull();
     const val = [...panel("RB").querySelectorAll("th")].find(th => th.textContent === "VAL")!;
     act(() => val.click());
     expect(panel("RB").textContent).toContain("Sorted by VAL");

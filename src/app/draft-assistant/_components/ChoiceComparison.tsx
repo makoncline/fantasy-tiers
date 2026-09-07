@@ -52,7 +52,7 @@ function Metric({ label, value, difference }: { label: string; value: string; di
   return <div className="min-w-0">
     <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</dt>
     <dd className="mt-1 text-[22px] font-semibold leading-none tabular-nums">{value}</dd>
-    <dd className="mt-1.5 text-xs text-muted-foreground tabular-nums">{difference}</dd>
+    {difference ? <dd className="mt-1.5 text-xs text-muted-foreground tabular-nums">{difference}</dd> : null}
   </div>;
 }
 
@@ -81,9 +81,9 @@ function CompactChoiceCard({ choice, lean, snapshot, future = false, selected = 
       </div>
       <h3 className="break-words text-base font-semibold leading-snug capitalize">{player.name}</h3>
       <dl className="grid grid-cols-3 gap-3">
-        <Metric label="Val" value={score(metrics.staticValue)} difference={isLean ? "Reference" : formatMetricDifference(metrics.staticValue, lean.metrics.staticValue)} />
-        <Metric label="Adj" value={score(metrics.recommendationScore)} difference={isLean ? "Reference" : formatMetricDifference(metrics.recommendationScore, lean.metrics.recommendationScore)} />
-        <Metric label="Overall tier" value={tier == null ? "—" : String(tier)} difference={isLean ? "Lower is better" : tierDifference(tier, overallTier(lean.player))} />
+        <Metric label="Val" value={score(metrics.staticValue)} difference={isLean ? "" : formatMetricDifference(metrics.staticValue, lean.metrics.staticValue)} />
+        <Metric label="Adj" value={score(metrics.recommendationScore)} difference={isLean ? "" : formatMetricDifference(metrics.recommendationScore, lean.metrics.recommendationScore)} />
+        <Metric label="Overall tier" value={tier == null ? "—" : String(tier)} difference={isLean ? "" : tierDifference(tier, overallTier(lean.player))} />
       </dl>
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         <span className="tabular-nums">ECR {score(player.fp_rank_ave)}</span>
@@ -91,11 +91,8 @@ function CompactChoiceCard({ choice, lean, snapshot, future = false, selected = 
       </div>
       <p className="text-xs text-muted-foreground" data-testid={isLean && !future ? "decision-recommendation-summary" : undefined}>
         {fit.slot === "BN" ? `${player.position} bench coverage` : `${fit.slot} starter`}
-        {explanation ? ` · ${explanation}` : ""}
       </p>
-      <p className="text-xs text-muted-foreground">{fit.remaining}</p>
       {byePeers.length ? <p className="text-xs">Shares bye {player.bye_week} with {byePeers.map((p) => p.name ?? p.position).join(", ")}. Coverage needs review.</p> : null}
-      {hasRisk ? <p className="text-xs text-amber-800 dark:text-amber-300">{metrics.availability.detail}</p> : null}
       {hasRisk ? <Badge variant="outline" className="w-fit border-amber-500/30 text-amber-800 dark:text-amber-300" title={metrics.availability.detail}>
         {metrics.availability.label}
       </Badge> : null}
@@ -111,7 +108,7 @@ function CompactChoiceCard({ choice, lean, snapshot, future = false, selected = 
         <Collapsible open={open} onOpenChange={setOpen}>
           <CollapsibleTrigger asChild><Button type="button" variant="ghost" size="sm" className="h-8 px-0 text-xs text-muted-foreground">Value and adjustment details</Button></CollapsibleTrigger>
           <CollapsibleContent className="flex flex-col gap-2 border-t pt-3 text-xs">
-            <p>{choice.reason}. A comparison is not a claim of equal value.</p>
+            <p>{choice.reason}. {explanation}</p>
             <p>Val is an ECR-calibrated value estimate. It does not retain each player’s stat profile. Adj is a ranking score, not fantasy points or confidence.</p>
             <p>Original league-scored projection: {score(value?.rawProjectedPoints)} points.</p>
             <p>ECR-assigned projection: {score(value?.projectedPoints)} points.</p>
@@ -141,7 +138,7 @@ function ScenarioBody({ payload }: { payload: ScenarioPayload }) {
   }
   const picksAfterOwn = scenario.selections.filter((pick) => pick.kind === "opponent" && pick.pick > (scenario.window.ownPick ?? 0));
   return <div className="flex flex-col gap-3" data-testid="next-pick-scenario">
-    <p className="text-xs text-muted-foreground">{payload.paths.length === 2 ? "Two paths under one market-order assumption." : "Only one comparison path is available; no second path is inferred."} No validated availability probabilities or path winner. Compare scores within each future board only.</p>
+    <p className="text-xs text-muted-foreground">{payload.paths.length === 2 ? "Two hypothetical paths." : "One path available."} Compare scores within each board; no validated winner.</p>
     <div className="grid items-start gap-3 md:grid-cols-2">{payload.paths.map((path, index) => {
       const next = path.result;
       const firstChoice = next.choices[0];
@@ -223,9 +220,9 @@ function ChoicePanel({ board, snapshot, pickAction }: { board: DraftValueBoard<D
       </p>
     </div>
     {window.beforeOwn != null && window.beforeOwn > 0 ? <p className="-mt-2 text-xs text-muted-foreground">
-      {window.beforeOwn} opponent selection{window.beforeOwn === 1 ? "" : "s"} before your upcoming pick. The counts above refer to the wait after that pick.
+      {window.beforeOwn} opponent selection{window.beforeOwn === 1 ? "" : "s"} before your upcoming pick.
     </p> : null}
-    {window.onClock && window.betweenOwn === 0 ? <p className="-mt-2 text-xs text-muted-foreground">No opponent picks before your next turn. Other available players stay on the board.</p> : null}
+    {window.onClock && window.betweenOwn === 0 ? <p className="-mt-2 text-xs text-muted-foreground">Back-to-back picks.</p> : null}
     <div className="grid items-start gap-3 md:grid-cols-3">{display.map((choice) =>
       <CompactChoiceCard key={choice.player.player_id} choice={choice} lean={lean} snapshot={snapshot}
         explanation={(() => {
@@ -239,14 +236,15 @@ function ChoicePanel({ board, snapshot, pickAction }: { board: DraftValueBoard<D
         selected={preview != null && preview.status !== "failed" && choice.player.player_id === selectedNowId}
         onPreview={window.state === "ready" ? () => requestPreview(choice.player.player_id) : undefined} />
     )}</div>
-    {higherValue ? <p className="text-xs text-muted-foreground">The default gives up {score((higherValue.metrics.staticValue ?? 0) - (lean.metrics.staticValue ?? 0))} Val to {higherValue.player.name}; contextual adjustments explain the difference. Details are on the cards.</p> : null}
-    {window.state === "ready" ? <section aria-label="Next pick market-order scenario" className="flex flex-col gap-3 border-t pt-4" aria-busy={updating}>
+    {higherValue ? <p className="text-xs text-muted-foreground">The default gives up {score((higherValue.metrics.staticValue ?? 0) - (lean.metrics.staticValue ?? 0))} Val to {higherValue.player.name}; context favors the default.</p> : null}
+    {window.state === "ready" && !preview && !scenarioJob.stale ? <Button type="button" variant="ghost" size="sm" className="w-fit" onClick={() => requestPreview(selectedNowId)}>Show next-pick scenario</Button> : null}
+    {window.state === "ready" && (preview || scenarioJob.stale) ? <section aria-label="Next pick market-order scenario" className="flex flex-col gap-3 border-t pt-4" aria-busy={updating}>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-sm font-semibold">Next · {formatDraftPick(window.nextOwnPick, teams)} <span className="font-normal text-muted-foreground">#{window.nextOwnPick}</span></h2>
         <Badge variant="outline" className="font-normal">Illustrative what-if</Badge>
       </div>
       <p className="text-xs text-muted-foreground">After taking <strong className="font-medium text-foreground capitalize">{selectedName}</strong> at #{window.ownPick}, then removing {window.betweenOwn} players in market order.</p>
-      <p className="text-xs text-amber-800 dark:text-amber-300">This is not an availability forecast. Players removed here may still reach your next pick; players shown here may be taken. Use these paths to compare trade-offs, not to decide that a player is safe to wait on.</p>
+      <p className="text-xs text-amber-800 dark:text-amber-300">Hypothetical market order, not an availability forecast.</p>
       {updating ? <p className="text-sm text-muted-foreground" role="status">Calculating this scenario…</p>
         : preview?.status === "ready" ? <DraftOptionalBoundary key={preview.sequence}>
           <ScenarioBody payload={preview.payload} />

@@ -36,13 +36,14 @@ describe("choice panel recovery", () => {
   it("runs lookahead only after a request, then invalidates it on a same-pick source refresh", async () => {
     vi.useFakeTimers(); const { snapshot, show } = setup(); const build = vi.spyOn(lookahead, "buildDraftLookahead"); show();
     expect(build).not.toHaveBeenCalled();
-    expect(host.textContent).toContain("Players removed here may still reach your next pick");
+    expect(host.querySelector('[aria-label="Next pick market-order scenario"]')).toBeNull();
     const lean = host.querySelector("h3")?.textContent;
     click("Show next-pick scenario"); await finishJob(); expect(build).toHaveBeenCalledTimes(2);
+    expect(host.textContent).toContain("Hypothetical market order, not an availability forecast");
     expect(host.querySelector('[data-testid="next-pick-scenario"]')).not.toBeNull();
     expect(host.querySelector("h3")?.textContent).toBe(lean);
     expect(host.querySelectorAll('[data-testid="two-pick-path"]')).toHaveLength(2);
-    expect(host.textContent).toContain("No validated availability probabilities or path winner");
+    expect(host.textContent).toContain("no validated winner");
     const refreshed = structuredClone(snapshot); refreshed.projectionUpdatedAt = "2026-09-06T16:00:00Z";
     show(refreshed);
     expect(host.querySelector('[data-testid="next-pick-scenario"]')).toBeNull();

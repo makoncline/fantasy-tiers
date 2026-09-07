@@ -186,9 +186,9 @@ describe("PreviewPickDialog", () => {
     expect(text).toContain("ADP vs ECR+8.6 later");
     expect(text).toContain("Overall tier5");
     expect(text).toContain("Position tier2");
-    expect(text).toContain("Waiting estimates are unvalidated");
+    expect(text).toContain("ADP is not a survival forecast");
     expect(text).not.toContain("72%");
-    expect(text).toContain("7 direct WR starter slots open");
+    expect(text).toContain("Room open: 7 WR");
     expect(text).toContain("Adj breakdown");
     expect(text).toContain("Pick timing+4");
     expect(text).toContain("Data/news risk-2");
