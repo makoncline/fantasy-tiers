@@ -46,10 +46,10 @@ describe("fetchDraftDetails", () => {
 });
 
 describe("fetchDraftPicks", () => {
-  it("returns [] on 404", async () => {
-    vi.spyOn(global, "fetch" as any).mockResolvedValueOnce({ ok: false, status: 404, text: async () => "" } as any);
-    const picks = await fetchDraftPicks("123");
-    expect(picks).toEqual([]);
+  it("allows a missing pick resource only with confirmed empty pre-draft context", async () => {
+    vi.spyOn(global, "fetch").mockImplementation(async () => new Response(null, { status: 404 }));
+    await expect(fetchDraftPicks("123")).rejects.toThrow();
+    await expect(fetchDraftPicks("123", { allowEmptyPreDraft: true })).resolves.toEqual([]);
   });
 
   it("parses array payload when available", async () => {

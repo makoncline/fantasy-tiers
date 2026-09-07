@@ -42,3 +42,5 @@
 - [2026-09-05] Sleeper mock cloning: A cloned completed mock can report pre_draft while retaining all original picks. For prospective tests, create an empty room and verify zero public picks before registration. Do not treat a new draft ID as proof of fresh evidence.
 - [2026-09-05] Sleeper settings and paused CPU control: updateDraftSettings requires the complete settings object. The commissioner draftPlayer and draftCpuPick actions can make picks while paused. For bounded CPU tests, verify each pick through cache-busted public REST, record this control mode, and mark complete only after all expected picks exist.
 - [2026-09-05] Prospective evidence versus owner adherence: Validate the saved prior prefix and actual selection used to condition the forecast. Record default-following separately. A non-default choice is not an evidence failure; changing the conditioned selection is.
+
+- [2026-09-06] Scenario FLEX demand: The v2 packet also omitted FLEX when it rebuilt room-wide needs. When changing the next-pick adapter, preserve FLEX separately from player positions and test the room total, not only the owner roster.

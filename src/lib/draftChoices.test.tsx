@@ -32,9 +32,11 @@ function fixture() {
 }
 
 describe("advisory draft choices", { timeout: 20_000 }, () => {
-  it("renders the shared comparison and runs advisory stress tests without changing its lean", () => {
+  it("renders the shared comparison and runs advisory stress tests without changing its lean", async () => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-    const { snapshot, board } = fixture();
+    const { snapshot } = fixture();
+    snapshot.boardInput.currentPick = 4;
+    const board = buildDraftValueBoard(snapshot.boardInput);
     const host = document.createElement("div");
     document.body.appendChild(host);
     const root = createRoot(host);
@@ -43,13 +45,30 @@ describe("advisory draft choices", { timeout: 20_000 }, () => {
         <ChoiceComparison />
       </DraftDataStaticProvider>
     ));
-    const first = host.querySelector('[data-testid="decision-recommendation-card"]')?.textContent;
+    const currentCard = () => [...(host.querySelector('[data-testid="decision-recommendation-card"]')?.querySelectorAll("h3, dl") ?? [])].map((node) => node.textContent).join(" ");
+    const first = currentCard();
     expect(first).toContain(board.topRecommendation?.player.name);
+    expect(host.querySelector('[data-testid="next-pick-scenario"]')).toBeNull();
+    const preview = [...host.querySelectorAll("button")].find((b) => b.textContent === "Show next-pick scenario");
+    act(() => preview?.click());
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
+    expect(host.querySelector('[data-testid="next-pick-scenario"]')).not.toBeNull();
+    expect(currentCard()).toBe(first);
+    const refreshed = { ...snapshot };
+    act(() => root.render(
+      <DraftDataStaticProvider value={{ recommendationBoard: board, choiceSnapshot: refreshed }}>
+        <ChoiceComparison />
+      </DraftDataStaticProvider>
+    ));
+    expect(host.querySelector('[data-testid="next-pick-scenario"]')).toBeNull();
+    expect(host.textContent).toContain("The board changed");
+    const diagnostics = [...host.querySelectorAll("button")].find((b) => b.textContent === "Details, assumptions & notes");
+    act(() => diagnostics?.click());
     expect(host.textContent).toContain("Insufficient evidence");
     const test = [...host.querySelectorAll("button")].find((b) => b.textContent === "Test assumptions for this pick");
     act(() => test?.click());
     expect(host.querySelector('[data-testid="choice-sensitivity"]')).not.toBeNull();
-    expect(host.querySelector('[data-testid="decision-recommendation-card"]')?.textContent).toBe(first);
+    expect(currentCard()).toBe(first);
     const details = [...host.querySelectorAll("button")].find((b) => b.textContent === "Value and adjustment details");
     act(() => details?.click());
     expect(host.textContent).toContain("Original league-scored Sleeper projection");
@@ -64,6 +83,23 @@ describe("advisory draft choices", { timeout: 20_000 }, () => {
     expect(host.textContent).toContain("No opponent picks before your next turn");
     expect(host.textContent).not.toContain("May be gone");
     expect(JSON.stringify(adjacentBoard)).toBe(savedBoard);
+    const offClock = { ...snapshot, boardInput: { ...snapshot.boardInput, currentPick: 3, userSlot: 4 } };
+    act(() => root.render(
+      <DraftDataStaticProvider value={{ recommendationBoard: buildDraftValueBoard(offClock.boardInput), choiceSnapshot: offClock }}>
+        <ChoiceComparison />
+      </DraftDataStaticProvider>
+    ));
+    expect(host.textContent).not.toContain("No opponent picks before your next turn");
+    expect(host.textContent).toContain("Upcoming · 1.04");
+    const unknown = { ...snapshot, boardInput: { ...snapshot.boardInput, currentPick: 12, userSlot: 12, rounds: undefined } };
+    act(() => root.render(
+      <DraftDataStaticProvider value={{ recommendationBoard: buildDraftValueBoard(unknown.boardInput), choiceSnapshot: unknown }}>
+        <ChoiceComparison />
+      </DraftDataStaticProvider>
+    ));
+    expect(host.textContent).toContain("Draft turn information is incomplete");
+    expect(host.textContent).not.toContain("No opponent picks before your next turn");
+    expect(host.textContent).not.toContain("No later own pick");
     act(() => root.unmount());
     host.remove();
     vi.unstubAllGlobals();

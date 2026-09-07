@@ -168,6 +168,7 @@ export interface DraftDataContextType extends ProcessedData {
 
   refetchData: () => void;
   lastUpdatedAt: number | null;
+  pickFeed: { checkedAt: number | null; paused: boolean; complete: boolean } | null;
 
   // Enriched player data with pick overlay
   playersAll: PlayerWithPick[];
@@ -249,6 +250,7 @@ const defaultContextValue: DraftDataContextType = {
   league: null,
   refetchData: () => {},
   lastUpdatedAt: null,
+  pickFeed: null,
 
   // Enriched player data with pick overlay
   playersAll: [],
@@ -436,8 +438,10 @@ export function DraftDataProvider({
     error: errorPicks,
     refetch: refetchPicks,
     dataUpdatedAt: updatedAtPicks,
+    fetchStatus: fetchStatusPicks,
   } = useDraftPicks(selectedDraftId, {
     enabled: Boolean(selectedDraftId),
+    allowEmptyPreDraft: draftDetails?.status === "pre_draft",
     ...(draftDetails?.settings.teams && draftDetails.settings.rounds
       ? {
           expectedPickCount:
@@ -1027,6 +1031,13 @@ export function DraftDataProvider({
       // League and other data
       league,
       refetchData,
+      pickFeed: selectedDraftId ? {
+        checkedAt: updatedAtPicks || null,
+        paused: fetchStatusPicks === "paused",
+        complete: draftDetails?.status === "complete" &&
+          (draftDetails.settings.teams ?? 0) > 0 && (draftDetails.settings.rounds ?? 0) > 0 &&
+          (picks?.length ?? 0) === ((draftDetails.settings.teams ?? 0) * (draftDetails.settings.rounds ?? 0)),
+      } : null,
       lastUpdatedAt:
         Math.max(
           0,
@@ -1062,6 +1073,7 @@ export function DraftDataProvider({
       refetchData,
       updatedAtDraftDetails,
       updatedAtPicks,
+      fetchStatusPicks,
       updatedAtPlayers,
       processedData,
       decisionRows,

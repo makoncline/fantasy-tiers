@@ -6,6 +6,7 @@ import {
 import type { PlayerWithPick } from "@/lib/types.draft";
 import type { ColumnGroup } from "./columns";
 import { PlayerSummaryCell } from "./PlayerSummaryCell";
+import { DraftAdpCell } from "./DraftAdpCell";
 
 export const DRAFT_VALUE_DESCRIPTIONS = {
   raw:
@@ -93,7 +94,10 @@ export const GROUPS_FULL: ColumnGroup<PlayerWithPick>[] = [
         sortAs: "number",
         nulls: "last",
         width: "9ch",
-        render: (_, row) => row.sleeper_adp_round_pick ?? "—",
+        render: (_, row) => createElement(DraftAdpCell, {
+          playerId: row.player_id, adp: row.sleeper_adp ?? null,
+          display: row.sleeper_adp_round_pick,
+        }),
       },
       {
         id: "market_edge",
