@@ -94,7 +94,7 @@ describe("PositionCompactTables", () => {
       (header) => header.textContent
     );
     expect(headers).toEqual([
-      "Tier (QB)",
+      "FP Tier (QB)",
       "Player",
       "TM/BYE",
       "PTS",
@@ -102,7 +102,7 @@ describe("PositionCompactTables", () => {
       "ADJ ▼",
       "ADP",
     ]);
-    expect(qbCard?.textContent).toContain("Room open: 7 QB");
+    expect(qbCard?.textContent).toContain("Open starters 7/—");
     expect(container.querySelector('[data-testid="pos-card-K"]')).toBeNull();
     expect(container.textContent).not.toContain("Show all rows");
     expect(qbCard?.textContent).not.toContain("baseline");
@@ -125,6 +125,6 @@ describe("PositionCompactTables", () => {
       />
     ));
 
-    expect(container.querySelector('[data-testid="pos-card-QB"]')).toBeNull();
+    expect(container.querySelector('[data-testid="pos-card-QB"]')?.textContent).toContain("Owner limit filled");
   });
 });

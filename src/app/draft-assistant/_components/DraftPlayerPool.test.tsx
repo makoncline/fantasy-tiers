@@ -33,7 +33,7 @@ it("keeps position tables independent while filtering and collapsing the linked 
     const button = (label: string) => [...filters.querySelectorAll('button')].find(b => b.textContent === label)!;
     expect(panel("RB").textContent).toContain("RB shard player");
     expect(panel("FLEX").textContent).toContain("FLEX shard player");
-    expect(panel("FLEX").textContent).toContain("Tier (Flex)");
+    expect(panel("FLEX").textContent).toContain("Tier (FLEX)");
     expect(panel("FLEX").querySelectorAll("tbody td")[0]?.textContent).toBe("4");
     expect(panel("FLEX").textContent).not.toContain("RB shard player");
     expect(host.querySelector('a[href="#players-rb"]')).toBeNull();
@@ -57,7 +57,7 @@ it("keeps position tables independent while filtering and collapsing the linked 
     act(() => { window.location.hash = "players-overall"; window.dispatchEvent(new HashChangeEvent("hashchange")); });
     expect(collapse.getAttribute("aria-expanded")).toBe("true");
     const val = [...panel("RB").querySelectorAll("th")].find(th => th.textContent === "VAL")!;
-    act(() => val.click());
+    act(() => val.querySelector("button")!.click());
     expect(val.getAttribute("aria-sort")).toBe("descending");
     act(() => panel("RB").querySelector<HTMLButtonElement>('[aria-label="Details for RB shard player"]')!.click());
     expect(document.querySelector('[role="dialog"]')?.textContent).toContain("Bye 8");

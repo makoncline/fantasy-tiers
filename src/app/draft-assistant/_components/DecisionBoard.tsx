@@ -19,7 +19,7 @@ export default function DecisionBoard({ pickAction }: { pickAction?: DraftPickAc
     return () => window.removeEventListener("hashchange", followHash);
   }, [setOpen]);
   if (!decisionRows.length) return null;
-  return <section id="decision-board" data-testid="decision-board" className="scroll-mt-40 space-y-3 border-t pt-4">
+  return <section id="decision-board" data-testid="decision-board" className="scroll-mt-160 space-y-3 border-t pt-4">
     <Collapsible open={open} onOpenChange={setOpen}>
       <h2><CollapsibleTrigger asChild><Button variant="ghost" className="h-8 px-0 text-base font-semibold">{open ? "▾" : "▸"} Recommendations</Button></CollapsibleTrigger></h2>
       <CollapsibleContent className="pt-3"><ChoiceComparison pickAction={pickAction} /></CollapsibleContent>

@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { byeCoverage } from "./draftTableReview";
+import { byeCoverage, candidateByeNote } from "./draftTableReview";
 import type { DraftedPlayer, RosterSlot } from "@/lib/schemas";
 
 it("separates bye holes from undrafted slots and uses each bench player once", () => {
@@ -15,4 +15,11 @@ it("separates bye holes from undrafted slots and uses each bench player once", (
   expect(byeCoverage(slots)[0]?.added).toEqual(["1 QB", "1 TE", "1 FLEX"]);
   slots.push({ slot: "BN", player: player("second reserve", "RB", "8") });
   expect(byeCoverage(slots)[0]?.added).toEqual(["1 QB", "1 TE"]);
+});
+
+it("labels candidate bye holes relative to the current roster without counting undrafted slots", () => {
+  const owned: DraftedPlayer = { player_id: "a", name: "A", position: "WR", team: "TEST", bye_week: "9", rank: 1, tier: 1 };
+  const slots: { slot: RosterSlot; player: DraftedPlayer | null }[] = [{slot:"WR",player:owned},{slot:"WR",player:null},{slot:"FLEX",player:null},{slot:"QB",player:null},{slot:"BN",player:null}];
+  expect(candidateByeNote(slots, {name:"B",position:"WR",bye_week:9})).toBe("With current roster · Bye 9: uncovered 2 WR.");
+  expect(candidateByeNote(slots, {name:"B",position:"WR",bye_week:10})).toBeNull();
 });

@@ -21,7 +21,7 @@ export function WatchlistButton({ playerId, name, labelled = false }: { playerId
   const watchlist = useDraftWatchlist();
   if (!watchlist) return null;
   const selected = watchlist.ids.includes(playerId);
-  return <Button type="button" variant="outline" size="sm" className="h-6 px-2 text-xs" aria-pressed={selected}
+  return <Button type="button" variant="outline" size="sm" className="h-11 min-w-11 px-2 text-xs sm:h-7 sm:min-w-7" aria-pressed={selected}
     aria-label={`${selected ? "Remove" : "Add"} ${name} ${selected ? "from" : "to"} watch list`}
     onClick={() => watchlist.toggle(playerId)}>{labelled ? "Watch " : ""}{selected ? "−" : "+"}</Button>;
 }

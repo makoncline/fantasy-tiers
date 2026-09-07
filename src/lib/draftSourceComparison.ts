@@ -12,6 +12,22 @@ export const ProjectionSourceSchema = z.object({
 export type ProjectionSource = z.infer<typeof ProjectionSourceSchema>;
 const offense = new Set(["QB", "RB", "WR", "TE"]);
 
+/** Full-pool projection ranks. Draft status and contextual scores do not affect rank. */
+export function projectionPositionRanks(players: ReadonlyArray<{ playerId: string; position: string; projectedPoints: number }>) {
+  const ranks: Record<string, number> = {};
+  const positions = new Set(players.map(player => player.position));
+  for (const position of positions) {
+    const ordered = players.filter(player => player.position === position && Number.isFinite(player.projectedPoints))
+      .sort((a, b) => b.projectedPoints - a.projectedPoints);
+    let rank = 0;
+    ordered.forEach((player, index) => {
+      if (index === 0 || player.projectedPoints !== ordered[index - 1]?.projectedPoints) rank = index + 1;
+      ranks[player.playerId] = rank;
+    });
+  }
+  return ranks;
+}
+
 /** Recompute the same decision model with source-native points. Never mutate the active board. */
 export function compareDraftSources(snapshot: DraftChoiceSnapshot, fp: ProjectionSource, now = Date.now()) {
   const players = snapshot.boardInput.players;
@@ -48,7 +64,7 @@ export function compareDraftSources(snapshot: DraftChoiceSnapshot, fp: Projectio
   const calculate = (points: typeof sleeperPoints) => {
     const values = buildStarterAwareValues({ teams: snapshot.boardInput.teams, rosterSlots: snapshot.rosterSlots, players: points });
     const board = buildDraftValueBoard({ ...snapshot.boardInput, staticValuesByPlayerId: Object.fromEntries(Object.entries(values.valuesByPlayerId).map(([id,v]) => [id,v.value])) });
-    return { values, board };
+    return { values, board, positionRanksByPlayerId: projectionPositionRanks(points) };
   };
   return { sleeper: calculate(sleeperPoints), fp: problems.length ? null : calculate(fpPoints), problems, coverage, total: relevant.length };
 }

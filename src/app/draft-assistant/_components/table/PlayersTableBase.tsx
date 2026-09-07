@@ -1,6 +1,7 @@
 import { WatchlistButton, useDraftWatchlist } from "../DraftWatchlistContext";
 import { useDraftPreference, draftSortIdPreference, draftSortDirectionPreference } from "@/hooks/useDraftPreference";
 import React from "react";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableHeader,
@@ -16,6 +17,7 @@ import type { PlayerWithPick } from "@/lib/types.draft";
 import type { ColumnGroup, ColumnDef, HeatScaleId } from "./columns";
 
 type Props = {
+  preferenceKey?: string | undefined;
   rows: PlayerWithPick[];
   groups: ColumnGroup<PlayerWithPick>[];
   sortable?: boolean;
@@ -31,6 +33,7 @@ type Props = {
 
 export default function PlayersTableBase({
   rows,
+  preferenceKey,
   groups,
   sortable = false,
   colorize = false,
@@ -84,7 +87,7 @@ export default function PlayersTableBase({
   };
 
   // 3) Sorting driven by column ids
-  const sortPreferenceKey = `table:${groups[0]?.children[0]?.header ?? "players"}`;
+  const sortPreferenceKey = `table:${preferenceKey ?? groups[0]?.children[0]?.header ?? "players"}`;
   const [sortId, setSortId] = useDraftPreference<string | null>(`${sortPreferenceKey}:sort`, draftSortIdPreference,
     dimDrafted && defaultSortId === "adj" ? "raw" : defaultSortId ?? null
   );
@@ -181,10 +184,9 @@ export default function PlayersTableBase({
             <TableHead
               key={c.id}
               style={c.width ? { width: c.width } : undefined}
-              onClick={() => onHeadClick(c)}
               className={
                 "h-8 whitespace-nowrap border-r border-border px-2 " + (c.sortable ? "cursor-pointer select-none " : "") +
-                (c.className ?? "")
+                (c.sortAs === "number" ? "text-right " : "") + (c.className ?? "")
               }
               title={c.description ?? c.header}
               aria-sort={
@@ -195,12 +197,7 @@ export default function PlayersTableBase({
                   : "none"
               }
             >
-              {c.header}
-              {sortable && c.sortable && sortId === c.id
-                ? sortDir === "asc"
-                  ? " ▲"
-                  : " ▼"
-                : ""}
+<Button variant="ghost" className="h-auto p-0 text-inherit" disabled={!sortable || !c.sortable} onClick={() => onHeadClick(c)}>{c.header}{sortable && c.sortable && sortId === c.id ? sortDir === "asc" ? " ▲" : " ▼" : ""}</Button>
             </TableHead>
           ))}
           {renderActions ? <TableHead className="w-8" /> : null}
@@ -214,7 +211,7 @@ export default function PlayersTableBase({
 
           const baseClass =
             dimDrafted && isDrafted
-              ? "opacity-60 text-muted-foreground hover:bg-transparent"
+              ? "bg-muted/40 text-muted-foreground"
               : undefined;
 
           const combinedClass =
@@ -234,7 +231,7 @@ export default function PlayersTableBase({
                 return (
                   <TableCell
                     key={c.id}
-                    className="border-r border-border px-2 py-1.5 tabular-nums"
+                    className={`border-r border-border px-2 py-1.5 tabular-nums ${c.sortAs === "number" ? "text-right" : ""}`}
                     {...(isNameCol && isDrafted ? { "data-drafted": "D" } : {})}
                     style={bg ? { background: bg } : undefined}
                   >

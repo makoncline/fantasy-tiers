@@ -1,3 +1,4 @@
+import DraftTableFacts from "./DraftTableFacts";
 import type { ReactNode } from "react";
 import { useDraftData } from "@/app/draft-assistant/_contexts/DraftDataContext";
 import DraftPlayerPool from "./DraftPlayerPool";
@@ -23,6 +24,7 @@ export default function DraftAssistantContent({
 } = {}) {
   const {
     loading,
+    pickFeed,
     error,
     draftDetails,
     formatNotices,
@@ -36,8 +38,9 @@ export default function DraftAssistantContent({
   } = useDraftData();
 
   const isLoading = Object.values(loading).some(Boolean);
-  const hasError = Object.values(error).some(Boolean);
-  const hasBlockingError = hasError;
+  const hasBlockingError = Object.entries(error).some(([key, failure]) =>
+    Boolean(failure) && (key !== "picks" || !pickFeed?.checkedAt)
+  );
   const isComplete = draftDetails?.status === "complete";
   const sleeperDraftSlot = user?.user_id
     ? draftDetails?.draft_order?.[user.user_id]
@@ -64,6 +67,7 @@ export default function DraftAssistantContent({
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>
           There was a problem loading draft data. Please try again.
+          <Button variant="outline" size="sm" onClick={refetchData}>Retry updates</Button>
         </AlertDescription>
       </Alert></DraftWorkspace>
     );
@@ -160,6 +164,7 @@ export default function DraftAssistantContent({
 
 
       <DraftSourceSelector />
+      <DraftTableFacts />
 
       {showRecommendations &&
       !isComplete &&

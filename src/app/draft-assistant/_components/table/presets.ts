@@ -20,9 +20,9 @@ export function draftTableGroups({ source = "sleeper", position = "Overall", onO
   onOpen?: ((row: PlayerWithPick) => void) | undefined;
 } = {}): ColumnGroup<PlayerWithPick>[] {
   const overall = position === "Overall";
-  const tierLabel = position === "FLEX" ? "Flex" : position === "DEF" ? "D/ST" : position;
+  const tierLabel = position === "FLEX" ? "FLEX" : position === "DEF" ? "D/ST" : position;
   return [{ header: "Draft board", children: [
-    { id: overall ? "tier_level" : "position_tier", header: `Tier (${tierLabel})`,
+    { id: overall ? "tier_level" : "position_tier", header: `FP Tier (${tierLabel})`,
       description: `FantasyPros ${tierLabel} tier.`,
       accessor: row => overall || position === "FLEX" ? row.tier_level ?? null : row.position_tier_level ?? null,
       sortable: true, sortAs: "number", width: "8ch", render: value => value ?? "—" },

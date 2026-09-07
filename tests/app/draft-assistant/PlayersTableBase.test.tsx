@@ -51,6 +51,15 @@ describe("PlayersTableBase", () => {
     container.remove();
   });
 
+  it("stores watch list and overall sorting separately", () => {
+    localStorage.clear();
+    act(() => root.render(<><PlayersTableBase preferenceKey="overall" rows={rows} groups={groups} sortable defaultSortId="value" /><PlayersTableBase preferenceKey="watch-list" rows={rows} groups={groups} sortable defaultSortId="value" /></>));
+    act(() => container.querySelector<HTMLButtonElement>("th button")!.click());
+    expect(localStorage.getItem("fantasy-tiers:draft:table:overall:direction")).toBe('"desc"');
+    expect(localStorage.getItem("fantasy-tiers:draft:table:watch-list:direction")).toBe('"asc"');
+    localStorage.clear();
+  });
+
   it("counts only undrafted players toward the row limit, preserving sorted drafted rows", () => {
     const mixed = [
       {...player("drafted-high", 50), picked: {overall: 1}},
@@ -130,12 +139,12 @@ describe("PlayersTableBase", () => {
     act(() => root.render(<PlayersTableBase rows={rows} groups={tierGroups} sortable />));
     const bodies = () => [...container.querySelectorAll("tbody tr")];
     expect(bodies().every(r => !r.className.includes("500/10"))).toBe(true);
-    act(() => container.querySelector("th")?.click());
+    act(() => container.querySelector<HTMLButtonElement>("th button")?.click());
     expect(bodies().map(r => r.querySelector("td")?.textContent)).toEqual(id === "tier_level" ? ["1", "1", "2"] : ["2", "2", "3"]);
     expect(bodies()[0]?.className).toBe(bodies()[1]?.className);
     expect(bodies()[0]?.className).not.toBe(bodies()[2]?.className);
     expect(bodies()[0]?.className).toContain("bg-sky-500/10");
-    act(() => container.querySelectorAll("th")[1]?.click());
+    act(() => container.querySelectorAll<HTMLButtonElement>("th button")[1]?.click());
     expect(bodies().every(r => !r.className.includes("500/10"))).toBe(true);
   });
 

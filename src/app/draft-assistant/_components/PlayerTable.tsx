@@ -19,6 +19,7 @@ export function PlayerTable({
   defaultSortDir,
   heatDomainRows,
   maxRows,
+  preferenceKey,
 }: {
   rows: PlayerWithPick[];
   source?: string | undefined;
@@ -32,9 +33,11 @@ export function PlayerTable({
   defaultSortDir?: "asc" | "desc";
   heatDomainRows?: PlayerWithPick[];
   maxRows?: number;
+  preferenceKey?: string | undefined;
 }) {
   return (
     <PlayersTableBase
+      preferenceKey={preferenceKey}
       rows={rows}
       groups={draftTableGroups({ source, onOpen: onPlayerClick })}
       sortable={sortable}

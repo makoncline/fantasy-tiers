@@ -17,7 +17,7 @@ it("keeps an unlimited per-draft watch list current and removable through its pl
     render(rows);
     for(const button of host.querySelectorAll<HTMLButtonElement>('#buttons button'))act(()=>button.click());
     expect(host.querySelector('#watch-list')?.textContent).toContain("Watch list (4)");
-    expect([...host.querySelectorAll('#watch-list th')].map(th=>th.textContent)).toEqual(["Tier (Overall)","Player","TM/BYE","PTS","VAL ▼","ADJ","ADP","Watch list"]);
+    expect([...host.querySelectorAll('#watch-list th')].map(th=>th.textContent)).toEqual(["FP Tier (Overall)","Player","TM/BYE","PTS","VAL ▼","ADJ","ADP","Watch list"]);
     render([{...rows[0]!,picked:{overall:1},draft_value_score:null},...rows.slice(1)],"reload");
     expect(host.querySelector('#watch-list')?.textContent).toContain("Watch list (4)");
     expect(host.querySelector('#watch-list [data-row-drafted="true"]')?.textContent).toContain("Drafted");

@@ -34,7 +34,7 @@ describe("next-turn table", () => {
     await finish();
     expect(build).toHaveBeenCalledTimes(1);
     expect(host.querySelector('[aria-label="Next-turn player comparison"]')).not.toBeNull();
-    expect(host.textContent).toContain("not availability odds");
+    expect(host.textContent).toContain("does not estimate survival odds");
     expect(JSON.stringify(board)).toBe(saved);
   });
   it("updates after new source inputs instead of displaying old scenario rows", async () => {
@@ -60,6 +60,30 @@ describe("next-turn table", () => {
     const buttons = [...host.querySelectorAll<HTMLButtonElement>('[data-testid="recommendation-reason"] button')];
     expect(buttons.length).toBeGreaterThan(0);
     act(() => buttons[0]!.click()); expect(pick).toHaveBeenCalledTimes(1);
-    expect(host.querySelector('[data-testid="next-pick-table"] button')).toBeNull();
+    expect(host.querySelector('[data-testid="next-pick-table"] button[aria-label^="Pick "]')).toBeNull();
   });
+});
+
+it("removes Lead emphasis during a failed feed and recovers after another team takes the target", () => {
+  const { snapshot } = setup();
+  snapshot.boardInput.rounds = 1;
+  const first = buildDraftValueBoard(snapshot.boardInput);
+  const target = first.topRecommendation!.player;
+  const retry = vi.fn();
+  const render = (failed: boolean, taken: boolean) => {
+    const board = taken ? buildDraftValueBoard({...snapshot.boardInput, players: snapshot.boardInput.players.map(p => p.player_id === target.player_id ? {...p,drafted:true,draftedByMe:false} : p)}) : first;
+    act(() => root!.render(<QueryClientProvider client={client}><DraftDataStaticProvider value={{choiceSnapshot:snapshot,recommendationBoard:board,pickFeed:{checkedAt:failed ? Date.now()-30_000 : Date.now(),complete:false,paused:false},error:{user:null,drafts:null,draftDetails:null,players:null,picks:failed ? new Error("Offline") : null},refetchData:retry}}><ChoiceComparison /></DraftDataStaticProvider></QueryClientProvider>));
+  };
+  render(false,false);
+  expect(host.textContent).toContain("Lead");
+  render(true,false);
+  expect(host.textContent).toContain("Waiting for current picks.");
+  expect(host.textContent).not.toContain("Lead");
+  expect(host.querySelector('[aria-label="Recommended player comparison"]')).not.toBeNull();
+  act(() => [...host.querySelectorAll('button')].find(b=>b.textContent==='Retry updates')!.click());
+  expect(retry).toHaveBeenCalledOnce();
+  render(false,true);
+  expect(host.textContent).not.toContain("Waiting for current picks.");
+  expect(host.textContent).toContain("Lead");
+  expect([...host.querySelectorAll('[data-testid="decision-recommendation-row"]')].some(row=>row.textContent?.includes(target.name))).toBe(false);
 });

@@ -95,8 +95,8 @@ describe("PreviewPickDialog", () => {
       playersAll: [selected],
       valueSource: "sleeper",
       sourceComparison: {
-        sleeper: { values: { valuesByPlayerId: { selected: { projectedPoints: 200, value: 83 } } }, board: { metricsByPlayerId: { selected: { recommendationScore: 91, components: selected.draft_component_scores } } } },
-        fp: { values: { valuesByPlayerId: { selected: { projectedPoints: 210, value: 88 } } }, board: { metricsByPlayerId: { selected: { recommendationScore: 94, components: { ...selected.draft_component_scores, onesie: -100 } } } } },
+        sleeper: { values: { valuesByPlayerId: { selected: { projectedPoints: 200, value: 83 } } }, board: { metricsByPlayerId: { selected: { recommendationScore: 91, reasons: [], components: selected.draft_component_scores } } } },
+        fp: { values: { valuesByPlayerId: { selected: { projectedPoints: 210, value: 88 } } }, board: { metricsByPlayerId: { selected: { recommendationScore: 94, reasons: [{code:"ONESIE_WAIT",label:"Wait for ECR",detail:"Recorded wait rule"}], components: { ...selected.draft_component_scores, onesie: -100 } } } } },
       },
       league: { scoring: "half", teams: 12 },
       positionRows: { ALL: [{ ...selected, tier_level: 5 }] },
@@ -112,6 +112,8 @@ describe("PreviewPickDialog", () => {
         ],
       },
       sourceHealth: {
+        sleeperPlayers: [],
+        fantasyProsPlayers: [],
         sources: [{ source: "hidden-source", status: "stale" }],
         warnings: ["hidden source warning"],
       },
@@ -160,10 +162,10 @@ describe("PreviewPickDialog", () => {
     expect(text).toContain("WR · DEN · Bye 9 · Questionable");
     expect(text.match(/Questionable/g)).toHaveLength(1);
     expect(text).toContain("Depth: WR1");
-    expect(text).toContain("Sleeper200.083.091.0ADP 3.03");
+    expect(text).toContain("Sleeper (selected)200.083.091.0ADP 3.03");
     expect(text).toContain("FantasyPros210.088.094.0ECR 2.06");
-    expect(text).toContain("Tier (Overall) 5 · Tier (WR) 2");
-    expect(text).toContain("Sleeper: Starter need has the largest adjustment (+5.0).");
+    expect(text).toContain("FP Tier (Overall) 5 · FP Tier (WR) 2");
+    expect(text).toContain("Sleeper: Starter need adds to ADJ by 5.0 (largest adjustment).");
     for (const removed of ["Draft value", "Room starter", "ADP vs ECR", "Availability Short", "Limited at practice", "Base value contribution"]) expect(text).not.toContain(removed);
     expect(fetch).not.toHaveBeenCalled();
     await click("Watch +");
@@ -174,14 +176,14 @@ describe("PreviewPickDialog", () => {
     expect(document.body.textContent).not.toContain("QB/TE policy");
     mockUseDraftData.mockReturnValue({...mockUseDraftData(), valueSource: "fp"});
     await renderDialog();
-    expect(document.body.textContent).toContain("FantasyPros: QB/TE policy has the largest adjustment (-100.0).");
+    expect(document.body.textContent).toContain("FantasyPros: Wait for ECR reduces ADJ by 100.0 (largest adjustment).");
     expect(document.body.textContent).toContain("FantasyPros · ADJ contributions");
   });
   it("keeps missing values missing and expands full news only on request", async () => {
     mockUseDraftData.mockReturnValue({...mockUseDraftData(), valueSource: "fp", sourceComparison: null, playersAll: [{...selected, sleeper_adp: null, fp_rank_ave: null}] } as never);
     await renderDialog();
     expect(document.body.textContent).toContain("Sleeper———ADP —");
-    expect(document.body.textContent).toContain("FantasyPros———ECR —");
+    expect(document.body.textContent).toContain("FantasyPros (selected)———ECR —");
     expect(document.body.textContent).toContain("FantasyPros: adjustment data unavailable.");
     await click("News");
     for (let attempt=0; attempt<20 && !document.body.textContent?.includes("Headline 3"); attempt++) await act(async () => { await new Promise(r => setTimeout(r, 5)); });

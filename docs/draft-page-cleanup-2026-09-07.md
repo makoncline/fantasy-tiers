@@ -253,3 +253,25 @@ Verification:
 - Typecheck, lint, build, and focused tests passed. Full suite had 522 passes plus two timing failures during concurrent build load; the two affected files then passed all six tests with one worker.
 - Isolated Chrome verified recommendation add, far-right placement, refresh persistence, position-table add, watch-list removal, removal of the old comparison section, and mobile page width. Screenshot: `/private/tmp/fantasy-tiers-screenshots/watch-list-desktop.png`.
 - Localhost rebuilt on 3017. The owner's tab could not be reloaded because another browser session currently owns it; no session takeover was attempted.
+
+## Focused polish pass
+
+- Replaced the repeated user/settings header with the draft name and one Setup dialog. Kept scoring settings and change actions in Setup.
+- Merged sidebar status into one block. Removed the Draft status group and the repeated Open sentence. Kept urgent completion warnings and update Retry.
+- Labeled team counts as filled and league counts as open. Moved league needs above the roster. Hid the empty RB/WR ratio and compressed the empty bench.
+- Aligned navigation in a grid, matched position order to the page, and marked selected links. Used D/ST labels. Group chevrons now reflect state.
+- Joined source buttons. Moved attribution and errors into source details. Pending FP requests show loading, not unavailable.
+- Shortened recommendation reasons to actual component differences; removed generic alternative prose and raw pick numbers. Used one Lead label.
+- Renamed the future table Next-pick scenario. Kept market-order assumptions accessible. Added shared player dialogs and status indicators.
+- Matched table borders, numeric precision and alignment. Used source display names without changing normalized scoring inputs. Kept missing values missing.
+- Removed repeated team counts and shared FLEX demand from position subtitles. Showed open starters as a ratio. Made Show all controls compact.
+- Separated watch-list sorting storage from Overall. Added keyboard buttons to sort headers, larger mobile watch targets, readable drafted rows, a sticky title control, and the standard mobile close button.
+- Marked the selected row in player source details. Stated the direction and size of the largest adjustment. Shortened expanded news text.
+
+Verification: 12 focused table/watch-list/dialog tests passed, plus 3 unchanged choice-policy tests. Typecheck and targeted lint passed. Production build and isolated Chrome checks passed at desktop and 390px mobile widths: Setup, keyboard sorting, next-pick detail opening, selected source, sticky trigger, mobile dismissal, and no page overflow or browser errors. No scoring, eligibility, recommendation selection, or source data changed. Parallel ESPN files were left untouched. Local preview uses port 3017; no push or deployment.
+
+## Projection rank correction during UI trials
+
+- Position badges now rank selected-source league-scored PTS across the full pool, including drafted players. Equal projections share a rank; missing source data shows a dash. They are projection ranks, not expert ranks or ADJ order.
+- Existing overall, position, and FLEX tiers are labeled FP Tier. Tier calculations remain unchanged.
+- Recommendation scoring and eligibility remain unchanged. FP D/ST still uses Sleeper projections. Scenario-detail/current-board mismatch and market-column semantics remain separate follow-up items.

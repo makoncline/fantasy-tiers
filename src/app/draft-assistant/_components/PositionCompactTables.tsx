@@ -90,17 +90,6 @@ export default function PositionCompactTables({
 
     return (selectedPosition ? [selectedPosition] : DRAFT_BOARD_POSITIONS).flatMap((position) => {
       if (position !== "FLEX" && !isConfiguredPosition(position, userPositionRequirements)) return [];
-      if (
-        position !== "FLEX" && !showDiagnostics && !showDrafted &&
-        !isRosterLegalPosition(
-          position,
-          userPositionCounts,
-          userPositionRequirements
-        )
-      ) {
-        return [];
-      }
-
       const rows = draftBoardRows({
         rows: playersByPosition[position],
         diagnostics: showDiagnostics,
@@ -108,7 +97,6 @@ export default function PositionCompactTables({
         counts: userPositionCounts,
         requirements: userPositionRequirements,
       });
-      if (rows.length === 0) return [];
 
       const roster = position === "FLEX" ? { count: userRosterSlots.filter(s => s.slot === "FLEX" && s.player).length, requirement: userPositionRequirements.FLEX ?? 0 } : getRosterStatus(position);
       return [
@@ -180,7 +168,7 @@ export default function PositionCompactTables({
 
   return (
     <div className="space-y-2">
-      {sections.length === 0 ? <p className="text-sm text-muted-foreground">No roster-legal players remain in this pool.</p> : null}
+      {sections.length === 0 ? <p className="text-sm text-muted-foreground">No position slots are configured for this pool.</p> : null}
       {showDiagnostics ? (
         <p className="px-1 text-xs text-muted-foreground">
           Diagnostic rows only. Turn off Diagnostics above to return to the draft
@@ -197,10 +185,11 @@ export default function PositionCompactTables({
             <header className="space-y-1">
               <h2 className="text-sm font-semibold">{section.position === "DEF" ? "D/ST" : section.position}</h2>
               <p className="text-xs text-muted-foreground">
-                <DraftScarcity position={section.position} /> · You: {section.rosterCount}/{section.rosterRequirement} · <DraftDemand position={section.position} />
+                <DraftScarcity position={section.position} /> · <DraftDemand position={section.position} />
               </p>
             </header>
             <div>
+              {section.rows.length === 0 ? <p className="text-xs text-muted-foreground">{section.position !== "FLEX" && !isRosterLegalPosition(section.position, userPositionCounts, userPositionRequirements) ? "Owner limit filled" : "No eligible undrafted players"}</p> : null}
               <div className="overflow-x-auto">
                 <PlayersTableBase
                   rows={section.rows}
@@ -220,10 +209,10 @@ export default function PositionCompactTables({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="mt-2 w-full"
+                  className="mt-2"
                   onClick={() => setOpenPosition(section.position)}
                 >
-                  Show all {section.position}
+                  Show all {section.position === "DEF" ? "D/ST" : section.position}
                 </Button>
               ) : null}
             </div>

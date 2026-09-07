@@ -1,6 +1,7 @@
 /** @vitest-environment jsdom */
 
 import React, { act } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
 
@@ -21,9 +22,9 @@ describe("DraftAssistantContent", () => {
 
     act(() => {
       root.render(
-        <DraftDataStaticProvider value={{}}>
+        <QueryClientProvider client={new QueryClient()}><DraftDataStaticProvider value={{}}>
           <DraftAssistantContent showRecommendations={false} />
-        </DraftDataStaticProvider>
+        </DraftDataStaticProvider></QueryClientProvider>
       );
     });
 
@@ -34,13 +35,13 @@ describe("DraftAssistantContent", () => {
     container.remove();
   });
 
-  it("blocks the last board after a refresh error", () => {
+  it("blocks a pick-feed failure before any successful response", () => {
     const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
     act(() => {
       root.render(
-        <DraftDataStaticProvider
+        <QueryClientProvider client={new QueryClient()}><DraftDataStaticProvider
           value={{
             availablePlayers: [
               {
@@ -83,7 +84,7 @@ describe("DraftAssistantContent", () => {
           }}
         >
           <DraftAssistantContent />
-        </DraftDataStaticProvider>
+        </DraftDataStaticProvider></QueryClientProvider>
       );
     });
 
@@ -102,7 +103,7 @@ describe("DraftAssistantContent", () => {
     const root = createRoot(container);
     act(() => {
       root.render(
-        <DraftDataStaticProvider
+        <QueryClientProvider client={new QueryClient()}><DraftDataStaticProvider
           value={{
             readiness: {
               status: "incident",
@@ -125,7 +126,7 @@ describe("DraftAssistantContent", () => {
           }}
         >
           <DraftAssistantContent />
-        </DraftDataStaticProvider>
+        </DraftDataStaticProvider></QueryClientProvider>
       );
     });
 
@@ -144,7 +145,7 @@ describe("DraftAssistantContent", () => {
     const root = createRoot(container);
     act(() => {
       root.render(
-        <DraftDataStaticProvider
+        <QueryClientProvider client={new QueryClient()}><DraftDataStaticProvider
           value={{
             formatNotices: [
               {
@@ -159,7 +160,7 @@ describe("DraftAssistantContent", () => {
           }}
         >
           <DraftAssistantContent />
-        </DraftDataStaticProvider>
+        </DraftDataStaticProvider></QueryClientProvider>
       );
     });
 
@@ -184,7 +185,7 @@ describe("DraftAssistantContent", () => {
     const root = createRoot(container);
     act(() => {
       root.render(
-        <DraftDataStaticProvider
+        <QueryClientProvider client={new QueryClient()}><DraftDataStaticProvider
           value={{
             draftValueStatus: {
               available: false,
@@ -206,7 +207,7 @@ describe("DraftAssistantContent", () => {
           }}
         >
           <DraftAssistantContent />
-        </DraftDataStaticProvider>
+        </DraftDataStaticProvider></QueryClientProvider>
       );
     });
 
@@ -227,7 +228,7 @@ describe("DraftAssistantContent", () => {
     const root = createRoot(container);
     act(() => {
       root.render(
-        <DraftDataStaticProvider
+        <QueryClientProvider client={new QueryClient()}><DraftDataStaticProvider
           value={{
             user: { user_id: "user-1", username: "makon" },
             draftDetails: {
@@ -253,7 +254,7 @@ describe("DraftAssistantContent", () => {
           }}
         >
           <DraftAssistantContent />
-        </DraftDataStaticProvider>
+        </DraftDataStaticProvider></QueryClientProvider>
       );
     });
 
@@ -268,4 +269,13 @@ describe("DraftAssistantContent", () => {
     act(() => root.unmount());
     container.remove();
   });
+});
+
+it("keeps the cached player pool accessible after a pick-feed error", () => {
+  const container = document.createElement("div"); document.body.append(container); const root = createRoot(container);
+  try {
+    act(() => root.render(<QueryClientProvider client={new QueryClient()}><DraftDataStaticProvider value={{pickFeed:{checkedAt:Date.now(),paused:false,complete:false},error:{user:null,drafts:null,draftDetails:null,players:null,picks:new Error("Offline")}}}><DraftAssistantContent /></DraftDataStaticProvider></QueryClientProvider>));
+    expect(container.querySelector('[data-testid="draft-player-pool"]')).not.toBeNull();
+    expect(container.textContent).not.toContain("There was a problem loading draft data.");
+  } finally {act(()=>root.unmount());container.remove();}
 });

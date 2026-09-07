@@ -6,7 +6,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import AvailablePlayers from "./availablePlayers";
 import PositionCompactTables from "./PositionCompactTables";
 import { DraftWatchlist } from "./DraftWatchlist";
-import DraftTableFacts from "./DraftTableFacts";
 import type { DraftPickAction } from "../_lib/types";
 import { useDraftData } from "../_contexts/DraftDataContext";
 
@@ -45,9 +44,8 @@ export default function DraftPlayerPool({ loading, pickAction }: { loading: bool
   }, [loading, selectedDraftId, sectionKeys, setOverallOpen]);
 
   return <div className="space-y-4" data-testid="draft-player-pool">
-    <DraftTableFacts />
     <DraftWatchlist />
-    <Collapsible id="players-overall" open={overallOpen} onOpenChange={setOverallOpen} className="scroll-mt-4 border-t pt-3">
+    <Collapsible id="players-overall" open={overallOpen} onOpenChange={setOverallOpen} className="scroll-mt-16 border-t pt-3">
       <CollapsibleTrigger asChild><Button variant="ghost" className="mb-2 h-8 px-0 font-semibold">{overallOpen ? "▾" : "▸"} Overall</Button></CollapsibleTrigger>
       <CollapsibleContent forceMount className="space-y-2 data-[state=closed]:hidden">
         <div role="group" aria-label="Overall position filters" className="flex flex-wrap items-center gap-1">
@@ -58,7 +56,7 @@ export default function DraftPlayerPool({ loading, pickAction }: { loading: bool
         <AvailablePlayers loading={loading} pickAction={pickAction} excludedPositions={excluded} />
       </CollapsibleContent>
     </Collapsible>
-    {positions.map(p => <section key={p} id={sectionId(p)} aria-label={`${label(p)} table`} className="scroll-mt-4">
+    {positions.map(p => <section key={p} id={sectionId(p)} aria-label={`${label(p)} table`} className="scroll-mt-16">
       <PositionCompactTables position={p} pickAction={pickAction} />
     </section>)}
   </div>;

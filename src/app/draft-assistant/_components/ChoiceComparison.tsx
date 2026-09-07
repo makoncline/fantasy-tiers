@@ -1,4 +1,7 @@
 "use client";
+import { adjustmentLabel } from "../_lib/adjustmentLabel";
+import { PlayerDisplayName, usePlayerDisplayName } from "./PlayerDisplayName";
+import { formatDraftValue as score } from "./table/presets";
 import { WatchlistButton } from "./DraftWatchlistContext";
 import { PlayerPositionRank } from "./PlayerPositionRank";
 
@@ -15,21 +18,22 @@ import type { DraftCandidate } from "@/lib/draftCandidate";
 import type { DraftValueBoard } from "@/lib/draftValue";
 import NextPickTable from "./NextPickTable";
 import { DraftOptionalBoundary } from "./DraftOptionalBoundary";
-import { DraftPickFeedStatus } from "./DraftPickFeedStatus";
+import { candidateByeNote } from "../_lib/draftTableReview";
+import { DraftPickFeedStatus, useDraftPickFeedStatus } from "./DraftPickFeedStatus";
 import { formatDraftPick, getChoicePickWindow } from "@/lib/draftLookaheadCore";
 import {
-  formatDraftMetric as score,
+
   overallTier,
 } from "@/lib/draftCardMetrics";
 
 import type { DraftPickAction } from "../_lib/types";
 import { DraftEcrValue } from "./DraftEcrValue";
 import { DraftAdpCell } from "./table/DraftAdpCell";
-function ChoiceRow({ choice, lean, explanation, onPick, pickDisabled }: {
-  choice: DraftChoice; lean: DraftChoice; explanation: string;
+function ChoiceRow({ choice, lean, explanation, onPick, pickDisabled, stale }: {
+  choice: DraftChoice; lean: DraftChoice; explanation: string; stale: boolean;
   onPick?: (() => void) | undefined; pickDisabled?: boolean | undefined;
 }) {
-  const { valueSource, sourceComparison } = useDraftData();
+  const { valueSource, sourceComparison, userRosterSlots } = useDraftData();
   const { player, metrics } = choice;
   const isLean = player.player_id === lean.player.player_id;
   const tier = overallTier(player);
@@ -40,22 +44,23 @@ function ChoiceRow({ choice, lean, explanation, onPick, pickDisabled }: {
     <TableRow data-testid="decision-recommendation-row" className="border-b-0 tabular-nums">
       <TableCell>{tier ?? "—"}</TableCell>
       <TableCell className="min-w-56 whitespace-nowrap">
-        <Button variant="link" className="h-auto whitespace-normal p-0 text-left font-semibold capitalize" aria-label={`Pick details for ${player.name}`} onClick={() => setDetailsOpen(true)}>{player.name}</Button>
+        <Button variant="link" className="h-auto whitespace-normal p-0 text-left font-semibold" aria-label={`Pick details for ${player.name}`} onClick={() => setDetailsOpen(true)}><PlayerDisplayName playerId={player.player_id} name={player.name} /></Button>
         {detailsOpen ? <PreviewPickDialog open onOpenChange={setDetailsOpen} player={{ player_id: player.player_id, name: player.name, position: player.position, team: player.team, bye_week: player.bye_week, rank: player.rank ?? 0, tier: player.tier ?? 0 }} /> : null}
-        <span className="ml-2"><PlayerPositionRank position={player.position} rank={player.fp_rank_pos} /></span>
-        <span className="block text-xs text-muted-foreground">Tier ({player.position}) {player.position_tier_level != null && player.position_tier_level > 0 ? player.position_tier_level : "—"}</span>
-        {isLean ? <span className="block text-xs font-medium">Recommended</span> : null}
+        <span className="ml-2"><PlayerPositionRank position={player.position} playerId={player.player_id} /></span>
+        {isLean && !stale ? <span className="ml-2 text-xs font-medium">Lead</span> : null}
+        <span className="block text-xs text-muted-foreground">FP Tier ({player.position}) {player.position_tier_level != null && player.position_tier_level > 0 ? player.position_tier_level : "—"}</span>
       </TableCell>
       <TableCell>{player.team ?? "—"}/{player.bye_week ?? "—"}</TableCell>
       <TableCell className="text-right">{score(points)}</TableCell>
       <TableCell className="text-right">{score(metrics.staticValue)}</TableCell>
-      <TableCell className="bg-primary/10 text-right font-semibold">{score(metrics.recommendationScore)}</TableCell>
+      <TableCell className={stale ? "text-right" : "bg-primary/10 text-right font-semibold"}>{score(metrics.recommendationScore)}</TableCell>
       <TableCell className="text-right">{source === "fp" ? <DraftEcrValue rank={player.fp_rank_ave} /> : <DraftAdpCell playerId={player.player_id} adp={metrics.sleeperAdp} />}</TableCell>
       <TableCell className="w-8 p-1"><WatchlistButton playerId={player.player_id} name={player.name} /></TableCell>
     </TableRow>
     <TableRow data-testid="recommendation-reason"><TableCell colSpan={8} className="whitespace-normal pb-3 pt-0 text-xs text-muted-foreground">
       <div className="flex w-0 min-w-full flex-wrap items-center justify-between gap-2">
-        <p className="min-w-0 flex-1">{!isLean ? `${choice.reason}. ` : ""}{explanation}.{metrics.availability.classification !== "healthy" ? <span className="ml-1 text-amber-700 dark:text-amber-300">{metrics.availability.label}.</span> : null}{metrics.availability.rankingsMayBeStale ? " News newer than rankings." : ""}</p>
+        <p className="min-w-0 flex-1">{explanation ? `${explanation}.` : ""}{metrics.availability.classification !== "healthy" ? <span className="ml-1 text-amber-700 dark:text-amber-300">{metrics.availability.label}.</span> : null}{metrics.availability.rankingsMayBeStale ? " News newer than rankings." : ""}</p>
+        {candidateByeNote(userRosterSlots, player) ? <p>{candidateByeNote(userRosterSlots, player)}</p> : null}
         <div className="flex gap-2">
           {onPick ? <Button size="sm" className="h-7" disabled={pickDisabled} onClick={onPick} aria-label={`Pick ${player.name}`}>Pick</Button> : null}
         </div>
@@ -67,6 +72,8 @@ function ChoiceRow({ choice, lean, explanation, onPick, pickDisabled }: {
 function ChoicePanel({ board, snapshot, pickAction }: { board: DraftValueBoard<DraftCandidate>; snapshot: DraftChoiceSnapshot; pickAction?: DraftPickAction | undefined }) {
   const choices = useMemo(() => buildDraftChoices(board), [board]);
   const { valueSource } = useDraftData();
+  const displayName = usePlayerDisplayName();
+  const stale = useDraftPickFeedStatus()?.warning ?? false;
   const lean = choices[0];
   const window = getChoicePickWindow(snapshot.boardInput);
   if (!lean) return null;
@@ -74,31 +81,21 @@ function ChoicePanel({ board, snapshot, pickAction }: { board: DraftValueBoard<D
   const teams = snapshot.boardInput.teams;
   const higherValue = choices.find((c) => (c.metrics.staticValue ?? -Infinity) > (lean.metrics.staticValue ?? -Infinity));
   return <div className="flex flex-col gap-4" data-testid="choice-comparison">
+    {stale ? <p role="status" className="font-semibold text-amber-700 dark:text-amber-300">Waiting for current picks.</p> : null}
     <DraftPickFeedStatus />
-    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-      <h2 className="text-sm font-semibold">{window.onClock ? "Now" : "Upcoming"} · {formatDraftPick(window.ownPick, teams)} <span className="font-normal text-muted-foreground">#{window.ownPick ?? "—"}</span></h2>
-      <p className="text-xs text-muted-foreground" data-testid="draft-pick-window">
-        {window.state === "unknown" ? "Draft turn information is incomplete" : window.state === "complete" ? "Your picks are complete"
-          : window.state === "final" ? "Your final pick"
-          : `${window.betweenOwn} opponent selections → next ${formatDraftPick(window.nextOwnPick, teams)} (#${window.nextOwnPick})`}
-      </p>
-    </div>
-    {window.beforeOwn != null && window.beforeOwn > 0 ? <p className="-mt-2 text-xs text-muted-foreground">
-      {window.beforeOwn} opponent selection{window.beforeOwn === 1 ? "" : "s"} before your upcoming pick.
-    </p> : null}
-    {window.onClock && window.betweenOwn === 0 ? <p className="-mt-2 text-xs text-muted-foreground">Back-to-back picks.</p> : null}
-    <Table className="w-auto text-xs" aria-label="Recommended player comparison"><TableHeader><TableRow>{["Tier (Overall)", "Player", "TM/BYE", "PTS", "VAL", "ADJ", valueSource === "fp" ? "ECR" : "ADP", ""].map((label, index) => <TableHead key={label} className={index >= 3 ? "text-right" : undefined}>{label}</TableHead>)}</TableRow></TableHeader><TableBody>{display.map((choice) =>
-      <ChoiceRow key={choice.player.player_id} choice={choice} lean={lean}
+    <p className="text-xs" data-testid="draft-pick-window">{window.onClock ? "Now" : "Upcoming"} {formatDraftPick(window.ownPick, teams)}{window.state === "ready" ? ` · Next ${formatDraftPick(window.nextOwnPick, teams)} · ${window.betweenOwn} selections between` : window.state === "final" ? " · Final pick" : ""}</p>
+    <Table className="w-auto border text-xs [&_th]:whitespace-nowrap [&_th]:border-r [&_th]:px-2 [&_td]:border-r [&_td]:px-2" aria-label="Recommended player comparison"><TableHeader className="bg-muted"><TableRow>{["FP Tier (Overall)", "Player", "TM/BYE", "PTS", "VAL", "ADJ", valueSource === "fp" ? "ECR" : "ADP", ""].map((label, index) => <TableHead key={label} className={index >= 3 ? "text-right" : undefined}>{label}</TableHead>)}</TableRow></TableHeader><TableBody>{display.map((choice) =>
+      <ChoiceRow key={choice.player.player_id} choice={choice} lean={lean} stale={stale}
         explanation={(() => {
           const rival = choice === lean ? choices.find((c) => c !== lean) : lean;
-          if (!rival) return "Only comparison shown; other eligible players are in the tables";
+          if (!rival) return "";
           const edge = choiceContributionDifference(choice.metrics, rival.metrics).find((d) => d.value > 0);
-          return edge ? `${edge.label} gives the largest score edge over ${rival.player.name} (+${score(edge.value)} Adj contribution)` : `No component edge over ${rival.player.name}`;
+          return edge ? `${adjustmentLabel(edge.key, edge.label, choice.metrics).replace("Base value contribution", "Base-value component")}: +${score(edge.value)} ADJ versus ${displayName(rival.player.player_id, rival.player.name)}` : "";
         })()}
         onPick={pickAction ? () => pickAction.onPick(choice.player) : undefined}
         pickDisabled={pickAction?.disabled} />
     )}</TableBody></Table>
-    {higherValue ? <p className="text-xs text-muted-foreground">The default gives up {score((higherValue.metrics.staticValue ?? 0) - (lean.metrics.staticValue ?? 0))} Val to {higherValue.player.name}; context favors the default.</p> : null}
+    {higherValue && !stale ? <p className="text-xs text-muted-foreground">Lead trades {score((higherValue.metrics.staticValue ?? 0) - (lean.metrics.staticValue ?? 0))} VAL versus {displayName(higherValue.player.player_id, higherValue.player.name)} for contextual adjustments.</p> : null}
 
     {window.state === "ready" ? <DraftOptionalBoundary key={`${snapshot.projectionUpdatedAt}:${valueSource}`}><NextPickTable snapshot={snapshot} board={board} /></DraftOptionalBoundary> : null}
 

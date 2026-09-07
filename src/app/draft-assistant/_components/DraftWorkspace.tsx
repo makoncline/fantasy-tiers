@@ -13,7 +13,7 @@ export default function DraftWorkspace({ children, showRecommendations = true, h
   return <DraftTablePreferences key={selectedDraftId}><DraftWatchlistProvider><SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
     <DraftSidebar showRecommendations={showRecommendations} />
     <div className="min-w-0 flex-1">
-      <div className="mb-3 flex items-center gap-2">
+      <div className="sticky top-0 z-40 mb-3 flex items-center gap-2 border-b bg-background py-2">
         <SidebarTrigger aria-label="Toggle draft sidebar" /><h1 className="text-xl font-bold">Draft Assistant</h1>
       </div>
       {header}

@@ -23,12 +23,12 @@ describe("DraftSidebar", () => {
     expect(container.querySelector('[aria-label="Toggle draft sidebar"]')?.parentElement?.querySelector('h1')?.textContent).toBe("Draft Assistant");
     expect(container.querySelector('[data-testid="draft-sidebar"] [data-sidebar="trigger"]')).toBeNull();
     expect(document.body.textContent).toContain("Paused · 1.04");
-    expect(document.body.textContent).toContain("Following 2.09 · 16 selections between");
-    expect(document.body.textContent).toContain("Open: 1 RB · 1 FLEX");
+    expect(document.body.textContent).toContain("Next 2.09 · 16 selections between");
+    expect(document.body.textContent).toContain("RB 0/1FLEX 0/1");
     expect(document.body.textContent).not.toContain("Urgent:");
     act(() => container.querySelector<HTMLButtonElement>('[aria-label="Toggle draft sidebar"]')?.click());
     expect(document.body.textContent).toContain("Paused · 1.04");
-    expect(document.body.textContent).toContain("Open: 1 RB · 1 FLEX");
+    expect(document.body.textContent).toContain("RB 0/1FLEX 0/1");
     expect(container.querySelector('[data-collapsible="offcanvas"]')).not.toBeNull();
     expect(container.querySelector('[aria-label="Toggle draft sidebar"]')).not.toBeNull();
     expect(document.body.textContent).toContain("Player tables");
@@ -43,10 +43,10 @@ describe("DraftSidebar", () => {
     }}><DraftWorkspace><div>Player tables</div></DraftWorkspace></DraftDataStaticProvider>;
     act(() => root.render(render(false)));
     expect(document.body.textContent).toContain("Urgent: use remaining picks for open starters.");
-    expect(document.body.textContent).toContain("Following —");
+    expect(document.body.textContent).toContain("Next —");
     act(() => root.render(render(true)));
     expect(document.body.textContent).toContain("Finished");
-    expect(document.body.textContent).toContain("Upcoming —");
+    expect(document.body.textContent).not.toContain("Next 2.09");
     expect(document.body.textContent).not.toContain("Urgent:");
     act(() => root.unmount()); container.remove();
   });

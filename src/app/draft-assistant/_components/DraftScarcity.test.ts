@@ -7,6 +7,7 @@ describe("remaining position value", () => {
   });
   it("distinguishes exhausted value from an unavailable positive baseline", () => {
     expect(remainingPositionValue([{value:20,drafted:true}])).toBe(0);
+    expect(remainingPositionValue([{value:999,drafted:true},{value:1,drafted:false}])).toBe(0.1);
     expect(remainingPositionValue([{value:-10,drafted:false}])).toBeNull();
   });
 });

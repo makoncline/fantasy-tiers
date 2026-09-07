@@ -30,19 +30,30 @@ export function largestContext(player: PlayerWithPick) {
   const top = components[0];
   return top ? `${top.label} ${scoreGap(top.value, 0)}` : "Context unavailable";
 }
-export function byeCoverage(slots: Slots) {
+type ByePlayer = { name: string; position: Position; bye_week?: string | number | null | undefined };
+export function byeCoverage(slots: Slots, candidate?: ByePlayer) {
   const requirements: Record<RosterSlot, number> = { QB: 0, RB: 0, WR: 0, TE: 0, FLEX: 0, K: 0, DEF: 0, BN: 0 };
   slots.forEach(s => requirements[s.slot]++);
-  const players = slots.flatMap(s => s.player ? [s.player] : []);
+  const players: ByePlayer[] = slots.flatMap(s => s.player ? [s.player] : []);
+  if (candidate) players.push(candidate);
   const normal = calculateTeamNeedsAndCountsForSingleTeam(players, requirements).positionNeeds;
-  const weeks = [...new Set(players.flatMap(p => p.bye_week ? [p.bye_week] : []))];
+  const weeks = [...new Set(players.flatMap(p => p.bye_week ? [String(p.bye_week)] : []))];
   return weeks.flatMap(week => {
-    const absent = players.filter(p => p.bye_week === week);
-    if (absent.length < 2) return [];
-    const remaining = players.filter(p => p.bye_week !== week);
+    const absent = players.filter(p => String(p.bye_week) === week);
+    const remaining = players.filter(p => String(p.bye_week) !== week);
     const needs = calculateTeamNeedsAndCountsForSingleTeam(remaining, requirements).positionNeeds;
     const added = ROSTER_SLOTS.filter(slot => slot !== "BN" && needs[slot] > normal[slot])
       .map(slot => `${needs[slot] - normal[slot]} ${slot === "DEF" ? "D/ST" : slot}`);
-    return [{ week, absent: absent.map(p => p.name), added }];
+    const addedCount = ROSTER_SLOTS.filter(slot => slot !== "BN").reduce((sum, slot) => sum + Math.max(0, needs[slot] - normal[slot]), 0);
+    return [{ week, absent: absent.map(p => p.name), added, addedCount }];
   });
+}
+
+export function candidateByeNote(slots: Slots, candidate: ByePlayer) {
+  if (!candidate.bye_week) return null;
+  const week = String(candidate.bye_week);
+  const before = byeCoverage(slots).find(row => row.week === week);
+  const after = byeCoverage(slots, candidate).find(row => row.week === week);
+  if (!after || after.absent.length < 2 || after.addedCount <= (before?.addedCount ?? 0)) return null;
+  return `With current roster · Bye ${week}: uncovered ${after.added.join(", ")}.`;
 }

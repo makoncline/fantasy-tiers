@@ -1,5 +1,7 @@
 "use client";
+import { adjustmentLabel } from "../_lib/adjustmentLabel";
 
+import { PlayerDisplayName } from "./PlayerDisplayName";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -45,15 +47,15 @@ function PlayerNews({ playerId }: { playerId: string }) {
     {news.isLoading ? <p>Loading news…</p> : news.isError ? <p>News unavailable.</p> : !news.data?.length ? <p>No recent news.</p> :
       <div className="divide-y">{news.data.slice(0, 3).map(item => <article className="space-y-1 py-2" key={`${item.source}-${item.source_key ?? item.published}`}>
         <p className="font-medium">{item.metadata.title ?? "Report"}<span className="ml-2 font-normal text-muted-foreground">{Number.isFinite(new Date(item.published).getTime()) ? dateFormat.format(new Date(item.published)) : "—"}</span></p>
-        {item.metadata.description ? <p>{item.metadata.description}</p> : null}
-        {item.metadata.analysis && item.metadata.analysis !== item.metadata.description ? <p>{item.metadata.analysis}</p> : null}
+        {item.metadata.description ? <p>{item.metadata.description.length > 220 ? `${item.metadata.description.slice(0, 217)}…` : item.metadata.description}</p> : null}
         {item.metadata.url ? <a className="inline-block underline" href={item.metadata.url} target="_blank" rel="noreferrer">Full report · {item.source}</a> : null}
       </article>)}</div>}
     <Button variant="ghost" size="sm" className="mt-1 h-7 text-xs" disabled={news.isFetching} onClick={() => void news.refetch()}>Refresh news</Button>
   </div>;
 }
 
-export default function PreviewPickDialog({ open, onOpenChange, player }: {
+export default function PreviewPickDialog({ open, onOpenChange, player, currentPickDetails = false }: {
+  currentPickDetails?: boolean;
   open: boolean; onOpenChange: (open: boolean) => void; player: PreviewPickPlayer | null;
 }) {
   const { playersAll, positionRows, sourceComparison, valueSource, recommendationBoard } = useDraftData();
@@ -63,7 +65,7 @@ export default function PreviewPickDialog({ open, onOpenChange, player }: {
   const metric = player ? (valueSource === "fp" || valueSource === "sleeper" ? sourceComparison?.[valueSource]?.board : recommendationBoard)?.metricsByPlayerId[player.player_id] : undefined;
   const components = Object.entries(CHOICE_COMPONENT_LABELS).flatMap(([key, label]) => {
     const value = Object.entries(metric?.components ?? {}).find(([name]) => name === key)?.[1];
-    return typeof value === "number" && Number.isFinite(value) && value !== 0 ? [{ key, label, value }] : [];
+    return typeof value === "number" && Number.isFinite(value) && value !== 0 ? [{ key, label: metric ? adjustmentLabel(key, label, metric) : label, value }] : [];
   });
   const largest = components.filter(c => c.key !== "value").sort((a, b) => Math.abs(b.value) - Math.abs(a.value))[0];
   const overall = positionRows?.ALL?.find(p => p.player_id === player?.player_id);
@@ -77,13 +79,14 @@ export default function PreviewPickDialog({ open, onOpenChange, player }: {
   return <Dialog open={open} onOpenChange={value => { onOpenChange(value); if (!value) setExpanded([]); }}>
     <DialogContent className="max-h-[90dvh] gap-3 overflow-y-auto p-4 sm:max-w-xl sm:p-5">
       <DialogHeader className="gap-1 text-left">
-        <div className="flex flex-wrap items-center gap-2 pr-6"><DialogTitle className="capitalize">{player?.name ?? "Player"}</DialogTitle>{row ? <WatchlistButton playerId={row.player_id} name={row.name} labelled /> : null}</div>
+        {currentPickDetails ? <p className="text-xs font-medium">Current-pick details</p> : null}
+        <div className="flex flex-wrap items-center gap-2 pr-6"><DialogTitle >{player ? <PlayerDisplayName playerId={player.player_id} name={player.name} /> : "Player"}</DialogTitle>{row ? <WatchlistButton playerId={row.player_id} name={row.name} labelled /> : null}</div>
         <DialogDescription>{player?.position ?? "—"} · {player?.team ?? "—"} · Bye {player?.bye_week ?? "—"}{status ? ` · ${status}` : ""}</DialogDescription>
       </DialogHeader>
       {depth ? <p className="text-xs text-muted-foreground">Depth: {depth}{depthOrder ?? ""}</p> : null}
       {player ? <PlayerSourceDetails playerId={player.player_id} /> : null}
-      <p className="text-xs">Tier (Overall) {overallTier && overallTier > 0 ? overallTier : "—"} · Tier ({player?.position ?? "—"}) {positionTier && positionTier > 0 ? positionTier : "—"}</p>
-      <p className="text-sm" data-testid="player-adjustment-summary">{largest ? `${source}: ${largest.label} has the largest adjustment (${signed(largest.value)}).` : metric ? `${source}: no nonzero adjustments.` : `${source}: adjustment data unavailable.`}</p>
+      <p className="text-xs">FP Tier (Overall) {overallTier && overallTier > 0 ? overallTier : "—"} · FP Tier ({player?.position ?? "—"}) {positionTier && positionTier > 0 ? positionTier : "—"}</p>
+      <p className="text-sm" data-testid="player-adjustment-summary">{largest ? `${source}: ${largest.label} ${largest.value < 0 ? "reduces" : "adds to"} ADJ by ${Math.abs(largest.value).toFixed(1)} (largest adjustment).` : metric ? `${source}: no nonzero adjustments.` : `${source}: adjustment data unavailable.`}</p>
       <Accordion type="multiple" value={expanded} onValueChange={setExpanded}>
         <AccordionItem value="adjustments"><AccordionTrigger className="py-2">Adjustment breakdown</AccordionTrigger><AccordionContent className="text-xs">
           <p className="mb-2 font-medium">{source} · ADJ contributions</p>
