@@ -40,7 +40,7 @@ try {
   const positionIds = { QB: 1, RB: 2, WR: 3, TE: 4, K: 5, DEF: 16 };
   await context.route('https://lm-api-reads.fantasy.espn.com/**', (route) => route.fulfill({ json: {
     id: 99, seasonId: 2026, members: [{ id: 'PRIVATE_MEMBER' }],
-    settings: { name: 'Reader practice fixture', draftSettings: { type: 'SNAKE' }, scoringSettings: { playerRankType: 'PPR', scoringItems: [{ statId: 53, points: 1 }] } },
+    settings: { name: 'Reader practice fixture', draftSettings: { type: 'SNAKE' }, scoringSettings: { playerRankType: 'PPR', scoringItems: [[53, 1], [24, 0.1], [42, 0.1], [25, 6], [43, 6], [3, 0.04], [4, 4], [20, -1], [72, -2]].map(([statId, points]) => ({statId, points})) } },
     teams: [{ id: 1, name: 'First team', owners: ['PRIVATE_OWNER'] }, { id: 2, name: 'Second team', owners: [] }],
     players: fixturePlayers.map((row, index) => ({ player: { id: 101 + index, fullName: row.position === 'DEF' ? `${row.name.split(' ').at(-1)} D/ST` : row.name, defaultPositionId: positionIds[row.position], proTeamId: 1, eligibleSlots: [4, 23], draftRanksByRankType: { PPR: { rank: index + 1 } }, ownership: { averageDraftPosition: index + 1 }, stats: [{ statSourceId: 1, statSplitTypeId: 0, externalId: '2026', appliedTotal: Math.max(20, 300 - index) }] } })),
   } }));
@@ -94,8 +94,61 @@ try {
   await expect(source.getByRole('button', {name: 'Sleeper', exact: true})).toBeVisible();
   await expect(second.locator('[title^="Sleeper projected position rank"]').first()).toBeVisible();
   await expect(source.getByRole('button', {name: 'FantasyPros', exact: true})).toBeEnabled();
+  const verifyDraftedRows = async () => {
+    const draftedRows = second.getByTestId('draft-player-pool').locator('tr[data-row-drafted="true"]');
+    await expect(draftedRows).toHaveCount(0);
+    await second.getByRole('switch', {name: 'Show drafted', exact: true}).click();
+    await expect(draftedRows.filter({hasText: 'Justin Jefferson'}).first()).toBeVisible();
+    // VAL remains the saved source value; drafted players have no live ADJ.
+    const cells = draftedRows.filter({hasText: 'Justin Jefferson'}).first().locator('td');
+    await expect(cells.nth(4)).not.toHaveText('—');
+    await expect(cells.nth(5)).toHaveText('—');
+    await second.getByRole('switch', {name: 'Show drafted', exact: true}).click();
+    await expect(draftedRows).toHaveCount(0);
+  };
+  await verifyDraftedRows();
   await source.getByRole('button', {name: 'FantasyPros', exact: true}).click();
   await expect(second.locator('[title^="FantasyPros projected position rank"]').first()).toBeVisible();
+  await verifyDraftedRows();
+  await source.getByRole('button', {name: 'Sleeper', exact: true}).click();
+  // Feed the same draft through the live Sleeper provider, not a mocked UI context.
+  const sharedRows = Object.values(rankingBundle.shards).flat();
+  const playerId = name => sharedRows.find(row => row.name.toLowerCase() === name.toLowerCase())?.player_id;
+  const sleeperPicks = [
+    {player_id: playerId('Justin Jefferson'), pick_no: 1, round: 1, draft_slot: 1, picked_by: 'other-user'},
+    {player_id: playerId('CeeDee Lamb'), pick_no: 2, round: 1, draft_slot: 2, picked_by: 'parity-user'},
+  ];
+  if (sleeperPicks.some(pick => !pick.player_id)) throw new Error('Parity players missing');
+  await context.route('https://api.sleeper.app/v1/**', route => {
+    const pathname = new URL(route.request().url()).pathname;
+    const json = pathname.endsWith('/picks') ? sleeperPicks
+      : pathname.includes('/draft/parity-draft') ? {
+        draft_id: 'parity-draft', type: 'snake', season: '2026', status: 'drafting',
+        metadata: {name: 'Reader practice fixture', scoring_type: 'ppr'},
+        settings: {teams: 2, rounds: 2, slots_qb: 0, slots_rb: 0, slots_wr: 1, slots_te: 0, slots_k: 0, slots_def: 0, slots_flex: 0, slots_bn: 1},
+        draft_order: {'other-user': 1, 'parity-user': 2},
+      } : pathname.endsWith('/state/nfl') ? {season: '2026', league_season: '2026', season_type: 'regular', week: 1}
+      : pathname.endsWith('/drafts') ? []
+      : {user_id: 'parity-user', username: 'parity-user', display_name: 'You'};
+    return route.fulfill({json});
+  });
+  const sleeper = await context.newPage();
+  await sleeper.setViewportSize({width: 1440, height: 1000});
+  await sleeper.goto(`${origin}/draft-assistant?userId=parity-user&draftId=parity-draft`);
+  const sleeperSource = sleeper.getByRole('group', {name: 'Projection source', exact: true});
+  await expect(sleeper.getByTestId('draft-player-pool')).toBeVisible();
+  for (const name of ['Sleeper', 'FantasyPros']) {
+    await source.getByRole('button', {name, exact: true}).click();
+    await sleeperSource.getByRole('button', {name, exact: true}).click();
+    for (const page of [second, sleeper]) {
+      await page.getByRole('switch', {name: 'Show drafted', exact: true}).check();
+      await expect(page.getByTestId('draft-player-pool').locator('tr[data-row-drafted="true"]').filter({hasText: 'Justin Jefferson'}).first()).toBeVisible();
+    }
+    await expect.poll(async () => sleeper.getByTestId('draft-player-pool').getByRole('table').first().innerText())
+      .toBe(await second.getByTestId('draft-player-pool').getByRole('table').first().innerText());
+    for (const page of [second, sleeper]) await page.getByRole('switch', {name: 'Show drafted', exact: true}).uncheck();
+  }
+  await sleeper.close();
   await source.getByRole('button', {name: 'Sleeper', exact: true}).click();
   if (await second.evaluate(() => document.documentElement.scrollWidth > innerWidth)) throw new Error('Assistant page overflows');
   await second.screenshot({ path: '/private/tmp/fantasy-tiers-screenshots/espn-reader-two-tabs.png', fullPage: true });
@@ -104,7 +157,7 @@ try {
   await draft.close();
   await expect(second.getByText('Open ESPN Reader in your draft tab', { exact: true })).toBeVisible();
   if (relayRequests !== 0) throw new Error('Unexpected relay HTTP request');
-  console.log(JSON.stringify({ result: 'PASS', recommendationsBlocked, checks: ['packaged extension loads', 'one click creates session and opens assistant', 'ESPN existing socket observed', 'HTTP data normalized', 'assistant receives live pick and survives reload', 'private fields excluded', 'no new socket or draft commands', 'stale board removed', 'no relay HTTP'], socketCount, sentCommands, relayRequests }));
+  console.log(JSON.stringify({ result: 'PASS', recommendationsBlocked, checks: ['packaged extension loads', 'one click creates session and opens assistant', 'ESPN existing socket observed', 'HTTP data normalized', 'assistant receives live pick and survives reload', 'unranked pick and suffix undo', 'Show drafted preserves source values', 'Sleeper and ESPN rendered table parity for both sources', 'private fields excluded', 'no new socket or draft commands', 'stale board removed', 'no relay HTTP'], socketCount, sentCommands, relayRequests }));
 } finally {
   clearInterval(heartbeat);
   await context.close(); await rm(root, { recursive: true, force: true });
