@@ -93,3 +93,15 @@ The old relay rehearsal and eight-pick reports are historical evidence. They do
 not verify version 2.0. Keep raw ESPN HAR files outside Git: even sanitized exports
 can contain WebSocket authentication frames. Use `espn:replay-har` only on private
 local captures; do not print or publish raw headers, frames, or credentials.
+
+## Shared UI contract
+
+Sleeper, ESPN, and local mocks use `useDraftAssistantContextValue` and
+`DraftAssistantContent`. Keep roster placement, drafted overlays, table values,
+source display, and recommendation rows in that shared path. Platform code
+selects the draft, reads its state, and maps its identities and rules.
+
+The packaged-reader check renders equivalent ESPN and Sleeper fixtures and
+compares their table rows under both projection sources. It also checks that
+Show drafted reveals source values without assigning a live recommendation
+score to players who were already selected.

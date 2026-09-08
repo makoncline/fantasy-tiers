@@ -22,7 +22,6 @@ import {
 } from "@/app/draft-assistant/_lib/useSleeper";
 import { buildDraftViewModel, selectDraftSource } from "@/lib/draftState";
 import type { DraftContext } from "@/lib/draftState";
-import { buildRosterRequirementsFromDraftSettings } from "@/lib/draftHelpers";
 import { getSleeperSeasonCandidates } from "@/lib/sleeperSeasons";
 
 import type {
@@ -40,21 +39,10 @@ import type {
   AggregateSourceHealthT,
 } from "@/lib/schemas-bundle";
 import type { PlayerRow } from "@/lib/playerRows";
-import {
-  buildPositionTierMapFromBundle,
-  toPlayerRowsFromBundle,
-} from "@/lib/playerRows";
 import type { PlayerWithPick } from "@/lib/types.draft";
-import { normalizePick } from "@/lib/normalizePick";
-import type { PickMeta } from "@/lib/types.draft";
-import {
-  attachDraftValueMetrics,
-  type DraftRosterConstruction,
-} from "@/lib/draftValue";
-import {
-  draftCandidateMapFromRows,
-  fantasyProsRankingsUpdatedAt,
-} from "@/lib/draftCandidate";
+import type { DraftRosterConstruction } from "@/lib/draftValue";
+import { draftCandidateMapFromBundle } from "@/lib/draftCandidate";
+import { useDraftAssistantContextValue } from "../_lib/useDraftAssistantContextValue";
 import {
   draftLeagueConfigFromSleeperDraft,
   getUnsupportedDraftFormatNotices,
@@ -258,24 +246,6 @@ const defaultContextValue: DraftDataContextType = {
   playersAll: [],
   playersByPosition: null,
   draftedIds: new Set<string>(),
-};
-
-const EMPTY_PROCESSED: ProcessedData = {
-  availablePlayers: [],
-  userPositionNeeds: {},
-  userPositionCounts: {},
-  userPositionRequirements: {},
-  // Helper function for consistent roster status calculation
-  getRosterStatus: () => ({ count: 0, requirement: 0, met: false }),
-  draftWideNeeds: {},
-  userRoster: null,
-  userRosterSlots: [],
-  decisionRows: [],
-  topRecommendation: null,
-  rosterConstruction: null,
-  draftContext: null,
-  sourceHealth: null,
-  positionRows: null,
 };
 
 const DraftDataContext =
@@ -659,69 +629,10 @@ export function DraftDataProvider({
     refetchPicks,
   ]);
 
-  // Build position rows from bundle when available
-  const positionRows = useMemo(() => {
-    if (!playersBundle || !league) return null;
-    const positionTierByPlayerId = buildPositionTierMapFromBundle(playersBundle);
-    const positionTierOptions = { tiersArePositionTiers: true };
-
-    // Use existing import instead of require
-    const result = {
-      QB: toPlayerRowsFromBundle(
-        playersBundle.shards.QB,
-        league.teams,
-        positionTierOptions
-      ),
-      RB: toPlayerRowsFromBundle(
-        playersBundle.shards.RB,
-        league.teams,
-        positionTierOptions
-      ),
-      WR: toPlayerRowsFromBundle(
-        playersBundle.shards.WR,
-        league.teams,
-        positionTierOptions
-      ),
-      TE: toPlayerRowsFromBundle(
-        playersBundle.shards.TE,
-        league.teams,
-        positionTierOptions
-      ),
-      K: toPlayerRowsFromBundle(
-        playersBundle.shards.K,
-        league.teams,
-        positionTierOptions
-      ),
-      DEF: toPlayerRowsFromBundle(
-        playersBundle.shards.DEF,
-        league.teams,
-        positionTierOptions
-      ),
-      FLEX: toPlayerRowsFromBundle(
-        playersBundle.shards.FLEX,
-        league.teams,
-        { positionTierByPlayerId }
-      ),
-      ALL: toPlayerRowsFromBundle(playersBundle.shards.ALL, league.teams, {
-        positionTierByPlayerId,
-      }),
-    } as const;
-
-    return result;
-  }, [playersBundle, league]);
-
-  // Build playersMap from ALL shard for view-model
-  const playersMap = useMemo(() => {
-    return positionRows
-      ? draftCandidateMapFromRows(
-          positionRows.ALL,
-          playersBundle?.draftProjections?.players ?? {},
-          playersBundle
-            ? fantasyProsRankingsUpdatedAt(playersBundle)
-            : null
-        )
-      : {};
-  }, [playersBundle, positionRows]);
+  const playersMap = useMemo(
+    () => playersBundle ? draftCandidateMapFromBundle(playersBundle) : {},
+    [playersBundle]
+  );
 
   // Build the server-like draft VM on the client
   const projectionArtifact = playersBundle?.draftProjections;
@@ -770,229 +681,21 @@ export function DraftDataProvider({
 
   const viewModel = useMemo(() => sourceViewModel ? selectDraftSource(sourceViewModel, valueSource) : null, [sourceViewModel, valueSource]);
 
-  // Build processed data when all required data is available
-  const processedData = useMemo(() => {
-    if (!viewModel || !user) {
-      return EMPTY_PROCESSED;
-    }
-
-    try {
-      const result = {
-        availablePlayers: viewModel.available || [],
-        availableByPosition: viewModel.availableByPosition,
-        topAvailablePlayersByPosition: viewModel.topAvailablePlayersByPosition,
-        userPositionNeeds:
-          viewModel.userRoster?.remainingPositionRequirements || {},
-        userPositionCounts: viewModel.userRoster?.rosterPositionCounts || {},
-        userPositionRequirements: viewModel.rosterRequirements,
-        // Helper function for consistent roster status calculation
-        getRosterStatus: (pos: Position) => {
-          const count = viewModel.userRoster?.rosterPositionCounts?.[pos] ?? 0;
-          const requirement = viewModel.rosterRequirements?.[pos] ?? 0;
-          const met = requirement > 0 && count >= requirement;
-          return { count, requirement, met };
-        },
-        draftWideNeeds: viewModel.draftWideNeeds,
-        userRoster: viewModel.userRoster?.players || [],
-        userRosterSlots: (() => {
-          // Build slots template from draft settings
-          if (!draftDetails) return [];
-          const rosterRequirements = buildRosterRequirementsFromDraftSettings(
-            draftDetails.settings
-          );
-          const benchCount = rosterRequirements.BN;
-
-          const slots: RosterSlot[] = [
-            ...Array.from(
-              { length: draftDetails.settings?.slots_qb ?? 0 },
-              () => "QB" as RosterSlot
-            ),
-            ...Array.from(
-              { length: draftDetails.settings?.slots_rb ?? 0 },
-              () => "RB" as RosterSlot
-            ),
-            ...Array.from(
-              { length: draftDetails.settings?.slots_wr ?? 0 },
-              () => "WR" as RosterSlot
-            ),
-            ...Array.from(
-              { length: draftDetails.settings?.slots_te ?? 0 },
-              () => "TE" as RosterSlot
-            ),
-            ...Array.from(
-              { length: draftDetails.settings?.slots_flex ?? 0 },
-              () => "FLEX" as RosterSlot
-            ),
-            ...Array.from(
-              { length: draftDetails.settings?.slots_k ?? 0 },
-              () => "K" as RosterSlot
-            ),
-            ...Array.from(
-              { length: draftDetails.settings?.slots_def ?? 0 },
-              () => "DEF" as RosterSlot
-            ),
-            ...Array.from({ length: benchCount }, () => "BN" as RosterSlot),
-          ];
-
-          const rows = slots.map((slot) => ({
-            slot,
-            player: null as DraftedPlayer | null,
-          }));
-          const rosterPlayers = viewModel.userRoster?.players || [];
-          if (rosterPlayers.length) {
-            const findIndex = (s: RosterSlot) =>
-              rows.findIndex((x) => x.slot === s && x.player === null);
-            for (const p of rosterPlayers) {
-              const pos = p.position as RosterSlot;
-              // place in primary slot
-              const posIdx = findIndex(pos);
-              if (posIdx !== -1 && posIdx < rows.length) {
-                rows[posIdx]!.player = p;
-                continue;
-              }
-              // flex allocation if RB/WR/TE
-              if (pos === "RB" || pos === "WR" || pos === "TE") {
-                const flexIdx = findIndex("FLEX");
-                if (flexIdx !== -1 && flexIdx < rows.length) {
-                  rows[flexIdx]!.player = p;
-                  continue;
-                }
-              }
-              // bench fallback
-              const bnIdx = findIndex("BN");
-              if (bnIdx !== -1 && bnIdx < rows.length) rows[bnIdx]!.player = p;
-            }
-          }
-          return rows;
-        })(),
-        decisionRows: [],
-        topRecommendation: null,
-        rosterConstruction: null,
-        draftContext: viewModel.draftContext,
-        sourceHealth: playersBundle?.sourceHealth ?? null,
-        positionRows, // expose to tables to avoid recomputing
-      };
-
-      return result;
-    } catch (error) {
-      console.error("Error building processed data:", error);
-      return EMPTY_PROCESSED;
-    }
-  }, [viewModel, user, positionRows, draftDetails, playersBundle?.sourceHealth]);
-
-  // Build the overlay and enriched lists
-  const pickOverlay = useMemo(() => {
-    const m = new Map<string, PickMeta>();
-    const teams = league?.teams;
-
-    for (const p of picks ?? []) {
-      const norm = normalizePick(p, teams ? { teams } : undefined);
-      if (!norm) continue;
-      m.set(norm.playerId, norm.meta);
-    }
-    return m;
-  }, [picks, league?.teams]);
-
-  // Enriched ALL with pick overlay, before dynamic value calculations
-  const playersAllWithPicks: PlayerWithPick[] = useMemo(() => {
-    const base = positionRows?.ALL ?? [];
-    if (base.length === 0) return [];
-    if (pickOverlay.size === 0) return base.map((r) => ({ ...r }));
-
-    const me = user?.user_id;
-    return base.map((r) => {
-      const meta = pickOverlay.get(r.player_id);
-      return meta
-        ? { ...r, picked: meta, draftedByMe: meta.drafterId === me }
-        : { ...r };
-    });
-  }, [positionRows, pickOverlay, user?.user_id]);
-
-  const draftValueBoard = viewModel?.recommendationBoard ?? null;
-  const draftRawValuesByPlayerId = viewModel?.draftRawValuesByPlayerId;
-
-  const attachDraftValue = useCallback(
-    (row: PlayerWithPick): PlayerWithPick => {
-      const valued = attachDraftValueMetrics(
-        { ...row, draft_projected_points: viewModel?.choiceSnapshot?.values.valuesByPlayerId[row.player_id]?.projectedPoints ?? null },
-        draftValueBoard?.metricsByPlayerId[row.player_id]
-      );
-      const rawValue = draftRawValuesByPlayerId?.[row.player_id];
-      return valued.draft_raw_value_score != null || rawValue == null
-        ? valued
-        : {
-            ...valued,
-            draft_raw_value_score: rawValue,
-            draft_value_label: "Starter-aware value",
-          };
-    },
-    [draftRawValuesByPlayerId, draftValueBoard, viewModel?.choiceSnapshot]
-  );
-
-  const playersAll: PlayerWithPick[] = useMemo(() => {
-    const valuedPlayers = playersAllWithPicks.map(attachDraftValue);
-    if (!draftValueBoard) return valuedPlayers;
-    return valuedPlayers.sort(
-        (a, b) =>
-          (a.draft_recommendation_rank ?? 999_999) -
-            (b.draft_recommendation_rank ?? 999_999) ||
-          (a.tier_rank ?? a.rank ?? 999_999) -
-            (b.tier_rank ?? b.rank ?? 999_999)
-      );
-  }, [attachDraftValue, draftValueBoard, playersAllWithPicks]);
-
-  const decisionRows: PlayerWithPick[] = useMemo(() => {
-    if (!draftValueBoard) return [];
-    return playersAllWithPicks
-      .map(attachDraftValue)
-      .filter(
-        (row) => !row.picked && row.draft_recommendation_rank != null
-      )
-      .sort(
-        (a, b) =>
-          (a.draft_recommendation_rank ?? 999_999) -
-          (b.draft_recommendation_rank ?? 999_999)
-      )
-      .slice(0, 12);
-  }, [attachDraftValue, draftValueBoard, playersAllWithPicks]);
-
-  // Enriched per-position (preserve order)
-  const playersByPosition = useMemo(() => {
-    if (!positionRows) return null;
-
-    const me = user?.user_id;
-    const enrich = (arr: PlayerRow[]): PlayerWithPick[] =>
-      arr
-        .map((r) => {
-          const meta = pickOverlay.get(r.player_id);
-          return meta
-            ? { ...r, picked: meta, draftedByMe: meta.drafterId === me }
-            : { ...r };
-        })
-        .map(attachDraftValue);
-
-    return {
-      QB: enrich(positionRows.QB),
-      RB: enrich(positionRows.RB),
-      WR: enrich(positionRows.WR),
-      TE: enrich(positionRows.TE),
-      K: enrich(positionRows.K),
-      DEF: enrich(positionRows.DEF),
-      FLEX: enrich(positionRows.FLEX),
-      ALL: enrich(positionRows.ALL),
-    };
-  }, [attachDraftValue, positionRows, pickOverlay, user?.user_id]);
-
-  // Drafted ids for legacy consumers and quick checks
-  const draftedIds = useMemo(() => {
-    const out = new Set<string>();
-    for (const id of pickOverlay.keys()) out.add(id);
-    return out;
-  }, [pickOverlay]);
+  const sharedContext = useDraftAssistantContextValue({
+    viewModel,
+    bundle: playersBundle,
+    draftDetails: draftDetails ?? null,
+    draftPicks: picks ?? [],
+    userId: user?.user_id ?? "",
+    userSlot: leagueConfig?.userSlot ?? 0,
+    scoring: leagueConfig?.scoring ?? "ppr",
+  });
 
   // Context value
   const contextValue: DraftDataContextType = useMemo(
     () => ({
+      ...defaultContextValue,
+      ...sharedContext,
       // Input state and handlers
       username,
       setUsername,
@@ -1008,7 +711,6 @@ export function DraftDataProvider({
       readiness: viewModel?.readiness ?? null,
       valueSource, setValueSource, sourceComparison: viewModel?.sourceComparison ?? null,
       choiceSnapshot: viewModel?.choiceSnapshot ?? null,
-      recommendationBoard: draftValueBoard,
       clearDraft,
       clearUser,
 
@@ -1024,13 +726,6 @@ export function DraftDataProvider({
       // UI state
       showDiagnostics,
       setShowDiagnostics,
-
-      // Processed data - build view model when all data is available
-      ...processedData,
-      decisionRows,
-      topRecommendation: decisionRows[0] ?? null,
-      rosterConstruction: draftValueBoard?.rosterConstruction ?? null,
-      sourceHealth: playersBundle?.sourceHealth ?? null,
 
       // Loading states
       loading,
@@ -1054,10 +749,6 @@ export function DraftDataProvider({
           updatedAtPlayers || 0
         ) || null,
 
-      // Enriched player data with pick overlay
-      playersAll,
-      playersByPosition,
-      draftedIds,
     }),
     [
       username,
@@ -1083,16 +774,11 @@ export function DraftDataProvider({
       updatedAtPicks,
       fetchStatusPicks,
       updatedAtPlayers,
-      processedData,
-      decisionRows,
-      draftValueBoard,
+      sharedContext,
       viewModel?.draftValueStatus,
       viewModel?.readiness,
       valueSource, setValueSource, viewModel?.sourceComparison,
       viewModel?.choiceSnapshot,
-      playersAll,
-      playersByPosition,
-      draftedIds,
     ]
   );
 

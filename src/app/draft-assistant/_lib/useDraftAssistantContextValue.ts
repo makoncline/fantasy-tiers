@@ -95,21 +95,25 @@ export function useDraftAssistantContextValue(props: {
         ? {
             ...row,
             picked: meta,
-            draftedByMe: meta.slot === userSlot,
+            draftedByMe: meta.drafterId ? meta.drafterId === userId : meta.slot === userSlot,
           }
         : { ...row };
     });
-  }, [userSlot, pickOverlay, positionRows]);
+  }, [userId, userSlot, pickOverlay, positionRows]);
 
   const draftValueBoard = viewModel?.recommendationBoard ?? null;
 
   const attachDraftValue = useMemo(
     () => (row: PlayerWithPick): PlayerWithPick =>
       attachDraftValueMetrics(
-        { ...row, draft_projected_points: viewModel?.choiceSnapshot?.values.valuesByPlayerId[row.player_id]?.projectedPoints ?? null },
+        { ...row,
+          draft_projected_points: viewModel?.choiceSnapshot?.values.valuesByPlayerId[row.player_id]?.projectedPoints ?? null,
+          draft_raw_value_score: viewModel?.draftRawValuesByPlayerId[row.player_id] ?? null,
+          draft_value_label: "Starter-aware value",
+        },
         draftValueBoard?.metricsByPlayerId[row.player_id]
       ),
-    [draftValueBoard, viewModel?.choiceSnapshot]
+    [draftValueBoard, viewModel?.choiceSnapshot, viewModel?.draftRawValuesByPlayerId]
   );
 
   const playersAll = useMemo(
@@ -136,7 +140,7 @@ export function useDraftAssistantContextValue(props: {
             ? {
                 ...row,
                 picked: meta,
-                draftedByMe: meta.slot === userSlot,
+                draftedByMe: meta.drafterId ? meta.drafterId === userId : meta.slot === userSlot,
               }
             : { ...row };
         })
@@ -152,7 +156,7 @@ export function useDraftAssistantContextValue(props: {
       FLEX: enrich(positionRows.FLEX),
       ALL: enrich(positionRows.ALL),
     };
-  }, [attachDraftValue, userSlot, pickOverlay, positionRows]);
+  }, [attachDraftValue, userId, userSlot, pickOverlay, positionRows]);
 
   const draftedIds = useMemo(
     () => new Set(Array.from(pickOverlay.keys())),
