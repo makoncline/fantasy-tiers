@@ -9,7 +9,7 @@
     :root { font-family: Arial, sans-serif; color: #17202a; background: #f6f7f9; line-height: 1.6; }
     * { box-sizing: border-box; }
     body { margin: 0; }
-    main { max-width: 720px; margin: 0 auto; padding: 32px 22px 48px; }
+    main { max-width: 880px; margin: 0 auto; padding: 32px 22px 48px; }
     h1 { font-size: 32px; line-height: 1.2; margin: 0 0 8px; }
     h2 { font-size: 20px; margin: 26px 0 10px; }
     p { margin: 10px 0; }
@@ -20,39 +20,63 @@
     a { color: #174f8a; text-underline-offset: 3px; }
     a:focus-visible { outline: 3px solid #3088dc; outline-offset: 4px; }
     nav { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-top: 26px; }
-    @media print { :root { background: white; } main { padding: 0; } nav { display: none; } }
+    h3 { font-size: 18px; margin: 0 0 8px; }
+    .flow { list-style: none; padding: 0; }
+    .flow > li { position: relative; margin: 0 0 30px; padding: 18px; border: 1px solid #bdcad9; border-radius: 8px; background: white; }
+    .flow > li:not(:last-child)::after { content: "↓"; position: absolute; bottom: -29px; left: calc(50% - 8px); color: #174f8a; font-size: 24px; }
+    .branches { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .branches p { margin: 0; padding: 12px; background: #edf3fa; border-radius: 5px; }
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    caption { text-align: left; color: #536174; margin-bottom: 8px; }
+    th, td { text-align: left; vertical-align: top; padding: 12px; border: 1px solid #bdcad9; }
+    thead { background: #e7effa; }
+    @media (max-width: 600px) { .branches { grid-template-columns: 1fr; } main { padding: 22px 16px; } th, td { padding: 8px; font-size: 14px; } }
+    @media print { :root { background: white; } main { padding: 0; } nav { display: none; } .flow > li, tr { break-inside: avoid; } }
   </style>
 </head>
 <body>
 <main>
-  <h1>Your draft plan</h1>
+  <h1>Your next-pick guide</h1>
   <p class="league">12 teams · Full PPR · Pick 7 · 16 rounds</p>
-  <p class="reminder"><strong>Build a strong team, one pick at a time.</strong> Take good value. Stay flexible. You do not need a perfect pick.</p>
+  <p class="reminder"><strong>Best player → team fit → who will be gone → bye coverage.</strong><br>Use this order when two or three players look good. A small ADJ lead is not a guarantee.</p>
 
-  <h2>The plan</h2>
-  <ol>
-    <li><strong>Build around running backs and wide receivers.</strong> Get strength at both positions. Do not force a fixed order of picks.</li>
-    <li><strong>Use roster need to break close calls.</strong> Do not pass on a much better player just to fill an empty spot.</li>
-    <li><strong>Take one good quarterback and one good tight end.</strong> An elite player is worth considering at a fair price. Do not reach because others start taking that position.</li>
-    <li><strong>Use the bench for RBs and WRs with upside.</strong> Favor players who could earn a bigger role. Skip backup QBs and TEs.</li>
-    <li><strong>Save kicker and defense for the last two rounds.</strong></li>
+  <h2>Follow this on each turn</h2>
+  <ol class="flow" aria-label="Draft decision flowchart">
+    <li><h3>1. What does my team need?</h3><p>Check missing starters <em>and weak starters</em>. You need 1 QB, 2 RB, 2 WR, 1 TE, 1 FLEX (RB/WR/TE), 1 K and 1 D/ST, plus 7 bench players.</p><p>If you have two good RBs but no WR, favor WR in a close call. Do not add a backup QB or TE while you still need RB/WR/FLEX strength.</p></li>
+    <li><h3>2. Is one option clearly better?</h3><div class="branches"><p><strong>Yes → Favor the better player.</strong><br>A clear value or quality advantage can outweigh an empty roster spot. Check injury risk and the QB/TE timing guide below.</p><p><strong>No → Compare team fit.</strong><br>Within the same position tier, treat players as roughly comparable. Favor the one who improves your lineup more.</p></div></li>
+    <li><h3>3. Which option can wait?</h3><p>Look at the teams picking before your next turn. Count their open positions and the good players left at those positions.</p><div class="branches"><p><strong>Few good options + several teams need one → Consider taking that position now.</strong><br>Example: two TEs you like remain and three teams before your next pick still need a TE.</p><p><strong>Several similar options remain → You can be more patient.</strong><br>Example: most teams already have a QB and several usable QBs remain. A QB run alone is not a reason to panic.</p></div><p class="note">Teams can still draft backups. ADP and the assistant’s return estimate are clues, not promises. On your first turn at pick 7, ten picks happen before your next turn at pick 18.</p></li>
+    <li><h3>4. Still close? Check risk and bye coverage.</h3><p>Favor the healthier player with a useful role. For bench RBs/WRs, check whether they can cover your starters’ bye weeks. Then make the pick in ESPN.</p></li>
   </ol>
 
-  <h2>When it is your turn</h2>
-  <ul>
-    <li>Check that the assistant shows the latest picks. Keep two good options ready.</li>
-    <li>Start with the top recommendation. Compare close alternatives and read any injury warning.</li>
-    <li>If several players look similar, favor the position you need or a player unlikely to last until your next turn.</li>
-  </ul>
+  <h2>What counts as elite or too early?</h2>
+  <p><strong>Elite means a small group with a meaningful advantage over the next group.</strong> Use the <em>position</em> tier: the first QB tier, or the top two TEs in the first TE tier. A famous name or a high projection alone is not enough. An elite label is permission to compare, not an instruction to draft.</p>
+  <div class="table-scroll"><table>
+    <caption>Timing guide for this one-QB, one-TE league</caption>
+    <thead><tr><th scope="col">Position</th><th scope="col">Early picks</th><th scope="col">If you wait</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">QB</th><td><strong>Rounds 1–3:</strong> usually RB/WR; QB needs an exceptional elite-value case.<br><strong>Rounds 4–6:</strong> consider an elite QB at a fair price. An ordinary QB needs a clear advantage over the RB/WR alternatives.</td><td><strong>Round 7 onward:</strong> look for a usable starter at good value. Do not keep waiting if the last good options are likely to go.</td></tr>
+      <tr><th scope="row">TE</th><td><strong>Rounds 1–2:</strong> only a clear elite exception.<br><strong>Rounds 3–5:</strong> compare an elite TE or a strong starter at a meaningful tier drop. Do not pay an elite price for an ordinary TE.</td><td><strong>Around round 6 onward:</strong> look for a good starter window. Do not fill TE just because it is empty, or wait until only weak options remain.</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>“Too early” also means paying much more than the expected draft price.</strong> At pick 42, a player with ADP 65 is almost two rounds early. That needs a strong reason. Compare the player you would give up and who may remain next turn.</p>
+  <p class="note">These are guideposts, not round deadlines. ADP here uses Sleeper reference data; your ESPN room can draft differently.</p>
 
-  <h2>Read the numbers</h2>
-  <p><strong>ADJ:</strong> help for this pick. <strong>VAL:</strong> underlying value for your league. Higher is better. <strong>ECR:</strong> expert rank; lower is better. <strong>ADP:</strong> when players usually go, not how good they are.</p>
-  <p class="note">Small score gaps are not guarantees. Tiers group similar players; overall and position tiers are different.</p>
+  <h2>How to use tiers</h2>
+  <p><strong>Same tier = roughly similar, not identical.</strong> A small rank gap matters less than team fit, role and risk. The last player in a strong tier can matter more than the first of many similar players at another position.</p>
+  <p><strong>Compare like with like.</strong> RB tier 2 and WR tier 2 are separate groups, not equal values. Use overall tiers and VAL/ADJ to help compare positions. A tier boundary alone does not justify a large reach.</p>
 
-  <nav aria-label="Draft tools">
-    <a href="/espn-draft">Open draft assistant</a>
-    <a href="/espn-backup">Open emergency sheet</a>
-  </nav>
+  <h2>Byes: cover the lineup, not every pair</h2>
+  <p><strong>Two starters sharing a bye is manageable if your bench can cover them.</strong> Two starting WRs plus your only useful backup WR all off in week 10 is a real gap. When similar backups are available, choose one who plays that week. Check FLEX coverage too.</p>
+  <p>Do not downgrade a clearly better early player just to spread byes. Our plan drafts one QB and one TE; their bye-week replacements can come from waivers later. That requires planning and is not guaranteed.</p>
+
+  <h2>Finish the roster</h2>
+  <p>Once starters and FLEX are strong, use the bench mainly for RBs/WRs who can help now or earn bigger roles. Save <strong>rounds 15 and 16 for kicker and defense</strong>. Before the last picks, confirm every required spot is covered.</p>
+  <p class="note"><strong>Before trusting advice:</strong> confirm the assistant shows the latest picks. Keep two candidates ready. If updates stop, use the manual emergency sheet.</p>
+
+  <h2>Quick key</h2>
+  <p><strong>ADJ:</strong> contextual help for this pick. <strong>VAL:</strong> league-specific player value. Higher is better. <strong>ECR:</strong> expert rank; lower is better. <strong>ADP:</strong> expected draft timing. <strong>PTS:</strong> projected season points, not a cross-position draft order.</p>
+  <nav aria-label="Draft tools"><a href="/espn-draft">Open draft assistant</a><a href="/espn-backup">Open emergency sheet</a></nav>
 </main>
 </body>
 </html>
