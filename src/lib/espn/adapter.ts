@@ -15,7 +15,8 @@ export function espnDraftConfig(input: EspnRoom) {
   const { data, live } = room;
   if (!data || !live) throw new Error("ESPN draft data is incomplete.");
   if (data.draftType !== "SNAKE" || live.draftType !== 1) throw new Error("Only ESPN snake drafts are supported.");
-  if (data.scoringItems.some((item) => Object.values(item.pointsOverrides).some((points) => points !== item.points))) {
+  // ESPN stores D/ST rates as position 16 overrides; league totals include them.
+  if (data.scoringItems.some((item) => Object.entries(item.pointsOverrides).some(([position, points]) => position !== "16" && points !== item.points))) {
     throw new Error("ESPN position-specific scoring is not supported. Recommendations are stopped.");
   }
   const counts: Record<string, number> = { QB: 0, RB: 0, WR: 0, TE: 0, K: 0, DEF: 0, FLEX: 0, BENCH: 0, IR: 0 };
