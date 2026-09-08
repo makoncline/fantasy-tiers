@@ -83,3 +83,5 @@
 - [2026-09-08] ESPN undo index: The live ESPN client onUndoneMessage adds one to the UNDONE index; INIT pickNumber is one-based. Convert the index before clearing that pick and its suffix. Verify the retained previous pick in browser tests.
 
 - [2026-09-08] ESPN idle socket health: A paused or quiet draft can send no frames for more than the 15-second freshness window. Stamp each main-world health snapshot from the existing socket readyState; do not use the last draft frame time as proof of a lost connection. Keep transport-age and closed-socket checks.
+
+- [2026-09-08] ESPN Chrome row labels: The browser control can retain an old accessible row name after ESPN filters the player grid. Verify the filtered grid text, select its sole action, and verify the retained pick through the sanitized Reader snapshot before retrying any timeout. A timeout can follow a successful pick.
