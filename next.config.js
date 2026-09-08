@@ -8,6 +8,9 @@ const nextConfig = {
   outputFileTracingIncludes: { "/api/draft/*": ["./public/data/aggregate/fantasypros-draft-projections.json"] },
   // Silence workspace root inference warnings by pinning tracing root
   outputFileTracingRoot: path.join(__dirname),
+  async rewrites() {
+    return [{ source: "/espn-backup", destination: "/espn-backup.html" }];
+  },
   // Build checks re-enabled
   async redirects() {
     return [];
