@@ -54,6 +54,9 @@ window.WebSocket = new Proxy(NativeSocket, {
 });
 
 setInterval(() => {
+  room.connected = activeSocket?.readyState === NativeSocket.OPEN;
+  // A quiet draft is healthy while ESPN keeps its own socket open.
+  room.updatedAt = Date.now();
   if (room.connected && !room.data) void loadData();
   const parsed = EspnRoomSchema.safeParse(room);
   if (parsed.success) window.postMessage({ type: "fantasy-tiers-espn-room", room: parsed.data }, location.origin);

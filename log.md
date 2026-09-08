@@ -81,3 +81,5 @@
 - [2026-09-07] Shared draft display parity: Sleeper, ESPN, and local mocks must use useDraftAssistantContextValue for row enrichment, roster slots, and drafted values. The previous duplicate ESPN/mock path omitted static values for drafted players, so Show drafted changed counts but hid the rows below the visible slice. Keep platform providers limited to loading and normalized inputs; verify rendered parity with identical scoring, including specialist reference rules.
 
 - [2026-09-08] ESPN undo index: The live ESPN client onUndoneMessage adds one to the UNDONE index; INIT pickNumber is one-based. Convert the index before clearing that pick and its suffix. Verify the retained previous pick in browser tests.
+
+- [2026-09-08] ESPN idle socket health: A paused or quiet draft can send no frames for more than the 15-second freshness window. Stamp each main-world health snapshot from the existing socket readyState; do not use the last draft frame time as proof of a lost connection. Keep transport-age and closed-socket checks.
