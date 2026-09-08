@@ -2,7 +2,6 @@
 import type { DraftChoiceSnapshot } from "./draftChoices";
 export const qk = {
   draftNext: (snapshot: DraftChoiceSnapshot, playerId: string) => ["draft-next", snapshot, playerId] as const,
-  espn: { relay: (id: string) => ["espn", "relay", id] as const },
   aggregates: {
     merged: ["aggregates", "merged"] as const,
     shard: (pos: string) => ["aggregates", "shard", pos] as const,

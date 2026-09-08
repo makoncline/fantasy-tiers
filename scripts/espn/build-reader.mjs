@@ -1,0 +1,22 @@
+import { build } from "esbuild";
+import { createHash } from "node:crypto";
+import { rm, mkdir, copyFile, readFile, writeFile } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
+
+const origin = new URL(process.env.ESPN_ASSISTANT_ORIGIN ?? "https://fantasy-tiers.vercel.app").origin;
+if (!origin.startsWith("https://") && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) throw new Error("Use HTTPS or localhost.");
+const output = "dist/espn-reader";
+await rm(output, { recursive: true, force: true });
+await rm("dist/espn-reader.zip", { force: true });
+await mkdir(output, { recursive: true });
+await build({ entryPoints: ["main", "content", "background", "popup", "assistant"].map((name) => `extensions/espn-reader/${name}.ts`), bundle: true, outdir: output, format: "iife", platform: "browser", target: "chrome120", minify: true, define: { "process.env.ESPN_ASSISTANT_ORIGIN": JSON.stringify(origin) } });
+for (const file of ["popup.html", "popup.css"]) await copyFile(`extensions/espn-reader/${file}`, `${output}/${file}`);
+const manifest = JSON.parse(await readFile("extensions/espn-reader/manifest.json", "utf8"));
+manifest.host_permissions.push(`${origin}/*`);
+manifest.content_scripts.push({ matches: [`${origin}/espn-draft*`], js: ["assistant.js"], run_at: "document_start", world: "ISOLATED" });
+await writeFile(`${output}/manifest.json`, JSON.stringify(manifest, null, 2));
+await copyFile("docs/espn-reader-mac-setup.md", `${output}/INSTALL.md`);
+execFileSync("zip", ["-q", "-r", "../espn-reader.zip", "."], { cwd: output });
+const checksum = createHash("sha256").update(await readFile("dist/espn-reader.zip")).digest("hex");
+await writeFile("dist/espn-reader.zip.sha256", `${checksum}  espn-reader.zip\n`);
+console.log(`Load unpacked: ${output}\nDistribution: dist/espn-reader.zip`);

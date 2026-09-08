@@ -42,7 +42,9 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "knip": "knip",
-    "fetch:fp-projections": "node --import=tsx scripts/fp/refresh-draft-projections.ts"
+    "fetch:fp-projections": "node --import=tsx scripts/fp/refresh-draft-projections.ts",
+    "espn:replay-har": "node --import=tsx scripts/espn/replay-har.ts",
+    "espn:build-reader": "node scripts/espn/build-reader.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -120,7 +122,9 @@
     "tailwindcss": "^4.1.12",
     "tsx": "^4.20.5",
     "typescript": "^5",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "@types/chrome": "^0.2.9",
+    "esbuild": "^0.28.2"
   },
   "packageManager": "pnpm@10.15.1",
   "engines": {
