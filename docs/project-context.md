@@ -117,9 +117,10 @@ The app can run with FantasyPros ECR and empty FantasyPros stats, but the curren
 ### Tiers 2026 Notes
 
 The `pnpm run fetch:tiers` path generates tier raw CSVs in
-`public/data/tiers/*` from current FantasyPros draft ECR. It uses deterministic
-contiguous 1D k-means over FantasyPros average rank. Overall `ALL` tiers use
-three coarse groups followed by 10/8/8 subtiers.
+`public/data/tiers/*` from current FantasyPros draft ECR. It uses Boris Chen's Gaussian mixture method with R and pinned `mclust` 6.1.3
+over FantasyPros average rank. Overall `ALL` tiers use three coarse groups
+followed by 10/8/8 subtiers. See [tier generation](tier-generation.md) for setup
+and hosted validation. The shared draft UI and ranking-order rules are unchanged.
 
 FantasyPros raw ECR payloads include expert sample metadata (`total_experts`, `filters`, and `experts_available.included/excluded`). Aggregate metadata preserves full expert ID lists once under top-level `expert_samples`; each source/position/scoring entry keeps an `experts` summary with included/available counts, coverage percent, sample-size label, and `sample_key`. Use this to flag early-week rankings with too few submitted experts before trusting tier or drop advice.
 

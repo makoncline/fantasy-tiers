@@ -8,6 +8,10 @@ on:
     - cron: "0 21 * * *"
   workflow_dispatch:
     inputs:
+      validate_only:
+        description: Fetch and validate data without publishing or writing history
+        type: boolean
+        default: false
       projections_only:
         description: Verify season projections without publishing data
         type: boolean
@@ -18,7 +22,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: fantasy-data-refresh-main
+  group: fantasy-data-refresh-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -29,6 +33,7 @@ jobs:
     env:
       # The draft assistant needs season-long draft ECR. Weekly mode is for the
       # league-manager/in-season flow and should be enabled deliberately later.
+      PUBLISH_DATA: ${{ github.ref == 'refs/heads/main' && !inputs.validate_only }}
       DRAFT: "true"
       SEASON: "2026"
       FP_FETCH_PROJECTIONS: "false"
@@ -54,6 +59,16 @@ jobs:
         with:
           node-version: "22"
           cache: "pnpm"
+
+      - name: Setup R for tier generation
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.6.1"
+
+      - name: Install tier clustering package
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: mclust@6.1.3
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -90,7 +105,16 @@ jobs:
       - name: Test data quality contracts
         run: pnpm run test:data-quality
 
+      - name: Save validation output
+        if: env.PUBLISH_DATA != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: validated-draft-aggregates
+          path: public/data/aggregate/
+          retention-days: 7
+
       - name: Verify main has not advanced
+        if: env.PUBLISH_DATA == 'true'
         run: |
           git fetch origin main
           if [ "$(git rev-parse origin/main)" != "$BASE_SHA" ]; then
@@ -99,6 +123,7 @@ jobs:
           fi
 
       - name: Snapshot rating history
+        if: env.PUBLISH_DATA == 'true'
         env:
           FANTASY_HISTORY_DATABASE_URL: ${{ secrets.FANTASY_HISTORY_DATABASE_URL }}
           FANTASY_HISTORY_DATABASE_AUTH_TOKEN: ${{ secrets.FANTASY_HISTORY_DATABASE_AUTH_TOKEN }}
@@ -115,6 +140,7 @@ jobs:
           echo "✅ Rating history snapshot completed"
 
       - name: Stage and check aggregate changes
+        if: env.PUBLISH_DATA == 'true'
         id: verify-changed-files
         run: |
           git add public/data/aggregate/
@@ -127,7 +153,7 @@ jobs:
           fi
 
       - name: Commit and push changes
-        if: steps.verify-changed-files.outputs.changes == 'true'
+        if: env.PUBLISH_DATA == 'true' && steps.verify-changed-files.outputs.changes == 'true'
         run: |
           echo "📝 Committing data changes..."
 
@@ -169,13 +195,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify production deployment
-        if: steps.verify-changed-files.outputs.changes == 'true'
+        if: env.PUBLISH_DATA == 'true' && steps.verify-changed-files.outputs.changes == 'true'
         env:
           PRODUCTION_BASE_URL: https://fantasy-tiers.vercel.app
         run: pnpm run verify:deployment -- --expected-sha "$DATA_COMMIT_SHA" --timeout-seconds 240
 
       - name: Notify on data warning
-        if: success()
+        if: success() && env.PUBLISH_DATA == 'true'
         run: |
           if ! jq -e '.cohorts.reserve.status == "warning"' public/data/aggregate/quality-report.json >/dev/null; then
             exit 0
@@ -189,14 +215,16 @@ jobs:
       - name: Add workflow summary
         if: always()
         run: |
-          if [ "${{ steps.verify-changed-files.outputs.changes }}" == "true" ]; then
+          if [ "$PUBLISH_DATA" != "true" ]; then
+            echo "Validation run: no data publication or history writes." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${{ steps.verify-changed-files.outputs.changes }}" == "true" ]; then
             echo "🎯 Workflow completed successfully with data updates (12:00/21:00 UTC schedule)"
           else
             echo "📋 Workflow completed - no data changes detected (12:00/21:00 UTC schedule)"
           fi
 
       - name: Notify after recovery
-        if: success() && steps.fp-projections.outcome == 'success'
+        if: success() && env.PUBLISH_DATA == 'true' && steps.fp-projections.outcome == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -212,7 +240,7 @@ jobs:
             --data-urlencode "message=The scheduled FantasyPros and Sleeper refresh is healthy again. Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
       - name: Notify on failure
-        if: failure()
+        if: failure() && env.PUBLISH_DATA == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
