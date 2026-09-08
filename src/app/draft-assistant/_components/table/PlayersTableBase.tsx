@@ -132,6 +132,11 @@ export default function PlayersTableBase({
       const comparison = asNum
         ? Number(av) - Number(bv)
         : String(av).localeCompare(String(bv));
+      if (comparison === 0 && activeCol.id === "adj") {
+        const rankDifference = (a.draft_recommendation_rank ?? Infinity) -
+          (b.draft_recommendation_rank ?? Infinity);
+        return (sortDir === "desc" ? rankDifference : -rankDifference) || 0;
+      }
       return sortDir === "desc" ? -comparison : comparison;
     });
     return arr;

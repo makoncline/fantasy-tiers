@@ -51,6 +51,17 @@ describe("PlayersTableBase", () => {
     container.remove();
   });
 
+  it("uses canonical recommendation rank for equal ADJ before limiting rows", () => {
+    const tied = [{ ...player("lower-source-rank", 20), draft_recommendation_rank: 2 },
+      { ...player("higher-source-rank", 20), draft_recommendation_rank: 1 }];
+    const columns: ColumnGroup<PlayerWithPick>[] = [{ header: "Players", children: [
+      { id: "name", header: "Player", accessor: row => row.name },
+      { id: "adj", header: "ADJ", accessor: row => row.draft_value_score, sortable: true, sortAs: "number" },
+    ] }];
+    act(() => root.render(<PlayersTableBase preferenceKey="source-rank-test" rows={tied} groups={columns} sortable defaultSortId="adj" defaultSortDir="desc" maxRows={1} />));
+    expect(container.querySelector("tbody tr")?.textContent).toContain("higher-source-rank");
+  });
+
   it("stores watch list and overall sorting separately", () => {
     localStorage.clear();
     act(() => root.render(<><PlayersTableBase preferenceKey="overall" rows={rows} groups={groups} sortable defaultSortId="value" /><PlayersTableBase preferenceKey="watch-list" rows={rows} groups={groups} sortable defaultSortId="value" /></>));

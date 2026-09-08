@@ -1,6 +1,6 @@
 # Draft Strategy Research Contract
 
-Last verified: 2026-09-05
+Last verified: 2026-09-07
 
 ## Purpose
 
@@ -27,10 +27,10 @@ Recommendation inputs must come from that draft, its league, and its current
 picks. Full optimization for every format is not required. When the model does
 not consider a rule, load the draft and name the limitation in the UI.
 
-The primary regression scenario is the owner's 12-team managed redraft snake
-league. It has one QB, two RB, two WR, one TE, two FLEX, no kicker, one D/ST,
-five bench spots, and 0.69 points per reception. It has 14 drafted rounds. IR is
-not drafted. The local mock room uses this scenario as its initial preset.
+The actual September 7 league has 12 teams, snake slot 4, one QB, two RB,
+two WR, one TE, two FLEX, one kicker, one D/ST, five bench spots, and 0.69
+points per reception. It has 15 drafted rounds. IR is not drafted. The older
+local preset has no kicker and 14 rounds; do not use it for this experiment.
 
 Research from best ball, superflex, TE premium, auction, dynasty, and leagues
 with three starting WRs is supporting evidence only. Apply it after a test
@@ -86,7 +86,7 @@ as probabilities. Do not vary actual league rules as an uncertainty scenario.
 | ID | Decision principle | Evidence | Confidence | Product status |
 | --- | --- | --- | --- | --- |
 | DS-01 | League size, scoring, and starting requirements must change cross-position value. | [FantasyPros VBD definitions](https://support.fantasypros.com/hc/en-us/articles/115005868747-What-is-value-based-drafting-What-do-player-draft-values-mean-VORP-VONA-VOLS-VBD), [2026 FantasyPros VBD table](https://www.fantasypros.com/nfl/rankings/ppr-vbd.php), [TapThatDraft starter guide](https://subvertadown.com/article/tapthatdraft-easy-starter-guide-quick-steps-to-get-your-hold-my-beersheets-) | High | **Implemented:** capability-checked Sleeper scoring, league size, direct starters, greedy FLEX allocation, and configured K/D/ST demand set the canonical cross-position `VAL`. The model supports only scoring inputs that the projection source can represent. |
-| DS-02 | Player quality and room timing are different signals. Use trusted rankings for quality and platform/reference data for likely draft order. | [TapThatDraft ranking calibration](https://subvertadown.com/article/tapthatdraft-lets-you-customize-positional-player-ordering---solving-the-old-cheat-sheet-rankings-versus-projections-), [2026 ADP-referencing guide](https://subvertadown.com/article/timing-your-draft-picks-with-adp-referencing---understanding-tapthatdraft-s-time-priority-ordering-of-players-to-help-you-lead-in-your-draft), [FantasyPros real-time ADP](https://www.fantasypros.com/nfl/adp/overall.php) | High | **Implemented:** the model preserves each Sleeper projection curve but assigns it by FantasyPros order within each position. Sleeper ADP remains the room-timing signal. After RB/WR starters and FLEX slots are filled, a soft market-price penalty reduces multi-round depth reaches unless roster balance needs that position. |
+| DS-02 | Player quality and room timing are different signals. Use trusted rankings for quality and platform/reference data for likely draft order. | [TapThatDraft ranking calibration](https://subvertadown.com/article/tapthatdraft-lets-you-customize-positional-player-ordering---solving-the-old-cheat-sheet-rankings-versus-projections-), [2026 ADP-referencing guide](https://subvertadown.com/article/timing-your-draft-picks-with-adp-referencing---understanding-tapthatdraft-s-time-priority-ordering-of-players-to-help-you-lead-in-your-draft), [FantasyPros real-time ADP](https://www.fantasypros.com/nfl/adp/overall.php) | High | **Implemented:** native FP and Sleeper projections remain separate. FP is the owner baseline. Selected-source projections set VAL; FP ECR sets tiers. The earlier reassigned curve is only an experiment baseline. Sleeper ADP remains the room-timing signal. After RB/WR starters and FLEX slots are filled, a soft market-price penalty reduces multi-round depth reaches unless roster balance needs that position. |
 | DS-03 | A snake recommendation must include next-turn opportunity cost, not static value alone. | [FantasyPros VONA definition](https://support.fantasypros.com/hc/en-us/articles/115005868747-What-is-value-based-drafting-What-do-player-draft-values-mean-VORP-VONA-VOLS-VBD), [Snake Value method](https://subvertadown.com/article/fantasy-snake-drafts-and-strategizing-for-scarcity----snake-value-based-drafting) | High | **Partial:** Sleeper ADP, tier cliffs, position runs, and room demand affect `ADJ` before the final own pick. Final-pick timing and demand are zero; missing market rank has no final-pick score penalty. The Decision Board shows a bounded qualitative return signal for the top recommendation and close alternatives. The model does not calculate expected same-position value lost by the next pick. |
 | DS-04 | Roster construction is adaptive. In the target two-FLEX format, keep RB and WR options open and respond to tiers instead of forcing Zero RB, Hero RB, or Robust RB. | [June 2026 two-FLEX expert mock](https://www.4for4.com/2026/preseason/expert-fantasy-football-mock-draft-recap-12-team-half-ppr-may-2026), [July 2026 two-FLEX expert mock](https://www.4for4.com/2026/preseason/expert-fantasy-football-mock-draft-recap-12-team-half-ppr-july-2026), [2026 RB strategy discussion](https://www.fantasylife.com/articles/fantasy/adjusting-your-rb-draft-strategy-in-2026-fantasy-football) | Medium | **Implemented:** phase profiles, RB anchors, WR starter balance, FLEX needs, and bench balance adapt to roster state. More validation is required because current external grading found weak WR starters in one representative roster. |
 | DS-05 | QB and TE timing must remain subordinate to usable starter quality and RB/WR opportunity cost. A round deadline is not enough. | [July 2026 two-FLEX mock](https://www.4for4.com/2026/preseason/expert-fantasy-football-mock-draft-recap-12-team-half-ppr-july-2026), [ADP-referencing guide](https://subvertadown.com/article/timing-your-draft-picks-with-adp-referencing---understanding-tapthatdraft-s-time-priority-ordering-of-players-to-help-you-lead-in-your-draft) | Medium | **Implemented:** QB has a quality floor. Non-elite TE completion yields to a consensus ECR/ADP price reach. Evaluation records QB/TE reach separately and does not reward earlier selection by itself. Supported formats stop at one QB and one TE. |
@@ -168,3 +168,23 @@ Work in this order because each step makes the next result easier to trust:
 - [Draft assistant implementation plan](draft-assistant-implementation-plan.md)
 - [Draft assistant iteration log](draft-assistant-iteration-log.md)
 - [Simulated draft testing plan](simulated-draft-testing-plan.md)
+
+## September 7 same-position experiments
+
+[The frozen post-draft report](post-draft-position-quality-2026-09-07.md) applies
+DS-02, DS-03, DS-07, and DS-09. The owner rejected the added comparison
+UI and requested a correction to within-position ADJ order. The display change
+has been removed. The quality guard, highest-value rule, strict-tier comparator, and
+position-timing variant are offline experiments. None is accepted for production.
+Their roster forecasts must remain separate by projection source. Paired mocks
+and exact saved-state replay are regression evidence, not independent outcomes.
+
+## Selected-source order acceptance
+
+The owner authorized implementing source-ranked within-position ADJ order after
+rejecting the added comparison UI. See [the implementation record](selected-source-order-2026-09-07.md).
+This is an owner preference under DS-02 and DS-07, not an outcome-superiority claim.
+The rank follows the selected source: FP ECR for FP, native projected position
+rank for Sleeper. The existing risk contribution can justify an exception.
+All 78 frozen full-draft runs complete legal rosters and pass mandatory and
+construction checks. Deployment and merge remain outside this authorization.

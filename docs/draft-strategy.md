@@ -1,7 +1,7 @@
 # Fantasy Tiers: Draft Strategy and External Review Brief
 
-Updated: September 5, 2026  
-Implementation checked at commit: `0b0d75c5`
+Updated: September 7, 2026
+Native-source baseline and post-draft experiments: see [the dated report](post-draft-position-quality-2026-09-07.md).
 
 ## Purpose and status
 
@@ -48,11 +48,11 @@ week and can use waivers during the season. This is not best ball.
 | Setting | Primary scenario |
 | --- | --- |
 | Teams | 12 |
-| Draft | Snake, 14 rounds |
+| Draft | Snake, 15 rounds in the actual September 7 league |
 | Planned draft slot | 4; use the actual order when available |
 | Starters | 1 QB, 2 RB, 2 WR, 1 TE, 2 FLEX, 1 DEF |
 | FLEX eligibility | RB, WR, TE |
-| Kicker | None |
+| Kicker | 1 in the actual September 7 league |
 | Bench | 5 |
 | IR | 1; does not add a draft round |
 | Current keepers | None in 2026 |
@@ -78,7 +78,7 @@ Future keeper policy is planning metadata, not an active 2026 drafting rule.
 | Input | Role |
 | --- | --- |
 | Sleeper league and draft settings | Scoring, roster requirements, draft order, and current picks |
-| Sleeper season projections | Expected statistical production scored under supported league rules |
+| Native FP and native Sleeper season projections | Separate expected production estimates scored under supported league rules; FP is the owner baseline |
 | FantasyPros expert consensus average rank, or ECR | Consensus estimate of player order within each position |
 | FantasyPros rank and locally derived tiers | Player-quality context and positional drop-offs |
 | Sleeper ADP and draft-board information | Estimates of opponent selection order |
@@ -93,14 +93,14 @@ quality.
 
 Val is independent of our current roster and draft turn. The current model:
 
-1. Applies supported league scoring to Sleeper season projections.
-2. Sorts projected point totals within each position to form a production curve.
-3. Assigns that curve in FantasyPros ECR order within the position.
-4. Compares each assigned total with league-specific positional baselines.
+1. Applies supported league scoring to the selected source's native projections.
+2. Retains each player's own projected production.
+3. Compares that total with league-specific positional baselines.
 
-Step 3 is material: Val does not simply retain each player's original Sleeper
-point projection. Sleeper determines the shape of the production curve, while
-FantasyPros determines which player receives each place on it.
+FP is the owner baseline. Sleeper is a separate comparison. FP uses the shared
+Sleeper K/DST projections. Tiers remain FP ECR-based, so tier and VAL can disagree.
+The earlier ECR curve reassignment is an experiment baseline, not the active
+native-source contract.
 
 The model combines two baseline comparisons:
 
@@ -323,3 +323,21 @@ code and validation support that claim.
 ## Experiment status
 
 See [the experiment plan and results](draft-strategy-experiments.md) for the September 5 external-review response. The retained change is the final-pick timing fix. Profile calibration, context caps, and simulated availability remain research candidates; they are not active scoring options.
+
+## Selected-source recommendation order
+
+The owner approved source-ranked within-position ADJ order. No comparison UI is
+added. FP selection uses FP expert consensus average rank. Sleeper selection uses
+its native league-scored projection position rank, as displayed in the existing
+position-rank label. ADP remains a timing signal, not a quality ranking. FP tiers
+remain visible as context in either mode.
+
+For eligible players at each position, ADJ before risk cannot exceed the score
+of a better-ranked player from the selected source. The rule only lowers scores;
+it cannot transfer a lower-ranked player's urgency to the position leader.
+Each player then keeps their own existing availability/data risk contribution.
+Equal ADJ scores use source rank; equal source ranks retain their own scores.
+VAL and projected points do not change. The existing ADJ detail breakdown records
+the correction as `Selected ranking order`.
+
+See [implementation and validation](selected-source-order-2026-09-07.md).
