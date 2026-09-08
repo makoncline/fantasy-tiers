@@ -54,11 +54,11 @@ export function getPickFeedStatus(input: {
     && Number.isFinite(input.now) && input.checkedAt <= input.now + 1_000
     ? Math.max(0, input.now - input.checkedAt) : null;
   const ageSeconds = age == null ? null : Math.floor(age / 1_000);
-  if (input.hasError) return { state: "error", label: "Pick update failed · check Sleeper", warning: true, ageSeconds };
-  if (input.paused) return { state: "paused", label: "Pick updates paused · check Sleeper", warning: true, ageSeconds };
-  if (age == null) return { state: "waiting", label: "Waiting for pick feed", warning: true, ageSeconds };
+  if (input.hasError) return { state: "error", label: "Pick update failed · check draft", warning: true, ageSeconds };
+  if (input.paused) return { state: "paused", label: "Pick updates paused · check draft", warning: true, ageSeconds };
   if (input.complete) return { state: "complete", label: "Completed draft received", warning: false, ageSeconds };
-  if (age > PICK_FEED_STALE_MS) return { state: "stale", label: "Pick feed not checked recently · check Sleeper", warning: true, ageSeconds };
+  if (age == null) return { state: "waiting", label: "Waiting for pick feed", warning: true, ageSeconds };
+  if (age > PICK_FEED_STALE_MS) return { state: "stale", label: "Pick feed not checked recently · check draft", warning: true, ageSeconds };
   return { state: "checked", label: `Pick feed checked ${ageSeconds}s ago`, warning: false, ageSeconds };
 }
 

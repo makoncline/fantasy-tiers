@@ -143,7 +143,7 @@ describe("ESPN shared-model adapter", () => {
     const { room, bundle } = fixture();
     room.live = applyEspnMessage(room.live, "SELECTED 7 999 1");
     expect(() => mapEspnDraft(room, bundle)).toThrow("no known identity");
-    room.live = applyEspnMessage(room.live, "UNDONE 1");
+    room.live = applyEspnMessage(room.live, "UNDONE 0");
     expect(espnRoomStatus(room, room.updatedAt + 16000)).toContain("Connection lost");
     if (room.live) room.live.picks[1]!.playerId = 102;
     expect(() => mapEspnDraft(room, bundle)).toThrow("gap");

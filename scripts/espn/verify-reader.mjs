@@ -74,7 +74,7 @@ try {
   await expect(second.getByText(/Reader practice fixture.*3 picks/)).toBeVisible();
   await expect(second.getByTestId('draft-sidebar')).toContainText('Unranked Fixture Player');
   await expect(second.getByText('Recommendations paused', {exact: true})).toHaveCount(0);
-  draftSocket.send('UNDONE 2');
+  draftSocket.send('UNDONE 1');
   await expect(second.getByText(/Reader practice fixture.*1 picks/)).toBeVisible();
   await expect(second.getByTestId('draft-sidebar')).not.toContainText('Unranked Fixture Player');
   draftSocket.send('SELECTED 2 102 1');
@@ -153,11 +153,18 @@ try {
   if (await second.evaluate(() => document.documentElement.scrollWidth > innerWidth)) throw new Error('Assistant page overflows');
   await second.screenshot({ path: '/private/tmp/fantasy-tiers-screenshots/espn-reader-two-tabs.png', fullPage: true });
   clearInterval(heartbeat);
-  await expect(second.getByText('Recommendations stopped', { exact: true })).toBeVisible({ timeout: 22000 });
+  const lastFrameAt = Date.now();
+  await expect.poll(async () => {
+    const { pairs } = await worker.evaluate(() => chrome.storage.session.get('pairs'));
+    return pairs[0]?.draft.room.updatedAt ?? 0;
+  }, { timeout: 20000 }).toBeGreaterThan(lastFrameAt + 16000);
+  await expect(second.getByText('Connected', { exact: true })).toBeVisible();
+  await draft.evaluate(() => window.fixtureSocket.close());
+  await expect(second.getByText('Recommendations stopped', { exact: true })).toBeVisible({ timeout: 10000 });
   await draft.close();
   await expect(second.getByText('Open ESPN Reader in your draft tab', { exact: true })).toBeVisible();
   if (relayRequests !== 0) throw new Error('Unexpected relay HTTP request');
-  console.log(JSON.stringify({ result: 'PASS', recommendationsBlocked, checks: ['packaged extension loads', 'one click creates session and opens assistant', 'ESPN existing socket observed', 'HTTP data normalized', 'assistant receives live pick and survives reload', 'unranked pick and suffix undo', 'Show drafted preserves source values', 'Sleeper and ESPN rendered table parity for both sources', 'private fields excluded', 'no new socket or draft commands', 'stale board removed', 'no relay HTTP'], socketCount, sentCommands, relayRequests }));
+  console.log(JSON.stringify({ result: 'PASS', recommendationsBlocked, checks: ['packaged extension loads', 'one click creates session and opens assistant', 'ESPN existing socket observed', 'HTTP data normalized', 'assistant receives live pick and survives reload', 'unranked pick and suffix undo', 'Show drafted preserves source values', 'Sleeper and ESPN rendered table parity for both sources', 'private fields excluded', 'no new socket or draft commands', 'idle open socket stays connected', 'closed socket removes advice', 'no relay HTTP'], socketCount, sentCommands, relayRequests }));
 } finally {
   clearInterval(heartbeat);
   await context.close(); await rm(root, { recursive: true, force: true });
