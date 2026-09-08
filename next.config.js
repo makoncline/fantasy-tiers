@@ -9,7 +9,10 @@ const nextConfig = {
   // Silence workspace root inference warnings by pinning tracing root
   outputFileTracingRoot: path.join(__dirname),
   async rewrites() {
-    return [{ source: "/espn-backup", destination: "/espn-backup.html" }];
+    return [
+      { source: "/espn-backup", destination: "/espn-backup.html" },
+      { source: "/draft-strategy", destination: "/draft-strategy.html" },
+    ];
   },
   // Build checks re-enabled
   async redirects() {

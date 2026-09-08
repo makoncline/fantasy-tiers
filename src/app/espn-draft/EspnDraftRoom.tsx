@@ -15,6 +15,7 @@ export default function EspnDraftRoom() {
       <div><p className="text-sm text-muted-foreground">Fantasy Tiers · ESPN</p><h1 className="text-2xl font-semibold">ESPN Draft Assistant</h1></div><Badge variant="outline">Read only</Badge>
     </header>
     <div className="flex flex-wrap items-center gap-3 md:group-has-[[data-state=expanded][data-variant=floating]]/draft:ml-64">
+      <Button asChild variant="outline"><a href="/draft-strategy" target="_blank" rel="noreferrer">Draft plan</a></Button>
       <Button asChild variant="outline"><a href="/espn-backup" target="_blank" rel="noreferrer">Emergency draft sheet</a></Button>
       <Badge variant={issue ? "destructive" : "outline"}>{issue ? "Updates stopped" : room?.live ? "Connected" : "Not connected"}</Badge>
       {room?.live && <><span className="text-sm">{room.data?.name} · Team {room.live.teamId} · {room.live.picks.filter(pick => pick.playerId !== -1).length} picks</span><Button variant="outline" onClick={stop}>Disconnect</Button></>}
