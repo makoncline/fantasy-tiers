@@ -7,10 +7,10 @@ import { useAggregateBundle } from "@/hooks/useAggregateBundle";
 import { espnDraftConfig, mapEspnDraft } from "@/lib/espn/adapter";
 import type { EspnRoom } from "@/lib/espn/schemas";
 import { buildDraftViewModel, selectDraftSource } from "@/lib/draftState";
-import { draftCandidateMapFromBundle } from "@/lib/draftCandidate";
 import { draftReadinessShardCountsFromBundle } from "@/lib/draftReadiness";
 import type { AggregatesBundleResponseT } from "@/lib/schemas-bundle";
 import { useDraftProjectionSource } from "@/hooks/useDraftProjectionSource";
+import { RecommendationsIssue } from "./RecommendationsBoundary";
 
 type Connection = { checkedAt: number; refreshRoom: () => void };
 export function EspnAssistant({ room, ...connection }: { room: EspnRoom } & Connection) {
@@ -18,12 +18,12 @@ export function EspnAssistant({ room, ...connection }: { room: EspnRoom } & Conn
     try { return { value: espnDraftConfig(room) }; }
     catch (error) { return { error: error instanceof Error ? error.message : "Unsupported ESPN draft." }; }
   }, [room]);
-  if (!config.value) return <p role="alert">{config.error}</p>;
+  if (!config.value) return <RecommendationsIssue message={config.error ?? "Could not read draft settings."} retry={connection.refreshRoom} />;
   return <Rankings room={room} config={config.value} {...connection} />;
 }
 function Rankings({ room, config, checkedAt, refreshRoom }: { room: EspnRoom; config: ReturnType<typeof espnDraftConfig> } & Connection) {
   const query = useAggregateBundle(config);
-  if (query.error) return <p role="alert">Could not load current rankings. {query.error.message}</p>;
+  if (query.error) return <RecommendationsIssue message="Could not load current rankings. Check your connection and try again." retry={() => { void query.refetch(); }} />;
   if (!query.data) return <p role="status">Loading current rankings…</p>;
   return <Mapped room={room} bundle={query.data} checkedAt={checkedAt} refreshRoom={() => { refreshRoom(); void query.refetch(); }} />;
 }
@@ -32,14 +32,14 @@ function Mapped({ room, bundle, ...connection }: { room: EspnRoom; bundle: Aggre
     try { return { value: mapEspnDraft(room, bundle) }; }
     catch (error) { return { error: error instanceof Error ? error.message : "ESPN mapping failed." }; }
   }, [room, bundle]);
-  if (!result.value) return <p role="alert">{result.error}</p>;
+  if (!result.value) return <RecommendationsIssue message={result.error ?? "Waiting for a complete draft update."} retry={connection.refreshRoom} />;
   return <Shared mapped={result.value} {...connection} />;
 }
 function Shared({ mapped, checkedAt, refreshRoom }: { mapped: ReturnType<typeof mapEspnDraft> } & Connection) {
   const { valueSource, setValueSource, fpSource, evaluationNow } = useDraftProjectionSource();
   const sourceViewModel = useMemo(() => buildDraftViewModel({
     fpSource, evaluationNow,
-    playersMap: draftCandidateMapFromBundle(mapped.bundle), draft: mapped.details,
+    playersMap: mapped.playersMap, draft: mapped.details,
     picks: mapped.picks, userId: mapped.userId, topLimit: 3,
     scoringRules: mapped.projectionScoringRules, projectionArtifact: mapped.bundle.draftProjections,
     sourceHealth: mapped.bundle.sourceHealth ?? null, shardCounts: draftReadinessShardCountsFromBundle(mapped.bundle),

@@ -59,7 +59,7 @@ Missing or stale source data still stops advice through shared readiness checks.
 Match players by normalized name and position; prefer a unique exact name when
 normalization is ambiguous. Only confirmed matches remain in each position's
 own shard. The adapter does not change the cached source bundle or player values.
-Unknown drafted players and gaps stop advice. Offensive position-specific scoring overrides
+Known ESPN selections without a ranking match remain in draft and roster bookkeeping with no rank or projection; they cannot enter recommendations. Unknown identities and pick-history gaps stop advice. Offensive position-specific scoring overrides
 that differ from the base rate stop advice. Unsupported ESPN formats stop with a
 clear message.
 

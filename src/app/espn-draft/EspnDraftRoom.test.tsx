@@ -3,7 +3,11 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
 import EspnDraftRoom from "./EspnDraftRoom";
-vi.mock("next/dynamic", () => ({ default: () => () => <div>Shared recommendations</div> }));
+const rendering = vi.hoisted(() => ({ fail: false }));
+vi.mock("next/dynamic", () => ({ default: () => () => {
+  if (rendering.fail) throw new Error("Unexpected recommendation failure");
+  return <div>Shared recommendations</div>;
+} }));
 vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
 afterEach(() => vi.useRealTimers());
 it("keeps source freshness separate from delivery and removes advice on stale or disconnected input", async () => {
@@ -21,6 +25,23 @@ it("keeps source freshness separate from delivery and removes advice on stale or
   expect(rootElement.textContent).not.toContain("Shared recommendations");
   await publish(true, now);
   expect(rootElement.textContent).toContain("Shared recommendations");
+  const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+  rendering.fail = true;
+  await publish(true, now);
+  expect(rootElement.textContent).toContain("Recommendations paused");
+  expect(rootElement.textContent).toContain("ESPN Draft Assistant");
+  expect(rootElement.textContent).toContain("Disconnect");
+  rendering.fail = false;
+  await act(async () => Array.from(rootElement.querySelectorAll("button")).find(button => button.textContent === "Try again")?.click());
+  expect(rootElement.textContent).toContain("Shared recommendations");
+  rendering.fail = true;
+  await publish(true, now);
+  expect(rootElement.textContent).toContain("Recommendations paused");
+  rendering.fail = false;
+  room.data.observedAt += 1;
+  await publish(true, now);
+  expect(rootElement.textContent).toContain("Shared recommendations");
+  errors.mockRestore();
   await act(async () => { location.hash = "players-wr"; vi.advanceTimersByTime(16000); });
   // Receiving an old snapshot again must not restore advice.
   await publish(true, now);

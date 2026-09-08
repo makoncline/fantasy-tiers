@@ -43,6 +43,10 @@ describe("ESPN live draft protocol", () => {
     expect(state?.picks[2]?.playerId).toBe(-1);
     state = applyEspnMessage(state, "SELECTED 2 104 2\n");
     expect(state?.picks[2]?.playerId).toBe(104);
+    state = applyEspnMessage(state, "UNDONE 2\n");
+    expect(state?.picks.map((pick) => pick.playerId)).toEqual([101, -1, -1, -1]);
+    state = applyEspnMessage(state, "SELECTED 2 105 1\n");
+    expect(state?.picks[1]?.playerId).toBe(105);
     expect(applyEspnMessage(state, initFrame())).toEqual(initial);
     expect(applyEspnMessage(state, "RESET")).toBeNull();
   });

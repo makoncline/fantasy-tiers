@@ -35,6 +35,7 @@ try {
   const fixturePlayers = [...new Map([
     { name: 'Justin Jefferson', position: 'WR' }, { name: 'CeeDee Lamb', position: 'WR' },
     ...Object.values(rankingBundle.shards).flat(),
+    {name: 'Unranked Fixture Player', position: 'WR'},
   ].map((row) => [`${row.position}:${row.name.toLowerCase()}`, row])).values()];
   const positionIds = { QB: 1, RB: 2, WR: 3, TE: 4, K: 5, DEF: 16 };
   await context.route('https://lm-api-reads.fantasy.espn.com/**', (route) => route.fulfill({ json: {
@@ -67,6 +68,17 @@ try {
   if (JSON.stringify(stored).includes('PRIVATE_')) throw new Error('Private fields leaked');
   draftSocket.send('SELECTED 2 102 1 PRIVATE_MEMBER');
   await expect(second.getByText(/Reader practice fixture.*2 picks/)).toBeVisible({ timeout: 15000 });
+
+  const unrankedId = 101 + fixturePlayers.findIndex(player => player.name === 'Unranked Fixture Player');
+  draftSocket.send(`SELECTED 2 ${unrankedId} 2`);
+  await expect(second.getByText(/Reader practice fixture.*3 picks/)).toBeVisible();
+  await expect(second.getByTestId('draft-sidebar')).toContainText('Unranked Fixture Player');
+  await expect(second.getByText('Recommendations paused', {exact: true})).toHaveCount(0);
+  draftSocket.send('UNDONE 2');
+  await expect(second.getByText(/Reader practice fixture.*1 picks/)).toBeVisible();
+  await expect(second.getByTestId('draft-sidebar')).not.toContainText('Unranked Fixture Player');
+  draftSocket.send('SELECTED 2 102 1');
+  await expect(second.getByText(/Reader practice fixture.*2 picks/)).toBeVisible();
 
   if (socketCount !== 1 || sentCommands !== 0) throw new Error('Reader opened a socket or sent a command');
   await expect(second.getByTestId('draft-player-pool')).toBeVisible({ timeout: 10000 });

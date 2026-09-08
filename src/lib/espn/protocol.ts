@@ -108,7 +108,7 @@ export function applyEspnMessage(state: EspnLiveState | null, message: string): 
   }
   if (command === "UNDONE") {
     const pickNumber = number(0);
-    return { ...state, picks: state.picks.map((p) => p.pickNumber === pickNumber ? { ...p, playerId: -1, slotId: 0 } : p) };
+    return { ...state, picks: state.picks.map((p) => p.pickNumber >= pickNumber ? { ...p, playerId: -1, slotId: 0 } : p) };
   }
   if (command === "RESET") return null;
   return state;
