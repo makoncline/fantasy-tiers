@@ -29,6 +29,31 @@ function fixture() {
 }
 
 describe("ESPN shared-model adapter", () => {
+  it("maps audited ESPN nicknames and suffixes through the shared player pool", () => {
+    const { room, bundle } = fixture();
+    if (!room.data) throw new Error("Missing fixture data");
+    const names = [
+      ["Bam Knight", "zonovan knight", "RB", 2],
+      ["Mitchell Tinsley", "mitch tinsley", "WR", 3],
+      ["Matthew Hibner", "matt hibner", "TE", 4],
+      ["Nyheim Hines", "nyheim miller-hines", "RB", 2],
+      ["Stetson Bennett IV", "stetson bennett", "QB", 1],
+      ["David Sills V", "david sills", "WR", 3],
+      ["Ulysses Bentley IV", "ulysses bentley", "RB", 2],
+    ] as const;
+    for (const [index, [espnName, sourceName, position, positionId]] of names.entries()) {
+      const row = { ...bundle.shards.ALL[0]!, player_id: `audit-${index}`, name: sourceName, position };
+      bundle.shards.ALL.push(row);
+      bundle.shards[position].push(row);
+      room.data.players.push({ ...room.data.players[0]!, id: 1000 + index, name: espnName, positionId });
+    }
+    const mapped = mapEspnDraft(room, bundle);
+    expect(mapped.unmatchedPlayers).toBe(0);
+    expect(mapped.bundle.shards.ALL.slice(2).map(row => row.player_id)).toEqual(names.map((_, index) => `audit-${index}`));
+    room.live = applyEspnMessage(room.live, "SELECTED 7 1000 1");
+    expect(mapEspnDraft(room, bundle).picks[1]?.player_id).toBe("audit-0");
+  });
+
   it("maps a live snake pick to shared identity, order, shards, and shared source inputs", () => {
     const { room, bundle } = fixture();
     room.live = applyEspnMessage(room.live, "SELECTED 7 102 1");
