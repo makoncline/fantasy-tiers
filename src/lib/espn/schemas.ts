@@ -4,7 +4,6 @@ const Integer = z.number().int();
 export const EspnPlayerSchema = z.object({
   id: Integer, name: z.string(), positionId: Integer, proTeamId: Integer,
   eligibleSlots: z.array(Integer), injuryStatus: z.string().optional(),
-  rank: z.number().nullable(), adp: z.number().nullable(), projected: z.number().nullable(),
 });
 export const EspnRoomSchema = z.object({
   connected: z.boolean(), updatedAt: z.number(), error: z.string().nullable(),

@@ -6,10 +6,11 @@ import { useDraftAssistantContextValue } from "@/app/draft-assistant/_lib/useDra
 import { useAggregateBundle } from "@/hooks/useAggregateBundle";
 import { espnDraftConfig, mapEspnDraft } from "@/lib/espn/adapter";
 import type { EspnRoom } from "@/lib/espn/schemas";
-import { buildDraftViewModel } from "@/lib/draftState";
+import { buildDraftViewModel, selectDraftSource } from "@/lib/draftState";
 import { draftCandidateMapFromBundle } from "@/lib/draftCandidate";
 import { draftReadinessShardCountsFromBundle } from "@/lib/draftReadiness";
 import type { AggregatesBundleResponseT } from "@/lib/schemas-bundle";
+import { useDraftProjectionSource } from "@/hooks/useDraftProjectionSource";
 
 type Connection = { checkedAt: number; refreshRoom: () => void };
 export function EspnAssistant({ room, ...connection }: { room: EspnRoom } & Connection) {
@@ -35,18 +36,22 @@ function Mapped({ room, bundle, ...connection }: { room: EspnRoom; bundle: Aggre
   return <Shared mapped={result.value} {...connection} />;
 }
 function Shared({ mapped, checkedAt, refreshRoom }: { mapped: ReturnType<typeof mapEspnDraft> } & Connection) {
-  const viewModel = useMemo(() => buildDraftViewModel({
+  const { valueSource, setValueSource, fpSource, evaluationNow } = useDraftProjectionSource();
+  const sourceViewModel = useMemo(() => buildDraftViewModel({
+    fpSource, evaluationNow,
     playersMap: draftCandidateMapFromBundle(mapped.bundle), draft: mapped.details,
     picks: mapped.picks, userId: mapped.userId, topLimit: 3,
-    scoringRules: mapped.scoringRules, projectionArtifact: mapped.bundle.draftProjections,
+    scoringRules: mapped.projectionScoringRules, projectionArtifact: mapped.bundle.draftProjections,
     sourceHealth: mapped.bundle.sourceHealth ?? null, shardCounts: draftReadinessShardCountsFromBundle(mapped.bundle),
-  }), [mapped]);
+  }), [mapped, fpSource, evaluationNow]);
+  const viewModel = useMemo(() => selectDraftSource(sourceViewModel, valueSource), [sourceViewModel, valueSource]);
   const context = useDraftAssistantContextValue({ viewModel, bundle: mapped.bundle,
     draftDetails: mapped.details, draftPicks: mapped.picks, userId: mapped.userId,
     userSlot: mapped.userSlot, scoring: mapped.scoring,
   });
   if (!context) return null;
   return <DraftDataStaticProvider value={{ ...context,
+    valueSource, setValueSource, sourceComparison: viewModel.sourceComparison,
     refetchData: refreshRoom, lastUpdatedAt: checkedAt,
     pickFeed: { checkedAt, paused: mapped.details.status === "paused", complete: mapped.details.status === "complete" },
   }}><DraftAssistantContent /></DraftDataStaticProvider>;

@@ -78,8 +78,13 @@ try {
   await expect(second.getByTestId('draft-sidebar')).toContainText('Slot 2');
   const recommendationsBlocked = await second.getByText('Draft data incident', { exact: true }).isVisible();
   if (recommendationsBlocked) throw new Error('Fixture recommendations are blocked');
-  await expect(second.getByText('ESPN league projections', { exact: true }).first()).toBeVisible();
-  await expect(second.getByRole('region', { name: 'Projection source', exact: true })).toHaveCount(0);
+  const source = second.getByRole('group', { name: 'Projection source', exact: true });
+  await expect(source.getByRole('button', {name: 'Sleeper', exact: true})).toBeVisible();
+  await expect(second.locator('[title^="Sleeper projected position rank"]').first()).toBeVisible();
+  await expect(source.getByRole('button', {name: 'FantasyPros', exact: true})).toBeEnabled();
+  await source.getByRole('button', {name: 'FantasyPros', exact: true}).click();
+  await expect(second.locator('[title^="FantasyPros projected position rank"]').first()).toBeVisible();
+  await source.getByRole('button', {name: 'Sleeper', exact: true}).click();
   if (await second.evaluate(() => document.documentElement.scrollWidth > innerWidth)) throw new Error('Assistant page overflows');
   await second.screenshot({ path: '/private/tmp/fantasy-tiers-screenshots/espn-reader-two-tabs.png', fullPage: true });
   clearInterval(heartbeat);
