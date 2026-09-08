@@ -48,6 +48,10 @@ describe("ESPN shared-model adapter", () => {
     bundle.shards.ALL.push(defense);
     bundle.shards.DEF.push(defense);
     room.data.players.push({ ...room.data.players[0]!, id: 999, name: "Bills D/ST", positionId: 16, projected: 112 });
+    room.data.scoringItems.push(
+      { statId: 89, points: 0, pointsOverrides: { "16": 5 } },
+      { statId: 123, points: 0, pointsOverrides: { "16": -1 } },
+    );
     room.live.slots[1] = { id: 2, category: 16, positions: [16] };
     const mapped = mapEspnDraft(room, bundle);
     const players = Object.values(draftCandidateMapFromBundle(mapped.bundle)).map((player) => ({ playerId: player.player_id, position: player.position, ecr: player.fp_rank_ave }));
