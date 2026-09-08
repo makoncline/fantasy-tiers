@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "pnpm run backup:build && next build",
     "start": "next start",
     "lint": "eslint .",
     "e2e": "playwright test --config e2e.config.ts",
@@ -44,7 +44,8 @@
     "knip": "knip",
     "fetch:fp-projections": "node --import=tsx scripts/fp/refresh-draft-projections.ts",
     "espn:replay-har": "node --import=tsx scripts/espn/replay-har.ts",
-    "espn:build-reader": "node scripts/espn/build-reader.mjs"
+    "espn:build-reader": "node scripts/espn/build-reader.mjs",
+    "backup:build": "node --import=tsx scripts/backup/build-sheet.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
