@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DraftRosterSlotsSchema, DEFAULT_DRAFT_SCORING_RULES, calculateDraftRounds } from "@/lib/draftLeagueConfig";
+import { DraftRosterSlotsSchema, DEFAULT_DRAFT_SCORING_RULES, calculateDraftRounds, type DraftScoringRules } from "@/lib/draftLeagueConfig";
 import { DraftProjectionStatsSchema, buildStarterAwareValues, calculateBeerPlusProjectedPoints } from "@/lib/beerPlusStrategy";
 import { PositionEnum } from "@/lib/schemas";
 import { scoringTypeFromReceptionPoints } from "@/lib/scoring";
@@ -55,7 +55,7 @@ export const SavedSchema = z.object({ version: z.literal(1), rules: RulesSchema,
 export const STORAGE_KEY = "fantasy-espn-emergency-sheet-v1";
 export function calculateSheet(data: SheetData, rules: Rules) {
   const scoring = scoringTypeFromReceptionPoints(rules.scoring.reception!);
-  const scoringRules = { ...DEFAULT_DRAFT_SCORING_RULES };
+  const scoringRules: DraftScoringRules = { ...DEFAULT_DRAFT_SCORING_RULES };
   for (const [key] of scoringFields) scoringRules[key] = rules.scoring[key]!;
   const points = data.players.flatMap(p => p.stats ? [{ playerId: p.id, position: p.pos, projectedPoints: calculateBeerPlusProjectedPoints({ position: p.pos, stats: p.stats, scoringRules }) }] : []);
   const values = buildStarterAwareValues({ teams: rules.teams, rosterSlots: rules.roster, players: points });
