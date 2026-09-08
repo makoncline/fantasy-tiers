@@ -3,6 +3,7 @@ import { DraftPicksSchema } from "@/lib/schemas";
 import { DEFAULT_DRAFT_SCORING_RULES, DraftRosterSlotsSchema, DraftScoringRulesSchema, rankingScoringFromRules } from "@/lib/draftLeagueConfig";
 import { type AggregatesBundleResponseT, type AggregatesBundlePlayerT } from "@/lib/schemas-bundle";
 import { normalizePlayerName } from "@/lib/util";
+import { DraftCandidateSchema, draftCandidateMapFromBundle, type DraftCandidate } from "@/lib/draftCandidate";
 import { EspnRoomSchema, type EspnRoom } from "./schemas";
 
 const positions: Record<number, string> = { 1: "QB", 2: "RB", 3: "WR", 4: "TE", 5: "K", 16: "DEF" };
@@ -94,9 +95,22 @@ export function mapEspnDraft(input: EspnRoom, source: AggregatesBundleResponseT)
     idMap.set(player.id, row.player_id);
     matchedIds.add(row.player_id);
   }
+  const unrankedDraftedPlayers: Record<string, DraftCandidate> = {};
   const picks = DraftPicksSchema.parse(live.picks.filter((p) => p.playerId !== -1).map((p) => {
-    const playerId = idMap.get(p.playerId);
-    if (!playerId) throw new Error(`A drafted ESPN player has no ranking match (${p.playerId}). Recommendations are stopped.`);
+    let playerId = idMap.get(p.playerId);
+    if (!playerId) {
+      const player = data.players.find((player) => player.id === p.playerId);
+      if (!player || !positions[player.positionId]) throw new Error(`A drafted ESPN player has no known identity (${p.playerId}). Recommendations are stopped.`);
+      playerId = `espn-player-${player.id}`;
+      // Draft bookkeeping only. No rankings or projections are assigned to this identity.
+      unrankedDraftedPlayers[playerId] = DraftCandidateSchema.parse({
+        player_id: playerId, name: player.name, position: positions[player.positionId], team: null, bye_week: null,
+        rank: null, tier: null, tier_rank: null, tier_level: null, position_tier_level: null, sleeper_tier_level: null,
+        fp_rank_ave: null, fp_rank_pos: null, sleeper_adp: null, sleeper_board_rank: null, sleeper_board_value: null,
+        sleeper_injury_status: null, sleeper_injury_notes: null, sleeper_depth_chart_position: null,
+        sleeper_depth_chart_order: null, fp_rank_updated_at: null, sleeper_projection: null,
+      });
+    }
     const team = live.teams.find((t) => t.id === p.teamId);
     if (!team) throw new Error("A pick has an unknown ESPN team.");
     return { player_id: playerId, pick_no: p.pickNumber, round: Math.ceil(p.pickNumber / config.teams), draft_slot: team.draftPosition + 1 };
@@ -111,5 +125,6 @@ export function mapEspnDraft(input: EspnRoom, source: AggregatesBundleResponseT)
     TE: matched(source.shards.TE), K: matched(source.shards.K),
     DEF: matched(source.shards.DEF), FLEX: matched(source.shards.FLEX),
   } };
-  return { ...config, picks, bundle, matchedPlayers: idMap.size, unmatchedPlayers: data.players.length - idMap.size };
+  const playersMap = { ...draftCandidateMapFromBundle(bundle), ...unrankedDraftedPlayers };
+  return { ...config, picks, bundle, playersMap, matchedPlayers: idMap.size, unmatchedPlayers: data.players.length - idMap.size };
 }

@@ -75,3 +75,5 @@
 - [2026-09-07] ESPN D/ST scoring overrides: The live league-specific practice uses base zero with position 16 overrides for normal D/ST scoring, such as stat 89 at 5 points and stat 123 at -1. Permit these in the ESPN adapter because its leaguePoints projections already contain ESPN appliedTotal. Keep unsupported offensive position overrides blocked; do not change shared Sleeper scoring.
 
 - [2026-09-07] ESPN source boundary: The owner confirmed ESPN is only draft state, rules, and player identity; retain Sleeper and FantasyPros projections and ranks through the same source selector. Do not create an ESPN projection artifact. D/ST and kicker values use explicitly labeled standard Sleeper references, as approved by the owner.
+
+- [2026-09-07] ESPN unranked picks and undo: Live practice drafted Travis Hunter as a WR although the shared ranked pool omitted him. Keep known ESPN unranked selections as draft-only identities with null ranking/projection fields. ESPN UNDONE clears the named pick and all later picks; clear the full suffix to avoid stale pick gaps.

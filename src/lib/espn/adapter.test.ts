@@ -117,10 +117,26 @@ describe("ESPN shared-model adapter", () => {
   it("stops on unknown drafted players, order gaps, and stale connections", () => {
     const { room, bundle } = fixture();
     room.live = applyEspnMessage(room.live, "SELECTED 7 999 1");
-    expect(() => mapEspnDraft(room, bundle)).toThrow("no ranking match");
+    expect(() => mapEspnDraft(room, bundle)).toThrow("no known identity");
     room.live = applyEspnMessage(room.live, "UNDONE 1");
     expect(espnRoomStatus(room, room.updatedAt + 16000)).toContain("Connection lost");
     if (room.live) room.live.picks[1]!.playerId = 102;
     expect(() => mapEspnDraft(room, bundle)).toThrow("gap");
+  });
+
+  it("counts an unranked ESPN selection in the roster without making it recommendable", () => {
+    const { room, bundle } = fixture();
+    if (!room.data) throw new Error("Missing fixture data");
+    room.data.players.push({id: 999, name: "Unranked Player", positionId: 3, proTeamId: 30, eligibleSlots: [4]});
+    room.live = applyEspnMessage(room.live, "SELECTED 7 999 1");
+    const mapped = mapEspnDraft(room, bundle);
+    const view = buildDraftViewModel({playersMap: mapped.playersMap, draft: mapped.details, picks: mapped.picks,
+      userId: mapped.userId, scoringRules: mapped.projectionScoringRules, projectionArtifact: mapped.bundle.draftProjections});
+    expect(mapped.picks[1]?.player_id).toBe("espn-player-999");
+    expect(mapped.playersMap["espn-player-999"]?.fp_rank_ave).toBeNull();
+    expect(mapped.playersMap["espn-player-999"]?.sleeper_projection).toBeNull();
+    expect(view.userRoster?.players.map(player => player.name)).toContain("Unranked Player");
+    expect(view.available.some(player => player.player_id === "espn-player-999")).toBe(false);
+    expect(mapped.bundle.shards.ALL.some(player => player.player_id === "espn-player-999")).toBe(false);
   });
 });
