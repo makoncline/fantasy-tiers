@@ -4,7 +4,8 @@ import { espnDraftConfig, mapEspnDraft } from "./adapter";
 import { applyEspnMessage } from "./protocol";
 import { AggregatesBundlePlayer, AggregatesBundleResponse } from "@/lib/schemas-bundle";
 import { draftCandidateMapFromBundle } from "@/lib/draftCandidate";
-import { buildStarterAwareStrategy } from "@/lib/beerPlusStrategy";
+import { buildStarterAwareStrategy, DraftProjectionArtifactSchema } from "@/lib/beerPlusStrategy";
+import { buildDraftViewModel, selectDraftSource } from "@/lib/draftState";
 
 function fixture() {
   const player = (id: string, name: string, rank: number) => AggregatesBundlePlayer.parse({
@@ -15,6 +16,11 @@ function fixture() {
   });
   const rows = [player("shared-a", "First Player", 1), player("shared-b", "Second Player", 2)];
   const bundle = AggregatesBundleResponse.parse({ lastModified: null, scoring: "ppr", teams: 2, roster: { QB: 0, RB: 0, WR: 1, TE: 0, K: 0, DEF: 0, FLEX: 0, BENCH: 1 }, shards: { ALL: rows, WR: rows.map((r) => ({ ...r, tiers: { rank: r.tiers.rank, tier: 2 } })), QB: [], RB: [], TE: [], K: [], DEF: [], FLEX: rows } });
+  bundle.draftProjections = DraftProjectionArtifactSchema.parse({
+    schemaVersion: 1, source: "Sleeper season projections", season: "2026",
+    fetchedAt: new Date().toISOString(), sourceLastModified: new Date().toISOString(),
+    players: Object.fromEntries(rows.map((r, index) => [r.player_id, {playerId: r.player_id, position: "WR", stats: {rec: 100 - index * 10}, lastModified: Date.now(), newsUpdated: null}])),
+  });
   const room = EspnRoomSchema.parse({ connected: true, updatedAt: Date.now(), error: null,
     data: { observedAt: Date.now(), leagueId: 99, season: 2026, name: "Test practice", draftType: "SNAKE", practice: true, rankType: "PPR", scoringItems: [{ statId: 53, points: 1, pointsOverrides: {} }], teams: [{ id: 12, name: "One" }, { id: 7, name: "Two" }], players: rows.map((r, index) => ({ id: 101 + index, name: r.name, positionId: 3, proTeamId: 26, eligibleSlots: [4, 23], rank: 4 + index, adp: 6 + index, projected: 300 - index * 20 })) },
     live: { leagueId: 99, teamId: 7, state: 3, draftType: 1, limits: [], slots: [{ id: 1, category: 4, positions: [3] }, { id: 2, category: 20, positions: [3] }], teams: [{ id: 12, draftPosition: 0 }, { id: 7, draftPosition: 1 }], picks: [12, 7, 7, 12].map((teamId, i) => ({ teamId, pickNumber: i + 1, playerId: i === 0 ? 101 : -1, slotId: 1, keeper: false })) },
@@ -35,36 +41,53 @@ describe("ESPN shared-model adapter", () => {
     expect(candidates[0]?.sleeper_adp).toBeNull();
     // Mapping keeps source values and position shards without mutating the cache.
     expect(mapped.bundle.shards.WR[0]).toBe(bundle.shards.WR[0]);
-    expect(mapped.bundle.draftProjections?.source).toBe("ESPN league projections");
-    expect(mapped.bundle.draftProjections?.leaguePoints?.points["shared-a"]).toBe(300);
+    expect(mapped.bundle.draftProjections).toBe(bundle.draftProjections);
     expect(mapped.scoringRules.reception).toBe(1);
 
   });
 
-  it("uses ESPN league totals for D/ST and leaves missing projections missing", () => {
+  it("uses unchanged Sleeper projections for D/ST reference ranks and keeps missing data missing", () => {
     const { room, bundle } = fixture();
     if (!room.data || !room.live) throw new Error("Missing fixture room");
     const defense = { ...bundle.shards.ALL[0]!, player_id: "BUF", name: "Buffalo Bills", position: "DEF" };
     bundle.shards.ALL.push(defense);
     bundle.shards.DEF.push(defense);
-    room.data.players.push({ ...room.data.players[0]!, id: 999, name: "Bills D/ST", positionId: 16, projected: 112 });
+    room.data.players.push({ ...room.data.players[0]!, id: 999, name: "Bills D/ST", positionId: 16 });
     room.data.scoringItems.push(
       { statId: 89, points: 0, pointsOverrides: { "16": 5 } },
       { statId: 123, points: 0, pointsOverrides: { "16": -1 } },
     );
     room.live.slots[1] = { id: 2, category: 16, positions: [16] };
+    bundle.draftProjections!.players.BUF = {playerId: "BUF", position: "DEF", stats: {pts_std: 112}, lastModified: Date.now(), newsUpdated: null};
     const mapped = mapEspnDraft(room, bundle);
+    expect(mapped.scoringRules.defense).toBe("unsupported-custom");
     const players = Object.values(draftCandidateMapFromBundle(mapped.bundle)).map((player) => ({ playerId: player.player_id, position: player.position, ecr: player.fp_rank_ave }));
-    const strategy = buildStarterAwareStrategy({ artifact: mapped.bundle.draftProjections!, players, teams: mapped.teams, rounds: mapped.rounds, rosterSlots: mapped.rosterSlots, scoringRules: mapped.scoringRules });
+    const strategy = buildStarterAwareStrategy({ artifact: mapped.bundle.draftProjections!, players, teams: mapped.teams, rounds: mapped.rounds, rosterSlots: mapped.rosterSlots, scoringRules: mapped.projectionScoringRules });
     expect(strategy.status.available).toBe(true);
     expect(strategy.status.capabilityLimitations).toEqual([]);
     expect(strategy.result?.valuesByPlayerId.BUF?.rawProjectedPoints).toBe(112);
-    expect(mapped.bundle.draftProjections?.fetchedAt).toBe(new Date(room.data.observedAt).toISOString());
-    expect(mapped.bundle.draftProjections?.sourceLastModified).toBeNull();
-    room.data.players.find((player) => player.id === 999)!.projected = null;
+    expect(mapped.bundle.draftProjections).toBe(bundle.draftProjections);
+    delete bundle.draftProjections!.players.BUF;
     const missing = mapEspnDraft(room, bundle);
-    expect(missing.bundle.draftProjections?.leaguePoints?.points.BUF).toBeUndefined();
-    expect(buildStarterAwareStrategy({ artifact: missing.bundle.draftProjections!, players, teams: mapped.teams, rounds: mapped.rounds, rosterSlots: mapped.rosterSlots, scoringRules: mapped.scoringRules }).status.available).toBe(false);
+    expect(missing.bundle.draftProjections?.players.BUF).toBeUndefined();
+    expect(buildStarterAwareStrategy({ artifact: missing.bundle.draftProjections!, players, teams: mapped.teams, rounds: mapped.rounds, rosterSlots: mapped.rosterSlots, scoringRules: mapped.projectionScoringRules }).status.available).toBe(false);
+  });
+
+  it("feeds both shared source views and position ranks from native data, never ESPN totals", () => {
+    const { room, bundle } = fixture();
+    const mapped = mapEspnDraft(room, bundle);
+    const fpSource = {updatedAt: new Date().toISOString(), problems: [], rows: [
+      {name: "First Player", position: "WR" as const, stats: {rec: 80}},
+      {name: "Second Player", position: "WR" as const, stats: {rec: 120}},
+    ]};
+    const view = buildDraftViewModel({playersMap: draftCandidateMapFromBundle(mapped.bundle), draft: mapped.details,
+      picks: mapped.picks, userId: mapped.userId, scoringRules: mapped.projectionScoringRules,
+      projectionArtifact: mapped.bundle.draftProjections, fpSource});
+    expect(view.sourceComparison?.sleeper.values.valuesByPlayerId["shared-a"]?.rawProjectedPoints).toBe(100);
+    expect(view.sourceComparison?.sleeper.positionRanksByPlayerId["shared-a"]).toBe(1);
+    expect(view.sourceComparison?.fp?.positionRanksByPlayerId["shared-b"]).toBe(1);
+    expect(selectDraftSource(view, "fp").sourceComparison?.fp?.values.valuesByPlayerId["shared-b"]?.rawProjectedPoints).toBe(120);
+    expect(mapped.bundle.draftProjections).toBe(bundle.draftProjections);
   });
 
   it("excludes unmatched candidates from every shard without changing the source pool", () => {

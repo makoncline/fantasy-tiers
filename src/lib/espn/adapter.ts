@@ -1,10 +1,9 @@
 import { DraftDetailsSchema } from "@/lib/draftDetails";
 import { DraftPicksSchema } from "@/lib/schemas";
-import { DraftRosterSlotsSchema, DraftScoringRulesSchema, rankingScoringFromRules } from "@/lib/draftLeagueConfig";
+import { DEFAULT_DRAFT_SCORING_RULES, DraftRosterSlotsSchema, DraftScoringRulesSchema, rankingScoringFromRules } from "@/lib/draftLeagueConfig";
 import { type AggregatesBundleResponseT, type AggregatesBundlePlayerT } from "@/lib/schemas-bundle";
 import { normalizePlayerName } from "@/lib/util";
-import { DraftProjectionArtifactSchema } from "@/lib/beerPlusStrategy";
-import { EspnRoomSchema, type EspnRoom, type EspnPlayer } from "./schemas";
+import { EspnRoomSchema, type EspnRoom } from "./schemas";
 
 const positions: Record<number, string> = { 1: "QB", 2: "RB", 3: "WR", 4: "TE", 5: "K", 16: "DEF" };
 const slots: Record<number, string> = { 0: "QB", 2: "RB", 4: "WR", 6: "TE", 16: "DEF", 17: "K", 20: "BENCH", 23: "FLEX" };
@@ -15,7 +14,7 @@ export function espnDraftConfig(input: EspnRoom) {
   const { data, live } = room;
   if (!data || !live) throw new Error("ESPN draft data is incomplete.");
   if (data.draftType !== "SNAKE" || live.draftType !== 1) throw new Error("Only ESPN snake drafts are supported.");
-  // ESPN stores D/ST rates as position 16 overrides; league totals include them.
+  // ESPN stores D/ST rates as position 16 overrides; D/ST uses labeled reference ranks.
   if (data.scoringItems.some((item) => Object.entries(item.pointsOverrides).some(([position, points]) => position !== "16" && points !== item.points))) {
     throw new Error("ESPN position-specific scoring is not supported. Recommendations are stopped.");
   }
@@ -52,7 +51,17 @@ export function espnDraftConfig(input: EspnRoom) {
     draft_order: Object.fromEntries(ordered.map((t) => [`espn-team-${t.id}`, t.draftPosition + 1])),
     slot_to_roster_id: Object.fromEntries(ordered.map((t) => [t.draftPosition + 1, t.id])),
   });
-  return { teams, rounds, rosterSlots, scoringRules, scoring, userId, userSlot: userTeam.draftPosition + 1, details };
+  // The owner selected standard Sleeper reference projections for D/ST and K.
+  // Keep actual league rules separate from the projection model rules.
+  const projectionScoringRules = { ...scoringRules,
+    defense: DEFAULT_DRAFT_SCORING_RULES.defense,
+    fieldGoalUnder50: DEFAULT_DRAFT_SCORING_RULES.fieldGoalUnder50,
+    fieldGoal50Plus: DEFAULT_DRAFT_SCORING_RULES.fieldGoal50Plus,
+    extraPoint: DEFAULT_DRAFT_SCORING_RULES.extraPoint,
+    missedFieldGoal: DEFAULT_DRAFT_SCORING_RULES.missedFieldGoal,
+    missedExtraPoint: DEFAULT_DRAFT_SCORING_RULES.missedExtraPoint,
+  };
+  return { teams, rounds, rosterSlots, scoringRules, projectionScoringRules, scoring, userId, userSlot: userTeam.draftPosition + 1, details };
 }
 
 /** Map identities once; each position keeps its own ranking shard. */
@@ -70,7 +79,7 @@ export function mapEspnDraft(input: EspnRoom, source: AggregatesBundleResponseT)
     byIdentity.set(key, [...(byIdentity.get(key) ?? []), row]);
   }
   const idMap = new Map<number, string>();
-  const espnById = new Map<string, EspnPlayer>();
+  const matchedIds = new Set<string>();
   for (const player of data.players) {
     const position = positions[player.positionId];
     if (!position) continue;
@@ -81,9 +90,9 @@ export function mapEspnDraft(input: EspnRoom, source: AggregatesBundleResponseT)
     if (matches.length > 1) continue; // Do not guess between duplicate identities.
     const row = matches[0];
     if (!row) continue;
-    if (espnById.has(row.player_id)) throw new Error(`Duplicate ESPN player match: ${player.name}`);
+    if (matchedIds.has(row.player_id)) throw new Error(`Duplicate ESPN player match: ${player.name}`);
     idMap.set(player.id, row.player_id);
-    espnById.set(row.player_id, player);
+    matchedIds.add(row.player_id);
   }
   const picks = DraftPicksSchema.parse(live.picks.filter((p) => p.playerId !== -1).map((p) => {
     const playerId = idMap.get(p.playerId);
@@ -95,19 +104,8 @@ export function mapEspnDraft(input: EspnRoom, source: AggregatesBundleResponseT)
   if (picks.some((p, index) => p.pick_no !== index + 1)) throw new Error("ESPN pick history has a gap. Reload the ESPN draft.");
   // Keep each source shard and its values, but only expose proven ESPN identities.
   // Do not mutate the cached bundle used by the shared assistant.
-  const matched = (rows: AggregatesBundlePlayerT[]) => rows.filter((row) => espnById.has(row.player_id));
-  const projected = [...espnById].filter(([, player]) => player.projected != null);
-  const draftProjections = DraftProjectionArtifactSchema.parse({
-    schemaVersion: 1, source: "ESPN league projections", season: String(data.season),
-    fetchedAt: new Date(data.observedAt).toISOString(), sourceLastModified: null,
-    leaguePoints: { leagueId: String(data.leagueId), scoringRules: config.scoringRules,
-      points: Object.fromEntries(projected.map(([id, player]) => [id, player.projected])),
-    },
-    players: Object.fromEntries(projected.map(([id, player]) => [id, {
-      playerId: id, position: positions[player.positionId], stats: {}, lastModified: null, newsUpdated: null,
-    }])),
-  });
-  const bundle: AggregatesBundleResponseT = { ...source, draftProjections, shards: {
+  const matched = (rows: AggregatesBundlePlayerT[]) => rows.filter((row) => matchedIds.has(row.player_id));
+  const bundle: AggregatesBundleResponseT = { ...source, shards: {
     ALL: matched(source.shards.ALL), QB: matched(source.shards.QB),
     RB: matched(source.shards.RB), WR: matched(source.shards.WR),
     TE: matched(source.shards.TE), K: matched(source.shards.K),

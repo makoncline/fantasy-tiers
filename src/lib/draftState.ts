@@ -799,8 +799,7 @@ export function buildDraftViewModel(args: {
       };
   const originalStrategy = starterAwareValue;
   const originalValues = starterAwareValue.result;
-  // ESPN already supplies league-specific points. Its source contract is separate.
-  const valueSource = args.projectionArtifact?.source === "ESPN league projections" ? "combined" : args.valueSource ?? "sleeper";
+  const valueSource = args.valueSource ?? "sleeper";
   const sourceComparison = originalValues && args.scoringRules && userRoster ? compareDraftSources({
     draftId: draft.draft_id, scoringRules: args.scoringRules,
     projectionUpdatedAt: starterAwareValue.status.sourceLastModified,

@@ -608,7 +608,7 @@ function candidateProblems(
     problems.push("Sleeper draft-market rank was not merged.");
   }
   if (!artifact?.players[player.player_id]) {
-    problems.push(`${artifact?.leaguePoints ? "ESPN" : "Sleeper"} projection is missing.`);
+    problems.push("Sleeper projection is missing.");
   }
   addPlayerFreshnessProblem(
     problems,
@@ -618,8 +618,8 @@ function candidateProblems(
   );
   addPlayerFreshnessProblem(
     problems,
-    artifact?.leaguePoints ? "ESPN projection snapshot" : "Sleeper projection",
-    artifact?.leaguePoints ? Date.parse(artifact.fetchedAt) : player.sleeper_projection?.lastModified ?? null,
+    "Sleeper projection",
+    player.sleeper_projection?.lastModified ?? null,
     now
   );
   const value = strategy.result?.valuesByPlayerId[player.player_id]?.value;

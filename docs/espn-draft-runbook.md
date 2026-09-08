@@ -45,23 +45,21 @@ while it is fresh. The page requests its current bound snapshot on load and on
 
 `EspnAssistant.tsx` maps ESPN league rules, order, team identity, and picks into
 the shared draft view model. The rankings, valuation engine, sidebar,
-recommendations, tables, and player details are shared. ESPN's league-scored
-projection totals use the engine's existing `ESPN league projections` contract.
-This supports ESPN D/ST scoring without claiming it equals Sleeper scoring.
-The ESPN header names this source; Sleeper/FP source controls are not shown on
-this route. Sleeper's own source controls and code remain unchanged.
+recommendations, tables, source selector, and player details are shared. ESPN is
+not a ranking source. The adapter preserves the Sleeper projection artifact and
+all FantasyPros/Sleeper ranking fields. Both routes use `useDraftProjectionSource`,
+`buildDraftViewModel`, and `selectDraftSource`, including native position ranks.
 
-Only present ESPN projections enter the artifact. Missing totals remain missing
-and stop advice through shared coverage checks. The artifact records when the
-league snapshot was read, not an invented provider update time. Source data and
-projection snapshot freshness still use the shared readiness checks. This follows
-DS-01 in the strategy research contract: values must use the selected league's
-scoring. No shared selection policy changes are part of this adapter fix.
+Offensive projections use the ESPN league's supported scoring rules. The owner
+selected standard Sleeper reference projections for D/ST and kickers because
+saved projections cannot model ESPN's specialist scoring. The ESPN page states
+this limitation. Actual league rules remain separate from projection-model rules.
+Missing or stale source data still stops advice through shared readiness checks.
 
 Match players by normalized name and position; prefer a unique exact name when
 normalization is ambiguous. Only confirmed matches remain in each position's
 own shard. The adapter does not change the cached source bundle or player values.
-Unknown drafted players and gaps stop advice. Position-specific scoring overrides
+Unknown drafted players and gaps stop advice. Offensive position-specific scoring overrides
 that differ from the base rate stop advice. Unsupported ESPN formats stop with a
 clear message.
 
