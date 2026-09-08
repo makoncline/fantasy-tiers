@@ -10,6 +10,8 @@ describe("scheduled data workflow", () => {
     );
     const packageFile = fs.readFileSync(path.resolve("package.json"), "utf8");
     expect(workflow).toContain('SEASON: "2026"');
+    expect(workflow).toContain("r-lib/actions/setup-r@v2");
+    expect(workflow).toContain("packages: mclust@6.1.3");
     expect(workflow).toContain('DRAFT: "true"');
     expect(workflow).toContain('FP_FETCH_PROJECTIONS: "false"');
     expect(workflow).toContain("pnpm run validate:aggregates:ci");
@@ -45,6 +47,16 @@ describe("scheduled data workflow", () => {
     expect(workflow).not.toContain(
       'if [ "$PREVIOUS_CONCLUSION" = "failure" ]; then'
     );
+  });
+
+  it("keeps validation runs out of publication and history steps", () => {
+    const workflow = fs.readFileSync(".github/workflows/fetch-data.yml", "utf8");
+    expect(workflow).toContain("github.ref == 'refs/heads/main' && !inputs.validate_only");
+    for (const name of ["Verify main has not advanced", "Snapshot rating history", "Stage and check aggregate changes"]) {
+      expect(workflow).toContain(`- name: ${name}\n        if: env.PUBLISH_DATA == 'true'`);
+    }
+    expect(workflow).toContain("if: env.PUBLISH_DATA == 'true' && steps.verify-changed-files.outputs.changes == 'true'");
+    expect(workflow).toContain("name: validated-draft-aggregates");
   });
 
   it("checks production health after each refresh window", () => {

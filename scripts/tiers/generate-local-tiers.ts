@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { z } from "zod";
 import type { ScoringType } from "../../src/lib/schemas";
 import { POSITIONS_TO_SCORING_TYPES } from "../../src/lib/scoring";
@@ -102,8 +103,6 @@ const TIER_CONFIGS: Record<
   },
 };
 
-const OVERALL_SUBTIER_COUNTS = [10, 8, 8] as const;
-
 function finiteNumber(value: number | null | undefined): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
@@ -134,8 +133,10 @@ function rankSortValue(row: FantasyProsDraftRow): number | null {
   return finiteNumber(row.rank_ecr) ?? finiteNumber(row.rank_ave);
 }
 
-function tierValue(row: FantasyProsDraftRow, index: number): number {
-  return finiteNumber(row.rank_ave) ?? finiteNumber(row.rank_ecr) ?? index + 1;
+function tierValue(row: FantasyProsDraftRow): number {
+  const value = finiteNumber(row.rank_ave);
+  if (value == null) throw new Error(`Missing FantasyPros Avg.Rank: ${row.player_name}`);
+  return value;
 }
 
 function compareRowsByRank(
@@ -145,120 +146,28 @@ function compareRowsByRank(
   const leftRank = rankSortValue(left) ?? Number.POSITIVE_INFINITY;
   const rightRank = rankSortValue(right) ?? Number.POSITIVE_INFINITY;
   if (leftRank !== rightRank) return leftRank - rightRank;
-  return tierValue(left, 0) - tierValue(right, 0);
-}
-
-function clusterSse(
-  prefix: readonly number[],
-  prefixSquares: readonly number[],
-  start: number,
-  end: number
-): number {
-  const count = end - start;
-  if (count <= 0) return 0;
-  const sum = prefix[end]! - prefix[start]!;
-  const sumSquares = prefixSquares[end]! - prefixSquares[start]!;
-  return sumSquares - (sum * sum) / count;
-}
-
-export function assignContiguousTiers(
-  values: readonly number[],
-  requestedTierCount: number
-): number[] {
-  const n = values.length;
-  if (n === 0) return [];
-  const distinctValueCount = new Set(values).size;
-  const tierCount = Math.max(
-    1,
-    Math.min(Math.floor(requestedTierCount), n, distinctValueCount)
-  );
-  if (tierCount === 1) return Array.from({ length: n }, () => 1);
-
-  const prefix = Array.from({ length: n + 1 }, () => 0);
-  const prefixSquares = Array.from({ length: n + 1 }, () => 0);
-  for (let index = 0; index < n; index += 1) {
-    const value = values[index]!;
-    prefix[index + 1] = prefix[index]! + value;
-    prefixSquares[index + 1] = prefixSquares[index]! + value * value;
-  }
-
-  const dp = Array.from({ length: tierCount + 1 }, () =>
-    Array.from({ length: n + 1 }, () => Number.POSITIVE_INFINITY)
-  );
-  const previous = Array.from({ length: tierCount + 1 }, () =>
-    Array.from({ length: n + 1 }, () => -1)
-  );
-  dp[0]![0] = 0;
-
-  for (let group = 1; group <= tierCount; group += 1) {
-    for (let end = group; end <= n; end += 1) {
-      for (let start = group - 1; start < end; start += 1) {
-        const previousCost = dp[group - 1]![start]!;
-        if (!Number.isFinite(previousCost)) continue;
-        const cost =
-          previousCost + clusterSse(prefix, prefixSquares, start, end);
-        if (cost < dp[group]![end]!) {
-          dp[group]![end] = cost;
-          previous[group]![end] = start;
-        }
-      }
-    }
-  }
-
-  const tiers = Array.from({ length: n }, () => 1);
-  let end = n;
-  for (let group = tierCount; group >= 1; group -= 1) {
-    const start = previous[group]![end]!;
-    if (start < 0) break;
-    for (let index = start; index < end; index += 1) {
-      tiers[index] = group;
-    }
-    end = start;
-  }
-
-  return tiers;
+  return tierValue(left) - tierValue(right);
 }
 
 function attachTiers(
   rows: readonly FantasyProsDraftRow[],
-  tierCount: number
+  tierCount: number,
+  overall: boolean
 ): TieredRow[] {
-  const values = rows.map((row, index) => tierValue(row, index));
-  const tiers = assignContiguousTiers(values, tierCount);
-  return rows.map((row, index) => ({
-    row,
-    tier: tiers[index] ?? 1,
-  }));
-}
-
-function attachOverallTiers(rows: readonly FantasyProsDraftRow[]): TieredRow[] {
-  const coarseTiers = attachTiers(rows, OVERALL_SUBTIER_COUNTS.length);
-  const tieredRows: TieredRow[] = [];
-  let nextTier = 1;
-
-  for (
-    let coarseTier = 1;
-    coarseTier <= OVERALL_SUBTIER_COUNTS.length;
-    coarseTier += 1
-  ) {
-    const groupRows = coarseTiers
-      .filter((entry) => entry.tier === coarseTier)
-      .map((entry) => entry.row);
-    if (groupRows.length === 0) continue;
-
-    const subtierCount = OVERALL_SUBTIER_COUNTS[coarseTier - 1]!;
-    const subtiers = attachTiers(groupRows, subtierCount);
-    const highestSubtier = Math.max(...subtiers.map((entry) => entry.tier));
-    for (const entry of subtiers) {
-      tieredRows.push({
-        row: entry.row,
-        tier: nextTier + entry.tier - 1,
-      });
-    }
-    nextTier += highestSubtier;
+  if (rows.length === 0) return [];
+  const values = rows.map(tierValue);
+  const result = spawnSync("Rscript", [
+    "--vanilla",
+    fileURLToPath(new URL("./cluster-boris-tiers.R", import.meta.url)),
+    String(tierCount),
+    overall ? "overall" : "position",
+  ], { input: values.join("\n"), encoding: "utf8", timeout: 20_000 });
+  if (result.error || result.status !== 0) {
+    throw new Error(`Boris tier generation failed. Install R and mclust 6.1.3; see docs/tier-generation.md. ${result.error?.message ?? result.stderr.trim()}`);
   }
-
-  return tieredRows;
+  const tiers = z.array(z.coerce.number().int().positive()).length(rows.length)
+    .parse(result.stdout.trim().split(/\s+/));
+  return rows.map((row, index) => ({ row, tier: tiers[index]! }));
 }
 
 function getTierConfig(
@@ -293,9 +202,7 @@ export function buildTierRows(
   const selectedRows = eligibleRows.slice(0, limit);
 
   const primaryTieredRows =
-    options.outputPosition === "ALL"
-      ? attachOverallTiers(selectedRows)
-      : attachTiers(selectedRows, tierCount);
+    attachTiers(selectedRows, tierCount, options.outputPosition === "ALL");
   const lastTier = Math.max(
     0,
     ...primaryTieredRows.map((entry) => entry.tier)
@@ -450,7 +357,7 @@ async function writeTierOutput({
         sourceUrl: tiersSourceUrl(outputPosition, scoring),
         generatedFrom: path.relative(process.cwd(), sourceFile),
         algorithm:
-          "Contiguous 1D k-means over FantasyPros Avg.Rank; ALL uses three coarse groups followed by 10/8/8 subtiers.",
+          "Boris Chen Gaussian mixture clustering (mclust 6.1.3) over FantasyPros Avg.Rank; ALL uses three coarse groups followed by 10/8/8 subtiers.",
         position: outputPosition,
         scoring,
         rowCount: rows.length,
