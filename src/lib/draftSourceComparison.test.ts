@@ -1,3 +1,4 @@
+import { buildDraftValueBoard } from "./draftValue";
 import { describe, expect, it } from "vitest";
 import { buildAggregateBundle } from "./aggregateBundle";
 import { draftCandidateMapFromBundle } from "./draftCandidate";
@@ -69,6 +70,14 @@ it("selects source-native points through the canonical model and blocks invalid 
   expect(selectedFp.draftRawValuesByPlayerId).toBe(sleeper.sourceViews.fp.draftRawValuesByPlayerId);
   expect(selectedFp.draftContext).toBe(sleeper.sourceViews.fp.draftContext);
   expect(selectedFp.recommendationBoard).toEqual(fp.recommendationBoard);
+  expect(buildDraftValueBoard(fp.choiceSnapshot!.boardInput)).toEqual(fp.recommendationBoard);
+  expect(buildDraftValueBoard(sleeper.choiceSnapshot!.boardInput)).toEqual(sleeper.recommendationBoard);
+  for (const player of fp.recommendationBoard!.recommendations) {
+    expect(fp.choiceSnapshot!.boardInput.qualityRanksByPlayerId?.[player.player_id]).toBe(player.fp_rank_ave);
+  }
+  expect(sleeper.choiceSnapshot!.boardInput.qualityRanksByPlayerId).toEqual(sleeper.sourceComparison!.sleeper.positionRanksByPlayerId);
+  expect(sleeper.choiceSnapshot!.boardInput.qualityRanksByPlayerId).not.toEqual(fp.choiceSnapshot!.boardInput.qualityRanksByPlayerId);
+
   expect(selectDraftSource(selectedFp, "sleeper").recommendationBoard).toBe(sleeper.recommendationBoard);
 
   const id = fp.recommendationBoard!.topRecommendation!.player.player_id;

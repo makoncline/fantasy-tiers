@@ -61,10 +61,14 @@ export function compareDraftSources(snapshot: DraftChoiceSnapshot, fp: Projectio
     const required = snapshot.rosterSlots[position] * snapshot.boardInput.teams;
     if (fpPoints.filter(p => p.position === position).length < required) problems.push(`FP ${position} depth is incomplete.`);
   }
-  const calculate = (points: typeof sleeperPoints) => {
+  const calculate = (points: typeof sleeperPoints, source: "fp" | "sleeper") => {
     const values = buildStarterAwareValues({ teams: snapshot.boardInput.teams, rosterSlots: snapshot.rosterSlots, players: points });
-    const board = buildDraftValueBoard({ ...snapshot.boardInput, staticValuesByPlayerId: Object.fromEntries(Object.entries(values.valuesByPlayerId).map(([id,v]) => [id,v.value])) });
-    return { values, board, positionRanksByPlayerId: projectionPositionRanks(points) };
+    const positionRanksByPlayerId = projectionPositionRanks(points);
+    const qualityRanksByPlayerId = source === "fp"
+      ? Object.fromEntries(players.flatMap(p => p.fp_rank_ave != null && p.fp_rank_ave > 0 ? [[p.player_id, p.fp_rank_ave]] : []))
+      : positionRanksByPlayerId;
+    const board = buildDraftValueBoard({ ...snapshot.boardInput, qualityRanksByPlayerId, staticValuesByPlayerId: Object.fromEntries(Object.entries(values.valuesByPlayerId).map(([id,v]) => [id,v.value])) });
+    return { values, board, positionRanksByPlayerId, qualityRanksByPlayerId };
   };
-  return { sleeper: calculate(sleeperPoints), fp: problems.length ? null : calculate(fpPoints), problems, coverage, total: relevant.length };
+  return { sleeper: calculate(sleeperPoints, "sleeper"), fp: problems.length ? null : calculate(fpPoints, "fp"), problems, coverage, total: relevant.length };
 }

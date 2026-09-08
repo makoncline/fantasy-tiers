@@ -1,0 +1,987 @@
+{
+  "allSlots": [
+    {
+      "policy": "baseline",
+      "cases": 39,
+      "legal": 39,
+      "mandatoryPass": 39,
+      "ownerPolicy": 39,
+      "coreConstructionPass": 39,
+      "ecrScoreMeanDelta": 0.0,
+      "scores": {
+        "fp": {
+          "starters": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 39,
+            "better": 0
+          },
+          "flex": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 39,
+            "better": 0
+          },
+          "depth": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 39,
+            "better": 0
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": 0,
+            "minimum": 0,
+            "maximum": 0,
+            "worse": 0,
+            "same": 39,
+            "better": 0
+          }
+        },
+        "sleeper": {
+          "starters": {
+            "evaluablePairs": 19,
+            "missingPairs": 20,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 19,
+            "better": 0
+          },
+          "flex": {
+            "evaluablePairs": 19,
+            "missingPairs": 20,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 19,
+            "better": 0
+          },
+          "depth": {
+            "evaluablePairs": 19,
+            "missingPairs": 20,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 19,
+            "better": 0
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 19,
+            "missingPairs": 20,
+            "mean": 0,
+            "minimum": 0,
+            "maximum": 0,
+            "worse": 0,
+            "same": 19,
+            "better": 0
+          }
+        }
+      },
+      "changedPicks": 0,
+      "sameStateInterventions": 0,
+      "sameStateValSacrificed": 0
+    },
+    {
+      "policy": "quality-guard",
+      "cases": 39,
+      "legal": 39,
+      "mandatoryPass": 39,
+      "ownerPolicy": 39,
+      "coreConstructionPass": 39,
+      "ecrScoreMeanDelta": -0.4661538461538463,
+      "scores": {
+        "fp": {
+          "starters": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 39,
+            "better": 0
+          },
+          "flex": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 39,
+            "better": 0
+          },
+          "depth": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": -0.9102051282051119,
+            "minimum": -44.740999999999985,
+            "maximum": 9.448000000000093,
+            "worse": 3,
+            "same": 27,
+            "better": 9
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": -0.02564102564102564,
+            "minimum": -1,
+            "maximum": 0,
+            "worse": 1,
+            "same": 38,
+            "better": 0
+          }
+        },
+        "sleeper": {
+          "starters": {
+            "evaluablePairs": 18,
+            "missingPairs": 21,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 18,
+            "better": 0
+          },
+          "flex": {
+            "evaluablePairs": 18,
+            "missingPairs": 21,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 18,
+            "better": 0
+          },
+          "depth": {
+            "evaluablePairs": 18,
+            "missingPairs": 21,
+            "mean": -1.1927777777777793,
+            "minimum": -17.020000000000095,
+            "maximum": 0.0,
+            "worse": 2,
+            "same": 16,
+            "better": 0
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 18,
+            "missingPairs": 21,
+            "mean": 0,
+            "minimum": 0,
+            "maximum": 0,
+            "worse": 0,
+            "same": 18,
+            "better": 0
+          }
+        }
+      },
+      "changedPicks": 26,
+      "sameStateInterventions": 19,
+      "sameStateValSacrificed": 0.8000000000000007
+    },
+    {
+      "policy": "highest-value",
+      "cases": 39,
+      "legal": 39,
+      "mandatoryPass": 39,
+      "ownerPolicy": 39,
+      "coreConstructionPass": 39,
+      "ecrScoreMeanDelta": 10.882051282051288,
+      "scores": {
+        "fp": {
+          "starters": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": 7.928564102564089,
+            "minimum": -44.98400000000015,
+            "maximum": 37.041999999999916,
+            "worse": 6,
+            "same": 4,
+            "better": 29
+          },
+          "flex": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": 3.9901794871794833,
+            "minimum": -44.254999999999995,
+            "maximum": 56.63899999999995,
+            "worse": 4,
+            "same": 24,
+            "better": 11
+          },
+          "depth": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": 8.865820512820514,
+            "minimum": -44.740999999999985,
+            "maximum": 62.783000000000015,
+            "worse": 8,
+            "same": 7,
+            "better": 24
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": -0.02564102564102564,
+            "minimum": -1,
+            "maximum": 2,
+            "worse": 6,
+            "same": 29,
+            "better": 4
+          }
+        },
+        "sleeper": {
+          "starters": {
+            "evaluablePairs": 16,
+            "missingPairs": 23,
+            "mean": -19.95562500000011,
+            "minimum": -61.86000000000013,
+            "maximum": 15.449999999999818,
+            "worse": 13,
+            "same": 0,
+            "better": 3
+          },
+          "flex": {
+            "evaluablePairs": 16,
+            "missingPairs": 23,
+            "mean": -3.931250000000013,
+            "minimum": -44.3900000000001,
+            "maximum": 28.629999999999995,
+            "worse": 4,
+            "same": 8,
+            "better": 4
+          },
+          "depth": {
+            "evaluablePairs": 16,
+            "missingPairs": 23,
+            "mean": 12.826250000000016,
+            "minimum": -41.950000000000045,
+            "maximum": 108.2800000000002,
+            "worse": 4,
+            "same": 2,
+            "better": 10
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 16,
+            "missingPairs": 23,
+            "mean": 0.5625,
+            "minimum": -1,
+            "maximum": 2,
+            "worse": 1,
+            "same": 6,
+            "better": 9
+          }
+        }
+      },
+      "changedPicks": 178,
+      "sameStateInterventions": 83,
+      "sameStateValSacrificed": 12.4
+    },
+    {
+      "policy": "tier-first",
+      "cases": 39,
+      "legal": 39,
+      "mandatoryPass": 39,
+      "ownerPolicy": 39,
+      "coreConstructionPass": 39,
+      "ecrScoreMeanDelta": -9.977179487179484,
+      "scores": {
+        "fp": {
+          "starters": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": 2.210256410256394,
+            "minimum": -29.176999999999907,
+            "maximum": 26.528999999999996,
+            "worse": 13,
+            "same": 12,
+            "better": 14
+          },
+          "flex": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": -5.558871794871802,
+            "minimum": -21.902999999999906,
+            "maximum": 3.1720000000000255,
+            "worse": 17,
+            "same": 21,
+            "better": 1
+          },
+          "depth": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": -28.343923076923048,
+            "minimum": -77.53599999999994,
+            "maximum": 29.08400000000006,
+            "worse": 34,
+            "same": 1,
+            "better": 4
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": 0.05128205128205128,
+            "minimum": -1,
+            "maximum": 2,
+            "worse": 4,
+            "same": 30,
+            "better": 5
+          }
+        },
+        "sleeper": {
+          "starters": {
+            "evaluablePairs": 10,
+            "missingPairs": 29,
+            "mean": 1.4659999999999627,
+            "minimum": -15.220000000000255,
+            "maximum": 45.799999999999955,
+            "worse": 5,
+            "same": 4,
+            "better": 1
+          },
+          "flex": {
+            "evaluablePairs": 10,
+            "missingPairs": 29,
+            "mean": -3.95900000000002,
+            "minimum": -11.650000000000034,
+            "maximum": 2.1899999999999977,
+            "worse": 6,
+            "same": 2,
+            "better": 2
+          },
+          "depth": {
+            "evaluablePairs": 10,
+            "missingPairs": 29,
+            "mean": 22.592999999999982,
+            "minimum": -36.35000000000002,
+            "maximum": 67.13999999999999,
+            "worse": 4,
+            "same": 0,
+            "better": 6
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 10,
+            "missingPairs": 29,
+            "mean": 0.1,
+            "minimum": -1,
+            "maximum": 1,
+            "worse": 1,
+            "same": 7,
+            "better": 2
+          }
+        }
+      },
+      "changedPicks": 212,
+      "sameStateInterventions": 166,
+      "sameStateValSacrificed": 2009.8999999999999
+    },
+    {
+      "policy": "position-timing",
+      "cases": 39,
+      "legal": 39,
+      "mandatoryPass": 39,
+      "ownerPolicy": 39,
+      "coreConstructionPass": 39,
+      "ecrScoreMeanDelta": 3.2371794871794886,
+      "scores": {
+        "fp": {
+          "starters": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": 0.18969230769232873,
+            "minimum": -44.98400000000015,
+            "maximum": 32.371000000000095,
+            "worse": 7,
+            "same": 23,
+            "better": 9
+          },
+          "flex": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": 3.3554358974358967,
+            "minimum": -44.254999999999995,
+            "maximum": 56.63899999999995,
+            "worse": 3,
+            "same": 28,
+            "better": 8
+          },
+          "depth": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": 2.4745641025641154,
+            "minimum": -28.866999999999962,
+            "maximum": 31.064000000000078,
+            "worse": 7,
+            "same": 15,
+            "better": 17
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 39,
+            "missingPairs": 0,
+            "mean": -0.05128205128205128,
+            "minimum": -1,
+            "maximum": 1,
+            "worse": 5,
+            "same": 31,
+            "better": 3
+          }
+        },
+        "sleeper": {
+          "starters": {
+            "evaluablePairs": 16,
+            "missingPairs": 23,
+            "mean": -4.186875000000001,
+            "minimum": -31.730000000000018,
+            "maximum": 0.0,
+            "worse": 6,
+            "same": 10,
+            "better": 0
+          },
+          "flex": {
+            "evaluablePairs": 16,
+            "missingPairs": 23,
+            "mean": 1.4662499999999916,
+            "minimum": -44.3900000000001,
+            "maximum": 28.629999999999995,
+            "worse": 1,
+            "same": 12,
+            "better": 3
+          },
+          "depth": {
+            "evaluablePairs": 16,
+            "missingPairs": 23,
+            "mean": 11.154375000000002,
+            "minimum": -23.15000000000009,
+            "maximum": 108.2800000000002,
+            "worse": 4,
+            "same": 6,
+            "better": 6
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 16,
+            "missingPairs": 23,
+            "mean": 0.1875,
+            "minimum": -1,
+            "maximum": 1,
+            "worse": 1,
+            "same": 11,
+            "better": 4
+          }
+        }
+      },
+      "changedPicks": 128,
+      "sameStateInterventions": 47,
+      "sameStateValSacrificed": 26.099999999999994
+    }
+  ],
+  "slot4": [
+    {
+      "policy": "baseline",
+      "cases": 6,
+      "legal": 6,
+      "mandatoryPass": 6,
+      "ownerPolicy": 6,
+      "coreConstructionPass": 6,
+      "ecrScoreMeanDelta": 0.0,
+      "scores": {
+        "fp": {
+          "starters": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 6,
+            "better": 0
+          },
+          "flex": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 6,
+            "better": 0
+          },
+          "depth": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 6,
+            "better": 0
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": 0,
+            "minimum": 0,
+            "maximum": 0,
+            "worse": 0,
+            "same": 6,
+            "better": 0
+          }
+        },
+        "sleeper": {
+          "starters": {
+            "evaluablePairs": 5,
+            "missingPairs": 1,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 5,
+            "better": 0
+          },
+          "flex": {
+            "evaluablePairs": 5,
+            "missingPairs": 1,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 5,
+            "better": 0
+          },
+          "depth": {
+            "evaluablePairs": 5,
+            "missingPairs": 1,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 5,
+            "better": 0
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 5,
+            "missingPairs": 1,
+            "mean": 0,
+            "minimum": 0,
+            "maximum": 0,
+            "worse": 0,
+            "same": 5,
+            "better": 0
+          }
+        }
+      },
+      "changedPicks": 0,
+      "sameStateInterventions": 0,
+      "sameStateValSacrificed": 0
+    },
+    {
+      "policy": "quality-guard",
+      "cases": 6,
+      "legal": 6,
+      "mandatoryPass": 6,
+      "ownerPolicy": 6,
+      "coreConstructionPass": 6,
+      "ecrScoreMeanDelta": 0.0,
+      "scores": {
+        "fp": {
+          "starters": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 6,
+            "better": 0
+          },
+          "flex": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 6,
+            "better": 0
+          },
+          "depth": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": 1.1206666666666745,
+            "minimum": 0.0,
+            "maximum": 6.724000000000046,
+            "worse": 0,
+            "same": 5,
+            "better": 1
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": 0,
+            "minimum": 0,
+            "maximum": 0,
+            "worse": 0,
+            "same": 6,
+            "better": 0
+          }
+        },
+        "sleeper": {
+          "starters": {
+            "evaluablePairs": 5,
+            "missingPairs": 1,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 5,
+            "better": 0
+          },
+          "flex": {
+            "evaluablePairs": 5,
+            "missingPairs": 1,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 5,
+            "better": 0
+          },
+          "depth": {
+            "evaluablePairs": 5,
+            "missingPairs": 1,
+            "mean": 0.0,
+            "minimum": 0.0,
+            "maximum": 0.0,
+            "worse": 0,
+            "same": 5,
+            "better": 0
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 5,
+            "missingPairs": 1,
+            "mean": 0,
+            "minimum": 0,
+            "maximum": 0,
+            "worse": 0,
+            "same": 5,
+            "better": 0
+          }
+        }
+      },
+      "changedPicks": 2,
+      "sameStateInterventions": 2,
+      "sameStateValSacrificed": 0
+    },
+    {
+      "policy": "highest-value",
+      "cases": 6,
+      "legal": 6,
+      "mandatoryPass": 6,
+      "ownerPolicy": 6,
+      "coreConstructionPass": 6,
+      "ecrScoreMeanDelta": 9.248333333333344,
+      "scores": {
+        "fp": {
+          "starters": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": 13.03433333333328,
+            "minimum": 5.619999999999891,
+            "maximum": 23.164999999999736,
+            "worse": 0,
+            "same": 0,
+            "better": 6
+          },
+          "flex": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": -2.4466666666666774,
+            "minimum": -14.680000000000064,
+            "maximum": 0.0,
+            "worse": 1,
+            "same": 5,
+            "better": 0
+          },
+          "depth": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": -0.9181666666666501,
+            "minimum": -31.78800000000001,
+            "maximum": 27.243999999999915,
+            "worse": 2,
+            "same": 1,
+            "better": 3
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": -0.16666666666666666,
+            "minimum": -1,
+            "maximum": 1,
+            "worse": 2,
+            "same": 3,
+            "better": 1
+          }
+        },
+        "sleeper": {
+          "starters": {
+            "evaluablePairs": 4,
+            "missingPairs": 2,
+            "mean": -12.870000000000061,
+            "minimum": -31.570000000000164,
+            "maximum": 7.940000000000055,
+            "worse": 3,
+            "same": 0,
+            "better": 1
+          },
+          "flex": {
+            "evaluablePairs": 4,
+            "missingPairs": 2,
+            "mean": 3.6850000000000023,
+            "minimum": 0.0,
+            "maximum": 14.740000000000009,
+            "worse": 0,
+            "same": 3,
+            "better": 1
+          },
+          "depth": {
+            "evaluablePairs": 4,
+            "missingPairs": 2,
+            "mean": -4.429999999999978,
+            "minimum": -31.92999999999995,
+            "maximum": 12.049999999999955,
+            "worse": 1,
+            "same": 1,
+            "better": 2
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 4,
+            "missingPairs": 2,
+            "mean": 0.5,
+            "minimum": 0,
+            "maximum": 1,
+            "worse": 0,
+            "same": 2,
+            "better": 2
+          }
+        }
+      },
+      "changedPicks": 27,
+      "sameStateInterventions": 15,
+      "sameStateValSacrificed": 1.5999999999999996
+    },
+    {
+      "policy": "tier-first",
+      "cases": 6,
+      "legal": 6,
+      "mandatoryPass": 6,
+      "ownerPolicy": 6,
+      "coreConstructionPass": 6,
+      "ecrScoreMeanDelta": -16.25333333333333,
+      "scores": {
+        "fp": {
+          "starters": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": 6.331999999999994,
+            "minimum": 0.0,
+            "maximum": 11.22400000000016,
+            "worse": 0,
+            "same": 2,
+            "better": 4
+          },
+          "flex": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": -7.308500000000028,
+            "minimum": -21.612000000000023,
+            "maximum": 0.0,
+            "worse": 3,
+            "same": 3,
+            "better": 0
+          },
+          "depth": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": -32.35816666666663,
+            "minimum": -50.066999999999894,
+            "maximum": 0.0,
+            "worse": 5,
+            "same": 1,
+            "better": 0
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": 0,
+            "minimum": 0,
+            "maximum": 0,
+            "worse": 0,
+            "same": 6,
+            "better": 0
+          }
+        },
+        "sleeper": {
+          "starters": {
+            "evaluablePairs": 3,
+            "missingPairs": 3,
+            "mean": 15.266666666666652,
+            "minimum": 0.0,
+            "maximum": 45.799999999999955,
+            "worse": 0,
+            "same": 2,
+            "better": 1
+          },
+          "flex": {
+            "evaluablePairs": 3,
+            "missingPairs": 3,
+            "mean": -7.063333333333351,
+            "minimum": -11.650000000000034,
+            "maximum": 0.0,
+            "worse": 2,
+            "same": 1,
+            "better": 0
+          },
+          "depth": {
+            "evaluablePairs": 3,
+            "missingPairs": 3,
+            "mean": 12.543333333333294,
+            "minimum": -22.879999999999995,
+            "maximum": 60.50999999999999,
+            "worse": 2,
+            "same": 0,
+            "better": 1
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 3,
+            "missingPairs": 3,
+            "mean": 0,
+            "minimum": 0,
+            "maximum": 0,
+            "worse": 0,
+            "same": 3,
+            "better": 0
+          }
+        }
+      },
+      "changedPicks": 31,
+      "sameStateInterventions": 21,
+      "sameStateValSacrificed": 250.29999999999998
+    },
+    {
+      "policy": "position-timing",
+      "cases": 6,
+      "legal": 6,
+      "mandatoryPass": 6,
+      "ownerPolicy": 6,
+      "coreConstructionPass": 6,
+      "ecrScoreMeanDelta": 2.520000000000001,
+      "scores": {
+        "fp": {
+          "starters": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": 1.9288333333333487,
+            "minimum": 0.0,
+            "maximum": 11.573000000000093,
+            "worse": 0,
+            "same": 5,
+            "better": 1
+          },
+          "flex": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": -2.4466666666666774,
+            "minimum": -14.680000000000064,
+            "maximum": 0.0,
+            "worse": 1,
+            "same": 5,
+            "better": 0
+          },
+          "depth": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": 4.691000000000031,
+            "minimum": 0.0,
+            "maximum": 12.518000000000029,
+            "worse": 0,
+            "same": 3,
+            "better": 3
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 6,
+            "missingPairs": 0,
+            "mean": 0.16666666666666666,
+            "minimum": 0,
+            "maximum": 1,
+            "worse": 0,
+            "same": 5,
+            "better": 1
+          }
+        },
+        "sleeper": {
+          "starters": {
+            "evaluablePairs": 5,
+            "missingPairs": 1,
+            "mean": -1.6920000000000073,
+            "minimum": -8.460000000000036,
+            "maximum": 0.0,
+            "worse": 1,
+            "same": 4,
+            "better": 0
+          },
+          "flex": {
+            "evaluablePairs": 5,
+            "missingPairs": 1,
+            "mean": 2.9480000000000017,
+            "minimum": 0.0,
+            "maximum": 14.740000000000009,
+            "worse": 0,
+            "same": 4,
+            "better": 1
+          },
+          "depth": {
+            "evaluablePairs": 5,
+            "missingPairs": 1,
+            "mean": -2.2200000000000273,
+            "minimum": -23.15000000000009,
+            "maximum": 12.049999999999955,
+            "worse": 1,
+            "same": 3,
+            "better": 1
+          },
+          "positiveValueDepth": {
+            "evaluablePairs": 5,
+            "missingPairs": 1,
+            "mean": 0,
+            "minimum": -1,
+            "maximum": 1,
+            "worse": 1,
+            "same": 3,
+            "better": 1
+          }
+        }
+      },
+      "changedPicks": 11,
+      "sameStateInterventions": 6,
+      "sameStateValSacrificed": 4.600000000000001
+    }
+  ],
+  "hash": "e586bf8b3b81ac49be3b855b6b626013558352f8da2e9a484517e31607b2ebb4"
+}

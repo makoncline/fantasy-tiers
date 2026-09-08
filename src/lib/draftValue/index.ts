@@ -16,6 +16,7 @@ export type DraftActionLabel = "take now" | "can wait" | "queue fallback" | "unk
 export type DraftSourceConfidence = "high" | "medium" | "low";
 
 export type DraftValueReasonCode =
+  | "SOURCE_RANK_ORDER"
   | "BEST_VALUE"
   | "TIER_CLIFF"
   | "LIKELY_GONE"
@@ -63,6 +64,7 @@ export type DraftRecommendationComponents = {
   depth: number;
   demand: number;
   risk: number;
+  rankingOrder: number;
 };
 
 export type DraftRecommendationComponentKey =
@@ -229,6 +231,7 @@ export type DraftValueBoardInput<TPlayer extends DraftValuePlayerInput> = {
   teamRosterStates?: readonly DraftTeamRosterState[] | undefined;
   userRosterPlayers?: readonly DraftRosterPlayerInput[] | undefined;
   staticValuesByPlayerId: Readonly<Record<string, number>>;
+  qualityRanksByPlayerId?: Readonly<Record<string, number>> | undefined;
   irSlots?: number | undefined;
 };
 
@@ -257,6 +260,7 @@ const COMPONENT_LABELS = {
   depth: "Roster depth and balance",
   demand: "League demand",
   risk: "Data/news risk",
+  rankingOrder: "Selected ranking order",
 } satisfies Record<DraftRecommendationComponentKey, string>;
 
 const COMPONENT_KEYS = [
@@ -268,6 +272,7 @@ const COMPONENT_KEYS = [
   "depth",
   "demand",
   "risk",
+  "rankingOrder",
 ] as const satisfies readonly DraftRecommendationComponentKey[];
 
 const BASE_RECOMMENDATION_WEIGHTS = {
@@ -279,6 +284,7 @@ const BASE_RECOMMENDATION_WEIGHTS = {
   depth: 0.35,
   demand: 0.2,
   risk: 0.5,
+  rankingOrder: 1,
 } satisfies DraftRecommendationWeights;
 
 function makeWeightProfile(
@@ -2171,6 +2177,7 @@ function weightRecommendationComponents(
     depth: weightedComponent(rawScores, weights, "depth"),
     demand: weightedComponent(rawScores, weights, "demand"),
     risk: weightedComponent(rawScores, weights, "risk"),
+    rankingOrder: rawScores.rankingOrder,
   };
 }
 
@@ -2636,6 +2643,7 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
       (isQbPreAdpReach ? (currentRound >= 9 ? -6 : -30) : 0) +
       lateQbStarterUrgency;
     const rawScores: DraftRecommendationComponents = {
+      rankingOrder: 0,
       value:
         staticValue == null || bestStaticValue == null
           ? 0
@@ -2921,11 +2929,49 @@ export function buildDraftValueBoard<TPlayer extends DraftValuePlayerInput>(
     .filter(
       (player) => metricsByPlayerId[player.player_id]?.staticValue != null
     )
-    .sort((a, b) => {
-    const am = metricsByPlayerId[a.player_id];
-    const bm = metricsByPlayerId[b.player_id];
-    return (bm?.recommendationScore ?? -Infinity) - (am?.recommendationScore ?? -Infinity);
-    });
+    .filter(player => input.qualityRanksByPlayerId == null ||
+      (Number.isFinite(input.qualityRanksByPlayerId[player.player_id]) &&
+        input.qualityRanksByPlayerId[player.player_id]! > 0));
+
+  const qualityRank = (player: TPlayer) => input.qualityRanksByPlayerId?.[player.player_id] ?? Infinity;
+  // Only an explicit source rank can constrain a player.
+  // Enforce consensus only after eligibility. An unavailable or excluded player
+  // must not set the ceiling for a position. VAL remains source-native.
+  for (const position of CORE_POSITIONS) {
+    const ordered = recommendations.filter(player => player.position === position && Number.isFinite(qualityRank(player)))
+      .sort((a, b) => qualityRank(a) - qualityRank(b));
+    let ceiling = Infinity;
+    let priorRank: number | null = null;
+    let groupCeiling = Infinity;
+    for (const player of ordered) {
+      const metric = metricsByPlayerId[player.player_id]!;
+      const rank = qualityRank(player);
+      if (rank !== priorRank) {
+        ceiling = Math.min(ceiling, groupCeiling);
+        groupCeiling = Infinity;
+        priorRank = rank;
+      }
+      const beforeRisk = roundOne(metric.recommendationScore - metric.components.risk);
+      const constrained = Math.min(beforeRisk, ceiling);
+      groupCeiling = Math.min(groupCeiling, constrained);
+      const correction = roundOne(constrained - beforeRisk);
+      metric.components.rankingOrder = correction;
+      metric.rawScores.rankingOrder = correction;
+      metric.recommendationScore = sumComponents(metric.components);
+      metric.topComponents = topRecommendationComponents(metric.components, metric.valueLabel);
+      if (correction < 0) {
+        metric.reasons.push({ code: "SOURCE_RANK_ORDER", label: "Selected ranking order",
+          detail: "A better-ranked eligible player in the selected source remains at this position. ADJ before risk cannot exceed that player's score." });
+      }
+    }
+  }
+  recommendations.sort((a, b) => {
+    const am = metricsByPlayerId[a.player_id]!;
+    const bm = metricsByPlayerId[b.player_id]!;
+    return bm.recommendationScore - am.recommendationScore ||
+      qualityRank(a) - qualityRank(b) ||
+      a.player_id.localeCompare(b.player_id);
+  });
 
   recommendations.forEach((player, index) => {
     const metric = metricsByPlayerId[player.player_id];

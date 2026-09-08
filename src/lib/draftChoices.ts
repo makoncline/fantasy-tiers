@@ -23,6 +23,7 @@ export const CHOICE_COMPONENT_LABELS = {
   depth: "Roster depth and balance",
   demand: "Room demand",
   risk: "Risk",
+  rankingOrder: "Selected ranking order",
 };
 
 export function choiceRosterFit(
@@ -86,7 +87,7 @@ export function buildDraftChoices(board: DraftValueBoard<DraftCandidate>) {
 }
 
 export function choiceContributionDifference(lean: DraftValueMetrics, other: DraftValueMetrics) {
-  return (["value", "timing", "starterNeed", "construction", "onesie", "depth", "demand", "risk"] as const)
+  return (["value", "timing", "starterNeed", "construction", "onesie", "depth", "demand", "risk", "rankingOrder"] as const)
     .map((key) => ({ key, label: CHOICE_COMPONENT_LABELS[key], value: lean.components[key] - other.components[key] }))
     .sort((a, b) => b.value - a.value);
 }

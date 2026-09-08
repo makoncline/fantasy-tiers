@@ -848,6 +848,7 @@ export function buildDraftViewModel(args: {
           userRosterPlayers: userRoster.players,
           irSlots: draft.settings.slots_ir ?? 0,
           staticValuesByPlayerId: draftRawValuesByPlayerId,
+          ...(source !== "combined" ? { qualityRanksByPlayerId: sourceComparison?.[source]?.qualityRanksByPlayerId } : {}),
         }
       : null;
     const draftValueBoard = recommendationInput ? (source === "combined" ? buildDraftValueBoard(recommendationInput) : sourceComparison?.[source]?.board ?? null) : null;

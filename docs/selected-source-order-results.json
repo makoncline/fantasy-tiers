@@ -1,0 +1,59 @@
+{
+  "fp": {
+    "runs": 39,
+    "legal": 39,
+    "mandatoryPass": 39,
+    "coreConstructionPass": 39,
+    "ownerPolicy": 39,
+    "pairedVsPreviousFp": {
+      "fp": {
+        "starters": {
+          "pairs": 39,
+          "mean": -2.417076923076925,
+          "min": -29.176999999999907,
+          "max": 29.77000000000021
+        },
+        "flex": {
+          "pairs": 39,
+          "mean": -4.2977435897436,
+          "min": -22.831999999999994,
+          "max": 23.454000000000065
+        },
+        "depth": {
+          "pairs": 39,
+          "mean": -42.74723076923078,
+          "min": -97.87699999999995,
+          "max": 25.716999999999985
+        }
+      },
+      "sleeper": {
+        "starters": {
+          "pairs": 19,
+          "mean": 8.367894736842118,
+          "min": -8.0,
+          "max": 45.04000000000019
+        },
+        "flex": {
+          "pairs": 19,
+          "mean": 1.6763157894736735,
+          "min": -8.640000000000043,
+          "max": 17.099999999999966
+        },
+        "depth": {
+          "pairs": 19,
+          "mean": 24.18736842105264,
+          "min": -53.35000000000002,
+          "max": 105.34000000000003
+        }
+      }
+    },
+    "changedPicks": 269
+  },
+  "sleeper": {
+    "runs": 39,
+    "legal": 39,
+    "mandatoryPass": 39,
+    "coreConstructionPass": 39,
+    "ownerPolicy": 39
+  }
+}
