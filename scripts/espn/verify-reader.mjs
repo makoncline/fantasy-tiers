@@ -74,7 +74,7 @@ try {
   await expect(second.getByText(/Reader practice fixture.*3 picks/)).toBeVisible();
   await expect(second.getByTestId('draft-sidebar')).toContainText('Unranked Fixture Player');
   await expect(second.getByText('Recommendations paused', {exact: true})).toHaveCount(0);
-  draftSocket.send('UNDONE 2');
+  draftSocket.send('UNDONE 1');
   await expect(second.getByText(/Reader practice fixture.*1 picks/)).toBeVisible();
   await expect(second.getByTestId('draft-sidebar')).not.toContainText('Unranked Fixture Player');
   draftSocket.send('SELECTED 2 102 1');

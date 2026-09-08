@@ -79,3 +79,5 @@
 - [2026-09-07] ESPN unranked picks and undo: Live practice drafted Travis Hunter as a WR although the shared ranked pool omitted him. Keep known ESPN unranked selections as draft-only identities with null ranking/projection fields. ESPN UNDONE clears the named pick and all later picks; clear the full suffix to avoid stale pick gaps.
 
 - [2026-09-07] Shared draft display parity: Sleeper, ESPN, and local mocks must use useDraftAssistantContextValue for row enrichment, roster slots, and drafted values. The previous duplicate ESPN/mock path omitted static values for drafted players, so Show drafted changed counts but hid the rows below the visible slice. Keep platform providers limited to loading and normalized inputs; verify rendered parity with identical scoring, including specialist reference rules.
+
+- [2026-09-08] ESPN undo index: The live ESPN client onUndoneMessage adds one to the UNDONE index; INIT pickNumber is one-based. Convert the index before clearing that pick and its suffix. Verify the retained previous pick in browser tests.

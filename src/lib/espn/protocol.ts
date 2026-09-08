@@ -107,7 +107,8 @@ export function applyEspnMessage(state: EspnLiveState | null, message: string): 
     return { ...state, picks: state.picks.map((p) => p.pickNumber === next.pickNumber ? { ...p, playerId, slotId } : p) };
   }
   if (command === "UNDONE") {
-    const pickNumber = number(0);
+    // UNDONE uses a zero-based index; INIT pick numbers are one-based.
+    const pickNumber = number(0) + 1;
     return { ...state, picks: state.picks.map((p) => p.pickNumber >= pickNumber ? { ...p, playerId: -1, slotId: 0 } : p) };
   }
   if (command === "RESET") return null;

@@ -53,6 +53,6 @@ function Shared({ mapped, checkedAt, refreshRoom }: { mapped: ReturnType<typeof 
   return <DraftDataStaticProvider value={{ ...context,
     valueSource, setValueSource, sourceComparison: viewModel.sourceComparison,
     refetchData: refreshRoom, lastUpdatedAt: checkedAt,
-    pickFeed: { checkedAt, paused: mapped.details.status === "paused", complete: mapped.details.status === "complete" },
+    pickFeed: { checkedAt, paused: false, complete: mapped.details.status === "complete" },
   }}><DraftAssistantContent /></DraftDataStaticProvider>;
 }

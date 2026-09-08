@@ -20,6 +20,10 @@ describe("pick-feed freshness is not player-source freshness", () => {
   const input = { checkedAt: 100_000, now: 104_000, hasError: false };
   it("reports response age, not a claim of synchronized server state", () => expect(getPickFeedStatus(input).label).toBe("Pick feed checked 4s ago"));
   it("shows errors even after a recent good response", () => expect(getPickFeedStatus({ ...input, hasError: true }).state).toBe("error"));
+  it("keeps completed drafts complete when their final receipt arrives after the clock stops", () => {
+    expect(getPickFeedStatus({ ...input, checkedAt: 110_000, complete: true }).state).toBe("complete");
+    expect(getPickFeedStatus({ ...input, complete: true, hasError: true }).state).toBe("error");
+  });
   it("flags stopped polling, missing timestamps, paused fetches, and future timestamps", () => {
     expect(getPickFeedStatus({ ...input, now: 116_000 }).state).toBe("stale");
     expect(getPickFeedStatus({ ...input, checkedAt: null }).state).toBe("waiting");
