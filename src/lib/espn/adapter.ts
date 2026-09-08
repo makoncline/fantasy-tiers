@@ -8,7 +8,16 @@ import { EspnRoomSchema, type EspnRoom } from "./schemas";
 
 const positions: Record<number, string> = { 1: "QB", 2: "RB", 3: "WR", 4: "TE", 5: "K", 16: "DEF" };
 const slots: Record<number, string> = { 0: "QB", 2: "RB", 4: "WR", 6: "TE", 16: "DEF", 17: "K", 20: "BENCH", 23: "FLEX" };
-const identity = (name: string, position: string) => `${position}:${normalizePlayerName(name.replace(/ D\/ST$/, ""))}`;
+const nameAliases: Record<string, string> = {
+  "bam knight": "zonovan knight",
+  "mitchell tinsley": "mitch tinsley",
+  "matthew hibner": "matt hibner",
+  "nyheim hines": "nyheim miller-hines",
+};
+const identity = (name: string, position: string) => {
+  const normalized = normalizePlayerName(name.replace(/ D\/ST$/, "")).replace(/ (iv|v)$/, "");
+  return `${position}:${nameAliases[normalized] ?? normalized}`;
+};
 
 export function espnDraftConfig(input: EspnRoom) {
   const room = EspnRoomSchema.parse(input);
