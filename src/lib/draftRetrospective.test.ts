@@ -269,7 +269,8 @@ function candidate(
     comebackProbability: 0.1,
     comebackLabel: "unlikely",
     weightProfile: "starter_build",
-    componentScores: { value: staticValue, timing: 0, starterNeed: 0, construction: 0, onesie: 0, depth: 0, demand: 0, risk: 0 },
+    componentScores: {
+      rankingOrder: 0, value: staticValue, timing: 0, starterNeed: 0, construction: 0, onesie: 0, depth: 0, demand: 0, risk: 0 },
     topComponents: [{ key: "value", label: "Value", value: staticValue }],
     reasonLabels: ["Best value"],
     reasonDetails: ["Saved detail."],

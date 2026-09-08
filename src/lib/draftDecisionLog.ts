@@ -56,6 +56,7 @@ export const AlgorithmDraftCandidateSchema = z.object({
     depth: z.number().finite(),
     demand: z.number().finite(),
     risk: z.number().finite(),
+    rankingOrder: z.number().finite(),
   }),
   topComponents: z.array(z.object({
     key: z.enum([
@@ -67,6 +68,7 @@ export const AlgorithmDraftCandidateSchema = z.object({
       "depth",
       "demand",
       "risk",
+      "rankingOrder",
     ]),
     label: z.string(),
     value: z.number().finite(),
