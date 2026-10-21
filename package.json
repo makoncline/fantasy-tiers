@@ -105,6 +105,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
+    "@types/chrome": "^0.2.9",
     "@types/node": "^24",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
@@ -112,20 +113,19 @@
     "cheerio": "^1.1.2",
     "dayjs": "^1.11.16",
     "drizzle-kit": "^0.31.10",
+    "esbuild": "^0.28.2",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.3.0",
     "glob": "^11.0.3",
     "jsdom": "^26.1.0",
     "knip": "^5.63.1",
     "playwright": "^1.55.0",
-    "postcss": "^8",
+    "postcss": "^8.5.31",
     "start-server-and-test": "^2.0.13",
     "tailwindcss": "^4.1.12",
     "tsx": "^4.20.5",
     "typescript": "^5",
-    "vitest": "^3.2.4",
-    "@types/chrome": "^0.2.9",
-    "esbuild": "^0.28.2"
+    "vitest": "^3.2.4"
   },
   "packageManager": "pnpm@10.15.1",
   "engines": {
@@ -134,7 +134,9 @@
   "pnpm": {
     "overrides": {
       "@types/react": "19.2.18",
-      "@types/react-dom": "19.2.4"
+      "@types/react-dom": "19.2.4",
+      "tar@>=7.0.0 <7.5.21": "7.5.21",
+      "undici@>=7.0.0 <7.29.1": "7.29.1"
     }
   }
 }
