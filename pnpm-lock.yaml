@@ -13,7 +13,6 @@ overrides:
   ws@>=8.0.0 <8.21.0: 8.21.0
   postcss@>=8.0.0 <8.5.31: 8.5.31
   flatted@>=3.0.0 <3.4.2: 3.4.2
-  lodash@>=4.0.0 <4.18.0: 4.18.0
   picomatch@>=2.0.0 <2.3.2: 2.3.2
   picomatch@>=4.0.0 <4.0.4: 4.0.4
   rollup@>=4.0.0 <4.59.0: 4.59.0
@@ -26,9 +25,9 @@ overrides:
   glob@>=11.0.0 <11.1.0: 11.1.0
   '@isaacs/brace-expansion@>=5.0.0 <5.0.1': 5.0.1
   handlebars@>=4.0.0 <4.7.10: 4.7.10
-  lodash-es@>=4.0.0 <4.18.0: 4.18.0
   smol-toml@>=1.0.0 <1.7.1: 1.7.1
   axios@>=1.0.0 <1.20.0: 1.20.0
+  lodash@>=4.0.0 <4.18.1: 4.18.1
 
 importers:
 
@@ -3754,9 +3753,8 @@ packages:
   lodash.merge@4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
 
-  lodash@4.18.0:
-    resolution: {integrity: sha512-l1mfj2atMqndAHI3ls7XqPxEjV2J9ZkcNyHpoZA3r2T1LLwDB69jgkMWh71YKwhBbK0G2f4WSn05ahmQXVxupA==}
-    deprecated: Bad release. Please use lodash@4.17.21 instead.
+  lodash@4.18.1:
+    resolution: {integrity: sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==}
 
   loose-envify@1.4.0:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
@@ -8150,7 +8148,7 @@ snapshots:
 
   lodash.merge@4.6.2: {}
 
-  lodash@4.18.0: {}
+  lodash@4.18.1: {}
 
   loose-envify@1.4.0:
     dependencies:
@@ -8528,7 +8526,7 @@ snapshots:
     dependencies:
       clsx: 2.1.1
       eventemitter3: 4.0.7
-      lodash: 4.18.0
+      lodash: 4.18.1
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
       react-is: 18.3.1
@@ -9161,7 +9159,7 @@ snapshots:
     dependencies:
       axios: 1.20.0(debug@4.4.1)
       joi: 17.13.7
-      lodash: 4.18.0
+      lodash: 4.18.1
       minimist: 1.2.8
       rxjs: 7.8.2
     transitivePeerDependencies:
