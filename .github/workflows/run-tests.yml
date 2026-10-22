@@ -28,11 +28,13 @@ jobs:
         run: corepack enable
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7.1.0
         with:
-          node-version: "22"
+          node-version: "24.22.1"
           cache: "pnpm"
 
+      - name: Check Node runtime
+        run: node --test scripts/node-runtime-check.mjs
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
